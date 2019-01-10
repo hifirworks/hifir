@@ -193,6 +193,19 @@ class CompressedStorage {
   array_type  _vals;       ///< numerical data array, size of nnz
 };
 
+/// \brief convert from one type to another type, e.g. ccs->crs
+/// \tparam ValueArray numerical value array type
+/// \tparam IndexArray index array type
+/// \tparam OneBased Fortran of C based index
+/// \param[in] i_ind_start input index start array
+/// \param[in] i_indices input index array
+/// \param[in] i_vals input value array
+/// \param[out] o_ind_start output index start array
+/// \param[out] o_indices output index array
+/// \param[out] o_vals output values
+/// \warning o_indices should be initialized properly with value 0 or 1
+/// \warning Both o_{indices,vals} should be allocated properly
+/// \note Work with both Array and \a std::vector
 template <class ValueArray, class IndexArray, bool OneBased>
 inline void convert_storage(const IndexArray &i_ind_start,
                             const IndexArray &i_indices,
