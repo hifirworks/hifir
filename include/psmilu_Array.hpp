@@ -46,7 +46,7 @@ class Array {
 
  private:
   constexpr static size_type _ZERO = static_cast<size_type>(0);
-  constexpr static size_type _ONE  = static_cast<size_type>(0);
+  constexpr static size_type _ONE  = static_cast<size_type>(1);
 
   // to enable shallow copy, we need a reference counter
   class _RefCount {
