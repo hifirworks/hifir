@@ -159,8 +159,7 @@ inline void error(const char *prefix, const char *file, const char *func,
     if (!(__cond))                                                   \
     ::psmilu::error("condition " #__cond " failed", __PSMILU_FILE__, \
                     __PSMILU_FUNC__, __LINE__, __msgs)
-#  define psmilu_debug_code(__code) \
-    { __code }
+#  define psmilu_debug_code(__code) __code
 #else
 #  define psmilu_assert(__cond, __msgs...)
 #  define psmilu_debug_code(__code)
