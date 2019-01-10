@@ -59,7 +59,8 @@ class CompressedStorage {
                     pointer vals, bool wrap = false)
       : _ind_start(n + 1, ind_start, wrap),
         _indices(ind_start[n] - ind_start[0], indices, wrap),
-        _vals(_indices.size(), vals, wrap) {}
+        _vals(_indices.size(), vals, wrap),
+        _psize(n) {}
 
   /// \brief constructor for own data
   /// \param[in] n primary direction size
@@ -80,6 +81,7 @@ class CompressedStorage {
     }
     std::fill(_ind_start.begin(), _ind_start.end(),
               static_cast<index_type>(OneBased));
+    _psize = n;
   }
 
   /// \brief shallow copy constructor (default) or deep copy
@@ -88,7 +90,8 @@ class CompressedStorage {
   CompressedStorage(const this_type &other, bool clone = false)
       : _ind_start(other._ind_start, clone),
         _indices(other._indices, clone),
-        _vals(other._vals, clone) {}
+        _vals(other._vals, clone),
+        _psize(other._psize) {}
 
   // default move
   CompressedStorage(this_type &&) = default;
@@ -99,7 +102,7 @@ class CompressedStorage {
   /// \brief check the status of the storage
   /// \return either DATA_UNDEF, DATA_WRAP, or DATA_OWN
   /// \note The status should be consistent for all three arrays.
-  inline unsigned char status() const { return _ind_start.status(); }
+  inline unsigned char status() const { return _indices.status(); }
   inline size_type     nnz() const {
     return status() == DATA_UNDEF ? _ZERO
                                   : _ind_start.back() - _ind_start.front();
@@ -135,15 +138,56 @@ class CompressedStorage {
   }
 
  protected:
+  /// \brief begin assemble rows
+  /// \note PSMILU only requires pushing back operations
+  /// \sa _end_assemble
+  inline void _begin_assemble() {
+    _ind_start.resize(1);
+    _ind_start.front() = static_cast<index_type>(OneBased);
+    _vals.resize(0u);
+    _indices.resize(0u);
+  }
+
+  /// \brief finish assembling process
+  /// \sa _begin_assemble
+  inline void _end_assemble() {
+    const int flag = _psize + 1u == _ind_start.size()
+                         ? 0
+                         : _psize + 1u < _ind_start.size() ? 1 : -1;
+    if (!flag) return;
+    if (flag > 0) {
+      psmilu_warning("pushed more entries (%zd) than requested (%zd)",
+                     _ind_start.size() - 1u, _psize);
+      _psize = _ind_start.size() ? _ind_start.size() - 1u : 0u;
+      return;
+    }
+    psmilu_warning("detected empty primary entries (%zd), filling zeros",
+                   _psize + 1u - _ind_start.size());
+    for (auto i = _ind_start.size() - 1ul; i < _psize; ++i)
+      _push_back_primary_empty(i);
+  }
+
+  /// \brief push back an empty entry
+  /// \param[in] ii ii-th entry in primary direction
+  inline void _push_back_primary_empty(const size_type psmilu_debug_code(ii)) {
+    psmilu_assert(ii + 1u == _ind_start.size(),
+                  "inconsistent pushing back at entry %zd", ii);
+    _ind_start.push_back(_ind_start.back());
+  }
+
   /// \brief push back a \b SORTED index list to _indices
   /// \tparam Iter iterator type
   /// \tparam ValueArray dense value array
+  /// \param[in] ii ii-th entry in primary direction
   /// \param[in] first starting iterator
   /// \param[in] last ending iterator
   /// \param[in] v dense value array, the value can be queried from indices
   /// \warning The indices are assumed to be sorted
   template <class Iter, class ValueArray>
-  inline void _push_back_primary(Iter first, Iter last, const ValueArray &v) {
+  inline void _push_back_primary(const size_type psmilu_debug_code(ii),
+                                 Iter first, Iter last, const ValueArray &v) {
+    psmilu_assert(ii + 1u == _ind_start.size(),
+                  "inconsistent pushing back at entry %zd", ii);
     // first push back the list
     psmilu_assert(_indices.size() == _vals.size(), "fatal error");
     _indices.push_back(first, last);
@@ -191,6 +235,7 @@ class CompressedStorage {
   iarray_type _ind_start;  ///< index pointer array, size of n+1
   iarray_type _indices;    ///< index array, size of nnz
   array_type  _vals;       ///< numerical data array, size of nnz
+  size_type   _psize;      ///< primary size
 };
 
 /// \brief convert from one type to another type, e.g. ccs->crs
@@ -364,25 +409,17 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   inline const array_type & vals() const { return _base::_vals; }
 
   /// \brief get number of rows
-  inline size_type nrows() const {
-    return _base::status() == DATA_UNDEF ? 0u : row_start().size() - 1u;
-  }
+  inline size_type nrows() const { return _psize; }
 
   /// \brief get number of columns
   inline size_type ncols() const { return _ncols; }
 
   /// \brief resize rows
   /// \param[in] nrows number of rows
-  /// \note This resizes the row start array
-  inline void resize_nrows(const size_type nrows) {
-    row_start().resize(nrows + 1u);
-    row_start().front() = static_cast<size_type>(OneBased);
-  }
+  inline void resize_nrows(const size_type nrows) { _psize = nrows; }
 
   /// \brief resize columns
   /// \param[in] ncols number of columns
-  /// \note This just resets the number of columns
-  /// \sa resize_nrows
   inline void resize_ncols(const size_type ncols) { _ncols = ncols; }
 
   /// \brief resize
@@ -419,20 +456,35 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
     return _base::_ind_cend(i);
   }
 
+  /// \brief begin assemble rows
+  inline void begin_assemble_rows() { _base::_begin_assemble(); }
+
+  /// \brief finish assemble rows
+  inline void end_assemble_rows() { _base::_end_assemble(); }
+
+  /// \brief push back an empty row
+  /// \param[in] row current row entry
+  inline void push_back_empty_row(const size_type psmilu_debug_code(row)) {
+    _base::_push_back_primary_empty(row);
+  }
+
   /// \brief push back a new row
   /// \tparam Iter iterator type
   /// \tparam ValueArray dense value array
+  /// \param[in] row current row (C-based index)
   /// \param[in] first starting iterator
   /// \param[in] last ending iterator
   /// \param[in] v dense value array, the value can be queried from indices
   /// \warning The indices are assumed to be sorted
   template <class Iter, class ValueArray>
-  inline void push_back_row(Iter first, Iter last, const ValueArray &v) {
-    _base::_push_back_primary(first, last, v);
+  inline void push_back_row(const size_type psmilu_debug_code(row), Iter first,
+                            Iter last, const ValueArray &v) {
+    _base::_push_back_primary(row, first, last, v);
   }
 
  protected:
-  size_type _ncols;  ///< number of columns
+  size_type _ncols;     ///< number of columns
+  using _base::_psize;  ///< number of rows (primary entries)
 };
 
 template <class ValueType, class IndexType, bool OneBased>
@@ -523,16 +575,11 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
 
   /// \brief resize rows
   /// \param[in] nrows number of rows
-  /// \note This just resets _nrows
   inline void resize_nrows(const size_type nrows) { _nrows = nrows; }
 
   /// \brief resize columns
   /// \param[in] ncols number of columns
-  /// \note this resizes the col start array
-  inline void resize_ncols(const size_type ncols) {
-    col_start().resize(ncols + 1u);
-    col_start().front() = static_cast<size_type>(OneBased);
-  }
+  inline void resize_ncols(const size_type ncols) { _psize = ncols; }
 
   /// \brief resize
   /// \param[in] nrows number of rows
@@ -568,8 +615,35 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
     return _base::_ind_cend(i);
   }
 
+  /// \brief begin assemble columns
+  inline void begin_assemble_cols() { _base::_begin_assemble(); }
+
+  /// \brief finish assemble columns
+  inline void end_assemble_cols() { _base::_end_assemble(); }
+
+  /// \brief push back an empty column
+  /// \param[in] col current column entry
+  inline void push_back_empty_col(const size_type psmilu_debug_code(col)) {
+    _base::_push_back_primary_empty(col);
+  }
+
+  /// \brief push back a new column
+  /// \tparam Iter iterator type
+  /// \tparam ValueArray dense value array
+  /// \param[in] col current col (C-based index)
+  /// \param[in] first starting iterator
+  /// \param[in] last ending iterator
+  /// \param[in] v dense value array, the value can be queried from indices
+  /// \warning The indices are assumed to be sorted
+  template <class Iter, class ValueArray>
+  inline void push_back_col(const size_type psmilu_debug_code(col), Iter first,
+                            Iter last, const ValueArray &v) {
+    _base::_push_back_primary(col, first, last, v);
+  }
+
  protected:
-  size_type _nrows;  ///< number of rows
+  size_type _nrows;     ///< number of rows
+  using _base::_psize;  ///< number of columns (primary entries)
 };
 
 }  // namespace psmilu
