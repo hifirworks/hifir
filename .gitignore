@@ -1,5 +1,4 @@
 *~
-a.out
 *.o
 *.a
 *.so
@@ -11,3 +10,5 @@ __pycache__
 *.pyc
 dist
 .vscode
+*.out
+*.exe
