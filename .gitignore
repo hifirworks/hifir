@@ -1,0 +1,13 @@
+*~
+a.out
+*.o
+*.a
+*.so
+build
+config.hpp
+.ycm_extra_conf.py
+*.egg-info
+__pycache__
+*.pyc
+dist
+.vscode
