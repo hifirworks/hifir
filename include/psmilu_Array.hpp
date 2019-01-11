@@ -122,15 +122,20 @@ class Array {
   /// \brief destructor, handle shallow copy and external data
   ~Array() {
     // first trigger reference counter to decrement
-    _counts->dec();
+    // Added checking nullptr so that move can work
+    if (_counts) _counts->dec();
 #ifdef PSMILU_MEMORY_DEBUG
     std::stringstream ss;
-    ss << "after decrement, current counts: " << *_counts;
+    if (_counts)
+      ss << "after decrement, current counts: " << *_counts;
+    else
+      ss << "NULL counter, this got moved over";
     PSMILU_STDOUT(ss.str().c_str());
 #endif
     // handle memory deallocation
-    if (_data && _status == DATA_OWN && *_counts == _ZERO) delete[] _data;
-    if (*_counts == _ZERO) {
+    if (_data && _status == DATA_OWN && _counts && *_counts == _ZERO)
+      delete[] _data;
+    if (_counts && *_counts == _ZERO) {
       // don't forget to free the counter
       delete _counts;
       _counts = nullptr;
@@ -329,6 +334,7 @@ class Array {
   /// \param[in] first starting iterator
   /// \param[in] last ending iterator
   /// \sa push_back_n
+  /// \warning The behavior is undefined if \a this and \a last belong to this
   template <class Iter>
   inline void push_back(Iter first, Iter last) {
     // NOTE call distance for generality
@@ -342,6 +348,7 @@ class Array {
   /// \tparam Iter iterator type
   /// \param[in] first starting position
   /// \param[in] n length to append
+  /// \warning The behavior is undefined if \a first belongs to \a this
   template <class Iter>
   inline void push_back_n(Iter first, const size_type n) {
     const size_type start = _size;
@@ -350,13 +357,13 @@ class Array {
   }
 
  protected:
-  pointer       _data;
-  size_type     _size;
-  size_type     _cap;
-  unsigned char _status;
+  pointer       _data;    ///< data pointer
+  size_type     _size;    ///< array size
+  size_type     _cap;     ///< array capacity
+  unsigned char _status;  ///< array status, see \a enum above
 
  private:
-  _RefCount* _counts;
+  _RefCount* _counts;  ///< reference counter
 };
 }  // namespace psmilu
 
