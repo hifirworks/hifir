@@ -90,7 +90,7 @@ class Array {
   /// \param[in] n length of the array
   /// \param[in] v init value
   Array(const size_type n, const value_type v) : Array(n) {
-    std::fill_n(_data, _data + _size, v);
+    std::fill_n(_data, _size, v);
   }
 
   /// \brief constructo for copying or wrapping external data
