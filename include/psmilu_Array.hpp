@@ -127,6 +127,24 @@ class Array {
     _size = _cap = n;
   }
 
+  /// \brief constructor to copy a foreign array
+  /// \tparam ArrayType foreign value type
+  /// \param other another array
+  template <class ArrayType>
+  explicit Array(const ArrayType& other)
+      : _data(new (std::nothrow) value_type[other.size()]),
+        _size(other.size()),
+        _cap(_size),
+        _status(DATA_OWN),
+        _counts(new _RefCount()) {
+    psmilu_assert(_data, "memory allocation failed");
+    if (!_data) {
+      _size = _cap = _ZERO;
+      _status      = DATA_UNDEF;
+    } else
+      std::copy(other.cbegin(), other.cend(), _data);
+  }
+
   /// \brief destructor, handle shallow copy and external data
   ~Array() {
     // first trigger reference counter to decrement
