@@ -127,11 +127,11 @@ class Array {
     _size = _cap = n;
   }
 
-  /// \brief constructor to copy a foreign array
-  /// \tparam ArrayType foreign value type
+  /// \brief constructor to copy a foreign array, useful in type conversion
+  /// \tparam V foreign value type
   /// \param other another array
-  template <class ArrayType>
-  explicit Array(const ArrayType& other)
+  template <class V>
+  explicit Array(const Array<V>& other)
       : _data(new (std::nothrow) value_type[other.size()]),
         _size(other.size()),
         _cap(_size),
