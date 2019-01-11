@@ -51,13 +51,21 @@ class Array {
   // to enable shallow copy, we need a reference counter
   class _RefCount {
    public:
-    _RefCount() : _c(_ONE) {}
+    _RefCount() : _c(_ONE), _invalid(false) {}
     inline      operator size_type() const { return _c; }
     inline void inc() { ++_c; }
     inline void dec() { --_c; }
 
    private:
     size_type _c;
+    bool      _invalid;
+
+    friend class Array;
+    template <class _T>
+    friend void steal_array_ownership(Array<_T>&                     arr,
+                                      typename Array<_T>::pointer&   data,
+                                      typename Array<_T>::size_type& size,
+                                      typename Array<_T>::size_type& cap);
   };
 
  public:
@@ -126,15 +134,18 @@ class Array {
     if (_counts) _counts->dec();
 #ifdef PSMILU_MEMORY_DEBUG
     std::stringstream ss;
-    if (_counts)
-      ss << "after decrement, current counts: " << *_counts;
-    else
+    if (_counts) {
+      if (!_counts->_invalid)
+        ss << "after decrement, current counts: " << *_counts;
+      else
+        ss << "array data has been stole";
+    } else
       ss << "NULL counter, this got moved over";
     PSMILU_STDOUT(ss.str().c_str());
 #endif
     // handle memory deallocation
     if (_data && _status == DATA_OWN && _counts && *_counts == _ZERO)
-      delete[] _data;
+      if (!_counts->_invalid) delete[] _data;
     if (_counts && *_counts == _ZERO) {
       // don't forget to free the counter
       delete _counts;
@@ -364,7 +375,46 @@ class Array {
 
  private:
   _RefCount* _counts;  ///< reference counter
+
+  template <class _T>
+  friend void steal_array_ownership(Array<_T>&                     arr,
+                                    typename Array<_T>::pointer&   data,
+                                    typename Array<_T>::size_type& size,
+                                    typename Array<_T>::size_type& cap);
 };
+
+/// \brief try steal the array data ownership
+/// \tparam T value type
+/// \param[in,out] arr input and output array
+/// \param[out] data pointer to the internal database
+/// \param[out] size array size
+/// \param[out] cap array capacity
+/// \note If \a arr can't be stole, \a nullptr is assigned to \a data
+/// \warning Only works for DATA_OWN status
+/// \warning Manually calling \a delete[] may be needed
+/// \warning Not designed using in MT
+template <class T>
+inline void steal_array_ownership(Array<T>&                     arr,
+                                  typename Array<T>::pointer&   data,
+                                  typename Array<T>::size_type& size,
+                                  typename Array<T>::size_type& cap) {
+  typedef typename Array<T>::size_type size_type;
+  if (arr.status() != DATA_OWN) {
+    data = nullptr;
+    size = cap = 0u;
+    return;
+  }
+  data        = arr._data;
+  size        = arr._size;
+  cap         = arr._cap;
+  arr._data   = nullptr;
+  arr._size   = size_type(0);
+  arr._cap    = size_type(0);
+  arr._status = DATA_UNDEF;
+  // set the counter to invalid
+  arr._counts->_invalid = true;
+}
+
 }  // namespace psmilu
 
 #endif  // _PSMILU_ARRAY_HPP

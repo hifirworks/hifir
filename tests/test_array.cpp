@@ -86,3 +86,25 @@ TEST(Array_api, test_move) {
   ASSERT_EQ(v3.size(), 100u);
   ASSERT_EQ(v3.status(), DATA_OWN);
 }
+
+// run this with valgrind as well
+TEST(Array_api, test_steal) {
+  Array<double> v1;
+  v1.reserve(100u);
+  v1.resize(10u);
+  // create several aliases
+  std::vector<Array<double>> pools;
+  for (;;) {
+    if (pools.size() == 10u) break;
+    pools.emplace_back(v1);
+  }
+  double *                 data = nullptr;
+  Array<double>::size_type size, cap;
+  // steal
+  steal_array_ownership(v1, data, size, cap);
+  ASSERT_NE(data, nullptr);
+  ASSERT_EQ(size, 10u);
+  ASSERT_EQ(cap, 100u);
+  data[99] = 100.0;
+  delete[] data;
+}
