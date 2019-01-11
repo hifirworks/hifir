@@ -333,6 +333,8 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   typedef internal::CompressedStorage<ValueType, IndexType, OneBased> _base;
 
  public:
+  typedef ValueType                           value_type;   ///< value type
+  typedef IndexType                           index_type;   ///< index type
   typedef typename _base::array_type          array_type;   ///< value array
   typedef typename _base::iarray_type         iarray_type;  ///< index array
   typedef typename _base::size_type           size_type;    ///< size type
@@ -343,6 +345,7 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   typedef typename _base::const_i_iterator    const_i_iterator;
   typedef typename _base::v_iterator          v_iterator;  ///< value iterator
   typedef typename _base::const_v_iterator    const_v_iterator;
+  constexpr static bool ONE_BASED = OneBased;  ///< C or Fortran based
 
   /// \brief default constructor
   CRS() : _base(), _ncols(0u) {}
@@ -492,6 +495,8 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   typedef internal::CompressedStorage<ValueType, IndexType, OneBased> _base;
 
  public:
+  typedef ValueType                           value_type;   ///< value type
+  typedef IndexType                           index_type;   ///< index type
   typedef typename _base::array_type          array_type;   ///< value array
   typedef typename _base::iarray_type         iarray_type;  ///< index array
   typedef typename _base::size_type           size_type;    ///< size type
@@ -502,6 +507,7 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   typedef typename _base::const_i_iterator    const_i_iterator;
   typedef typename _base::v_iterator          v_iterator;  ///< value iterator
   typedef typename _base::const_v_iterator    const_v_iterator;
+  constexpr static bool ONE_BASED = OneBased;  ///< C or Fortran based
 
   /// \brief default constructor
   CCS() : _base(), _nrows(0u) {}
