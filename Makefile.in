@@ -1,0 +1,15 @@
+CXX = c++
+
+# Specify commonly used paths for GTEST
+GTEST_INCDIR=-I/opt/local/include
+GTEST_LIBDIR=-L/opt/local/lib
+
+# Abs root
+PSMILU_ROOT=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+
+CXXFLAGS = \
+    $(GTEST_INCDIR) \
+    -I$(PSMILU_ROOT)/include \
+    -g -rdynamic -Wall -Wextra -std=c++11
+LIBS = $(GTEST_LIBDIR) -lgtest -lgtest_main -pthread
+LDFLAGS =
