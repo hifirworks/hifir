@@ -48,7 +48,7 @@ class CompressedStorage {
 
  public:
   /// \brief default constructor
-  CompressedStorage() = default;
+  CompressedStorage() { _psize = _ZERO; }
 
   /// \brief constructor with external data, either copy (default) or wrap
   /// \param[in] n primary size
@@ -143,6 +143,7 @@ class CompressedStorage {
   /// \note PSMILU only requires pushing back operations
   /// \sa _end_assemble
   inline void _begin_assemble() {
+    _ind_start.reserve(_psize + 1u);
     _ind_start.resize(1);
     _ind_start.front() = static_cast<index_type>(OneBased);
     _vals.resize(0u);
@@ -194,12 +195,14 @@ class CompressedStorage {
     _indices.push_back(first, last);
     const auto      nnz   = std::distance(first, last);
     const size_type start = _vals.size();
+    psmilu_assert(nnz >= 0, "reversed iterators");
     _vals.resize(start + nnz);
     psmilu_assert(_indices.size() == _vals.size(), "fatal error");
-    for (auto i = _ZERO; i < nnz; ++i, ++first) {
+    const size_type n = _vals.size();
+    for (auto i = start; i < n; ++i, ++first) {
       const auto j = to_c_idx<size_type, OneBased>(*first);
       psmilu_assert(j < v.size(), "%zd exceeds the length of v", j);
-      _vals[i + start] = v[j];
+      _vals[i] = v[j];
     }
     // finally, push back ind start
     _ind_start.push_back(_ind_start.back() + nnz);
@@ -449,7 +452,9 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   /// \brief get local nnz per row
   /// \param[in] i row entry (C-based index)
   /// \return number of nonzeros in row \a i
-  inline size_type nnz_in_row(const size_type i) const { return _base::nnz(i); }
+  inline size_type nnz_in_row(const size_type i) const {
+    return _base::_nnz(i);
+  }
 
   // wrappers for column index local iterator ranges
 
@@ -623,7 +628,9 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   /// \brief get local nnz per column
   /// \param[in] i column entry (C-based index)
   /// \return number of nonzeros in column \a i
-  inline size_type nnz_in_col(const size_type i) const { return _base::nnz(i); }
+  inline size_type nnz_in_col(const size_type i) const {
+    return _base::_nnz(i);
+  }
 
   // wrappers for row index local iterator ranges
 
