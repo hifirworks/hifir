@@ -91,8 +91,19 @@ TEST(CRS_api, test_core_c) {
   crs1.end_assemble_rows();
   const auto mat2 = convert_crs2dense(crs1);
   COMPARE_MATS(mat_ref, mat2);
-  for (s_t i = 0u; i < nrows; ++i) {
-    for (s_t j = 0u; j < ncols; ++j) std::cout << mat2[i][j] << ' ';
-    std::cout << '\n';
-  }
+  // test return
+  const auto return_crs1 = [&]() -> crs_t { return crs1; };
+  auto       crs2        = return_crs1();
+  ASSERT_EQ(crs1.col_ind().data(), crs2.col_ind().data());
+  ASSERT_EQ(crs2.nrows(), nrows);
+  ASSERT_EQ(crs2.ncols(), ncols);
+  // test wrap
+  std::vector<int> rowptr(crs1.row_start().cbegin(), crs1.row_start().cend()),
+      colind(crs1.col_ind().cbegin(), crs1.col_ind().cend());
+  std::vector<double> vals(crs1.vals().cbegin(), crs1.vals().cend());
+  crs_t crs3(nrows, ncols, rowptr.data(), colind.data(), vals.data(), true);
+  ASSERT_EQ(crs3.status(), DATA_WRAP);
+  ASSERT_EQ(crs3.vals().data(), vals.data());
+  const auto mat3 = convert_crs2dense(crs3);
+  COMPARE_MATS(mat3, mat2);
 }
