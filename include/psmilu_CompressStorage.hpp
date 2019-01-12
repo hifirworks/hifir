@@ -15,6 +15,7 @@
 #include <utility>
 
 #include "psmilu_Array.hpp"
+#include "psmilu_matrix_market.hpp"
 #include "psmilu_utils.hpp"
 
 namespace psmilu {
@@ -347,6 +348,18 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   typedef typename _base::const_v_iterator    const_v_iterator;
   constexpr static bool ONE_BASED = OneBased;  ///< C or Fortran based
 
+  /// \brief read a matrix market file
+  /// \param[in] filename matrix file name
+  /// \return A CRS matrix
+  inline static CRS read_mm(const char *filename) {
+    CRS       crs;
+    size_type rows, cols;
+    read_matrix_market<array_type, iarray_type, OneBased, true>(
+        filename, crs.row_start(), crs.col_ind(), crs.vals(), rows, cols);
+    crs.resize(rows, cols);
+    return crs;
+  }
+
   /// \brief default constructor
   CRS() : _base(), _ncols(0u) {}
 
@@ -508,6 +521,18 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   typedef typename _base::v_iterator          v_iterator;  ///< value iterator
   typedef typename _base::const_v_iterator    const_v_iterator;
   constexpr static bool ONE_BASED = OneBased;  ///< C or Fortran based
+
+  /// \brief read a matrix market file
+  /// \param[in] filename matrix file name
+  /// \return A CRS matrix
+  inline static CCS read_mm(const char *filename) {
+    CCS       ccs;
+    size_type rows, cols;
+    read_matrix_market<array_type, iarray_type, OneBased, false>(
+        filename, ccs.col_start(), ccs.row_ind(), ccs.vals(), rows, cols);
+    ccs.resize(rows, cols);
+    return ccs;
+  }
 
   /// \brief default constructor
   CCS() : _base(), _nrows(0u) {}
