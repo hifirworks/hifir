@@ -12,6 +12,7 @@
 #define _PSMILU_UTILS_HPP
 
 #include <algorithm>
+#include <iterator>
 
 namespace psmilu {
 
@@ -32,14 +33,57 @@ inline std::pair<bool, Iter> find_sorted(Iter first, Iter last,
   return std::make_pair(lower != last && *lower == v, lower);
 }
 
+/// \brief rotate a subset of vector, s.t. src appears to the left most pos
+/// \tparam ArrayType input and output array type
+/// \param[in] n **local** size of how many items will be shifted
+/// \param[in] src index in **global** range
+/// \param[in,out] v input and output array
+/// \note Complexity: \f$\mathcal{O}(n)\f$
+/// \sa rotate_right
+template <class ArrayType>
+inline void rotate_left(const typename ArrayType::size_type n,
+                        const typename ArrayType::size_type src, ArrayType &v) {
+  auto itr_first = v.begin() + src, itr_last = itr_first + n;
+  std::rotate(itr_first, itr_first + 1, itr_last);
+}
+
+/// \brief rotate a subset of vector, s.t. src appears to the right most pos
+/// \tparam ArrayType input and output array type
+/// \param[in] n **local** size of how many items will be shifted
+/// \param[in] src index in **global** range
+/// \param[in,out] v input and output array
+/// \note Complexity: \f$\mathcal{O}(n)\f$
+/// \sa rotate_left
+///
+/// For right rotation, we need to use \a reverse_iterator
+template <class ArrayType>
+inline void rotate_right(const typename ArrayType::size_type n,
+                         const typename ArrayType::size_type src,
+                         ArrayType &                         v) {
+  typedef std::reverse_iterator<typename ArrayType::iterator> iterator;
+  // NOTE requiring explicit construction
+  auto itr_first(v.begin() + src + 1), itr_last(itr_first + n);
+  std::rotate(itr_first, itr_first + 1, itr_last);
+}
+
 /// \brief convert a given index to c-based index
 /// \tparam IndexType integer type
-/// \tparam OneBased if nor not the index is Fortran based
+/// \tparam OneBased if \a true not the index is Fortran based
 /// \param[in] i input index
 /// \return C-based index
 template <class IndexType, bool OneBased>
 inline constexpr IndexType to_c_idx(const IndexType i) {
   return i - static_cast<IndexType>(OneBased);
+}
+
+/// \brief convert a C-based index to original input index
+/// \tparam IndexType integer type
+/// \tparam OneBased if \a true not the index is Fortran based
+/// \param[in] i input index
+/// \return Original index
+template <class IndexType, bool OneBased>
+inline constexpr IndexType to_ori_idx(const IndexType i) {
+  return i + static_cast<IndexType>(OneBased);
 }
 
 }  // namespace psmilu
