@@ -62,7 +62,7 @@ inline void rotate_right(const typename ArrayType::size_type n,
                          ArrayType &                         v) {
   typedef std::reverse_iterator<typename ArrayType::iterator> iterator;
   // NOTE requiring explicit construction
-  auto itr_first(v.begin() + src + 1), itr_last(itr_first + n);
+  iterator itr_first(v.begin() + src + 1), itr_last(itr_first + n);
   std::rotate(itr_first, itr_first + 1, itr_last);
 }
 

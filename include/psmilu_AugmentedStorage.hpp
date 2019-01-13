@@ -144,9 +144,6 @@ class AugmentedCore {
     psmilu_assert(src < _val_pos.size(), "%zd exceeds val_pos size %zd", src,
                   _val_pos.size());
     psmilu_assert(src + 1u - n >= 0u, "invalid right rotation");
-    // NOTE explicit construction is required
-    reverse_iterator itr_first(_val_pos.begin() + src + 1),
-        itr_last(itr_first + n);
     rotate_right(n, src, _val_pos);
   }
 
