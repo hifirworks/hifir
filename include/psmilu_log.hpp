@@ -21,17 +21,8 @@
 #  include <stdexcept>
 #endif
 
-#include "psmilu_backward/backward.hpp"
 #include "psmilu_print.hpp"
-
-#define TRACE_HERE(__ss)      \
-  do {                        \
-    using namespace backward; \
-    StackTrace st;            \
-    st.load_here(32);         \
-    Printer p;                \
-    p.print(st, __ss);        \
-  } while (false)
+#include "psmilu_stacktrace.hpp"
 
 namespace psmilu {
 namespace internal {
@@ -102,7 +93,7 @@ inline void error(const char *prefix, const char *file, const char *func,
   if (print_pre) ss << prefix << ", ";
   ss << "function " << func << ", at " << file << ':' << line
      << "\nmessage: " << internal::msg_buf.data() << "\n\n";
-  TRACE_HERE(ss);
+  LOAD_STACKTRACE(ss, 63);
 #ifdef PSMILU_THROW
   throw std::runtime_error(ss.str());
 #else
@@ -166,6 +157,5 @@ inline void error(const char *prefix, const char *file, const char *func,
 #endif
 
 #undef _PARSE_VA
-#undef TRACE_HERE
 
 #endif  // _PSMILU_LOG_HPP
