@@ -43,7 +43,8 @@ class AugmentedCore {
   typedef std::reverse_iterator<iterator> reverse_iterator;
 
  private:
-  constexpr static index_type _EMPTY = std::numeric_limits<index_type>::max();
+  constexpr static size_type _EMPTY =
+      static_cast<size_type>(std::numeric_limits<index_type>::max());
 
  public:
   AugmentedCore() = default;
