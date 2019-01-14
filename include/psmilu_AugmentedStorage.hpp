@@ -92,12 +92,8 @@ class AugmentedCore {
       const size_type j = to_c_idx<size_type, OneBased>(*itr);
       psmilu_assert(j < _node_start.size(),
                     "%zd exceeds the bound in node_start", j);
-      // get current ending position
-      const size_type jend = _node_end[j] != _EMPTY ? _node_end[j] : i;
-      psmilu_assert(_node_next[jend] == _EMPTY,
-                    "ending position %zd next is not empty", jend);
-      // update next list
-      _node_next[jend] = i;
+      // if we have _node_end[j] (_node_end is not ready when entry==0)
+      if (!empty(_node_end[j])) _node_next[_node_end[j]] = i;
       // finally update _node_end
       _node_end[j] = i;
       // need to check start index as well
