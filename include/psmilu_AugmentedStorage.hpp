@@ -85,8 +85,9 @@ class AugmentedCore {
     Iter            itr = first;
     const size_type n   = _node_inds.size();
     for (size_type i = start; i < n; ++i, ++itr) {
-      // first update value positions
+      // first update value positions and set empty to newly add next locs
       _val_pos[i]       = i;
+      _node_next[i]     = _EMPTY;
       const size_type j = to_c_idx<size_type, OneBased>(*itr);
       psmilu_assert(j < _node_start.size(),
                     "%zd exceeds the bound in node_start", j);
