@@ -70,7 +70,7 @@ inline void warning(const char *prefix, const char *file, const char *func,
   const bool print_pre = prefix;
   _PARSE_VA(msg);
   std::stringstream ss;
-  ss << "WARNING! ";
+  ss << "\033[1;33mWARNING!\033[0m ";
   if (print_pre) ss << prefix << ", ";
   ss << "function " << func << ", at " << file << ':' << line
      << "\nmessage: " << internal::msg_buf.data();
@@ -89,7 +89,7 @@ inline void error(const char *prefix, const char *file, const char *func,
   const bool print_pre = prefix;
   _PARSE_VA(msg);
   std::stringstream ss;
-  ss << "ERROR! ";
+  ss << "\033[1;31mERROR!\033[0m ";
   if (print_pre) ss << prefix << ", ";
   ss << "function " << func << ", at " << file << ':' << line
      << "\nmessage: " << internal::msg_buf.data() << "\n\n";

@@ -52,13 +52,13 @@
                                           &func_name_size, &status);         \
           if (status == 0) {                                                 \
             func_name = ret;                                                 \
-            __ss << ' ' << symbol_list[i] << ':' << func_name << '+'         \
-                 << begin_offset << '\n';                                    \
+            __ss << '[' << i << "] " << symbol_list[i] << ':' << func_name   \
+                 << '+' << begin_offset << '\n';                             \
           } else                                                             \
-            __ss << ' ' << symbol_list[i] << ':' << begin_name << "()+"      \
-                 << begin_offset << '\n';                                    \
+            __ss << '[' << i << "] " << symbol_list[i] << ':' << begin_name  \
+                 << "()+" << begin_offset << '\n';                           \
         } else                                                               \
-          __ss << ' ' << symbol_list[i] << '\n';                             \
+          __ss << '[' << i << "] " << symbol_list[i] << '\n';                \
       }                                                                      \
       std::free(func_name);                                                  \
       std::free(symbol_list);                                                \
