@@ -77,7 +77,7 @@ class SparseVector {
   /// \brief reset the sparse tags
   /// \note This is used in dropping
   inline void reset_sparse_tags() {
-    std::fill_n(_sparse_tags.begin(), _counts, false);
+    std::fill(_sparse_tags.begin(), _sparse_tags.end(), false);
   }
 
   /// \brief reset the size counter to zero
