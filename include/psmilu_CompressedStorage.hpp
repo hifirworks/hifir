@@ -605,9 +605,7 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   inline size_type nrows() const { return _nrows; }
 
   /// \brief get number of columns
-  inline size_type ncols() const {
-    return _base::status() == DATA_UNDEF ? 0u : col_start().size() - 1u;
-  }
+  inline size_type ncols() const { return _psize; }
 
   /// \brief resize rows
   /// \param[in] nrows number of rows
