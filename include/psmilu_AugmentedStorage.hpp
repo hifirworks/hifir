@@ -64,7 +64,24 @@ class AugmentedCore {
   inline iarray_type &      val_pos() { return _val_pos; }
   inline const iarray_type &val_pos() const { return _val_pos; }
 
+  /// \brief reserve spaces for nnz arrays
+  /// \param[in] nnz total number of nonzeros
+  inline void reserve(const size_type nnz) {
+    _node_inds.reserve(nnz);
+    _node_next.reserve(nnz);
+    _val_pos.reserve(nnz);
+  }
+
  protected:
+  /// \brief begin assemble nodes
+  /// \param[in] nlist number of lists
+  inline void _begin_assemble_nodes(const size_type nlist) {
+    _node_start.resize(nlist);
+    _node_end.resize(nlist);
+    std::fill_n(_node_start.begin(), nlist, _EMPTY);
+    std::fill_n(_node_end.begin(), nlist, _EMPTY);
+  }
+
   /// \brief update linked lists given new nodes from back
   /// \tparam Iter iterator type
   /// \tparam OneBased if \a true, then values in first:last is Fortran indices
@@ -97,7 +114,7 @@ class AugmentedCore {
       // finally update _node_end
       _node_end[j] = i;
       // need to check start index as well
-      if (_node_start[j] == _EMPTY) _node_start[j] = i;
+      if (empty(_node_start[j])) _node_start[j] = i;
     }
   }
 
@@ -349,6 +366,11 @@ class AugCRS : public internal::AugmentedCore<typename CrsType::index_type> {
   inline iarray_type &      col_end() { return _base::_node_end; }
   inline const iarray_type &col_end() const { return _base::_node_end; }
 
+  /// \brief begin to assemble rows
+  inline void _begin_assemble_rows() {
+    _base::_begin_assemble_nodes(_crs.ncols());
+  }
+
   /// \brief push back a row with column indices
   /// \tparam Iter iterator type
   /// \param[in] row current row index (C-based)
@@ -522,6 +544,11 @@ class AugCCS : public internal::AugmentedCore<typename CcsType::index_type> {
   inline const iarray_type &row_start() const { return _base::_node_start; }
   inline iarray_type &      row_end() { return _base::_node_end; }
   inline const iarray_type *row_end() const { return _base::_node_end; }
+
+  /// \brief begin to assemble columns
+  inline void _begin_assemble_cols() {
+    _base::_begin_assemble_nodes(_ccs.nrows());
+  }
 
   /// \brief push back a column with row indices
   /// \tparam Iter iterator type
