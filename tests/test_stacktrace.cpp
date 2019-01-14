@@ -9,8 +9,13 @@
 #include "common.hpp"
 // line break to avoid sorting
 #include "psmilu_Array.hpp"
+#include "psmilu_log.hpp"
+#include "psmilu_stacktrace.hpp"
 
 #include <gtest/gtest.h>
+#include <regex>
+
+#define TAG "stack trace:"
 
 using namespace psmilu;
 
@@ -35,6 +40,14 @@ TEST(StackTrace, test) {
     Array<int> v;
     foo2(v);
   } catch (const std::runtime_error &e) {
-    PSMILU_STDOUT(e.what());
+#ifdef __linux__
+    const char *msg = e.what();
+    std::regex  st(TAG "*");
+    std::cmatch mt;
+    const bool  found = std::regex_search(msg, mt, st);
+    ASSERT_TRUE(found);
+#else
+    psmilu_warning("stack trace test only avail on Linux");
+#endif
   }
 }

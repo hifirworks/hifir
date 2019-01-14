@@ -8,6 +8,7 @@
 
 #include "common.hpp"
 // line break to avoid sorting
+#include "psmilu_Array.hpp"
 #include "psmilu_CompressedStorage.hpp"
 
 #include <gtest/gtest.h>
