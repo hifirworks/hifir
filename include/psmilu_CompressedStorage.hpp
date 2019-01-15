@@ -350,6 +350,7 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   typedef typename _base::v_iterator          v_iterator;  ///< value iterator
   typedef typename _base::const_v_iterator    const_v_iterator;
   constexpr static bool ONE_BASED = OneBased;  ///< C or Fortran based
+  constexpr static bool ROW_MAJOR = true;      ///< row major
 
   /// \brief read a matrix market file
   /// \param[in] filename matrix file name
@@ -526,6 +527,7 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   typedef typename _base::v_iterator          v_iterator;  ///< value iterator
   typedef typename _base::const_v_iterator    const_v_iterator;
   constexpr static bool ONE_BASED = OneBased;  ///< C or Fortran based
+  constexpr static bool ROW_MAJOR = false;     ///< column major
 
   /// \brief read a matrix market file
   /// \param[in] filename matrix file name
