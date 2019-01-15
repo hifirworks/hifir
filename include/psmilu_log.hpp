@@ -142,6 +142,7 @@ inline void error(const char *prefix, const char *file, const char *func,
 /// \brief conditionally print warning message and abort
 /// \sa psmilu::error
 #define psmilu_error_if(__cond, __msgs...)                       \
+  if (__cond)                                                    \
   ::psmilu::error("invalid condition " #__cond, __PSMILU_FILE__, \
                   __PSMILU_FUNC__, __LINE__, __msgs)
 
