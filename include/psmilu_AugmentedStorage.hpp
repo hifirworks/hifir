@@ -44,7 +44,47 @@ class AugmentedCore {
   constexpr static index_type _NIL = std::numeric_limits<index_type>::max();
 
  public:
+  /// \brief default constructor
   AugmentedCore() = default;
+
+  /// \brief constructor with number of lists
+  /// \param[in] nlist number of linked lists
+  /// \param[in] nnz total number of nonzeros
+  /// \param[in] reserve if \a true (default), then reserve spaces
+  explicit AugmentedCore(const size_type nlist, const size_type nnz = 0,
+                         bool reserve = true)
+      : _node_inds(),
+        _node_start(nlist, _NIL),
+        _node_next(),
+        _node_end(nlist, _NIL),
+        _val_pos() {
+    if (nnz) {
+      if (reserve) {
+        _node_inds.reserve(nnz);
+        _node_next.reserve(nnz);
+        _val_pos.reserve(nnz);
+      } else {
+        _node_inds.resize(nnz);
+        _node_next.resize(nnz);
+        _val_pos.resize(nnz);
+      }
+    }
+  }
+
+  /// \brief shallow copy of clone
+  /// \param[in] other another augmented data structure
+  /// \param[in] clone if \a false (default), do shallow copy
+  AugmentedCore(const this_type &other, bool clone = false)
+      : _node_inds(other._node_inds, clone),
+        _node_start(other._node_start, clone),
+        _node_next(other._node_next, clone),
+        _node_end(other._node_end, clone),
+        _val_pos(other._val_pos, clone) {}
+
+  // default stuffs
+  AugmentedCore(this_type &&) = default;
+  this_type &operator=(const this_type &&) = default;
+  this_type &operator=(this_type &&) = default;
 
   /// \brief check if a given node handle is NIL or not
   /// \return if \a true, then the node is nil
@@ -63,7 +103,7 @@ class AugmentedCore {
 
   /// \brief reserve spaces for nnz arrays
   /// \param[in] nnz total number of nonzeros
-  inline void _reserve(const size_type nnz) {
+  inline void reserve(const size_type nnz) {
     _node_inds.reserve(nnz);
     _node_next.reserve(nnz);
     _val_pos.reserve(nnz);
@@ -75,6 +115,9 @@ class AugmentedCore {
   inline void _begin_assemble_nodes(const size_type nlist) {
     _node_start.resize(nlist);
     _node_end.resize(nlist);
+    _node_inds.resize(0u);
+    _node_next.resize(0u);
+    _val_pos.resize(0u);
     std::fill_n(_node_start.begin(), nlist, _NIL);
     std::fill_n(_node_end.begin(), nlist, _NIL);
   }
@@ -188,6 +231,33 @@ class AugmentedCore {
     std::swap(_node_end[i], _node_end[k]);
   }
 
+  /// \brief build augmented cores based on compressed storages
+  /// \tparam OneBased if \a true, then Fortran index is assumed
+  /// \param[in] nlist number of linked lists
+  /// \param[in] ind_start starting indices
+  /// \param[in] indices array storing the indices
+  /// \warning Advanced usaged
+  template <bool OneBased>
+  inline void _build_aug(const size_type nlist, const iarray_type &ind_start,
+                         const iarray_type &indices) {
+    typedef typename iarray_type::const_iterator const_iterator;
+    psmilu_assert(ind_start.back() - ind_start.front() != indices.size(),
+                  "nnz size issue");
+    // reserve spaces
+    const size_type nnz = indices.size();
+    reserve(nnz);                  // reserve space
+    _begin_assemble_nodes(nlist);  // resize start/end to nlist
+    const size_type n = ind_start.size() - 1u;
+    for (size_type i = 0u; i < n; ++i) {
+      const size_type j = to_c_idx<size_type, OneBased>(ind_start[i]);
+      psmilu_assert(j < indices.size(), "%zd exceeds indices size", j);
+      const size_type lnnz  = ind_start[i + 1] - ind_start[i];
+      auto            first = indices.cbegin() + j, last = first + lnnz;
+      // push back nodes
+      _push_back_nodes<const_iterator, OneBased>(i, first, last);
+    }
+  }
+
  protected:
   iarray_type _node_inds;   ///< indices (values) of each node
   iarray_type _node_start;  ///< head nodes
@@ -213,11 +283,82 @@ class AugCRS : public CrsType,
   using _base::_NIL;
 
  public:
+  typedef AugCRS                           this_type;  ///< aug crs type
   typedef CrsType                          crs_type;   ///< crs
+  typedef typename crs_type::other_type    ccs_type;   ///< ccs
   typedef typename crs_type::size_type     size_type;  ///< size
   constexpr static bool                    ONE_BASED = crs_type::ONE_BASED;
   typedef typename _base::iarray_type      iarray_type;  ///< index array
   typedef typename iarray_type::value_type index_type;   ///< index type
+
+  /// \brief default constructor
+  AugCRS() = default;
+
+  /// \brief constructor for general matrix
+  /// \param[in] nrows number of rows
+  /// \param[in] ncols number of columns
+  /// \param[in] nnz ignored if zero (default)
+  /// \param[in] reserve if \a true (default), reserve spaces
+  AugCRS(const size_type nrows, const size_type ncols, const size_type nnz = 0u,
+         bool reserve = true)
+      : crs_type(nrows, ncols, nnz, reserve), _base(ncols, nnz, reserve) {}
+
+  /// \brief constructor to either clone or shallow copy another AugCRS
+  /// \param[in] other another augmented CRS
+  /// \param[in] clone if \a false (default), then do shallow copy
+  AugCRS(const this_type &other, bool clone = false)
+      : crs_type(other, clone), _base(other, clone) {}
+
+  // default stuffs
+  AugCRS(this_type &&) = default;
+  this_type &operator=(const this_type &) = default;
+  this_type &operator=(this_type &&) = default;
+
+  /// \brief build augmented data structure based on mature CRS matrices
+  /// \param[in] crs mature CRS system
+  /// \param[in] clone if \a false (default), \a crs will be shallow copied
+  /// \warning Advanced usage routine!
+  inline void build_aug(const crs_type &crs, bool clone = false) {
+    !clone ? crs_type::operator=(crs)
+           : crs_type::operator=(crs_type(crs, true));
+    psmilu_error_if(crs.status() == DATA_UNDEF, "undefined data input matrix");
+    psmilu_error_if(
+        crs.nrows() + 1u != crs.row_start().size(),
+        "row-start array size (%zd) does not agree with nrows (%zd)",
+        crs.row_start().size(), crs.nrows());
+    psmilu_error_if(crs.nnz() != crs.col_ind.size(), "inconsistent nnz");
+    _base::template _build_aug<ONE_BASED>(crs.ncols(), crs.row_start(),
+                                          crs.col_ind());
+  }
+
+  /// \brief build augmented data structure based on mature CRS
+  /// \param[in] crs temp CRS system
+  inline void build_aug(crs_type &&crs) {
+    crs_type::operator=(crs);
+    psmilu_error_if(crs.status() == DATA_UNDEF, "undefined data input matrix");
+    psmilu_error_if(
+        crs.nrows() + 1u != crs.row_start().size(),
+        "row-start array size (%zd) does not agree with nrows (%zd)",
+        crs.row_start().size(), crs.nrows());
+    psmilu_error_if(crs.nnz() != crs.col_ind.size(), "inconsistent nnz");
+    _base::template _build_aug<ONE_BASED>(crs.ncols(), crs.row_start(),
+                                          crs.col_ind());
+  }
+
+  /// \brief build augmented data structured based on mature CCS matrices
+  /// \param[in] ccs mature CCS system
+  /// \warning Advanced usage routine
+  inline void build_aug(const ccs_type &ccs) {
+    crs_type::operator=(crs_type(ccs));
+    psmilu_error_if(ccs.status() == DATA_UNDEF, "undefined data input matrix");
+    psmilu_error_if(
+        nrows() + 1u != crs_type::row_start().size(),
+        "row-start array size (%zd) does not agree with nrows (%zd)",
+        crs_type::row_start().size(), nrows());
+    psmilu_error_if(crs_type::nnz() != col_ind.size(), "inconsistent nnz");
+    _base::template _build_aug<ONE_BASED>(ncols(), crs_type::row_start(),
+                                          col_ind());
+  }
 
   /// \brief given column index, get the starting column handle
   /// \param[in] col column index
@@ -236,6 +377,13 @@ class AugCRS : public CrsType,
   /// \param[in] col_id column handle/ID
   inline index_type row_idx(const size_type col_id) const {
     return _base::_node_ind(col_id);
+  }
+
+  /// \brief reserve space for nnz arrays
+  /// \param[in] nnz total number of nonzeros
+  inline void reserve(const size_type nnz) {
+    crs_type::reserve(nnz);
+    _base::reserve(nnz);
   }
 
   using _base::is_nil;
@@ -398,12 +546,82 @@ class AugCCS : public CcsType,
   using _base::_NIL;
 
  public:
+  typedef AugCCS                           this_type;  ///< this
   typedef CcsType                          ccs_type;   ///< ccs type
+  typedef typename ccs_type::other_type    crs_type;   ///< crs
   typedef typename ccs_type::size_type     size_type;  ///< size
   constexpr static bool                    ONE_BASED = ccs_type::ONE_BASED;
   typedef typename _base::iarray_type      iarray_type;  ///< index array
   typedef typename iarray_type::value_type index_type;   ///< index type
 
+  /// \brief default constructor
+  AugCCS() = default;
+
+  /// \brief constructor for general matrices
+  /// \param[in] nrows number of rows
+  /// \param[in] ncols number of columns
+  /// \param[in] nnz ignored if zero (default)
+  /// \param[in] reserve if \a true (default), then reserve spaces
+  AugCCS(const size_type nrows, const size_type ncols, const size_type nnz = 0u,
+         bool reserve = true)
+      : ccs_type(nrows, ncols, nnz, reserve), _base(nrows, nnz, reserve) {}
+
+  /// \brief constructor to either clone or shallow copy another AugCCS
+  /// \param[in] other another augmented CCS
+  /// \param[in] clone if \a false (default), then do shallow copy
+  AugCCS(const this_type &other, bool clone = false)
+      : ccs_type(other, clone), _base(other, clone) {}
+
+  // default stuffs
+  AugCCS(this_type &&) = default;
+  this_type &operator=(const this_type &) = default;
+  this_type &operator=(this_type &&) = default;
+
+  /// \brief build augmented data structure based on mature CCS matrices
+  /// \param[in] ccs mature CCS system
+  /// \param[in] clone if \a false (default), \a crs will be shallow copied
+  /// \warning Advanced usage routine!
+  inline void build_aug(const ccs_type &ccs, bool clone = false) {
+    !clone ? ccs_type::operator=(ccs)
+           : ccs_type::operator=(ccs_type(ccs, true));
+    psmilu_error_if(ccs.status() == DATA_UNDEF, "undefined data input");
+    psmilu_error_if(
+        ccs.ncols() + 1u != ccs.col_start().size(),
+        "inconsistent sizes between ncols (%zd) and col-start size (%zd)",
+        ccs.ncols(), ccs.col_start().size());
+    psmilu_error_if(ccs.nnz() != ccs.row_ind().size(), "inconsistent nnz");
+    _base::template _build_aug<ONE_BASED>(ccs.nrows(), ccs.col_start(),
+                                          ccs.row_ind());
+  }
+
+  /// \brief build augmented data structure based on mature CCS
+  /// \param[in] ccs temp CCS system
+  inline void build_aug(crs_type &&ccs) {
+    ccs_type::operator=(ccs);
+    psmilu_error_if(ccs.status() == DATA_UNDEF, "undefined data input");
+    psmilu_error_if(
+        ccs.ncols() + 1u != ccs.col_start().size(),
+        "inconsistent sizes between ncols (%zd) and col-start size (%zd)",
+        ccs.ncols(), ccs.col_start().size());
+    psmilu_error_if(ccs.nnz() != ccs.row_ind().size(), "inconsistent nnz");
+    _base::template _build_aug<ONE_BASED>(ccs.nrows(), ccs.col_start(),
+                                          ccs.row_ind());
+  }
+
+  /// \brief build augmented data structured based on mature CRS matrices
+  /// \param[in] crs mature CRS system
+  /// \warning Advanced usage routine
+  inline void build_aug(const crs_type &crs) {
+    ccs_type::operator=(ccs_type(crs));
+    psmilu_error_if(crs.status() == DATA_UNDEF, "undefined data input");
+    psmilu_error_if(
+        ncols() + 1u != ccs_type::col_start().size(),
+        "inconsistent sizes between ncols (%zd) and col-start size (%zd)",
+        ncols(), ccs_type::col_start().size());
+    psmilu_error_if(ccs_type::nnz() != row_ind().size(), "inconsistent nnz");
+    _base::template _build_aug<ONE_BASED>(nrows(), ccs_type::col_start(),
+                                          row_ind());
+  }
   /// \brief given row index, get the starting row handle/ID
   /// \param[in] row row index
   /// \return first row handle in the augmented data structure
@@ -421,6 +639,13 @@ class AugCCS : public CcsType,
   /// \param[in] row_id row handle/ID
   inline index_type col_idx(const size_type row_id) const {
     return _base::_node_ind(row_id);
+  }
+
+  /// \brief reserve space for nnz arrays
+  /// \param[in] nnz total number of nonzeros
+  inline void reserve(const size_type nnz) {
+    ccs_type::reserve(nnz);
+    _base::reserve(nnz);
   }
 
   using _base::is_nil;
