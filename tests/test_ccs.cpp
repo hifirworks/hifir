@@ -15,40 +15,6 @@
 
 #include <cstdlib>
 #include <ctime>
-#include <vector>
-
-template <class T>
-using matrix = std::vector<std::vector<T>>;
-
-template <typename T>
-static matrix<T> create_mat(const int nrows, const int ncols) {
-  return matrix<T>(nrows, std::vector<T>(ncols, T()));
-}
-
-template <class Ccs>
-static matrix<typename Ccs::value_type> convert_ccs2dense(const Ccs &ccs) {
-  typedef typename Ccs::value_type v_t;
-  typedef typename Ccs::size_type  i_t;
-  typedef matrix<v_t>              mat_t;
-  const auto c_idx = [](const i_t i) -> i_t { return i - Ccs::ONE_BASED; };
-  mat_t      mat(create_mat<v_t>(ccs.nrows(), ccs.ncols()));
-  for (i_t j = 0u; j < ccs.ncols(); ++j) {
-    auto row_itr = ccs.row_ind_cbegin(j);
-    for (auto val_itr = ccs.val_cbegin(j), val_end = ccs.val_cend(j);
-         val_itr != val_end; ++row_itr, ++val_itr)
-      mat.at(c_idx(*row_itr))[j] = *val_itr;
-  }
-  return mat;
-}
-
-#define COMPARE_MATS(mat1, mat2)                                              \
-  do {                                                                        \
-    ASSERT_EQ(mat1.size(), mat2.size());                                      \
-    ASSERT_EQ(mat1.front().size(), mat2.front().size());                      \
-    const auto n = mat1.size(), m = mat1.front().size();                      \
-    for (decltype(mat1.size()) i = 0u; i < n; ++i)                            \
-      for (decltype(i) j = 0u; j < m; ++j) ASSERT_EQ(mat1[i][j], mat2[i][j]); \
-  } while (false)
 
 #define get_a_rand (std::rand() % 100000) / 100000.0
 
@@ -96,7 +62,7 @@ TEST(CCS_api, test_core_c) {
     ASSERT_EQ(ccs1.nnz_in_col(i), nnz_list[i].size());
   }
   ccs1.end_assemble_cols();
-  const auto mat2 = convert_ccs2dense(ccs1);
+  const auto mat2 = convert2dense(ccs1);
   COMPARE_MATS(mat_ref, mat2);
   const auto return_ccs1 = [&]() -> ccs_t { return ccs1; };
   auto       ccs2        = return_ccs1();
@@ -109,7 +75,7 @@ TEST(CCS_api, test_core_c) {
   std::vector<double> vals(ccs1.vals().cbegin(), ccs1.vals().cend());
   ccs_t ccs3(nrows, ncols, colptr.data(), rowind.data(), vals.data(), true);
   ASSERT_EQ(ccs3.status(), DATA_WRAP);
-  const auto mat3 = convert_ccs2dense(ccs3);
+  const auto mat3 = convert2dense(ccs3);
   COMPARE_MATS(mat2, mat3);
 }
 
@@ -155,7 +121,7 @@ TEST(CCS_api, test_core_fortran) {
     ASSERT_EQ(ccs1.nnz_in_col(i), nnz_list[i].size());
   }
   ccs1.end_assemble_cols();
-  const auto mat2 = convert_ccs2dense(ccs1);
+  const auto mat2 = convert2dense(ccs1);
   COMPARE_MATS(mat_ref, mat2);
   const auto return_ccs1 = [&]() -> ccs_t { return ccs1; };
   auto       ccs2        = return_ccs1();
@@ -168,6 +134,6 @@ TEST(CCS_api, test_core_fortran) {
   std::vector<double> vals(ccs1.vals().cbegin(), ccs1.vals().cend());
   ccs_t ccs3(nrows, ncols, colptr.data(), rowind.data(), vals.data(), true);
   ASSERT_EQ(ccs3.status(), DATA_WRAP);
-  const auto mat3 = convert_ccs2dense(ccs3);
+  const auto mat3 = convert2dense(ccs3);
   COMPARE_MATS(mat2, mat3);
 }
