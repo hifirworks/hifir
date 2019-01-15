@@ -68,7 +68,7 @@ class CompressedStorage {
   /// \param[in] nnz total number of nonzeros, default is 0
   /// \param[in] reserve if \a true (default), reserve space instead of resize
   /// \sa Array::resize, Array::reserve
-  CompressedStorage(const size_type n, const size_type nnz = 0u,
+  explicit CompressedStorage(const size_type n, const size_type nnz = 0u,
                     bool reserve = true)
       : _ind_start(n + 1) {
     if (nnz) {
