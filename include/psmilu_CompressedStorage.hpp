@@ -259,7 +259,7 @@ template <class ValueArray, class IndexArray, bool OneBased>
 inline void convert_storage(const IndexArray &i_ind_start,
                             const IndexArray &i_indices,
                             const ValueArray &i_vals, IndexArray &o_ind_start,
-                            IndexArray &o_indices, IndexArray &o_vals) {
+                            IndexArray &o_indices, ValueArray &o_vals) {
   typedef typename ValueArray::size_type  size_type;
   typedef typename IndexArray::value_type index_type;
   constexpr static size_type base = static_cast<size_type>(OneBased);
@@ -267,8 +267,8 @@ inline void convert_storage(const IndexArray &i_ind_start,
   // o_ind_start is allocated and uniformly assigned to be OneBased
   // both o_{indices,vals} are uninitialized arrays with size of input nnz
   psmilu_error_if(i_indices.size() != i_ind_start.back() - base,
-                  "nnz %zd does not match that in start array",
-                  i_indices.size());
+                  "nnz %zd does not match that in start array %zd",
+                  i_indices.size(), i_ind_start.back() - base);
   psmilu_error_if(i_indices.size() != i_vals.size(),
                   "nnz sizes (%zd,%zd) do not match between indices and vals",
                   i_indices.size(), i_vals.size());
@@ -281,7 +281,6 @@ inline void convert_storage(const IndexArray &i_ind_start,
 
   const size_type o_n = o_ind_start.size() - 1u;
   const size_type i_n = i_ind_start.size() - 1u;
-  const size_type nnz = i_indices.size();
 
   // step 1, counts nnz per secondary direction, O(nnz)
   for (const auto &p : i_indices) {
