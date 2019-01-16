@@ -38,11 +38,11 @@ TEST(CCS_api, test_core_c) {
   std::vector<std::vector<int>> nnz_list(ncols);
   std::vector<bool>             row_tags(nrows, false);
   for (s_t i = 0u; i < ncols; ++i) {
-    const int nnz    = std::rand() % nrows;
+    const int nnz    = i_rand() % nrows;
     int       counts = 0;
     for (;;) {
       if (counts == nnz) break;
-      const int idx = std::rand() % nrows;
+      const int idx = i_rand() % nrows;
       if (row_tags[idx]) continue;
       ++counts;
       nnz_list[i].push_back(idx);
@@ -97,11 +97,11 @@ TEST(CCS_api, test_core_fortran) {
   std::vector<std::vector<int>> nnz_list(ncols);
   std::vector<bool>             row_tags(nrows, false);
   for (s_t i = 0u; i < ncols; ++i) {
-    const int nnz    = std::rand() % nrows;
+    const int nnz    = i_rand() % nrows;
     int       counts = 0;
     for (;;) {
       if (counts == nnz) break;
-      const int idx = std::rand() % nrows;
+      const int idx = i_rand() % nrows;
       if (row_tags[idx]) continue;
       ++counts;
       nnz_list[i].push_back(idx + 1);
