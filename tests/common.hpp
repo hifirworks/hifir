@@ -75,3 +75,21 @@ convert2dense(const CS &cs) {
     for (decltype(mat1.size()) i = 0u; i < n; ++i)                            \
       for (decltype(i) j = 0u; j < m; ++j) ASSERT_EQ(mat1[i][j], mat2[i][j]); \
   } while (false)
+
+template <class T>
+static void interchange_dense_rows(matrix<T> &mat, const int i, const int j) {
+  mat.at(i).swap(mat.at(j));
+}
+
+template <class T>
+static void interchange_dense_cols(matrix<T> &mat, const int i, const int j) {
+#define s_w_a_p(__x, __y) \
+  temp = __x;             \
+  __x  = __y;             \
+  __y  = temp
+  T temp;
+  for (int k = 0; k < mat.size(); ++k) {
+    s_w_a_p(mat[k].at(i), mat[k].at(j));
+  }
+#undef s_w_a_p
+}
