@@ -6,6 +6,9 @@
 
 #pragma once
 
+#include <ctime>
+#include <numeric>
+#include <random>
 #include <type_traits>
 #include <vector>
 
@@ -93,3 +96,25 @@ static void interchange_dense_cols(matrix<T> &mat, const int i, const int j) {
   }
 #undef s_w_a_p
 }
+
+template <typename T>
+class RandGen {
+  constexpr static bool _IS_INT = std::is_integral<T>::value;
+  typedef typename std::conditional<
+      _IS_INT, typename std::uniform_int_distribution<T>,
+      typename std::uniform_real_distribution<T>>::type _dist_t;
+  mutable std::mt19937_64                               _eng;
+  mutable _dist_t                                       _d;
+
+ public:
+  typedef T value_type;
+  RandGen(T low = T(), T hi = _IS_INT ? std::numeric_limits<T>::max() : (T)1)
+      : _eng(std::time(0)), _d(low, hi) {}
+  RandGen(const RandGen &) = delete;
+  RandGen &operator=(const RandGen &) = delete;
+
+  inline T operator()() const { return _d(_eng); }
+};
+
+typedef RandGen<int>    RandIntGen;
+typedef RandGen<double> RandRealGen;

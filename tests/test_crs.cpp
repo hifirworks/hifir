@@ -13,12 +13,10 @@
 
 #include <gtest/gtest.h>
 
-#include <cstdlib>
-#include <ctime>
-
-#define get_a_rand (std::rand() % 100000) / 100000.0
-
 using namespace psmilu;
+
+static const RandIntGen  i_rand(0, 50);
+static const RandRealGen r_rand;
 
 TEST(CRS_api, test_core_c) {
   typedef CRS<double, int> crs_t;
@@ -29,10 +27,10 @@ TEST(CRS_api, test_core_c) {
   crs1.resize(10, 20);
   ASSERT_EQ(crs1.nrows(), 10u);
   ASSERT_EQ(crs1.ncols(), 20u);
-  std::srand(std::time(0));
-  s_t nrows(std::rand() % 50), ncols(std::rand() % 50);
+  s_t nrows(i_rand()), ncols(i_rand());
   if (nrows < 5u) nrows = 5u;
   if (ncols < 5u) ncols = 5u;
+  std::cout << "c-test, (nrows,ncols)=(" << nrows << ',' << ncols << ")\n";
   crs1.resize(nrows, ncols);
 
   auto                          mat_ref = create_mat<double>(nrows, ncols);
@@ -54,7 +52,7 @@ TEST(CRS_api, test_core_c) {
   // construct sparse matrix
   crs1.begin_assemble_rows();
   for (s_t i = 0u; i < nrows; ++i) {
-    for (const auto col : nnz_list[i]) mat_ref[i][col] = get_a_rand;
+    for (const auto col : nnz_list[i]) mat_ref[i][col] = r_rand();
     crs1.push_back_row(i, nnz_list[i].cbegin(), nnz_list[i].cend(), mat_ref[i]);
     ASSERT_EQ(crs1.nnz_in_row(i), nnz_list[i].size());
   }
@@ -87,11 +85,11 @@ TEST(CRS_api, test_core_fortran) {
   crs1.resize(10, 20);
   ASSERT_EQ(crs1.nrows(), 10u);
   ASSERT_EQ(crs1.ncols(), 20u);
-  std::srand(std::time(0));
-  s_t nrows(std::rand() % 50), ncols(std::rand() % 50);
+  s_t nrows(i_rand()), ncols(i_rand());
   if (nrows < 5u) nrows = 5u;
   if (ncols < 5u) ncols = 5u;
   crs1.resize(nrows, ncols);
+  std::cout << "f-test, (nrows,ncols)=(" << nrows << ',' << ncols << ")\n";
 
   auto                          mat_ref = create_mat<double>(nrows, ncols);
   std::vector<std::vector<int>> nnz_list(nrows);
@@ -112,8 +110,7 @@ TEST(CRS_api, test_core_fortran) {
   // construct sparse matrix
   crs1.begin_assemble_rows();
   for (s_t i = 0u; i < nrows; ++i) {
-    for (const auto col : nnz_list[i])
-      mat_ref[i][col - 1] = get_a_rand;  // to c
+    for (const auto col : nnz_list[i]) mat_ref[i][col - 1] = r_rand();
     crs1.push_back_row(i, nnz_list[i].cbegin(), nnz_list[i].cend(), mat_ref[i]);
     ASSERT_EQ(crs1.nnz_in_row(i), nnz_list[i].size());
   }
