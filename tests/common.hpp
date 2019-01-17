@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <ctime>
 #include <numeric>
 #include <random>
@@ -95,6 +96,19 @@ static void interchange_dense_cols(matrix<T> &mat, const int i, const int j) {
     s_w_a_p(mat[k].at(i), mat[k].at(j));
   }
 #undef s_w_a_p
+}
+
+template <class T>
+static void load_dense_col(const int col, const matrix<T> &mat,
+                           std::vector<T> &cv) {
+  for (auto i = 0u; i < mat.size(); ++i) cv[i] = mat[i].at(col);
+}
+
+template <class T>
+static void load_dense_row(const int row, const matrix<T> &mat,
+                           std::vector<T> &rv) {
+  const auto &temp = mat.at(row);
+  rv               = temp;
 }
 
 template <typename T>
