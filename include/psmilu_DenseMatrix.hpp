@@ -5,7 +5,7 @@
 //@HEADER
 
 /// \file psmilu_DenseMatrix.hpp
-/// \brief Last level dense storage
+/// \brief Dense storage for the last level in MILU
 /// \authors Qiao,
 
 #ifndef _PSMILU_DENSEMATRIX_HPP
@@ -18,8 +18,8 @@
 #include "psmilu_Array.hpp"
 
 namespace psmilu {
-
 namespace internal {
+
 /// \class StrideIterator
 /// \tparam T value type
 /// \brief Row-wise iterator
@@ -41,10 +41,100 @@ class StrideIterator {
 
   //@}
 
+  /// \brief default constructor
+  StrideIterator() : _ptr(nullptr), _stride(0) {}
+
+  /// \brief constructor with pointer
+  /// \param[in] ptr data pointer
+  /// \param[in] stride jump size (optional)
+  explicit StrideIterator(pointer ptr, const difference_type stride = 1)
+      : _ptr(ptr), _stride(stride) {}
+
+  /// \brief constructor with another iterator
+  /// \tparam V another value type
+  /// \param[in] other another iterator
+  template <typename V>
+  explicit StrideIterator(const StrideIterator<V>& other)
+      : _ptr(&(*other)), _stride(other.stride()) {}
+
+  StrideIterator(const StrideIterator&) = default;
+  StrideIterator& operator=(const StrideIterator&) = default;
+
+  /// \brief assign to another iterator
+  /// \tparam V another value type
+  /// \param[in] rhs right-hand side iterator
+  template <typename V>
+  StrideIterator& operator=(const StrideIterator<V>& rhs) {
+    _ptr    = &(*rhs);
+    _stride = rhs.stride();
+    return *this;
+  }
+
+  // iterator interfaces
+  inline pointer         operator->() const { return _ptr; }
+  inline reference       operator*() const { return *_ptr; }
+  inline StrideIterator& operator++() {
+    _ptr += _stride;
+    return *this;
+  }
+  inline StrideIterator& operator--() {
+    _ptr -= _stride;
+    return *this;
+  }
+  inline StrideIterator operator++(int) {
+    StrideIterator tmp(*this);
+    ++(*this);
+    return tmp;
+  }
+  inline StrideIterator operator--(int) {
+    StrideIterator tmp(*this);
+    --(*this);
+    return tmp;
+  }
+
+  // mostly for internal use
+  inline difference_type stride() const { return _stride; }
+
+  /// \brief get reference
+  /// \param[in] i i-th index
+  /// \note stride is applied here
+  inline reference operator[](const difference_type i) const {
+    return _ptr[i * _stride];
+  }
+
+  /// \brief compare equal
+  /// \param[in] rhs right-hand side iterator
+  inline bool operator==(const StrideIterator& rhs) const {
+    return _ptr == rhs._ptr;
+  }
+
+  /// \brief compare not equal
+  /// \param[in] rhs right-hand side iterator
+  inline bool operator!=(const StrideIterator& rhs) const {
+    return !(*this == rhs);
+  }
+
+  /// \brief compare equal with a foreign iterator
+  /// \tparam V another value type
+  /// \param rhs right-hand side iterator
+  template <typename V>
+  inline bool operator==(const StrideIterator<V>& rhs) const {
+    return _ptr == &(*rhs);
+  }
+
+  /// \brief compare not equal with a foreign iterator
+  /// \tparam V another value type
+  /// \param rhs right-hand side iterator
+  template <typename V>
+  inline bool operator!=(const StrideIterator<V>& rhs) const {
+    return !(*this == rhs);
+  }
+
  private:
   pointer         _ptr;     ///< pointer
   difference_type _stride;  ///< stride size
 };
+
 }  // namespace internal
 
 /// \class DenseMatrix
@@ -71,6 +161,152 @@ class DenseMatrix {
   typedef internal::StrideIterator<value_type> row_iterator;  ///< row interator
   typedef internal::StrideIterator<const value_type> const_row_iterator;
   ///< constant row iterator
+  typedef DenseMatrix this_type;  ///< handy type wrapper
+
+  /// \brief default constructor
+  DenseMatrix() : _nrows(0u), _ncols(0u), _data() {}
+
+  /// \brief constructor for own data
+  /// \param[in] n1 number of rows
+  /// \param[in] n2 number of columns, if == 0, then a square matrix is created
+  explicit DenseMatrix(const size_type n1, const size_type n2 = 0u)
+      : _nrows(n1), _ncols(n2 ? n2 : n1), _data(_nrows * _ncols) {}
+
+  /// \brief constructor for own data with init value
+  /// \param[in] n1 number of rows
+  /// \param[in] n2 number of columns
+  /// \param[in] v init value
+  DenseMatrix(const size_type n1, const size_type n2, const value_type v)
+      : _nrows(n1), _ncols(n2), _data(n1 * n2, v) {}
+
+  /// \brief constructor for external data
+  /// \param[in] n1 number of rows
+  /// \param[in] n2 number of columns
+  /// \param[in] data external data
+  /// \param[in] wrap if \a false (default), deepcopy is performed
+  DenseMatrix(const size_type n1, const size_type n2, pointer data,
+              bool wrap = false)
+      : _nrows(n1), _ncols(n2), _data(n1 * n2, data, wrap) {}
+
+  /// \brief shallow or deepcopy constructor
+  /// \param[in] other another matrix
+  /// \param[in] clone if \a false (default), shallow copy is used
+  DenseMatrix(const this_type& other, bool clone = false)
+      : _nrows(other._nrows), _ncols(other._ncols), _data(other._data, clone) {}
+
+  // default stuffs
+  this_type& operator=(const this_type&) = default;
+  DenseMatrix(this_type&&)               = default;
+  this_type& operator=(this_type&&) = default;
+
+  // utilities
+  inline unsigned char     status() const { return _data.status(); }
+  inline size_type         size() const { return _data.size(); }
+  inline size_type         nrows() const { return _nrows; }
+  inline size_type         ncols() const { return _ncols; }
+  inline array_type&       array() { return _data; }
+  inline const array_type& array() const { return _data; }
+  inline pointer           data() { return _data.data(); }
+  inline const_pointer     data() const { return _data.data(); }
+
+  /// \brief resize a matrix
+  /// \param[in] n1 number of rows
+  /// \param[in] n2 number of columns
+  /// \warning The value positions may be changed!
+  inline void resize(const size_type n1, const size_type n2) {
+    if (n1 == _nrows && n2 == _ncols) return;
+    _nrows = n1;
+    _ncols = n2;
+    _data.resize(n1 * n2);
+  }
+
+  // accessing
+
+  /// \brief 1D accessing
+  /// \param[in] i i-th index in _data
+  inline reference operator[](const size_type i) { return _data[i]; }
+
+  /// \brief 1D accessing, constant version
+  /// \param[in] i i-th index in _data
+  inline const_reference operator[](const size_type i) const {
+    return _data[i];
+  }
+
+  /// \brief 2D accessing
+  /// \param[in] i i-th row
+  /// \param[in] j j-th column
+  /// \note Be aware \a i should go faster than \a j does
+  inline reference operator()(const size_type i, const size_type j) {
+    psmilu_assert(i < _nrows, "%zd exceeds row bound %zd", i, _nrows);
+    psmilu_assert(j < _ncols, "%zd exceeds column bound %zd", j, _ncols);
+    return _data[i + j * _nrows];
+  }
+
+  /// \brief 2D accessing, constant version
+  /// \param[in] i i-th row
+  /// \param[in] j j-th column
+  /// \note Be aware \a i should go faster than \a j does
+  inline const_reference operator()(const size_type i,
+                                    const size_type j) const {
+    psmilu_assert(i < _nrows, "%zd exceeds row bound %zd", i, _nrows);
+    psmilu_assert(j < _ncols, "%zd exceeds column bound %zd", j, _ncols);
+    return _data[i + j * _nrows];
+  }
+
+  // column-wise iterator, most efficient accessing method
+
+  inline col_iterator col_begin(const size_type col) {
+    psmilu_assert(col < _ncols, "%zd exceeds column bound %zd", col, _ncols);
+    return _data.begin() + col * _nrows;
+  }
+  inline col_iterator col_end(const size_type col) {
+    psmilu_assert(col < _ncols, "%zd exceeds column bound %zd", col, _ncols);
+    return _data.begin() + (col + 1) * _ncols;
+  }
+  inline const_col_iterator col_begin(const size_type col) const {
+    psmilu_assert(col < _ncols, "%zd exceeds column bound %zd", col, _ncols);
+    return _data.cbegin() + col * _nrows;
+  }
+  inline const_col_iterator col_end(const size_type col) const {
+    psmilu_assert(col < _ncols, "%zd exceeds column bound %zd", col, _ncols);
+    return _data.cbegin() + col * _nrows;
+  }
+  inline const_col_iterator col_cbegin(const size_type col) const {
+    return col_begin(col);
+  }
+  inline const_col_iterator col_cend(const size_type col) const {
+    return col_end(col);
+  }
+
+  // row-wise iterator, not efficient!
+
+  inline row_iterator row_begin(const size_type row) {
+    psmilu_assert(row < _nrows, "%zd exceeds row bound %zd", row, _nrows);
+    return row_iterator(data() + row, _ncols);
+  }
+  inline row_iterator row_end(const size_type row) {
+    psmilu_assert(row < _nrows, "%zd exceeds row bound %zd", row, _nrows);
+    return row_iterator(_data.end() + row, _ncols);
+  }
+  inline const_row_iterator row_begin(const size_type row) const {
+    psmilu_assert(row < _nrows, "%zd exceeds row bound %zd", row, _nrows);
+    return const_row_iterator(data() + row, _ncols);
+  }
+  inline const_row_iterator row_end(const size_type row) const {
+    psmilu_assert(row < _nrows, "%zd exceeds row bound %zd", row, _nrows);
+    return const_row_iterator(_data.cend() + row, _ncols);
+  }
+  inline const_row_iterator row_cbegin(const size_type row) const {
+    return row_begin(row);
+  }
+  inline const_row_iterator row_cend(const size_type row) const {
+    return row_end(row);
+  }
+
+ protected:
+  size_type  _nrows;  ///< number of rows
+  size_type  _ncols;  ///< number of columns
+  array_type _data;   ///< data attribute
 };
 
 }  // namespace psmilu
