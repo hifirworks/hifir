@@ -214,17 +214,17 @@ class AugmentedCore {
   /// Firstly, rotate the inverse mapping, then assign the value positions
   /// accordingly.
   inline void _rotate_val_pos_left(const size_type n, const size_type src) {
-    psmilu_assert(src < _val_pos_inv.size(), "%zd exceeds val_pos size %zd",
-                  src, _val_pos.size());
+    psmilu_assert(src < _val_pos_inv.size(), "%zd exceeds val_pos_inv size %zd",
+                  src, _val_pos_inv.size());
     psmilu_assert(src + n <= _val_pos_inv.size(), "%zd exceeds the length",
                   src + n);
     rotate_left(n, src, _val_pos_inv);
     // then assign new positions
     auto itr = _val_pos_inv.cbegin() + src;
     for (size_type i = 0u; i < n; ++i, ++itr) {
-      psmilu_assert(*itr < _val_pos.size(),
+      psmilu_assert((size_type)*itr < _val_pos.size(),
                     "inv-val-pos index %zd exceeds value position length",
-                    *itr);
+                    (size_type)*itr);
       _val_pos[*itr] = i + src;
     }
   }
@@ -238,17 +238,16 @@ class AugmentedCore {
   /// Firstly, rotate the inverse mapping, then assign the value positions
   /// accordingly.
   inline void _rotate_val_pos_right(const size_type n, const size_type src) {
-    psmilu_assert(src < _val_pos.size(), "%zd exceeds val_pos size %zd", src,
-                  _val_pos.size());
-    psmilu_assert(src + 1u - n >= 0u, "invalid right rotation");
-    rotate_right(n, src, _val_pos);
-    // then assign new positions
+    psmilu_assert(src < _val_pos_inv.size(), "%zd exceeds val_pos_inv size %zd",
+                  src, _val_pos_inv.size());
     const size_type start = src + 1u - n;  // plus one goes first!
-    auto            itr   = _val_pos_inv.cbegin() + start;
+    rotate_right(n, src, _val_pos_inv);
+    // then assign new positions
+    auto itr = _val_pos_inv.cbegin() + start;
     for (size_type i = 0u; i < n; ++i, ++itr) {
-      psmilu_assert(*itr < _val_pos.size(),
+      psmilu_assert((size_type)*itr < _val_pos.size(),
                     "inv-val-pos index %zd exceeds value position length",
-                    *itr);
+                    (size_type)*itr);
       _val_pos[*itr] = i + start;
     }
   }
@@ -484,20 +483,20 @@ class AugCRS : public CrsType,
         psmilu_assert(k_col_should_not_exit, "see prefix, failed with row %zd",
                       (size_type)i_row);
         // now, assign new value to i-col
-        *i_col_itr_pos         = k_col;
-        const bool do_left_rot = i_col_itr_pos < srch_info.second;
-        size_type  n           = std::abs(i_col_itr_pos - srch_info.second);
+        *i_col_itr_pos              = k_col;
+        const bool      do_left_rot = i_col_itr_pos < srch_info.second;
+        const size_type n = std::abs(i_col_itr_pos - srch_info.second);
         // since we use lower bound, it may happen that n == 0
         if (n) {
-          if (srch_info.second != i_col_itr_last) ++n;
           if (do_left_rot) {
             _base::_rotate_val_pos_left(n, i_vp);  // O(n)
             rotate_left(n, i_vp, col_ind());       // O(n)
             rotate_left(n, i_vp, vals());          // O(n)
           } else {
-            _base::_rotate_val_pos_right(n, i_vp);  // O(n)
-            rotate_right(n, i_vp, col_ind());       // O(n)
-            rotate_right(n, i_vp, vals());          // O(n)
+            // NOTE that +1 due to using lower_bound
+            _base::_rotate_val_pos_right(n + 1, i_vp);  // O(n)
+            rotate_right(n + 1, i_vp, col_ind());       // O(n)
+            rotate_right(n + 1, i_vp, vals());          // O(n)
           }
         }
         // the indices should still be sorted
@@ -511,7 +510,7 @@ class AugCRS : public CrsType,
       } else {
         // rotate k_row to i_row
         auto k_col_itr_first = crs_type::col_ind_begin(k_row),
-             k_col_itr_last  = crs_type::col_ind_begin(k_row),
+             k_col_itr_last  = crs_type::col_ind_end(k_row),
              k_col_itr_pos   = crs_type::col_ind().begin() + k_vp;
         psmilu_assert(std::is_sorted(k_col_itr_first, k_col_itr_last),
                       "%zd is not a sorted row", (size_type)k_row);
@@ -522,24 +521,24 @@ class AugCRS : public CrsType,
         psmilu_assert(i_col_should_not_exit, "see prefix, failed with row %zd",
                       (size_type)k_row);
         // assign new column index to k-col
-        *k_col_itr_pos         = i_col;
-        const bool do_left_rot = k_col_itr_pos < srch_info.second;
-        size_type  n           = std::abs(k_col_itr_pos - srch_info.second);
+        *k_col_itr_pos              = i_col;
+        const bool      do_left_rot = k_col_itr_pos < srch_info.second;
+        const size_type n = std::abs(k_col_itr_pos - srch_info.second);
         if (n) {
-          if (srch_info.second != k_col_itr_last) ++n;
           if (do_left_rot) {
             _base::_rotate_val_pos_left(n, k_vp);  // O(n)
             rotate_left(n, k_vp, col_ind());       // O(n)
             rotate_left(n, k_vp, vals());          // O(n)
           } else {
-            _base::_rotate_val_pos_right(n, k_vp);  // O(n)
-            rotate_right(n, k_vp, col_ind());       // O(n)
-            rotate_right(n, k_vp, vals());          // O(n)
+            // NOTE that +1 due to using lower_bound
+            _base::_rotate_val_pos_right(n + 1, k_vp);  // O(n)
+            rotate_right(n + 1, k_vp, col_ind());       // O(n)
+            rotate_right(n + 1, k_vp, vals());          // O(n)
           }
         }
         // after rotation, the indices should be sorted as well
         psmilu_debug_code(k_col_itr_first = crs_type::col_ind_begin(k_row);
-                          k_col_itr_last  = crs_type::col_ind_begin(k_row));
+                          k_col_itr_last  = crs_type::col_ind_end(k_row));
         psmilu_assert(std::is_sorted(k_col_itr_first, k_col_itr_last),
                       "%zd is not a sorted row (after rotation)",
                       (size_type)k_row);
@@ -757,19 +756,18 @@ class AugCCS : public CcsType,
         psmilu_assert(k_row_should_not_exit,
                       "see prefix, failed with column %zd", (size_type)i_col);
         // assign new row index to i-row
-        *i_row_itr_pos         = k_row;
-        const bool do_left_rot = i_row_itr_pos < srch_info.second;
-        size_type  n           = std::abs(i_row_itr_pos - srch_info.second);
+        *i_row_itr_pos              = k_row;
+        const bool      do_left_rot = i_row_itr_pos < srch_info.second;
+        const size_type n = std::abs(i_row_itr_pos - srch_info.second);
         if (n) {
-          if (srch_info.second != i_row_itr_last) ++n;
           if (do_left_rot) {
             _base::_rotate_val_pos_left(n, i_vp);
             rotate_left(n, i_vp, row_ind());
             rotate_left(n, i_vp, vals());
           } else {
-            _base::_rotate_val_pos_right(n, i_vp);
-            rotate_right(n, i_vp, row_ind());
-            rotate_right(n, i_vp, vals());
+            _base::_rotate_val_pos_right(n + 1, i_vp);
+            rotate_right(n + 1, i_vp, row_ind());
+            rotate_right(n + 1, i_vp, vals());
           }
         }
         // NOTE that the indices should maintain sorted after rotation
@@ -794,19 +792,18 @@ class AugCCS : public CcsType,
         psmilu_assert(i_row_should_not_exit,
                       "see prefix, failed with column %zd", (size_type)k_col);
         // assign new row index to k-row
-        *k_row_itr_pos         = i_row;
-        const bool do_left_rot = k_row_itr_pos < srch_info.second;
-        size_type  n           = std::abs(k_row_itr_pos - srch_info.second);
+        *k_row_itr_pos              = i_row;
+        const bool      do_left_rot = k_row_itr_pos < srch_info.second;
+        const size_type n = std::abs(k_row_itr_pos - srch_info.second);
         if (n) {
-          if (srch_info.second != k_row_itr_last) ++n;
           if (do_left_rot) {
             _base::_rotate_val_pos_left(n, k_vp);
             rotate_left(n, k_vp, row_ind());
             rotate_left(n, k_vp, vals());
           } else {
-            _base::_rotate_val_pos_right(n, k_vp);
-            rotate_right(n, k_vp, row_ind());
-            rotate_right(n, k_vp, vals());
+            _base::_rotate_val_pos_right(n + 1, k_vp);
+            rotate_right(n + 1, k_vp, row_ind());
+            rotate_right(n + 1, k_vp, vals());
           }
         }
         // NOTE that the indices should maintain sorted after rotation
