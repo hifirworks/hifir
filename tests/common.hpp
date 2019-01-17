@@ -92,7 +92,7 @@ static void interchange_dense_cols(matrix<T> &mat, const int i, const int j) {
   __x  = __y;             \
   __y  = temp
   T temp;
-  for (int k = 0; k < mat.size(); ++k) {
+  for (auto k = 0u; k < mat.size(); ++k) {
     s_w_a_p(mat[k].at(i), mat[k].at(j));
   }
 #undef s_w_a_p
