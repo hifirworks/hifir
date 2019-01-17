@@ -111,6 +111,35 @@ static void load_dense_row(const int row, const matrix<T> &mat,
   rv               = temp;
 }
 
+template <class AugCrs>
+static void load_aug_crs_col(
+    const int col, const AugCrs &aug_crs,
+    std::vector<typename AugCrs::crs_type::value_type> &cv) {
+  typedef typename AugCrs::crs_type::value_type v_t;
+  // fill the buffer
+  std::fill(cv.begin(), cv.end(), v_t());
+  auto id = aug_crs.start_col_id(col);
+  for (;;) {
+    if (aug_crs.is_nil(id)) break;
+    cv.at(aug_crs.row_idx(id)) = aug_crs.val_from_col_id(id);
+    id                         = aug_crs.next_col_id(id);
+  }
+}
+
+template <class AugCcs>
+static void load_aug_ccs_row(const int row, const AugCcs &aug_ccs,
+                             std::vector<typename AugCcs::value_type> &rv) {
+  typedef typename AugCcs::value_type v_t;
+  // fill the buffer
+  std::fill(rv.begin(), rv.end(), v_t());
+  auto id = aug_ccs.start_row_id(row);
+  for (;;) {
+    if (aug_ccs.is_nil(id)) break;
+    rv.at(aug_ccs.col_idx(id)) = aug_ccs.val_from_row_id(id);
+    id                         = aug_ccs.next_row_id(id);
+  }
+}
+
 template <typename T>
 class RandGen {
   constexpr static bool _IS_INT = std::is_integral<T>::value;
