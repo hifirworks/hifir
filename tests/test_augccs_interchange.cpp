@@ -87,11 +87,11 @@ TEST(AUG_CCS_SWAP, c) {
     interchange_dense_rows(mat1, k, m);
     load_dense_row(k, mat1, buf1);       // load dense
     load_aug_ccs_row(k, aug_ccs, buf2);  // load sparse
-    for (int j = 0; j < i; ++j)
+    for (int j = 0; j < ncols; ++j)
       ASSERT_EQ(buf1[j], buf2[j]) << "row " << k << " did not match!\n";
     load_dense_row(m, mat1, buf1);       // load dense
     load_aug_ccs_row(m, aug_ccs, buf2);  // load sparse
-    for (int j = 0; j < i; ++j)
+    for (int j = 0; j < ncols; ++j)
       ASSERT_EQ(buf1[j], buf2[j]) << "row " << m << " did not match!\n";
   }
 }
@@ -158,11 +158,11 @@ TEST(AUG_CCS_SWAP, fortran) {
     interchange_dense_rows(mat1, k, m);
     load_dense_row(k, mat1, buf1);       // load dense
     load_aug_ccs_row(k, aug_ccs, buf2);  // load sparse
-    for (int j = 0; j < i; ++j)
+    for (int j = 0; j < ncols; ++j)
       ASSERT_EQ(buf1[j], buf2[j]) << "row " << k << " did not match!\n";
     load_dense_row(m, mat1, buf1);       // load dense
     load_aug_ccs_row(m, aug_ccs, buf2);  // load sparse
-    for (int j = 0; j < i; ++j)
+    for (int j = 0; j < ncols; ++j)
       ASSERT_EQ(buf1[j], buf2[j]) << "row " << m << " did not match!\n";
   }
 }
