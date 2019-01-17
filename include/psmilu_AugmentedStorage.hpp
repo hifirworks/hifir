@@ -40,7 +40,7 @@ class AugmentedCore {
   typedef AugmentedCore                   this_type;    ///< this
   typedef typename iarray_type::iterator  iterator;     ///< iterator type
 
- private:
+ protected:
   constexpr static index_type _NIL = std::numeric_limits<index_type>::max();
 
  public:
@@ -63,10 +63,12 @@ class AugmentedCore {
         _node_inds.reserve(nnz);
         _node_next.reserve(nnz);
         _val_pos.reserve(nnz);
+        _val_pos_inv.reserve(nnz);
       } else {
         _node_inds.resize(nnz);
         _node_next.resize(nnz);
         _val_pos.resize(nnz);
+        _val_pos_inv.reserve(nnz);
       }
     }
   }
@@ -79,11 +81,12 @@ class AugmentedCore {
         _node_start(other._node_start, clone),
         _node_next(other._node_next, clone),
         _node_end(other._node_end, clone),
-        _val_pos(other._val_pos, clone) {}
+        _val_pos(other._val_pos, clone),
+        _val_pos_inv(other._val_pos_inv, clone) {}
 
   // default stuffs
   AugmentedCore(this_type &&) = default;
-  this_type &operator=(const this_type &&) = default;
+  this_type &operator=(const this_type &) = default;
   this_type &operator=(this_type &&) = default;
 
   /// \brief check if a given node handle is NIL or not
@@ -107,19 +110,22 @@ class AugmentedCore {
     _node_inds.reserve(nnz);
     _node_next.reserve(nnz);
     _val_pos.reserve(nnz);
+    _val_pos.reserve(nnz);
   }
 
  protected:
   /// \brief begin assemble nodes
   /// \param[in] nlist number of lists
   inline void _begin_assemble_nodes(const size_type nlist) {
+    const static index_type nil = _NIL;
     _node_start.resize(nlist);
     _node_end.resize(nlist);
     _node_inds.resize(0u);
     _node_next.resize(0u);
     _val_pos.resize(0u);
-    std::fill_n(_node_start.begin(), nlist, _NIL);
-    std::fill_n(_node_end.begin(), nlist, _NIL);
+    _val_pos_inv.resize(0u);
+    std::fill_n(_node_start.begin(), nlist, nil);
+    std::fill_n(_node_end.begin(), nlist, nil);
   }
 
   /// \brief update linked lists given new nodes from back
@@ -139,12 +145,14 @@ class AugmentedCore {
     // resize value positions
     _val_pos.resize(_node_inds.size());
     _node_next.resize(_val_pos.size());
+    _val_pos_inv.resize(_node_next.size());
     // NOTE that first:last store the indices in compressed storage
     Iter            itr = first;
     const size_type n   = _node_inds.size();
     for (size_type i = start; i < n; ++i, ++itr) {
       // first update value positions and set nil to newly add next locs
       _val_pos[i]       = i;
+      _val_pos_inv[i]   = i;
       _node_next[i]     = _NIL;
       const size_type j = to_c_idx<size_type, OneBased>(*itr);
       psmilu_assert(j < _node_start.size(),
@@ -171,7 +179,7 @@ class AugmentedCore {
   inline index_type _next_node(const size_type nid) const {
     psmilu_assert(!is_nil((index_type)nid), "NIL node detected");
     psmilu_assert(nid < _node_inds.size(), "invalid nid %zd", nid);
-    return _node_inds[nid];
+    return _node_next[nid];
   }
 
   /// \brief get node item ({col-,row-}index in aug-{ccx,crs}, correspondingly)
@@ -191,32 +199,58 @@ class AugmentedCore {
                   _val_pos.size());
     psmilu_assert(p2 < _val_pos.size(), "%zd exceeds val_pos size %zd", p2,
                   _val_pos.size());
-    std::swap(_val_pos[p1], _val_pos[p2]);
+    // swap value positions
+    std::swap(_val_pos[_val_pos_inv[p1]], _val_pos[_val_pos_inv[p2]]);
+    // swap the inverse mapping
+    std::swap(_val_pos_inv[p1], _val_pos_inv[p2]);
   }
 
   /// \brief rotate value positions toward left
   /// \param[in] n **local** size, i.e. how many elements to shift
-  /// \param[in] src original position in **global** index respect to _val_pos
+  /// \param[in] src original position in **global** index
   /// \note Complexity: \f$\mathcal{O}(n)\f$
   /// \sa _rotate_val_pos_right
+  ///
+  /// Firstly, rotate the inverse mapping, then assign the value positions
+  /// accordingly.
   inline void _rotate_val_pos_left(const size_type n, const size_type src) {
-    psmilu_assert(src < _val_pos.size(), "%zd exceeds val_pos size %zd", src,
-                  _val_pos.size());
-    psmilu_assert(src + n <= _val_pos.size(), "%zd exceeds the length",
+    psmilu_assert(src < _val_pos_inv.size(), "%zd exceeds val_pos size %zd",
+                  src, _val_pos.size());
+    psmilu_assert(src + n <= _val_pos_inv.size(), "%zd exceeds the length",
                   src + n);
-    rotate_left(n, src, _val_pos);
+    rotate_left(n, src, _val_pos_inv);
+    // then assign new positions
+    auto itr = _val_pos_inv.cbegin() + src;
+    for (size_type i = 0u; i < n; ++i, ++itr) {
+      psmilu_assert(*itr < _val_pos.size(),
+                    "inv-val-pos index %zd exceeds value position length",
+                    *itr);
+      _val_pos[*itr] = i + src;
+    }
   }
 
   /// \brief rotate value positions toward right
   /// \param[in] n **local** size, i.e. how many elements to shift
-  /// \param[in] src original position in **global** index respect to _val_pos
+  /// \param[in] src original position in **global** index
   /// \note Complexity: \f$\mathcal{O}(n)\f$
   /// \sa _rotate_val_pos_left
+  ///
+  /// Firstly, rotate the inverse mapping, then assign the value positions
+  /// accordingly.
   inline void _rotate_val_pos_right(const size_type n, const size_type src) {
     psmilu_assert(src < _val_pos.size(), "%zd exceeds val_pos size %zd", src,
                   _val_pos.size());
     psmilu_assert(src + 1u - n >= 0u, "invalid right rotation");
     rotate_right(n, src, _val_pos);
+    // then assign new positions
+    const size_type start = src + 1u - n;  // plus one goes first!
+    auto            itr   = _val_pos_inv.cbegin() + start;
+    for (size_type i = 0u; i < n; ++i, ++itr) {
+      psmilu_assert(*itr < _val_pos.size(),
+                    "inv-val-pos index %zd exceeds value position length",
+                    *itr);
+      _val_pos[*itr] = i + start;
+    }
   }
 
   /// \brief interface the head and tail nodes given list i and k
@@ -259,11 +293,12 @@ class AugmentedCore {
   }
 
  protected:
-  iarray_type _node_inds;   ///< indices (values) of each node
-  iarray_type _node_start;  ///< head nodes
-  iarray_type _node_next;   ///< next nodes
-  iarray_type _node_end;    ///< ending positions
-  iarray_type _val_pos;     ///< value positions
+  iarray_type _node_inds;    ///< indices (values) of each node
+  iarray_type _node_start;   ///< head nodes
+  iarray_type _node_next;    ///< next nodes
+  iarray_type _node_end;     ///< ending positions
+  iarray_type _val_pos;      ///< value positions
+  iarray_type _val_pos_inv;  ///< value position inverse, i.e. inv(_val_pos)
 
   // TODO do we need to use size_type for storing the positions? This will
   // almost double the memory usage for if index_type is just 32bit,
@@ -280,7 +315,6 @@ template <class CrsType>
 class AugCRS : public CrsType,
                public internal::AugmentedCore<typename CrsType::index_type> {
   typedef internal::AugmentedCore<typename CrsType::index_type> _base;
-  using _base::_NIL;
 
  public:
   typedef AugCRS                           this_type;  ///< aug crs type
@@ -290,7 +324,12 @@ class AugCRS : public CrsType,
   constexpr static bool                    ONE_BASED = crs_type::ONE_BASED;
   typedef typename _base::iarray_type      iarray_type;  ///< index array
   typedef typename iarray_type::value_type index_type;   ///< index type
+  typedef typename crs_type::value_type    value_type;   ///< value
 
+ private:
+  constexpr static index_type _NIL = _base::_NIL;
+
+ public:
   /// \brief default constructor
   AugCRS() = default;
 
@@ -392,6 +431,13 @@ class AugCRS : public CrsType,
   using crs_type::ncols;
   using crs_type::nrows;
   using crs_type::vals;
+
+  /// \brief get value with col id
+  /// \param[in] col_id column handle/ID
+  inline value_type val_from_col_id(const size_type col_id) const {
+    // this is how to get value
+    return vals()[val_pos_idx(col_id)];
+  }
 
   /// \brief interchange two columns
   /// \note This is the core operation for augmented data structure
@@ -512,6 +558,8 @@ class AugCRS : public CrsType,
   inline const iarray_type &col_start() const { return _base::_node_start; }
   inline iarray_type &      col_end() { return _base::_node_end; }
   inline const iarray_type &col_end() const { return _base::_node_end; }
+  inline iarray_type &      col_next() { return _base::_node_next; }
+  inline const iarray_type &col_next() const { return _base::_node_next; }
 
   /// \brief begin to assemble rows
   inline void begin_assemble_rows() {
@@ -543,7 +591,6 @@ template <class CcsType>
 class AugCCS : public CcsType,
                public internal::AugmentedCore<typename CcsType::index_type> {
   typedef internal::AugmentedCore<typename CcsType::index_type> _base;
-  using _base::_NIL;
 
  public:
   typedef AugCCS                           this_type;  ///< this
@@ -553,7 +600,12 @@ class AugCCS : public CcsType,
   constexpr static bool                    ONE_BASED = ccs_type::ONE_BASED;
   typedef typename _base::iarray_type      iarray_type;  ///< index array
   typedef typename iarray_type::value_type index_type;   ///< index type
+  typedef typename ccs_type::value_type    value_type;   ///< value
 
+ private:
+  constexpr static index_type _NIL = _base::_NIL;
+
+ public:
   /// \brief default constructor
   AugCCS() = default;
 
@@ -654,6 +706,12 @@ class AugCCS : public CcsType,
   using ccs_type::nrows;
   using ccs_type::row_ind;
   using ccs_type::vals;
+
+  /// \brief get the value from row handle
+  /// \param[in] row_id row handle/ID
+  inline value_type val_from_row_id(const size_type row_id) const {
+    return vals()[val_pos_idx(row_id)];
+  }
 
   /// \brief interchange two rows
   /// \note This is the core operation for augmented data structure
@@ -772,6 +830,8 @@ class AugCCS : public CcsType,
   inline const iarray_type &row_start() const { return _base::_node_start; }
   inline iarray_type &      row_end() { return _base::_node_end; }
   inline const iarray_type *row_end() const { return _base::_node_end; }
+  inline iarray_type &      row_next() { return _base::_node_next; }
+  inline const iarray_type &row_next() const { return _base::_node_next; }
 
   /// \brief begin to assemble columns
   inline void begin_assemble_cols() {
