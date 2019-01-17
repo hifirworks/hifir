@@ -746,7 +746,7 @@ class AugCCS : public CcsType,
         // rotate i_col to k_col
         auto i_row_itr_first = ccs_type::row_ind_begin(i_col),
              i_row_itr_last  = ccs_type::row_ind_end(i_col),
-             i_row_itr_pos   = ccs_type::col_ind().begin() + i_vp;
+             i_row_itr_pos   = ccs_type::row_ind().begin() + i_vp;
         psmilu_assert(std::is_sorted(i_row_itr_first, i_row_itr_last),
                       "%zd is not a sorted column", (size_type)i_col);
         const index_type k_row = to_ori_idx<index_type, ONE_BASED>(k);
@@ -782,7 +782,7 @@ class AugCCS : public CcsType,
         // rotate k_col to i_col
         auto k_row_itr_first = ccs_type::row_ind_begin(k_col),
              k_row_itr_last  = ccs_type::row_ind_end(k_col),
-             k_row_itr_pos   = ccs_type::col_ind().begin() + k_vp;
+             k_row_itr_pos   = ccs_type::row_ind().begin() + k_vp;
         psmilu_assert(std::is_sorted(k_row_itr_first, k_row_itr_last),
                       "%zd is not a sorted column", (size_type)k_col);
         const index_type i_row = to_ori_idx<index_type, ONE_BASED>(i);
