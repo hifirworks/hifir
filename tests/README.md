@@ -33,3 +33,13 @@ below will cause problem!
 ```cpp
 #include "psmilu_Array.hpp"// blah blah
 ```
+
+## Hint ##
+
+It's recommended that you run test case executable with `Valgrind`, thus you
+can check if or not there are memory leaks; e.g.
+
+```console
+make test_foo
+valgrind ./test_foo.exe
+```
