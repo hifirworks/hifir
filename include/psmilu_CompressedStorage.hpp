@@ -69,7 +69,7 @@ class CompressedStorage {
   /// \param[in] reserve if \a true (default), reserve space instead of resize
   /// \sa Array::resize, Array::reserve
   explicit CompressedStorage(const size_type n, const size_type nnz = 0u,
-                    bool reserve = true)
+                             bool reserve = true)
       : _ind_start(n + 1) {
     if (nnz) {
       if (reserve) {
@@ -220,19 +220,19 @@ class CompressedStorage {
     return _indices.begin() + to_c_idx<size_type, OneBased>(_ind_start[i]);
   }
   inline i_iterator _ind_end(const size_type i) {
-    return ind_begin(i) + _nnz(i);
+    return _ind_begin(i) + _nnz(i);
   }
   inline const_i_iterator _ind_begin(const size_type i) const {
     return _indices.begin() + to_c_idx<size_type, OneBased>(_ind_start[i]);
   }
   inline const_i_iterator _ind_end(const size_type i) const {
-    return ind_begin(i) + _nnz(i);
+    return _ind_begin(i) + _nnz(i);
   }
   inline const_i_iterator _ind_cbegin(const size_type i) const {
     return _indices.begin() + to_c_idx<size_type, OneBased>(_ind_start[i]);
   }
   inline const_i_iterator _ind_cend(const size_type i) const {
-    return ind_cbegin(i) + _nnz(i);
+    return _ind_cbegin(i) + _nnz(i);
   }
 
  protected:
