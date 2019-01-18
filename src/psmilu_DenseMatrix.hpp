@@ -170,14 +170,25 @@ class DenseMatrix {
   /// \param[in] n1 number of rows
   /// \param[in] n2 number of columns, if == 0, then a square matrix is created
   explicit DenseMatrix(const size_type n1, const size_type n2 = 0u)
-      : _nrows(n1), _ncols(n2 ? n2 : n1), _data(_nrows * _ncols) {}
+      : _nrows(n1), _ncols(n2 ? n2 : n1), _data(_nrows * _ncols) {
+    if (_data.status() == DATA_UNDEF) _nrows = _ncols = 0u;
+  }
 
   /// \brief constructor for own data with init value
   /// \param[in] n1 number of rows
   /// \param[in] n2 number of columns
   /// \param[in] v init value
   DenseMatrix(const size_type n1, const size_type n2, const value_type v)
-      : _nrows(n1), _ncols(n2), _data(n1 * n2, v) {}
+      : _nrows(n1), _ncols(n2), _data(n1 * n2, v) {
+    if (_data.status() == DATA_UNDEF) _nrows = _ncols = 0u;
+  }
+
+  /// \brief copy foreign type
+  /// \tparam V another value type
+  /// \param[in] other another matrix
+  template <class V>
+  explicit DenseMatrix(const DenseMatrix<V>& other)
+      : _nrows(other.nrows()), _ncols(other.ncols()), _data(other.array()) {}
 
   /// \brief constructor for external data
   /// \param[in] n1 number of rows
@@ -261,7 +272,7 @@ class DenseMatrix {
   }
   inline col_iterator col_end(const size_type col) {
     psmilu_assert(col < _ncols, "%zd exceeds column bound %zd", col, _ncols);
-    return _data.begin() + (col + 1) * _ncols;
+    return _data.begin() + (col + 1) * _nrows;
   }
   inline const_col_iterator col_begin(const size_type col) const {
     psmilu_assert(col < _ncols, "%zd exceeds column bound %zd", col, _ncols);
@@ -282,19 +293,19 @@ class DenseMatrix {
 
   inline row_iterator row_begin(const size_type row) {
     psmilu_assert(row < _nrows, "%zd exceeds row bound %zd", row, _nrows);
-    return row_iterator(data() + row, _ncols);
+    return row_iterator(data() + row, _nrows);
   }
   inline row_iterator row_end(const size_type row) {
     psmilu_assert(row < _nrows, "%zd exceeds row bound %zd", row, _nrows);
-    return row_iterator(_data.end() + row, _ncols);
+    return row_iterator(_data.end() + row, _nrows);
   }
   inline const_row_iterator row_begin(const size_type row) const {
     psmilu_assert(row < _nrows, "%zd exceeds row bound %zd", row, _nrows);
-    return const_row_iterator(data() + row, _ncols);
+    return const_row_iterator(data() + row, _nrows);
   }
   inline const_row_iterator row_end(const size_type row) const {
     psmilu_assert(row < _nrows, "%zd exceeds row bound %zd", row, _nrows);
-    return const_row_iterator(_data.cend() + row, _ncols);
+    return const_row_iterator(_data.cend() + row, _nrows);
   }
   inline const_row_iterator row_cbegin(const size_type row) const {
     return row_begin(row);
