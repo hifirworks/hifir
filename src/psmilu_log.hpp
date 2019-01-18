@@ -24,11 +24,17 @@
 #include "psmilu_print.hpp"
 #include "psmilu_stacktrace.hpp"
 
+/** \addtogroup util
+ * @{
+ */
+
 namespace psmilu {
 namespace internal {
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 // NOTE for serial version, we use a global static buffer
 static std::vector<char> msg_buf;
+#endif  // DOXYGEN_SHOULD_SKIP_THIS
 
 /// \brief estimate and allocate space for \a msg_buf
 /// \param[in] msg message without va args
@@ -39,14 +45,18 @@ inline void alloc_buf(const std::string &msg) {
   if (n > msg_buf.size()) msg_buf.resize(n);
 }
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 // Wrap everything into a single macro
-#define _PARSE_VA(msg)                                                 \
-  psmilu::internal::alloc_buf(msg);                                    \
-  va_list aptr;                                                        \
-  va_start(aptr, msg);                                                 \
-  std::vsnprintf(psmilu::internal::msg_buf.data(),                     \
-                 psmilu::internal::msg_buf.size(), msg.c_str(), aptr); \
-  va_end(aptr)
+#  define _PARSE_VA(msg)                                                 \
+    psmilu::internal::alloc_buf(msg);                                    \
+    va_list aptr;                                                        \
+    va_start(aptr, msg);                                                 \
+    std::vsnprintf(psmilu::internal::msg_buf.data(),                     \
+                   psmilu::internal::msg_buf.size(), msg.c_str(), aptr); \
+    va_end(aptr)
+
+#endif  // DOXYGEN_SHOULD_SKIP_THIS
 
 }  // namespace internal
 
@@ -108,15 +118,19 @@ inline void error(const char *prefix, const char *file, const char *func,
 /// \sa psmilu::info
 #define psmilu_info(__msgs...) ::psmilu::info(__msgs)
 
-#ifdef __GNUC__
-#  define __PSMILU_FUNC__ __FUNCTION__
-#else
-#  define __PSMILU_FUNC__ __func__
-#endif
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
+#  ifdef __GNUC__
+#    define __PSMILU_FUNC__ __FUNCTION__
+#  else
+#    define __PSMILU_FUNC__ __func__
+#  endif
 
 // strip out the prefix of the file
-#define __PSMILU_FILE__ \
-  (std::strrchr(__FILE__, '/') ? std::strrchr(__FILE__, '/') + 1 : __FILE__)
+#  define __PSMILU_FILE__ \
+    (std::strrchr(__FILE__, '/') ? std::strrchr(__FILE__, '/') + 1 : __FILE__)
+
+#endif  // DOXYGEN_SHOULD_SKIP_THIS
 
 /// \def psmilu_warning(__msgs)
 /// \brief print warning message
@@ -138,13 +152,19 @@ inline void error(const char *prefix, const char *file, const char *func,
 #define psmilu_error(__msgs...) \
   ::psmilu::error(nullptr, __PSMILU_FILE__, __PSMILU_FUNC__, __LINE__, __msgs)
 
-/// \def psmilu_error_if(__msgs)
+/// \def psmilu_error_if(__cond, __msgs)
 /// \brief conditionally print warning message and abort
 /// \sa psmilu::error
 #define psmilu_error_if(__cond, __msgs...)                       \
   if (__cond)                                                    \
   ::psmilu::error("invalid condition " #__cond, __PSMILU_FILE__, \
                   __PSMILU_FUNC__, __LINE__, __msgs)
+
+/// \def psmilu_assert(__cond, __msgs)
+/// \brief internal debugging assertion
+
+/// \def psmilu_debug_code(__code)
+/// \brief code will only be translated on debug builds
 
 #ifndef NDEBUG
 #  define psmilu_assert(__cond, __msgs...)                           \
@@ -158,5 +178,7 @@ inline void error(const char *prefix, const char *file, const char *func,
 #endif
 
 #undef _PARSE_VA
+
+/** @}*/  // util group
 
 #endif  // _PSMILU_LOG_HPP

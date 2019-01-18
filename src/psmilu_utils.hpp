@@ -14,6 +14,10 @@
 #include <algorithm>
 #include <iterator>
 
+/** \addtogroup util
+ * @{
+ */
+
 namespace psmilu {
 
 /// \brief apply binary search on a sorted array
@@ -89,5 +93,7 @@ inline constexpr IndexType to_ori_idx(const IndexType i) {
 }
 
 }  // namespace psmilu
+
+/** @}*/  // util group
 
 #endif

@@ -31,6 +31,7 @@ namespace internal {
 /// \brief A group of forward link lists for CompressedStorage
 /// \tparam IndexType index type
 /// \sa CompressedStorage
+/// \ingroup ds
 template <class IndexType>
 class AugmentedCore {
  public:
@@ -134,7 +135,7 @@ class AugmentedCore {
   /// \param[in] entry row or column index, in C-based system
   /// \param[in] first starting iterator position of index range
   /// \param[in] last pass-of-end iterator position of index range
-  /// \note Complexity: \f$\mathcal{O}(n}\f$, where n is size from first to last
+  /// \note Complexity: \f$\mathcal{O}(n)\f$, where n is size from first to last
   template <class Iter, bool OneBased>
   inline void _push_back_nodes(const size_type entry, Iter first, Iter last) {
     const auto      nnz   = std::distance(first, last);
@@ -310,6 +311,7 @@ class AugmentedCore {
 /// \tparam CrsType A CRS type instantiation
 /// \sa AugCCS
 /// \note This class inherits from CRS
+/// \ingroup ds
 template <class CrsType>
 class AugCRS : public CrsType,
                public internal::AugmentedCore<typename CrsType::index_type> {
@@ -586,6 +588,7 @@ class AugCRS : public CrsType,
 /// \tparam CcsType A CCS type instantiation
 /// \sa AugCRS
 /// \note This class inherits from CCS
+/// \ingroup ds
 template <class CcsType>
 class AugCCS : public CcsType,
                public internal::AugmentedCore<typename CcsType::index_type> {

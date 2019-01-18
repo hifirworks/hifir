@@ -26,6 +26,7 @@ namespace internal {
 /// \tparam T value type
 /// \brief Row-wise iterator
 /// \warning This is not efficient, just for the sake of completeness
+/// \ingroup ds
 template <typename T>
 class StrideIterator {
  public:
@@ -33,7 +34,7 @@ class StrideIterator {
   // thus, using this iterator in some STL routines may not be efficient
 
   /// \name STL iterator requirements
-  //@{
+  ///@{
 
   typedef T*                              pointer;            ///< pointer type
   typedef std::bidirectional_iterator_tag iterator_category;  ///< iter tag
@@ -41,7 +42,7 @@ class StrideIterator {
   typedef T&                              reference;          ///< reference
   typedef std::ptrdiff_t                  difference_type;    ///< difference
 
-  //@}
+  ///@}
 
   /// \brief default constructor
   StrideIterator() : _ptr(nullptr), _stride(0) {}
@@ -142,6 +143,7 @@ class StrideIterator {
 /// \class DenseMatrix
 /// \brief Dense storage
 /// \tparam ValueType scalar value type, e.g. \a double, \a float, etc
+/// \ingroup ds
 ///
 /// To be easily compatible with \b LAPACK, we choose to use column major
 /// orientation, a.k.a. Fortran index order.

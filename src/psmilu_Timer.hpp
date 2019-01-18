@@ -18,6 +18,7 @@ namespace psmilu {
 
 /// \enum ClockType
 /// \brief clock type used in application
+/// \ingroup util
 enum ClockType {
   TIMER_SYSTEM_CLOCK,  ///< using system clock
   TIMER_HIRES_CLOCK,   ///< using high resolution clock, may be alias of system
@@ -25,12 +26,15 @@ enum ClockType {
 
 /// \enum ClockUnit
 /// \brief time period units
+/// \ingroup util
 enum ClockUnit {
   TIMER_SECONDS = 0,   ///< default second
   TIMER_MILLISECONDS,  ///< milli second
   TIMER_MICROSECONDS,  ///< micro second
   TIMER_NANOSECONDS,   ///< nano second
 };
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 namespace internal {
 
@@ -80,11 +84,14 @@ struct ClockUnitTrait<TIMER_NANOSECONDS> {
 
 }  // namespace internal
 
+#endif  // DOXYGEN_SHOULD_SKIP_THIS
+
 /// \class Timer
 /// \brief C++11 standard timer implementation
 /// \tparam Clock ClockType, default is TIMER_SYSTEM_CLOCK
 /// \tparam RepType time period representation type, default is \a double
 /// \note Using the timer in a local environment is preferred
+/// \ingroup util
 template <ClockType Clock = TIMER_SYSTEM_CLOCK, class RepType = double>
 class Timer {
  public:

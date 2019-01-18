@@ -26,6 +26,7 @@ namespace internal {
 /// \tparam ValueType value type, e.g. \a double, \a float, etc
 /// \tparam IndexType index used, e.g. \a int, \a long, etc
 /// \tparam OneBased if \a true, then Fortran based index is assumed
+/// \ingroup ds
 template <class ValueType, class IndexType, bool OneBased>
 class CompressedStorage {
  public:
@@ -171,9 +172,10 @@ class CompressedStorage {
 
   /// \brief push back an empty entry
   /// \param[in] ii ii-th entry in primary direction
-  inline void _push_back_primary_empty(const size_type psmilu_debug_code(ii)) {
+  inline void _push_back_primary_empty(const size_type ii) {
     psmilu_assert(ii + 1u == _ind_start.size(),
                   "inconsistent pushing back at entry %zd", ii);
+    (void)ii;
     _ind_start.push_back(_ind_start.back());
   }
 
@@ -186,10 +188,11 @@ class CompressedStorage {
   /// \param[in] v dense value array, the value can be queried from indices
   /// \warning The indices are assumed to be sorted
   template <class Iter, class ValueArray>
-  inline void _push_back_primary(const size_type psmilu_debug_code(ii),
-                                 Iter first, Iter last, const ValueArray &v) {
+  inline void _push_back_primary(const size_type ii, Iter first, Iter last,
+                                 const ValueArray &v) {
     psmilu_assert(ii + 1u == _ind_start.size(),
                   "inconsistent pushing back at entry %zd", ii);
+    (void)ii;
     // first push back the list
     psmilu_assert(_indices.size() == _vals.size(), "fatal error");
     _indices.push_back(first, last);
@@ -255,6 +258,7 @@ class CompressedStorage {
 /// \warning o_indices should be initialized properly with value 0 or 1
 /// \warning Both o_{indices,vals} should be allocated properly
 /// \note Work with both Array and \a std::vector
+/// \ingroup ds
 template <class ValueArray, class IndexArray, bool OneBased>
 inline void convert_storage(const IndexArray &i_ind_start,
                             const IndexArray &i_indices,
@@ -331,6 +335,7 @@ class CCS;
 /// \tparam ValueType numerical value type, e.g. \a double, \a float, etc
 /// \tparam IndexType index type, e.g. \a int, \a long, etc
 /// \tparam OneBased if \a false (default), using C-based index
+/// \ingroup ds
 template <class ValueType, class IndexType, bool OneBased = false>
 class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   typedef internal::CompressedStorage<ValueType, IndexType, OneBased> _base;
@@ -485,7 +490,7 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
 
   /// \brief push back an empty row
   /// \param[in] row current row entry
-  inline void push_back_empty_row(const size_type psmilu_debug_code(row)) {
+  inline void push_back_empty_row(const size_type row) {
     _base::_push_back_primary_empty(row);
   }
 
@@ -498,8 +503,8 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   /// \param[in] v dense value array, the value can be queried from indices
   /// \warning The indices are assumed to be sorted
   template <class Iter, class ValueArray>
-  inline void push_back_row(const size_type psmilu_debug_code(row), Iter first,
-                            Iter last, const ValueArray &v) {
+  inline void push_back_row(const size_type row, Iter first, Iter last,
+                            const ValueArray &v) {
     _base::_push_back_primary(row, first, last, v);
   }
 
@@ -508,6 +513,12 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   using _base::_psize;  ///< number of rows (primary entries)
 };
 
+/// \class CCS
+/// \brief Compressed Column Storage (CCS) format for sparse matrices
+/// \tparam ValueType numerical value type, e.g. \a double, \a float, etc
+/// \tparam IndexType index type, e.g. \a int, \a long, etc
+/// \tparam OneBased if \a false (default), using C-based index
+/// \ingroup ds
 template <class ValueType, class IndexType, bool OneBased>
 class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   typedef internal::CompressedStorage<ValueType, IndexType, OneBased> _base;
@@ -660,7 +671,7 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
 
   /// \brief push back an empty column
   /// \param[in] col current column entry
-  inline void push_back_empty_col(const size_type psmilu_debug_code(col)) {
+  inline void push_back_empty_col(const size_type col) {
     _base::_push_back_primary_empty(col);
   }
 
@@ -673,8 +684,8 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   /// \param[in] v dense value array, the value can be queried from indices
   /// \warning The indices are assumed to be sorted
   template <class Iter, class ValueArray>
-  inline void push_back_col(const size_type psmilu_debug_code(col), Iter first,
-                            Iter last, const ValueArray &v) {
+  inline void push_back_col(const size_type col, Iter first, Iter last,
+                            const ValueArray &v) {
     _base::_push_back_primary(col, first, last, v);
   }
 

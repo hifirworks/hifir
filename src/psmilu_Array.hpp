@@ -28,6 +28,7 @@ enum : unsigned char {
 /// \class Array
 /// \brief Core data structure used in compressed storage
 /// \tparam T value type
+/// \ingroup ds
 ///
 /// Compared to std::vector, \a Array allows one to wrap external data, which
 /// is a necessary feature for this package. In addition, we allow shallow

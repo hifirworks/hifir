@@ -23,6 +23,7 @@ namespace psmilu {
 /// \tparam ValueType value type, e.g. \a double
 /// \tparam IndexType index type, e.g. \a int
 /// \tparam OneBased if \a true, then Fortran indexing is assumed
+/// \ingroup ds
 ///
 /// This class is mainly used in Crout update. The total memory cost is linear
 /// with respect to the matrix system size and computation cost is bounded

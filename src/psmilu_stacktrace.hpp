@@ -14,6 +14,14 @@
 
 // see https://panthema.net/2008/0901-stacktrace-demangled/
 
+/// \def LOAD_STACKTRACE(__ss, __limit)
+/// \brief Load stack trace on error aborts.
+/// \ingroup util
+///
+/// Currently, this macro only works on *nix systems. It will load C++ symbols
+/// nicely to \a ostream \a __ss, thus can be later transferred to, e.g.,
+/// PSMILU_STDERR
+
 #ifdef __linux__
 #  include <cxxabi.h>
 #  include <execinfo.h>
