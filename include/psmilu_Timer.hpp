@@ -60,26 +60,22 @@ struct ClockUnitTrait;  // trigger compilation error
 
 template <>
 struct ClockUnitTrait<TIMER_SECONDS> {
-  typedef std::ratio<1>        unit_type;
-  typedef std::chrono::seconds chrono_unit_type;
+  typedef std::ratio<1> unit_type;
 };
 
 template <>
 struct ClockUnitTrait<TIMER_MILLISECONDS> {
-  typedef std::milli                unit_type;
-  typedef std::chrono::milliseconds chrono_unit_type;
+  typedef std::milli unit_type;
 };
 
 template <>
 struct ClockUnitTrait<TIMER_MICROSECONDS> {
-  typedef std::micro                unit_type;
-  typedef std::chrono::microseconds chrono_unit_type;
+  typedef std::micro unit_type;
 };
 
 template <>
 struct ClockUnitTrait<TIMER_NANOSECONDS> {
-  typedef std::nano                unit_type;
-  typedef std::chrono::nanoseconds chrono_unit_type;
+  typedef std::nano unit_type;
 };
 
 }  // namespace internal
