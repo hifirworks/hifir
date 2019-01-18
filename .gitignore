@@ -12,3 +12,5 @@ dist
 .vscode
 *.out
 *.exe
+html
+latex
