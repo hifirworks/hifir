@@ -29,6 +29,8 @@ template <class Iter, class ValueType>
 inline std::pair<bool, Iter> find_sorted(Iter first, Iter last,
                                          const ValueType &v) {
   // NOTE, we use the c++ std binary search for now
+  // WARNING! When replacing the impl, make sure the behavior aligns with
+  // standard lower_bound!
   auto lower = std::lower_bound(first, last, v);
   return std::make_pair(lower != last && *lower == v, lower);
 }
