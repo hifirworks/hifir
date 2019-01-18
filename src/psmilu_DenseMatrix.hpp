@@ -11,11 +11,13 @@
 #ifndef _PSMILU_DENSEMATRIX_HPP
 #define _PSMILU_DENSEMATRIX_HPP
 
+#include <algorithm>
 #include <cstddef>
 #include <iterator>
 #include <type_traits>
 
 #include "psmilu_Array.hpp"
+#include "psmilu_utils.hpp"
 
 namespace psmilu {
 namespace internal {
@@ -163,6 +165,17 @@ class DenseMatrix {
   ///< constant row iterator
   typedef DenseMatrix this_type;  ///< handy type wrapper
 
+  /// \brief initialize dense matrix from compressed storage
+  /// \tparam Cs compressed storage type, e.g. CRS, AugCCS, etc
+  /// \param[in] cs compressed storage
+  /// \return a dense matrix that, mathmatically, equiv to the sparse matrix
+  template <class Cs>
+  inline static DenseMatrix from_sparse(const Cs& cs) {
+    DenseMatrix mat;
+    mat.copy_sparse(cs);
+    return mat;
+  }
+
   /// \brief default constructor
   DenseMatrix() : _nrows(0u), _ncols(0u), _data() {}
 
@@ -219,6 +232,7 @@ class DenseMatrix {
   inline const array_type& array() const { return _data; }
   inline pointer           data() { return _data.data(); }
   inline const_pointer     data() const { return _data.data(); }
+  inline bool              empty() const { return _data.empty(); }
 
   /// \brief resize a matrix
   /// \param[in] n1 number of rows
@@ -312,6 +326,51 @@ class DenseMatrix {
   }
   inline const_row_iterator row_cend(const size_type row) const {
     return row_end(row);
+  }
+
+  /// \brief convert CRS to dense storage
+  /// \tparam Cs compressed storage
+  /// \param[in] crs CRS matrix
+  /// \note SFINAE for CCS case
+  template <class Cs>
+  inline typename std::enable_if<Cs::ROW_MAJOR>::type copy_sparse(
+      const Cs& crs) {
+    constexpr static bool ONE_BASED = Cs::ONE_BASED;
+    psmilu_error_if(crs.status() == DATA_UNDEF,
+                    "input CSR data status undefined");
+    const size_type nrows(crs.nrows());
+    resize(nrows, crs.ncols());
+    // first step, set all values to zero
+    std::fill(_data.begin(), _data.end(), value_type());
+    // not efficient for CRS to dense
+    for (size_type r = 0u; r < nrows; ++r) {
+      auto i_itr = crs.col_ind_cbegin(r), i_end = crs.col_ind_cend(r);
+      for (auto v_itr = crs.val_cbegin(r); i_itr != i_end; ++i_itr, ++v_itr)
+        (*this)(r, to_c_idx<size_type, ONE_BASED>(*i_itr)) = *v_itr;
+    }
+  }
+
+  /// \brief convert CCS to dense storage
+  /// \tparam Cs compressed storage
+  /// \param[in] ccs CCS matrix
+  /// \note SFINAE for CRS case
+  template <class Cs>
+  inline typename std::enable_if<!Cs::ROW_MAJOR>::type copy_sparse(
+      const Cs& ccs) {
+    constexpr static bool ONE_BASED = Cs::ONE_BASED;
+    psmilu_error_if(ccs.status() == DATA_UNDEF,
+                    "input CCR data status undefined");
+    const size_type ncols(ccs.ncols());
+    resize(ccs.nrows(), ncols);
+    // first step, set all values to zero
+    std::fill(_data.begin(), _data.end(), value_type());
+    // efficient for CCS to dense
+    for (size_type c = 0u; c < ncols; ++c) {
+      auto i_itr = ccs.row_ind_cbegin(c), i_end = ccs.row_ind_cend(c);
+      const size_type ld = c * _nrows;
+      for (auto v_itr = ccs.val_cbegin(c); i_itr != i_end; ++i_itr, ++v_itr)
+        _data[ld + to_c_idx<size_type, ONE_BASED>(*i_itr)] = *v_itr;
+    }
   }
 
  protected:
