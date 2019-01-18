@@ -9,7 +9,7 @@ PSMILU_ROOT=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 CXXFLAGS = \
     $(GTEST_INCDIR) \
-    -I$(PSMILU_ROOT)/include \
+    -I$(PSMILU_ROOT)/src \
     -g -rdynamic -Wall -Wextra -std=c++11
 LIBS = $(GTEST_LIBDIR) -lgtest -lgtest_main -pthread
 LDFLAGS =

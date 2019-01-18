@@ -7,7 +7,7 @@ include ../Makefile.in
 TEST_SRCS = $(shell \ls test_*.cpp)
 TESTS = $(TEST_SRCS:%.cpp=%)
 EXECS = $(TEST_SRCS:%.cpp=%.exe)
-VPATH = $(PSMILU_ROOT)/include
+VPATH = $(PSMILU_ROOT)/src
 
 .PHONY: clean
 .PRECIOUS: $(EXECS)
