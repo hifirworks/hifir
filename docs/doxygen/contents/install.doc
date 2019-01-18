@@ -1,0 +1,29 @@
+// -*-C++-*-
+//@HEADER
+//----------------------------------------------------------------------------
+//                Copyright (C) 2019 The PSMILU AUTHORS
+//----------------------------------------------------------------------------
+//@HEADER
+
+/*! \page _install Installation
+
+\addindex installation
+\tableofcontents
+
+\section _install_unix How to install on UNIX
+
+blah blah ...
+
+\section _install_mac How to install on Mac
+
+blah blah ...
+
+\section _install_win How to install on Windows
+
+blah blah ...
+
+\section _install_py How to install with \c Python
+
+blah blah ...
+
+*/

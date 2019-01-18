@@ -1,0 +1,21 @@
+// -*-C++-*-
+//@HEADER
+//----------------------------------------------------------------------------
+//                Copyright (C) 2019 The PSMILU AUTHORS
+//----------------------------------------------------------------------------
+//@HEADER
+
+/*! \page _prog_struct Program Structure
+
+\tableofcontents
+
+\section _header_only C++ PS-MILU is Header Only!
+
+Nothing to be compiled!
+
+blah blah..
+
+\section _why_temp Why Template?
+
+blah blah ...
+*/

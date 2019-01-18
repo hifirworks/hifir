@@ -1,0 +1,60 @@
+// -*-C++-*-
+//@HEADER
+//----------------------------------------------------------------------------
+//                Copyright (C) 2019 The PSMILU AUTHORS
+//----------------------------------------------------------------------------
+//@HEADER
+
+/*! \mainpage
+
+Introduction
+------------
+
+\c PS-MILU is a C++ package for efficient implementation of multilevel ILU with
+support of pre-dominantly symmetric. It can be used as a robust preconditioner
+for both symmetric and asymmetric systems; in addition, it can handle
+ill-conditioned and singular systems.
+
+PS-MILU also has interface hooks for C, Fortran, Python3, and MATLAB.
+
+\li list 1
+\li list 2
+
+How to Read The Documentation
+-----------------------------
+
+blah blah ...
+
+License
+-------
+
+\verbinclude LICENSE
+
+Contacts
+--------
+
+This project is based on [cite reference here]; the package development is led
+by <a href="http://www.ams.sunysb.edu/~jiao/">Dr. Xiangmin (Jim) Jiao</a> with
+main developers Qiao Chen and Yipeng Li.
+
+\li Dr. Xiangmin (Jim) Jiao, xiangmin.jiao@stonybrook.edu
+\li Dr. Aditi Ghai, ghai.aditi03@gmail.com
+\li Qiao Chen, qiao.chen@stonybrook.edu
+\li Yipeng Li, yipeng.li@stonybrook.edu
+
+Publications
+------------
+
+blah blah ...
+
+Acknowledgments
+---------------
+
+blah blah ...
+
+Future Work
+-----------
+
+blah blah ...
+
+*/

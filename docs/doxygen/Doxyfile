@@ -1,0 +1,4 @@
+@INCLUDE=./Doxyfile.cfg
+GENERATE_LATEX         = YES
+GENERATE_HTML          = YES
+GENERATE_XML           = NO

@@ -1,0 +1,25 @@
+// -*-C++-*-
+//@HEADER
+//----------------------------------------------------------------------------
+//                Copyright (C) 2019 The PSMILU AUTHORS
+//----------------------------------------------------------------------------
+//@HEADER
+
+/*! \page _examples Examples
+
+\addindex examples
+\tableofcontents
+
+\section _hello_world_eg "Hello World!"
+
+blah blah...
+
+\section _c_eg Example with C Index
+
+blah blah...
+
+\section _for_eg Example with Fortran Index
+
+blah blah...
+
+*/
