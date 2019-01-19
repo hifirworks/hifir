@@ -4,12 +4,12 @@
 //----------------------------------------------------------------------------
 //@HEADER
 
-/// \file psmilu_WorkArray.hpp
+/// \file psmilu_SparseVec.hpp
 /// \brief Array used in factorization for work space
 /// \authors Qiao,
 
-#ifndef _PSMILU_WORKARRAY_HPP
-#define _PSMILU_WORKARRAY_HPP
+#ifndef _PSMILU_SPARSEVEC_HPP
+#define _PSMILU_SPARSEVEC_HPP
 
 #include <algorithm>
 #include <vector>
@@ -19,25 +19,144 @@
 
 namespace psmilu {
 
+/// \class IndexValueArray
+/// \tparam ValueType value type, e.g. \a double, \a float, etc
+/// \tparam IndexType index type, e.g. \a int
+/// \tparam OneBased if \a true, then the array is assumed to be Fortran index
+/// \ingroup ds
+/// \note We use \a std::vector for internal data management
+///
+/// This data structure stores two essential arrays: 1) a dense array of
+/// application "values" and 2) a sparse array of the activated indices
+/// in the value array. By dense, we mean an array that supports random
+/// access; by sparse, we mean an array that only contains what we need.
+/// Notice that this data structure is mainly used in sparse matrix
+/// operations for efficiency, where we just need to manipulate the indices
+/// without worry about touching the values. Be aware the it's may be
+/// necessary that the sparse array have the same length (in terms of memory)
+/// as that of the dense array due to the fact that we cannot estimate the
+/// sparse size precisely.
+///
+/// For the efficiency purpose, we explicitly create an size counter,
+/// \ref _counts, to avoid calling the \a std::vector::push_back, which is
+/// quite expansive.
+template <class ValueType, class IndexType, bool OneBased = false>
+class IndexValueArray {
+ public:
+  typedef ValueType                      value_type;   ///< value type
+  typedef IndexType                      index_type;   ///< index type
+  typedef std::vector<value_type>        array_type;   ///< value array
+  typedef std::vector<index_type>        iarray_type;  ///< index array
+  typedef typename array_type::size_type size_type;    ///< size
+  typedef IndexValueArray                this_type;    ///< handy type wrapper
+
+  /// \brief default constructor
+  IndexValueArray() : _vals(), _inds(), _counts(0u) {}
+
+  /// \brief constructor with dense and (optionally) sparse sizes
+  /// \param[in] d_n dense size
+  /// \param[in] s_n sparse size, if == 0, then use \a d_n
+  explicit IndexValueArray(const size_type d_n, const size_type s_n = 0u)
+      : _vals(d_n), _inds(s_n ? s_n : d_n), _counts(0u) {}
+
+  // allow moving methods
+  IndexValueArray(this_type &&) = default;
+  this_type &operator=(this_type &&) = default;
+
+  // copying methods are banned
+  IndexValueArray(const this_type &) = delete;
+  this_type &operator=(const this_type &) = delete;
+
+  /// \brief resize the buffer
+  /// \param[in] d_n dense size
+  /// \param[in] s_n sparse size, if == 0 (default), then use \a d_n
+  inline void resize(const size_type d_n, const size_type s_n = 0u) {
+    _vals.resize(d_n);
+    _inds.resize(s_n ? s_n : d_n);
+  }
+
+  /// \brief get the number of counts
+  inline size_type size() const { return _counts; }
+
+  /// \brief reset counter
+  inline void reset_counter() { _counts = 0u; }
+
+  /// \brief check if empty or not
+  inline bool empty() const { return _counts == 0u; }
+
+  /// \brief sort the indices
+  /// \note Complexity: \f$\mathcal{O}(n\log n)\f$, where m is _counts
+  inline void sort_indices() {
+    std::sort(_inds.begin(), _inds.begin() + _counts);
+  }
+
+  /// \brief push back an index
+  /// \param[in] i index
+  inline void push_back(const size_type i) {
+    psmilu_assert((to_c_idx<size_type, OneBased>(i)) < _vals.size(),
+                  "%zd exceeds the value array size", i);
+    psmilu_assert(_inds.size(), "empty array, did you call resize?");
+    _inds[_counts++] = i;
+  }
+
+  /// \brief get the index
+  /// \param[in] i local index in range of _counts (C-based)
+  inline size_type idx(const size_type i) const {
+    psmilu_assert(i < _counts, "%zd exceeds index array bound %zd", i, _counts);
+    return _inds[i];
+  }
+
+  /// \brief get the \b C index
+  /// \param[in] i local index in range of _counts (C-based)
+  inline size_type c_idx(const size_type i) const {
+    return to_c_idx<size_type, OneBased>(idx(i));
+  }
+
+  /// \brief get the value
+  /// \param[in] i local index in range of _counts (C-based)
+  inline value_type val(const size_type i) const { return _vals[c_idx(i)]; }
+
+  /// \brief operator access
+  /// \param[in] i local index in range of _counts (C-based)
+  inline const value_type &operator[](const size_type i) const {
+    return _vals[c_idx(i)];
+  }
+
+  // utils
+  inline array_type &       vals() { return _vals; }
+  inline iarray_type &      inds() { return _inds; }
+  inline const array_type & vals() const { return _vals; }
+  inline const iarray_type &inds() const { return _inds; }
+
+ protected:
+  array_type  _vals;    ///< values
+  iarray_type _inds;    ///< indices
+  size_type   _counts;  ///< current counts
+};
+
 /// \class SparseVector
 /// \tparam ValueType value type, e.g. \a double
 /// \tparam IndexType index type, e.g. \a int
-/// \tparam OneBased if \a true, then Fortran indexing is assumed
+/// \tparam OneBased if \a false (default), then assume C index
 /// \ingroup ds
 ///
 /// This class is mainly used in Crout update. The total memory cost is linear
 /// with respect to the matrix system size and computation cost is bounded
 /// by \f$\mathcal{O}(\textrm{lnnz}\log \textrm{lnnz}\f$, where
 /// \f$\textrm{lnnz}\f$ is the local number of nonzeros.
-template <class ValueType, class IndexType, bool OneBased>
-class SparseVector {
+template <class ValueType, class IndexType, bool OneBased = false>
+class SparseVector : public IndexValueArray<ValueType, IndexType, OneBased> {
+  typedef IndexValueArray<ValueType, IndexType> _base;
+
  public:
-  typedef ValueType                                   value_type;  ///< value
-  typedef IndexType                                   index_type;  ///< index
-  typedef typename std::vector<value_type>::size_type size_type;   ///< size
+  typedef typename _base::value_type  value_type;   ///< value
+  typedef typename _base::index_type  index_type;   ///< index
+  typedef typename _base::size_type   size_type;    ///< size
+  typedef typename _base::array_type  array_type;   ///< value array
+  typedef typename _base::iarray_type iarray_type;  ///< index array
+  typedef SparseVector                this_type;    ///< handy type wrapper
 
  private:
-  constexpr static size_type  _ZERO  = static_cast<size_type>(0);
   constexpr static index_type _EMPTY = static_cast<index_type>(-1);
 
  public:
@@ -45,44 +164,30 @@ class SparseVector {
   SparseVector() = default;
 
   /// \brief constructor with dense and sparse sizes
-  /// \param[in] dense_n dense size
-  /// \param[in] sparse_n sparse index size
-  SparseVector(const size_type dense_n, const size_type sparse_n)
-      : _vals(dense_n, 0),
-        _dense_tags(dense_n, _EMPTY),
-        _inds(sparse_n),
-        _sparse_tags(sparse_n),
-        _counts(0u) {}
+  /// \param[in] d_n dense size
+  /// \param[in] s_n sparse index size, if == 0 (default), then use \a d_n
+  explicit SparseVector(const size_type d_n, const size_type s_n = 0u)
+      : _base(d_n, s_n),
+        _dense_tags(d_n, _EMPTY),
+        _sparse_tags(_inds.size(), false) {}
 
-  /// \brief resize the buffer
-  inline void resize(const size_type dense_n, const size_type sparse_n) {
-    _vals.resize(dense_n, 0);
-    _dense_tags.resize(dense_n, _EMPTY);
-    _inds.resize(sparse_n);
-    _sparse_tags.resize(sparse_n);
+  // ban copy methods
+  SparseVector(const this_type &) = delete;
+  this_type &operator=(const this_type &) = delete;
+
+  // allow move
+  SparseVector(this_type &&) = default;
+  this_type &operator=(this_type &&) = default;
+
+  /// \brief resize sparse vector
+  /// \param[in] d_n dense size
+  /// \param[in] s_n sparse size, if == 0 (default), using \a d_n
+  /// \note Overloading the base version, i.e. \ref _base::resize
+  inline void resize(const size_type d_n, const size_type s_n = 0u) {
+    _base::resize(d_n, s_n);
+    _dense_tags.resize(d_n, _EMPTY);
+    _sparse_tags.resize(_inds.size(), false);
   }
-
-  // interfaces to the underlying arrays and getting actual size
-  inline size_type                      nnz() const { return _counts; }
-  inline std::vector<value_type> &      vals() { return _vals; }
-  inline const std::vector<value_type> &vals() const { return _vals; }
-  inline std::vector<index_type> &      inds() { return _inds; }
-  inline const std::vector<index_type> &inds() const { return _inds; }
-
-  /// \brief sort the indices
-  /// \warning This function must be called after compress_indices
-  inline void sort_indices() {
-    std::sort(_inds.begin(), _inds.begin() + _counts);
-  }
-
-  /// \brief reset the sparse tags
-  /// \note This is used in dropping
-  inline void reset_sparse_tags() {
-    std::fill(_sparse_tags.begin(), _sparse_tags.end(), false);
-  }
-
-  /// \brief reset the size counter to zero
-  inline void reset() { _counts = _ZERO; }
 
   /// \brief mark an index to be dropped node
   /// \param[in] i i-th entry in _inds (C-based)
@@ -93,9 +198,12 @@ class SparseVector {
 
   /// \brief compress indices
   inline void compress_indices() {
-    size_type i = _ZERO;
+    size_type i = 0u;
     for (auto j = i; j < _counts; ++j)
-      if (_sparse_tags[j]) _inds[i++] = _inds[j];
+      if (_sparse_tags[j]) {
+        _inds[i++]      = _inds[j];
+        _sparse_tags[j] = false;  // NOTE that the flag reset here
+      }
     _counts = i;
   }
 
@@ -108,21 +216,21 @@ class SparseVector {
     const size_type j = to_c_idx<size_type, OneBased>(i);
     psmilu_assert(j < _dense_tags.size(), "%zd exceeds the dense size", j);
     if (_dense_tags[j] != step) {
-      _inds[_counts] = i;
-      ++_counts;
+      _base::push_back(i);
       _dense_tags[j] = step;
-      return true;
+      return true;  // got a new value
     }
-    return false;
+    return false;  // not a new value
   }
 
- private:
-  std::vector<value_type> _vals;         ///< dense value array
-  std::vector<index_type> _dense_tags;   ///< dense tag for union
-  std::vector<index_type> _inds;         ///< sparse indices
-  std::vector<bool>       _sparse_tags;  ///< sparse binary tag for drop
-  size_type               _counts;       ///< size count of sparse array
+ protected:
+  using _base::_counts;            ///< bring in base counts
+  using _base::_inds;              ///< bring in base value array
+  using _base::_vals;              ///< bring in base index array
+  iarray_type       _dense_tags;   ///< dense tag for union
+  std::vector<bool> _sparse_tags;  ///< sparse binary tag for drop
 };
+
 }  // namespace psmilu
 
-#endif  // _PSMILU_WORKARRAY_HPP
+#endif  // _PSMILU_SPARSEVEC_HPP
