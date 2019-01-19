@@ -8,9 +8,9 @@
 /// \brief Implementation of augmented data structure for compressed storage
 /// \authors Qiao,
 ///
-/// The key of augmented data structure is to maintain a forward link list.
-/// However, using a traditional pointer based link list can list to
-/// inefficient memory usage or/and computational cost, thus we utilize an
+/// The key of augmented data structure is to maintain a group of forward
+/// linked lists. However, using a traditional pointer based link list can list
+/// to inefficient memory usage or/and computational cost, thus we utilize an
 /// array-based link list implementation. Another shining point of using
 /// array-based implementation is the compatibility, i.e. one can implement
 /// the augmented extension on all kinds of programming languages.
@@ -32,6 +32,20 @@ namespace internal {
 /// \tparam IndexType index type
 /// \sa CompressedStorage
 /// \ingroup ds
+///
+/// This is the version of explicitly maintaining the value positions, i.e.
+/// the mapping from linked lists to the compressed storage, and corresponding
+/// inverse mapping, i.e. the reversed mapping from compressed storage to the
+/// linked lists. Notice that this is a flexible approach, meaning that one
+/// can use this data structure to interchange rows/columns in arbitrary orders.
+/// However, the drawback is also obvious, we need to mainly two nnz-sized
+/// arrays, which are memory inefficient.
+///
+/// An alternative idea is to take into account of Crout updating, by using
+/// the leading positions. This approach is relatively counterintuitive, but
+/// can be efficient in memory usage. The drawback is that this will make the
+/// augmented data structure only suitable for Crout update, which is less a
+/// concern for this project.
 template <class IndexType>
 class AugmentedCore {
  public:
@@ -121,10 +135,12 @@ class AugmentedCore {
     const static index_type nil = _NIL;
     _node_start.resize(nlist);
     _node_end.resize(nlist);
+    // resize all nnz arrays to zero, thus reserve them b4hand is the way to go
     _node_inds.resize(0u);
     _node_next.resize(0u);
     _val_pos.resize(0u);
     _val_pos_inv.resize(0u);
+    // also for n-sized arrays, set them to nil
     std::fill_n(_node_start.begin(), nlist, nil);
     std::fill_n(_node_end.begin(), nlist, nil);
   }
@@ -151,7 +167,7 @@ class AugmentedCore {
     Iter            itr = first;
     const size_type n   = _node_inds.size();
     for (size_type i = start; i < n; ++i, ++itr) {
-      // first update value positions and set nil to newly add next locs
+      // for newly added nodes, their next/val-pos/val-pos-inv are same
       _val_pos[i]       = i;
       _val_pos_inv[i]   = i;
       _node_next[i]     = _NIL;
@@ -222,6 +238,7 @@ class AugmentedCore {
     rotate_left(n, src, _val_pos_inv);
     // then assign new positions
     auto itr = _val_pos_inv.cbegin() + src;
+    // this is how to build inverse mapping
     for (size_type i = 0u; i < n; ++i, ++itr) {
       psmilu_assert((size_type)*itr < _val_pos.size(),
                     "inv-val-pos index %zd exceeds value position length",
@@ -241,10 +258,15 @@ class AugmentedCore {
   inline void _rotate_val_pos_right(const size_type n, const size_type src) {
     psmilu_assert(src < _val_pos_inv.size(), "%zd exceeds val_pos_inv size %zd",
                   src, _val_pos_inv.size());
-    const size_type start = src + 1u - n;  // plus one goes first!
+    // NOTE for clean implementation, we plus 1 before subtract n to avoid
+    // ugly integer "overflow" (there is not overflow in unsigned anyway).
+    // explian: src-n may become max(size_t), which, to me, seems ugly, even
+    // though +1 will make it back to 0...
+    const size_type start = src + 1u - n;
     rotate_right(n, src, _val_pos_inv);
     // then assign new positions
     auto itr = _val_pos_inv.cbegin() + start;
+    // this is how to build inverse mapping
     for (size_type i = 0u; i < n; ++i, ++itr) {
       psmilu_assert((size_type)*itr < _val_pos.size(),
                     "inv-val-pos index %zd exceeds value position length",
@@ -256,6 +278,7 @@ class AugmentedCore {
   /// \brief interface the head and tail nodes given list i and k
   /// \param[in] i i-th linked list
   /// \param[in] k k-th linked list
+  /// \note Complexity: \f$\mathcal{O}(1)\f$
   inline void _interchange_ik_head_tail(const size_type i, const size_type k) {
     psmilu_assert(i < _node_start.size(), "%zd exceeds node_start size %zd", i,
                   _node_start.size());
@@ -452,10 +475,15 @@ class AugCRS : public CrsType,
     psmilu_assert(i < ncols(), "%zd exceeds max ncols", i);
     psmilu_assert(k < ncols(), "%zd exceeds max ncols", k);
     if (i == k) return;  // fast return if possible
+    // get the starting handles/IDs
     index_type i_col_id = start_col_id(i), k_col_id = start_col_id(k);
     for (;;) {
+      // determine current statuses
       const bool i_empty = is_nil(i_col_id), k_empty = is_nil(k_col_id);
+      // break if both of them are empty/nil (meaning finished)
       if (i_empty && k_empty) break;
+      // get the row indices for i and k, as well as the value positions, which
+      // are needed to locate the corresponding locations of the vals array
       const index_type i_row = !i_empty ? row_idx(i_col_id) : _NIL;
       const index_type k_row = !k_empty ? row_idx(k_col_id) : _NIL;
       const index_type i_vp  = !i_empty ? val_pos_idx(i_col_id) : _NIL;
@@ -471,13 +499,23 @@ class AugCRS : public CrsType,
         k_col_id = next_col_id(k_col_id);
       } else if (i_row < k_row || is_nil(k_row)) {
         // rotate i_row to k_row
+        // get the local row range by using standard CRS API
+        // then get the position of i-col by using the value position
         auto i_col_itr_first = crs_type::col_ind_begin(i_row),
              i_col_itr_last  = crs_type::col_ind_end(i_row),
              i_col_itr_pos   = crs_type::col_ind().begin() + i_vp;
         psmilu_assert(std::is_sorted(i_col_itr_first, i_col_itr_last),
                       "%zd is not a sorted row", (size_type)i_row);
+        // since k is missing, we need to find the nearest position of k, but
+        // first of all, find the k-col value based on OneBased
         const index_type k_col = to_ori_idx<index_type, ONE_BASED>(k);
         // O(log n)
+        // NOTE we use lower-bound option, thus, given the following example
+        //  [1 4 8]
+        // if we want to find 0, then index 0 is returned
+        // if we want to find 2, then index 1 is returned
+        // if we want to find 5, then index 2 is returned
+        // if we want to find 9, then index 3 (pass-of-end) is returned
         auto srch_info = find_sorted(i_col_itr_first, i_col_itr_last, k_col);
         // we should not find the value, cuz if true, it should to the code
         // block above
@@ -510,7 +548,8 @@ class AugCRS : public CrsType,
         // keep k, advance i
         i_col_id = next_col_id(i_col_id);
       } else {
-        // rotate k_row to i_row
+        // rotate k_row to i_row, this is exactly the same as above, just change
+        // i to k
         auto k_col_itr_first = crs_type::col_ind_begin(k_row),
              k_col_itr_last  = crs_type::col_ind_end(k_row),
              k_col_itr_pos   = crs_type::col_ind().begin() + k_vp;
@@ -727,11 +766,16 @@ class AugCCS : public CcsType,
     psmilu_assert(i < nrows(), "%zd exceeds max nrows", i);
     psmilu_assert(k < nrows(), "%zd exceeds max nrows", k);
     if (i == k) return;  // fast return
+    // get the starting handles/IDs
     index_type i_row_id = start_row_id(i), k_row_id = start_row_id(k);
     for (;;) {
       // determine the emptyness
       const bool i_empty = is_nil(i_row_id), k_empty = is_nil(k_row_id);
+      // break if both are nil/empty, meaning that we have finished swapping
       if (i_empty && k_empty) break;
+      // get the column indices of i and k, as well as the value positions,
+      // which are needed to locate the corresponding locations of the vals
+      // array
       const index_type i_col = !i_empty ? col_idx(i_row_id) : _NIL;
       const index_type k_col = !k_empty ? col_idx(k_row_id) : _NIL;
       const index_type i_vp  = !i_empty ? val_pos_idx(i_row_id) : _NIL;
@@ -747,6 +791,8 @@ class AugCCS : public CcsType,
         k_row_id = next_row_id(k_row_id);
       } else if (i_col < k_col || is_nil(k_col)) {
         // rotate i_col to k_col
+        // get the local range of column by using standard CCS API
+        // then get the positions of i-row by using the value position
         auto i_row_itr_first = ccs_type::row_ind_begin(i_col),
              i_row_itr_last  = ccs_type::row_ind_end(i_col),
              i_row_itr_pos   = ccs_type::row_ind().begin() + i_vp;
@@ -768,6 +814,7 @@ class AugCCS : public CcsType,
             rotate_left(n, i_vp, row_ind());
             rotate_left(n, i_vp, vals());
           } else {
+            // plus 1 due to using lower_bound
             _base::_rotate_val_pos_right(n + 1, i_vp);
             rotate_right(n + 1, i_vp, row_ind());
             rotate_right(n + 1, i_vp, vals());
@@ -782,7 +829,7 @@ class AugCCS : public CcsType,
         // advance i
         i_row_id = next_row_id(i_row_id);
       } else {
-        // rotate k_col to i_col
+        // rotate k_col to i_col, exactly same as above, just change i to k
         auto k_row_itr_first = ccs_type::row_ind_begin(k_col),
              k_row_itr_last  = ccs_type::row_ind_end(k_col),
              k_row_itr_pos   = ccs_type::row_ind().begin() + k_vp;
