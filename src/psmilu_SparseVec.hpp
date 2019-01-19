@@ -156,7 +156,7 @@ class IndexValueArray {
 /// \f$\textrm{lnnz}\f$ is the local number of nonzeros.
 template <class ValueType, class IndexType, bool OneBased = false>
 class SparseVector : public IndexValueArray<ValueType, IndexType, OneBased> {
-  typedef IndexValueArray<ValueType, IndexType> _base;
+  typedef IndexValueArray<ValueType, IndexType, OneBased> _base;
 
  public:
   typedef typename _base::value_type  value_type;   ///< value
@@ -178,7 +178,7 @@ class SparseVector : public IndexValueArray<ValueType, IndexType, OneBased> {
   /// \param[in] s_n sparse index size, if == 0 (default), then use \a d_n
   explicit SparseVector(const size_type d_n, const size_type s_n = 0u)
       : _base(d_n, s_n),
-        _dense_tags(d_n, _EMPTY),
+        _dense_tags(d_n, static_cast<index_type>(-1)),
         _sparse_tags(_inds.size(), false) {}
 
   // ban copy methods
@@ -194,9 +194,13 @@ class SparseVector : public IndexValueArray<ValueType, IndexType, OneBased> {
   /// \param[in] s_n sparse size, if == 0 (default), using \a d_n
   /// \note Overloading the base version, i.e. \ref _base::resize
   inline void resize(const size_type d_n, const size_type s_n = 0u) {
+    constexpr static auto _empty = _EMPTY;
     _base::resize(d_n, s_n);
-    _dense_tags.resize(d_n, _EMPTY);
-    _sparse_tags.resize(_inds.size(), false);
+    _dense_tags.resize(d_n);
+    _sparse_tags.resize(_inds.size());
+    // NOTE that we enforce to reset ALL tags to default/empty stage
+    std::fill(_dense_tags.begin(), _dense_tags.end(), _empty);
+    std::fill(_sparse_tags.begin(), _sparse_tags.end(), false);
   }
 
   /// \brief mark an index to be dropped node
@@ -226,7 +230,7 @@ class SparseVector : public IndexValueArray<ValueType, IndexType, OneBased> {
   inline bool push_back(const index_type i, const size_type step) {
     const size_type j = to_c_idx<size_type, OneBased>(i);
     psmilu_assert(j < _dense_tags.size(), "%zd exceeds the dense size", j);
-    if (_dense_tags[j] != step) {
+    if (_dense_tags[j] != static_cast<index_type>(step)) {
       _base::push_back(i);
       _dense_tags[j] = step;
       return true;  // got a new value
