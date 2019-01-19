@@ -8,3 +8,5 @@
 /// \defgroup ds Data Structures
 
 /// \defgroup util Utilities
+
+/// \defgroup alg Algorithms
