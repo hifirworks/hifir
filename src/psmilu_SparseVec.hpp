@@ -117,9 +117,19 @@ class IndexValueArray {
   inline value_type val(const size_type i) const { return _vals[c_idx(i)]; }
 
   /// \brief operator access
-  /// \param[in] i local index in range of _counts (C-based)
-  inline const value_type &operator[](const size_type i) const {
-    return _vals[c_idx(i)];
+  /// \param[in] idx idx in range of dense suze, one-based aware
+  inline value_type &operator[](const size_type idx) {
+    psmilu_assert((to_c_idx<size_type, OneBased>(idx)) < _vals.size(),
+                  "%zd exceeds value size bound", idx - OneBased);
+    return _vals[to_c_idx<size_type, OneBased>(idx)];
+  }
+
+  /// \brief operator access, constant version
+  /// \param[in] idx idx in range of dense suze, one-based aware
+  inline const value_type &operator[](const size_type idx) const {
+    psmilu_assert((to_c_idx<size_type, OneBased>(idx)) < _vals.size(),
+                  "%zd exceeds value size bound", idx - OneBased);
+    return _vals[to_c_idx<size_type, OneBased>(idx)];
   }
 
   // utils
@@ -199,11 +209,12 @@ class SparseVector : public IndexValueArray<ValueType, IndexType, OneBased> {
   /// \brief compress indices
   inline void compress_indices() {
     size_type i = 0u;
-    for (auto j = i; j < _counts; ++j)
-      if (_sparse_tags[j]) {
-        _inds[i++]      = _inds[j];
+    for (auto j = i; j < _counts; ++j) {
+      if (!_sparse_tags[j])
+        _inds[i++] = _inds[j];
+      else
         _sparse_tags[j] = false;  // NOTE that the flag reset here
-      }
+    }
     _counts = i;
   }
 
