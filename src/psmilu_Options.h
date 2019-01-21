@@ -54,7 +54,7 @@ struct psmilu_Options {
   int    c_d;       /*!< size parameter for dense LU (1) */
   int    c_h;       /*!< size parameter for H-version (10) */
   int    N;         /*!< reference size of matrix (-1, system size) */
-  int    verbose;   /*! message output level (1, i.e. info) */
+  int    verbose;   /*!< message output level (1, i.e. info) */
 };
 
 /*!
@@ -167,6 +167,6 @@ inline std::string opt_repr(const Options &opt) {
 
 #endif /* __cplusplus */
 
-/*! @}*/  // interface group
+/*! @}*/  /* interface group */
 
 #endif /* _PSMILU_OPTIONS_H */
