@@ -27,6 +27,10 @@
 
 #include "psmilu_log.hpp"
 
+//----------------------
+// dense section
+//----------------------
+
 template <class T>
 using matrix = std::vector<std::vector<T>>;
 
@@ -80,6 +84,16 @@ convert2dense(const CS &cs) {
       for (decltype(i) j = 0u; j < m; ++j) ASSERT_EQ(mat1[i][j], mat2[i][j]); \
   } while (false)
 
+#define COMPARE_MATS_TOL(mat1, mat2, tol)                  \
+  do {                                                     \
+    ASSERT_EQ(mat1.size(), mat2.size());                   \
+    ASSERT_EQ(mat1.front().size(), mat2.front().size());   \
+    const auto n = mat1.size(), m = mat1.front().size();   \
+    for (decltype(mat1.size()) i = 0u; i < n; ++i)         \
+      for (decltype(i) j = 0u; j < m; ++j)                 \
+        ASSERT_LE(std::abs(mat1[i][j] - mat2[i][j]), tol); \
+  } while (false)
+
 template <class T>
 static void interchange_dense_rows(matrix<T> &mat, const int i, const int j) {
   mat.at(i).swap(mat.at(j));
@@ -111,6 +125,28 @@ static void load_dense_row(const int row, const matrix<T> &mat,
   rv               = temp;
 }
 
+template <class T, class DiagArray>
+static void scale_dense_left(matrix<T> &mat, const DiagArray &s) {
+  for (auto i = 0u; i < mat.size(); ++i) {
+    const auto d   = s[i];
+    auto &     row = mat[i];
+    for (auto &v : row) v *= d;
+  }
+}
+
+template <class T, class DiagArray>
+static void scale_dense_right(matrix<T> &mat, const DiagArray &t) {
+  const auto n = std::min(mat.front().size(), t.size());
+  for (auto i = 0u; i < mat.size(); ++i) {
+    auto &row = mat[i];
+    for (auto j = 0u; j < n; ++j) row[j] *= t[j];
+  }
+}
+
+//----------------------
+// aug ds section
+//----------------------
+
 template <class AugCrs>
 static void load_aug_crs_col(
     const int col, const AugCrs &aug_crs,
@@ -139,6 +175,10 @@ static void load_aug_ccs_row(const int row, const AugCcs &aug_ccs,
     id                         = aug_ccs.next_row_id(id);
   }
 }
+
+//--------------------------
+// random number generators
+//--------------------------
 
 template <typename T>
 class RandGen {
