@@ -49,6 +49,7 @@ class IndexValueArray {
   typedef std::vector<index_type>        iarray_type;  ///< index array
   typedef typename array_type::size_type size_type;    ///< size
   typedef IndexValueArray                this_type;    ///< handy type wrapper
+  constexpr static bool ONE_BASED = OneBased;          ///< C index flag
 
   /// \brief default constructor
   IndexValueArray() : _vals(), _inds(), _counts(0u) {}
@@ -117,7 +118,7 @@ class IndexValueArray {
   inline value_type val(const size_type i) const { return _vals[c_idx(i)]; }
 
   /// \brief operator access
-  /// \param[in] idx idx in range of dense suze, one-based aware
+  /// \param[in] idx idx in range of dense size, one-based aware
   inline value_type &operator[](const size_type idx) {
     psmilu_assert((to_c_idx<size_type, OneBased>(idx)) < _vals.size(),
                   "%zd exceeds value size bound", idx - OneBased);
@@ -125,7 +126,7 @@ class IndexValueArray {
   }
 
   /// \brief operator access, constant version
-  /// \param[in] idx idx in range of dense suze, one-based aware
+  /// \param[in] idx idx in range of dense size, one-based aware
   inline const value_type &operator[](const size_type idx) const {
     psmilu_assert((to_c_idx<size_type, OneBased>(idx)) < _vals.size(),
                   "%zd exceeds value size bound", idx - OneBased);
