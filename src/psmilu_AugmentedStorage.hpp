@@ -341,14 +341,15 @@ class AugCRS : public CrsType,
   typedef internal::AugmentedCore<typename CrsType::index_type> _base;
 
  public:
-  typedef AugCRS                           this_type;  ///< aug crs type
-  typedef CrsType                          crs_type;   ///< crs
-  typedef typename crs_type::other_type    ccs_type;   ///< ccs
-  typedef typename crs_type::size_type     size_type;  ///< size
-  constexpr static bool                    ONE_BASED = crs_type::ONE_BASED;
-  typedef typename _base::iarray_type      iarray_type;  ///< index array
-  typedef typename iarray_type::value_type index_type;   ///< index type
-  typedef typename crs_type::value_type    value_type;   ///< value
+  typedef AugCRS                           this_type;     ///< aug crs type
+  typedef CrsType                          crs_type;      ///< crs
+  typedef typename crs_type::other_type    ccs_type;      ///< ccs
+  typedef typename crs_type::size_type     size_type;     ///< size
+  typedef typename _base::iarray_type      iarray_type;   ///< index array
+  typedef typename iarray_type::value_type index_type;    ///< index type
+  typedef typename crs_type::value_type    value_type;    ///< value
+  constexpr static bool ONE_BASED = crs_type::ONE_BASED;  ///< C index flag
+  constexpr static bool ROW_MAJOR = true;                 ///< crs flag
 
  private:
   constexpr static index_type _NIL = _base::_NIL;
@@ -634,14 +635,15 @@ class AugCCS : public CcsType,
   typedef internal::AugmentedCore<typename CcsType::index_type> _base;
 
  public:
-  typedef AugCCS                           this_type;  ///< this
-  typedef CcsType                          ccs_type;   ///< ccs type
-  typedef typename ccs_type::other_type    crs_type;   ///< crs
-  typedef typename ccs_type::size_type     size_type;  ///< size
-  constexpr static bool                    ONE_BASED = ccs_type::ONE_BASED;
-  typedef typename _base::iarray_type      iarray_type;  ///< index array
-  typedef typename iarray_type::value_type index_type;   ///< index type
-  typedef typename ccs_type::value_type    value_type;   ///< value
+  typedef AugCCS                           this_type;     ///< this
+  typedef CcsType                          ccs_type;      ///< ccs type
+  typedef typename ccs_type::other_type    crs_type;      ///< crs
+  typedef typename ccs_type::size_type     size_type;     ///< size
+  typedef typename _base::iarray_type      iarray_type;   ///< index array
+  typedef typename iarray_type::value_type index_type;    ///< index type
+  typedef typename ccs_type::value_type    value_type;    ///< value
+  constexpr static bool ONE_BASED = ccs_type::ONE_BASED;  ///< C index flag
+  constexpr static bool ROW_MAJOR = false;                ///< row major flag
 
  private:
   constexpr static index_type _NIL = _base::_NIL;
