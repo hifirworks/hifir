@@ -304,7 +304,7 @@ class Array {
       _size = n;
       return;
     }
-    const size_type cap  = 1.2 * n;  // 20% more
+    const size_type cap  = _size ? 1.2 * n : n;  // 20% more
     pointer         data = new (std::nothrow) value_type[cap];
     psmilu_assert(data, "memory allocation failed");
     if (!data) {
