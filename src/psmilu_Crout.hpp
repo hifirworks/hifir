@@ -80,10 +80,8 @@ class Crout {
     // compute -L(k+1:n,1:k-1)d(1:k-1,1:k-1)U(1:k-1,k)
     if (_step) {
       // get the leading value and index iterators for L
-      auto L_v_first = L.vals().cbegin();
-      auto L_i_first = L.row_ind().cbegin();
-      // get the leading value pos for U
-      auto       U_v_first = U.vals().cbegin();
+      auto       L_v_first = L.vals().cbegin();
+      auto       L_i_first = L.row_ind().cbegin();
       index_type aug_id    = U.start_col_id(_step);  // get starting column ID
       while (!U.is_nil(aug_id)) {
         // get the row index (C-based)
@@ -96,7 +94,7 @@ class Crout {
         // get the value position
         // NOTE this needs to be changed when we discard val_pos impl (U_start)
         // compute D*U first for this entry
-        const auto du = d[r_idx] * *(U_v_first + U.val_pos_idx(aug_id));
+        const auto du = d[r_idx] * U.val_from_col_id(aug_id);
         // get the starting position from L_start
         auto L_v_itr  = L_v_first + L_start[r_idx];
         auto L_i_itr  = L_i_first + L_start[r_idx],
@@ -151,8 +149,6 @@ class Crout {
       // get leading value and index iterators for U
       auto U_v_first = U.vals().cbegin();
       auto U_i_first = U.col_ind().cbegin();
-      // get the leading value pos for L
-      auto L_v_first = L.vals().cbegin();
       // get starting row ID
       index_type aug_id = L.start_row_id(_step);
       while (!L.is_nil(aug_id)) {
@@ -165,7 +161,7 @@ class Crout {
                       "%zd exceeds the U_start size", (size_type)c_idx);
         // NOTE once we drop val-pos impl, change this accordingly (L_start)
         // compute L*D
-        const auto ld = *(L_v_first + L.val_pos_idx(aug_id)) * d[c_idx];
+        const auto ld = L.val_from_row_id(aug_id) * d[c_idx];
         // get the starting position from U_start
         auto U_v_itr  = U_v_first + U_start[c_idx];
         auto U_i_itr  = U_i_first + U_start[c_idx],
@@ -244,13 +240,27 @@ class Crout {
   inline typename std::enable_if<!IsSymm>::type update_B_diag(
       const SpVecType &l, const SpVecType &ut, const size_type m,
       DiagType &d) const {
+    // NOTE that we need the internal dense tag from sparse vector
+    // thus, we can either:
+    //    1) make this function a friend of SparseVec, or
+    //    2) create a caster class
+    class SpVecDenseTagExtractor : public SpVecType {
+     public:
+      typedef SpVecType                  base;
+      typedef typename base::iarray_type dense_tag_type;
+      using const_reference = const dense_tag_type &;
+      inline const_reference dense_tag() const { return base::_dense_tags; }
+    };
+
     // get the current diagonal entry
     const auto dk = d[_step];
     // NOTE since l and ut are in general unsorted, we need to loop through
     // one of them and determine the existance of the other entry, this can
     // be done by utilizing the dense tags in sparse vector
-    const auto &    l_d_tags = l.dense_tags();
-    const size_type n        = ut.size();
+    // NOTE static casting to the extractor
+    const auto &l_d_tags =
+        static_cast<const SpVecDenseTagExtractor &>(l).dense_tag();
+    const size_type n = ut.size();
     // NOTE we choose to loop out ut, cuz in general length(ut) <= length(l)
     // otherwise, another checking is needed for index bound
     for (size_type i = 0u; i < n; ++i) {
@@ -366,8 +376,6 @@ class Crout {
             ut.push_back(to_ori_idx<size_type, base>(c_idx), _step);
         psmilu_assert(val_must_not_exit,
                       "see prefix, failed on Crout step %zd for ut", _step);
-        // null statement for opt and getting rid of unused warning
-        (void)val_must_not_exit;
         ut.vals()[c_idx] = s_pk * *v_itr * t[c_idx];  // scale here
       }
     }
