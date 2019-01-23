@@ -239,9 +239,6 @@ class SparseVector : public IndexValueArray<ValueType, IndexType, OneBased> {
     return false;  // not a new value
   }
 
-  /// \brief get the dense flags
-  const iarray_type &dense_tags() const { return _dense_tags; }
-
  protected:
   using _base::_counts;            ///< bring in base counts
   using _base::_inds;              ///< bring in base value array
