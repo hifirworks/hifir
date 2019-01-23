@@ -4,6 +4,10 @@
 //----------------------------------------------------------------------------
 //@HEADER
 
+// Unit testing utilities
+// Author(s):
+//    Qiao,
+
 #pragma once
 
 #include <algorithm>
@@ -141,6 +145,48 @@ static void scale_dense_right(matrix<T> &mat, const DiagArray &t) {
     auto &row = mat[i];
     for (auto j = 0u; j < n; ++j) row[j] *= t[j];
   }
+}
+
+template <class T>
+static matrix<T> dense_mm(const matrix<T> &A, const matrix<T> &B) {
+  const int nrows = A.size();
+  const int ncols = B.front().size();
+  const int K     = B.size();
+  auto      C     = create_mat<T>(nrows, ncols);  // all initialized to zeros
+  for (int i = 0; i < nrows; ++i) {
+    auto &C_i = C[i];
+    for (int k = 0; k < K; ++k) {
+      const T A_ik = A[i][k];
+      for (int j = 0; j < ncols; ++j) C_i[j] += A_ik * B[k][j];
+    }
+  }
+  return C;
+}
+
+template <class T>
+static std::vector<T> extract_diag(const matrix<T> &A) {
+  const int      n = std::min(A.size(), A.front().size());
+  std::vector<T> diag(n);
+  for (int i = 0; i < n; ++i) diag[i] = A[i][i];
+  return diag;
+}
+
+template <class T>
+static std::vector<T> extract_erase_diag(matrix<T> &A) {
+  const int      n    = std::min(A.size(), A.front().size());
+  const static T zero = T();
+  std::vector<T> diag(n);
+  for (int i = 0; i < n; ++i) {
+    diag[i] = A[i][i];
+    A[i][i] = zero;
+  }
+  return diag;
+}
+
+template <class T>
+static void add_diag(const std::vector<T> &diag, matrix<T> &A) {
+  const int n = std::min(std::min(A.size(), A.front().size()), diag.size());
+  for (int i = 0; i < n; ++i) A[i][i] += diag[i];
 }
 
 //----------------------
