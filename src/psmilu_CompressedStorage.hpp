@@ -514,8 +514,8 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   /// \sa scale_diag_right
   ///
   /// Mathematically, this member function is to perform
-  /// \f$ diag(\boldsymbol{s})\boldsymbol{A}\f$; the overall complexity is in
-  /// order of \f$\mathcal{O}(nnz)\f$
+  /// \f$ \textrm{diag}(\boldsymbol{s})\boldsymbol{A}\f$; the overall complexity
+  /// is in order of \f$\mathcal{O}(nnz)\f$
   template <class DiagArray>
   inline void scale_diag_left(const DiagArray &s) {
     psmilu_error_if(row_start().size() > s.size() + 1u,
@@ -535,8 +535,8 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   /// \sa scale_diag_left
   ///
   /// Mathematically, this member function is to perform
-  /// \f$\boldsymbol{A} diag(\boldsymbol{t})\f$; the overall complexity is in
-  /// order of \f$\mathcal{O}(nnz)\f$
+  /// \f$\boldsymbol{A} \textrm{diag}(\boldsymbol{t})\f$; the overall complexity
+  /// is in order of \f$\mathcal{O}(nnz)\f$
   template <class DiagArray>
   inline void scale_diag_right(const DiagArray &t) {
     psmilu_error_if(_ncols > t.size(), "column sizes do not match (%zd,%zd)",
@@ -554,7 +554,7 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   /// \param[in] t diagonal matrix of right side
   ///
   /// Mathematically, this member function is to perform
-  /// \f$diag(\boldsymbol{s}) \boldsymbol{A} diag(\boldsymbol{t})\f$
+  /// \f$\textrm{diag}(\boldsymbol{s}) \boldsymbol{A} \textrm{diag}(\boldsymbol{t})\f$
   template <class LeftDiagArray, class RightDiagArray>
   inline void scale_diags(const LeftDiagArray &s, const RightDiagArray &t) {
     scale_diag_left(s);
@@ -748,8 +748,8 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   /// \sa scale_diag_right
   ///
   /// Mathematically, this member function is to perform
-  /// \f$ diag(\boldsymbol{s})\boldsymbol{A}\f$; the overall complexity is in
-  /// order of \f$\mathcal{O}(nnz)\f$
+  /// \f$ \textrm{diag}(\boldsymbol{s})\boldsymbol{A}\f$; the overall complexity
+  /// is in order of \f$\mathcal{O}(nnz)\f$
   template <class DiagArray>
   inline void scale_diag_left(const DiagArray &s) {
     psmilu_error_if(_nrows > s.size(), "row sizes do not match (%zd,%zd)",
@@ -766,8 +766,8 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   /// \sa scale_diag_left
   ///
   /// Mathematically, this member function is to perform
-  /// \f$\boldsymbol{A} diag(\boldsymbol{s})\f$; the overall complexity is in
-  /// order of \f$\mathcal{O}(nnz)\f$
+  /// \f$\boldsymbol{A} \textrm{diag}(\boldsymbol{s})\f$; the overall complexity
+  /// is in order of \f$\mathcal{O}(nnz)\f$
   template <class DiagArray>
   inline void scale_diag_right(const DiagArray &t) {
     psmilu_error_if(col_start().size() > t.size() + 1u,
@@ -788,7 +788,7 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   /// \param[in] t diagonal matrix of right side
   ///
   /// Mathematically, this member function is to perform
-  /// \f$diag(\boldsymbol{s}) \boldsymbol{A} diag(\boldsymbol{t})\f$
+  /// \f$\textrm{diag}(\boldsymbol{s}) \boldsymbol{A} \textrm{diag}(\boldsymbol{t})\f$
   template <class LeftDiagArray, class RightDiagArray>
   inline void scale_diags(const LeftDiagArray &s, const RightDiagArray &t) {
     scale_diag_left(s);
