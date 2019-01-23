@@ -298,8 +298,9 @@ class AugmentedCore {
   inline void _build_aug(const size_type nlist, const iarray_type &ind_start,
                          const iarray_type &indices) {
     typedef typename iarray_type::const_iterator const_iterator;
-    psmilu_assert(ind_start.back() - ind_start.front() != indices.size(),
-                  "nnz size issue");
+    psmilu_assert(
+        size_type(ind_start.back() - ind_start.front()) == indices.size(),
+        "nnz size issue");
     // reserve spaces
     const size_type nnz = indices.size();
     reserve(nnz);                  // reserve space
@@ -307,7 +308,7 @@ class AugmentedCore {
     const size_type n = ind_start.size() - 1u;
     for (size_type i = 0u; i < n; ++i) {
       const size_type j = to_c_idx<size_type, OneBased>(ind_start[i]);
-      psmilu_assert(j < indices.size(), "%zd exceeds indices size", j);
+      // psmilu_assert(j < indices.size(), "%zd exceeds indices size", j);
       const size_type lnnz  = ind_start[i + 1] - ind_start[i];
       auto            first = indices.cbegin() + j, last = first + lnnz;
       // push back nodes
@@ -390,7 +391,7 @@ class AugCRS : public CrsType,
         crs.nrows() + 1u != crs.row_start().size(),
         "row-start array size (%zd) does not agree with nrows (%zd)",
         crs.row_start().size(), crs.nrows());
-    psmilu_error_if(crs.nnz() != crs.col_ind.size(), "inconsistent nnz");
+    psmilu_error_if(crs.nnz() != crs.col_ind().size(), "inconsistent nnz");
     _base::template _build_aug<ONE_BASED>(crs.ncols(), crs.row_start(),
                                           crs.col_ind());
   }
@@ -404,7 +405,7 @@ class AugCRS : public CrsType,
         crs.nrows() + 1u != crs.row_start().size(),
         "row-start array size (%zd) does not agree with nrows (%zd)",
         crs.row_start().size(), crs.nrows());
-    psmilu_error_if(crs.nnz() != crs.col_ind.size(), "inconsistent nnz");
+    psmilu_error_if(crs.nnz() != crs.col_ind().size(), "inconsistent nnz");
     _base::template _build_aug<ONE_BASED>(crs.ncols(), crs.row_start(),
                                           crs.col_ind());
   }
