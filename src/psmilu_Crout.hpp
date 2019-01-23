@@ -76,7 +76,6 @@ class Crout {
 
     // first load the A
     _load_A2l(ccs_A, p, qk, l);
-    std::cout << "load-L done!" << std::endl;
     // if not the first step
     // compute -L(k+1:n,1:k-1)d(1:k-1,1:k-1)U(1:k-1,k)
     if (_step) {
@@ -102,7 +101,6 @@ class Crout {
         auto L_v_itr  = L_v_first + L_start[r_idx];
         auto L_i_itr  = L_i_first + L_start[r_idx],
              L_i_last = L.row_ind_cend(r_idx);
-             std::cout << "here " << L_start[r_idx] << std::endl;
         // for this local range
         for (; L_i_itr != L_i_last; ++L_i_itr, ++L_v_itr) {
           // convert to c index
@@ -111,6 +109,7 @@ class Crout {
           // -L*d*u, else, -= L*d*u
           l.push_back(*L_i_itr, _step) ? l.vals()[c_idx] = -*L_v_itr * du
                                        : l.vals()[c_idx] -= *L_v_itr * du;
+          std::cout << "L=(" << c_idx << ',' << l.vals()[c_idx] << ")\n";
         }
         // advance augmented handle
         aug_id = U.next_col_id(aug_id);
@@ -141,7 +140,6 @@ class Crout {
 
     // first load the A
     _load_A2ut<IsSymm>(s, crs_A, t, q, pk, m, ut);
-    std::cout << "step=" << _step << '\n';
     // if not the first step
     // compute -L(k,1:k-1)d(1:k-1,1:k-1)U(1:k-1,k+1:n)
     if (_step) {
@@ -156,7 +154,6 @@ class Crout {
         // get the column index (C-based)
         // NOTE the column index is that of the row in U
         const index_type c_idx = L.col_idx(aug_id);
-        std::cout << _step << ':' << c_idx << '\n';
         psmilu_assert((size_type)c_idx < d.size(),
                       "%zd exceeds the diagonal vector size", (size_type)c_idx);
         psmilu_assert((size_type)c_idx < U_start.size(),
@@ -187,17 +184,20 @@ class Crout {
     static_assert(!L_augCcsType::ROW_MAJOR, "L must be AugCCS");
     using index_type = typename L_augCcsType::index_type;
 
+    // NOTE this routine should be called at the beginning of the crout update
+    // this is easy to handle
     if (!_step) return;
+    // we just added a new column to L, which is _step-1
+    // we, then, assign the starting ID should be its start_ind
+    L_start[_step - 1] = L.col_start()[_step - 1];
     // get the aug handle
     index_type aug_id = L.start_row_id(_step);
     // loop through current row, O(l_k')
     while (!L.is_nil(aug_id)) {
       // get the column index, C based
       const index_type c_idx = L.col_idx(aug_id);
-      // NOTE that once we drop val-pos impl, we need to re-implement this, and
-      // redesign the API. In that case, this needs to be done with row/col
-      // interchanges
-      L_start[c_idx] = L.val_pos_idx(aug_id);
+      // for each of this starting inds, advance one
+      if (L_start[c_idx] < L.col_start()[c_idx + 1]) ++L_start[c_idx];
       // advance augmented handle
       aug_id = L.next_row_id(aug_id);
     }
@@ -209,7 +209,10 @@ class Crout {
     static_assert(U_augCrsType::ROW_MAJOR, "U must be AugCRS");
     using index_type = typename U_augCrsType::index_type;
 
+    // NOTE this routine should be called at the beginning of Crout update
     if (!_step) return;
+    // We need to handle the previous (just added) row
+    U_start[_step - 1] = U.row_start()[_step - 1];
     // get the aug handle
     const size_type start  = IsSymm ? m : _step;
     index_type      aug_id = U.start_col_id(start);
@@ -220,6 +223,7 @@ class Crout {
       // get the row index, C based
       const index_type c_idx = U.row_idx(aug_id);
       U_start[c_idx]         = U.val_pos_idx(aug_id);
+      if (U_start[c_idx] < U.row_start()[c_idx + 1]) ++U_start[c_idx];
       // advance augmented handle
       aug_id = U.next_col_id(aug_id);
     }
@@ -241,7 +245,7 @@ class Crout {
     for (size_type i = 0u; i < n; ++i) {
       const auto c_idx = ut.c_idx(i);
       psmilu_assert(
-          (size_type)c_idx > _step,
+          (size_type)c_idx >= _step,
           "should only contain the upper part of ut, (c_idx,step)=(%zd,%zd)!",
           (size_type)c_idx, _step);
       // if the dense tags of this entry points to this step, we know l has
@@ -265,7 +269,7 @@ class Crout {
     for (size_type i = 0u; i < n; ++i) {
       const auto c_idx = l.c_idx(i);
       psmilu_assert(
-          (size_type)c_idx > _step,
+          (size_type)c_idx >= _step,
           "should only contain the lower part of l, (c_idx,step)=(%zd,%zd)!",
           (size_type)c_idx, _step);
       if (c_idx < m) d[c_idx] -= dk * l.val(i) * l.val(i);
@@ -338,7 +342,6 @@ class Crout {
     psmilu_assert(ut.empty(), "ut should be empty while loading A");
     // note m == 0 should be checked b4 calling this routine
     const size_type thres = IsSymm ? m - 1u : _step;
-    std::cout << "step=" << _step << ':' << "thres=" << thres << std::endl;
     // pk is c index
     auto       v_itr = crs_A.val_cbegin(pk);
     auto       i_itr = crs_A.col_ind_cbegin(pk);
@@ -354,7 +357,6 @@ class Crout {
                       "see prefix, failed on Crout step %zd for ut", _step);
         // null statement for opt and getting rid of unused warning
         (void)val_must_not_exit;
-        std::cout << c_idx << std::endl;
         ut.vals()[c_idx] = s_pk * *v_itr * t[c_idx];  // scale here
       }
     }

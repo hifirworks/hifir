@@ -26,7 +26,7 @@ static const RandRealGen r_rand;
 // simplify the process, we make the system diagonal dominant.
 
 TEST(LU, c) {
-  const int n = 40;  // i_rand() + 2;
+  const int n = 5;  // i_rand() + 2;
   std::cout << "Problem size is " << n << '\n';
   auto                L = create_mat<double>(n, n);
   auto                U = create_mat<double>(n, n);
@@ -89,25 +89,45 @@ TEST(LU, c) {
   U2.begin_assemble_rows();
   L2.begin_assemble_cols();
 
+  // NOTE that within the crout steps, one should not see any of the
+  // desctructors been called!
+  std::cout << "begin crout update\n\n";
   for (; (int)crout < n; ++crout) {
     std::cout << "enter crout step " << crout << '\n';
+    std::cout << "\tupdating L_start...\n";
+    crout.update_L_start(L2, L_start);
+    std::cout << "\tupdating U_start...\n";
+    crout.update_U_start<false>(U2, n, U_start);
     // compute l and u
     l.reset_counter();
-    std::cout << 1 << '\n';
+    std::cout << "\tcomputing l_k...\n";
     crout.compute_l(A_ccs, p, crout, L2, L_start, d2, U2, l);
+    std::cout << "\tl_k size: " << l.size() << '\n';
     ut.reset_counter();
-    std::cout << 2 << '\n';
+    std::cout << "\tcomputing u_k\'...\n";
     crout.compute_ut<false>(s, A_crs, t, q, crout, n, L2, d2, U2, U_start, ut);
+    std::cout << "\tu_k\' size: " << ut.size() << '\n';
+    std::cout << "\tupdating diagonal matrix...\n";
     crout.update_B_diag<false>(l, ut, n, d2);
     // sort indices
+    std::cout << "\tsorting indices...\n";
     l.sort_indices();
     ut.sort_indices();
-    L2.push_back_col(crout, l.inds().cbegin(), l.inds().cend(), l.vals());
-    U2.push_back_row(crout, ut.inds().cbegin(), ut.inds().cend(), ut.vals());
-    crout.update_L_start(L2, L_start);
-    crout.update_U_start<false>(U2, n, U_start);
+    std::cout << "\tpushing back to L...\n";
+    L2.push_back_col(crout, l.inds().cbegin(), l.inds().cbegin() + l.size(),
+                     l.vals());
+    std::cout << "\tpushing back to U...\n";
+    U2.push_back_row(crout, ut.inds().cbegin(), ut.inds().cbegin() + ut.size(),
+                     ut.vals());
   }
 
   U2.end_assemble_rows();
   L2.end_assemble_cols();
+
+  std::cout << "\nfinished crout update\n";
+
+  std::cout << "d=\n";
+  for (const auto v : d) std::cout << v << '\n';
+  std::cout << "d2=\n";
+  for (const auto v : d2) std::cout << v << '\n';
 }
