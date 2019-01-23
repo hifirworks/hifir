@@ -12,7 +12,10 @@
 #define _PSMILU_UTILS_HPP
 
 #include <algorithm>
+#include <complex>
 #include <iterator>
+#include <limits>
+#include <type_traits>
 
 /** \addtogroup util
  * @{
@@ -91,6 +94,53 @@ template <class IndexType, bool OneBased>
 inline constexpr IndexType to_ori_idx(const IndexType i) {
   return i + static_cast<IndexType>(OneBased);
 }
+
+/// \brief trait extract value type
+/// \tparam T value type
+/// \note For user-defined types, instance this trait
+///
+/// By default, the value type is \a void for compilation error handling
+template <class T>
+struct ValueTypeTrait {
+  typedef void value_type;  ///< value type
+};
+
+// double
+template <>
+struct ValueTypeTrait<double> {
+  using value_type = double;
+};
+
+// float
+template <>
+struct ValueTypeTrait<float> {
+  using value_type = float;
+};
+
+// for standard complex numbers
+template <class T>
+struct ValueTypeTrait<std::complex<T>> {
+  typedef typename ValueTypeTrait<T>::value_type value_type;
+};
+
+/// \class Const
+/// \brief constant values
+/// \tparam T value type
+template <class T>
+class Const {
+ public:
+  typedef typename ValueTypeTrait<T>::value_type value_type;  ///< value type
+  typedef std::numeric_limits<value_type>        std_trait;   ///< std trait
+
+  constexpr static value_type MIN  = std_trait::min();  ///< safe machine min
+  constexpr static value_type MAX  = std_trait::max();  ///< safe machine max
+  constexpr static value_type EPS  = std_trait::epsilon();  ///< machine prec
+  constexpr static value_type ZERO = value_type();          ///< zero
+  constexpr static value_type ONE  = value_type(1);         ///< one
+
+  static_assert(!std::is_same<value_type, void>::value,
+                "not a support value type, instance ValueTypeTrait first");
+};
 
 }  // namespace psmilu
 
