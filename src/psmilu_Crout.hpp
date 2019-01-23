@@ -109,12 +109,17 @@ class Crout {
           // -L*d*u, else, -= L*d*u
           l.push_back(*L_i_itr, _step) ? l.vals()[c_idx] = -*L_v_itr * du
                                        : l.vals()[c_idx] -= *L_v_itr * du;
-          std::cout << "L=(" << c_idx << ',' << l.vals()[c_idx] << ")\n";
         }
         // advance augmented handle
         aug_id = U.next_col_id(aug_id);
       }  // while
     }
+    // scale the inverse of diagonal
+    // TODO need to check singularity
+    const auto      dk_inv = 1. / d[_step];
+    const size_type n      = l.size();
+    auto &          vals   = l.vals();
+    for (size_type i = 0u; i < n; ++i) vals[l.c_idx(i)] *= dk_inv;
   }
 
   template <bool IsSymm, class LeftDiagType, class A_CrsType,
@@ -176,6 +181,12 @@ class Crout {
         aug_id = L.next_row_id(aug_id);
       }  // while
     }
+    // scale the inverse of dk
+    // TODO need to check singularity
+    const auto      dk_inv = 1. / d[_step];
+    const size_type n      = ut.size();
+    auto &          vals   = ut.vals();
+    for (size_type i = 0u; i < n; ++i) vals[ut.c_idx(i)] *= dk_inv;
   }
 
   template <class L_augCcsType, class L_StartType>
