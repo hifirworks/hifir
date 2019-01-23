@@ -111,6 +111,11 @@ TEST(LU, c) {
     ut.reset_counter();
     std::cout << "\tcomputing u_k\'...\n";
     crout.compute_ut<false>(s, A_crs, t, q, crout, n, L2, d2, U2, U_start, ut);
+    // scale inv d
+    EXPECT_FALSE(crout.scale_inv_diag(d, l))
+        << "singular at step " << crout << " for l\n";
+    EXPECT_FALSE(crout.scale_inv_diag(d, ut))
+        << "singular at step " << crout << " for ut\n";
     std::cout << "\tu_k\' size: " << ut.size() << '\n';
     std::cout << "\tupdating diagonal matrix...\n";
     crout.update_B_diag<false>(l, ut, n, d2);
@@ -136,8 +141,8 @@ TEST(LU, c) {
     EXPECT_NEAR(d[i], d2[i], tol)
         << "diagonal " << i << " out of " << n << " mismatched\n";
 
-  // std::cout << "d=\n";
-  // for (const auto v : d) std::cout << v << '\n';
-  // std::cout << "d2=\n";
-  // for (const auto v : d2) std::cout << v << '\n';
+  const auto mat_L = convert2dense(L2);
+  const auto mat_U = convert2dense(U2);
+  COMPARE_MATS_TOL(mat_L, L, tol);
+  COMPARE_MATS_TOL(mat_U, U, tol);
 }
