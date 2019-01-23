@@ -126,6 +126,7 @@ class AugmentedCore {
     _node_next.reserve(nnz);
     _val_pos.reserve(nnz);
     _val_pos.reserve(nnz);
+    _val_pos_inv.reserve(nnz);
   }
 
  protected:
