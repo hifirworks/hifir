@@ -35,12 +35,15 @@ Contacts
 
 This project is based on [cite reference here]; the package development is led
 by <a href="http://www.ams.sunysb.edu/~jiao/">Dr. Xiangmin (Jim) Jiao</a> with
-main developers Qiao Chen and Yipeng Li.
+main developer(s) Qiao Chen.
 
 \li Dr. Xiangmin (Jim) Jiao, xiangmin.jiao@stonybrook.edu
 \li Dr. Aditi Ghai, ghai.aditi03@gmail.com
 \li Qiao Chen, qiao.chen@stonybrook.edu
-\li Yipeng Li, yipeng.li@stonybrook.edu
+
+Active maintainer(s):
+
+\li Qiao Chen
 
 Publications
 ------------
@@ -52,8 +55,8 @@ Acknowledgments
 
 blah blah ...
 
-Future Work
------------
+TODO List
+---------
 
 blah blah ...
 
