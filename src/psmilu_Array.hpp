@@ -4,7 +4,7 @@
 //----------------------------------------------------------------------------
 //@HEADER
 
-/// \file psmilu_Array,hpp
+/// \file psmilu_Array.hpp
 /// \brief Array data structure, with functionality of wrapping external data
 /// \authors Qiao,
 
