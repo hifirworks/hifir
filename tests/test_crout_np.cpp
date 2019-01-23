@@ -14,11 +14,14 @@
 #include "psmilu_SparseVec.hpp"
 
 #include <gtest/gtest.h>
+#include <numeric>
 
 using namespace psmilu;
 
 static const RandIntGen  i_rand(0, 50);
 static const RandRealGen r_rand;
+
+constexpr static double eps = 1e-13;
 
 // this test script is to test the Crout by factorizing a matrix with
 // LU w/o pivoting. We start with multiplying exact dense matrices L and U
@@ -26,11 +29,11 @@ static const RandRealGen r_rand;
 // simplify the process, we make the system diagonal dominant.
 
 TEST(LU, c) {
-  const int n = 5;  // i_rand() + 2;
+  const int n = i_rand() + 2;
   std::cout << "Problem size is " << n << '\n';
-  auto                L = create_mat<double>(n, n);
-  auto                U = create_mat<double>(n, n);
-  std::vector<double> d(n);
+  auto          L = create_mat<double>(n, n);
+  auto          U = create_mat<double>(n, n);
+  Array<double> d(n);
   // assign L, omit unit diagonal
   for (int i = 1; i < n; ++i)
     for (int j = 0; j < i; ++j) L.at(i).at(j) = r_rand();
@@ -40,6 +43,8 @@ TEST(LU, c) {
 
   // build diagonal matrix
   for (int i = 0; i < n; ++i) d[i] = r_rand() + 2 * n;
+
+  const double tol = *std::max_element(d.cbegin(), d.cend()) * eps;
 
   // form a within local scope
   matrix<double> A;
@@ -126,8 +131,13 @@ TEST(LU, c) {
 
   std::cout << "\nfinished crout update\n";
 
-  std::cout << "d=\n";
-  for (const auto v : d) std::cout << v << '\n';
-  std::cout << "d2=\n";
-  for (const auto v : d2) std::cout << v << '\n';
+  // comparing diagonals
+  for (int i = 0; i < n; ++i)
+    EXPECT_NEAR(d[i], d2[i], tol)
+        << "diagonal " << i << " out of " << n << " mismatched\n";
+
+  // std::cout << "d=\n";
+  // for (const auto v : d) std::cout << v << '\n';
+  // std::cout << "d2=\n";
+  // for (const auto v : d2) std::cout << v << '\n';
 }
