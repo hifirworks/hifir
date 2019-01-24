@@ -42,8 +42,7 @@ class Lapack {
   template <typename T = int>
   inline typename std::enable_if<_INT_TYPE_CONSIS, T>::type getrf(
       const int_type n, pointer a, const int_type lda, int_type *ipiv) const {
-    return internal::getrf(n, n, a, lda,
-                           static_cast<psmilu_lapack_int *>(ipiv));
+    return internal::getrf(n, n, a, lda, (psmilu_lapack_int *)ipiv);
   }
 
   template <typename T = int>
