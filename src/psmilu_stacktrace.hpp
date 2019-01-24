@@ -22,7 +22,7 @@
 /// nicely to \a ostream \a __ss, thus can be later transferred to, e.g.,
 /// PSMILU_STDERR
 
-#ifdef __linux__
+#ifdef __GNUC__
 #  include <cxxabi.h>
 #  include <execinfo.h>
 #  define LOAD_STACKTRACE(__ss, __limit)                                     \
@@ -76,6 +76,6 @@
     do {                                                         \
       __ss << "stack trace is not available on the platform.\n"; \
     } while (false)
-#endif  // __linux__
+#endif  // __GNUC__
 
 #endif  // _PSMILU_STACKTRACE_HPP
