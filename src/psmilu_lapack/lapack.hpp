@@ -40,21 +40,21 @@ class Lapack {
 
  public:
   template <typename T = int>
-  inline typename std::enable_if<_INT_TYPE_CONSIS, T>::type getrf(
-      const int_type n, pointer a, const int_type lda, int_type *ipiv) const {
+  inline static typename std::enable_if<_INT_TYPE_CONSIS, T>::type getrf(
+      const int_type n, pointer a, const int_type lda, int_type *ipiv) {
     return internal::getrf(n, n, a, lda, (psmilu_lapack_int *)ipiv);
   }
 
   template <typename T = int>
-  inline typename std::enable_if<!_INT_TYPE_CONSIS, T>::type getrf(
-      const int_type n, pointer a, const int_type lda, int_type *ipiv) const {
+  inline static typename std::enable_if<!_INT_TYPE_CONSIS, T>::type getrf(
+      const int_type n, pointer a, const int_type lda, int_type *ipiv) {
     std::vector<psmilu_lapack_int> buf(n);
     const int info = internal::getrf(n, n, a, lda, buf.data());
     std::copy(buf.cbegin(), buf.cend(), ipiv);
     return info;
   }
 
-  inline void getrf(DenseMatrix<value_type> &a, int_type *ipiv) const {
+  inline static void getrf(DenseMatrix<value_type> &a, int_type *ipiv) {
     const int info = getrf(a.nrows(), a.data(), a.nrows(), ipiv);
     (void)info;
   }
