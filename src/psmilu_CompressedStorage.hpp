@@ -211,6 +211,53 @@ class CompressedStorage {
     _ind_start.push_back(_ind_start.back() + nnz);
   }
 
+  /// \brief push back two \b SORTED index lists to _indices
+  /// \tparam Iter1 iterator type 1
+  /// \tparam ValueArray1 dense value array 1
+  /// \tparam Iter2 iterator type 2
+  /// \tparam ValueArray2 dense value array 2
+  /// \param[in] ii ii-th entry in primary direction
+  /// \param[in] first1 starting iterator
+  /// \param[in] last1 ending iterator
+  /// \param[in] v1 dense value array, the value can be queried from indices
+  /// \param[in] first2 starting iterator
+  /// \param[in] last2 ending iterator
+  /// \param[in] v2 dense value array, the value can be queried from indices
+  /// \warning The indices are assumed to be sorted
+  template <class Iter1, class ValueArray1, class Iter2, class ValueArray2>
+  inline void _push_back_primary(const size_type ii, Iter1 first1, Iter1 last1,
+                                 const ValueArray1 &v1, Iter2 first2,
+                                 Iter2 last2, const ValueArray2 &v2) {
+    psmilu_assert(ii + 1u == _ind_start.size(),
+                  "inconsistent pushing back at entry %zd", ii);
+    (void)ii;
+    // first push back the list
+    psmilu_assert(_indices.size() == _vals.size(), "fatal error");
+    _indices.push_back(first1, last1);
+    _indices.push_back(first2, last2);
+    const auto nnz1  = std::distance(first1, last1);
+    const auto nnz2  = std::distance(first2, last2);
+    size_type  start = _vals.size();
+    psmilu_assert(nnz1 >= 0 && nnz2 >= 0, "reversed iterators");
+    // first range
+    _vals.resize(start + nnz1);
+    const size_type n1 = _vals.size();
+    for (; start < n1; ++start, ++first1) {
+      const auto j = to_c_idx<size_type, OneBased>(*first1);
+      psmilu_assert(j < v1.size(), "%zd exceeds the length of v1", j);
+      _vals[start] = v1[j];
+    }
+    // second range
+    _vals.resize(start + nnz2);
+    const size_type n2 = _vals.size();
+    for (; start < n2; ++start, ++first2) {
+      const auto j = to_c_idx<size_type, OneBased>(*first2);
+      psmilu_assert(j < v2.size(), "%zd exceeds the length of v2", j);
+      _vals[start] = v2[j];
+    }
+    // finally, push back ind start
+    _ind_start.push_back(_ind_start.back() + nnz1 + nnz2);
+  }
   /// \brief check local number of nonzeros
   /// \param[in] i i-th entry in primary direction
   inline size_type _nnz(const size_type i) const {
@@ -554,7 +601,8 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   /// \param[in] t diagonal matrix of right side
   ///
   /// Mathematically, this member function is to perform
-  /// \f$\textrm{diag}(\boldsymbol{s}) \boldsymbol{A} \textrm{diag}(\boldsymbol{t})\f$
+  /// \f$\textrm{diag}(\boldsymbol{s}) \boldsymbol{A}
+  /// \textrm{diag}(\boldsymbol{t})\f$
   template <class LeftDiagArray, class RightDiagArray>
   inline void scale_diags(const LeftDiagArray &s, const RightDiagArray &t) {
     scale_diag_left(s);
@@ -788,7 +836,8 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   /// \param[in] t diagonal matrix of right side
   ///
   /// Mathematically, this member function is to perform
-  /// \f$\textrm{diag}(\boldsymbol{s}) \boldsymbol{A} \textrm{diag}(\boldsymbol{t})\f$
+  /// \f$\textrm{diag}(\boldsymbol{s}) \boldsymbol{A}
+  /// \textrm{diag}(\boldsymbol{t})\f$
   template <class LeftDiagArray, class RightDiagArray>
   inline void scale_diags(const LeftDiagArray &s, const RightDiagArray &t) {
     scale_diag_left(s);
