@@ -17,21 +17,21 @@
 
 #include "psmilu_fc_mangling.h"
 
-#ifndef PSMILU_LAPACK_DEFAULT_INT
+#ifndef PSMILU_LAPACK_INT
 #  ifdef MKL_INT
-#    define PSMILU_LAPACK_DEFAULT_INT MKL_INT
+#    define PSMILU_LAPACK_INT MKL_INT
 #  elif defined(OPENBLAS_CONFIG_H)
 #    ifdef OPENBLAS_USE64BITINT
-#      define PSMILU_LAPACK_DEFAULT_INT BLASLONG
+#      define PSMILU_LAPACK_INT BLASLONG
 #    else
-#      define PSMILU_LAPACK_DEFAULT_INT int
+#      define PSMILU_LAPACK_INT int
 #    endif
 #  elif defined(lapack_int)
-#    define PSMILU_LAPACK_DEFAULT_INT lapack_int
+#    define PSMILU_LAPACK_INT lapack_int
 #  else
-#    define PSMILU_LAPACK_DEFAULT_INT int
+#    define PSMILU_LAPACK_INT int
 #  endif
-#endif /* PSMILU_LAPACK_DEFAULT_INT */
+#endif /* PSMILU_LAPACK_INT */
 
 #ifndef __cplusplus
 extern "C" {
@@ -42,7 +42,7 @@ extern "C" {
  * \brief lapack integer type
  * \ingroup util
  */
-typedef PSMILU_LAPACK_DEFAULT_INT psmilu_lapack_int;
+typedef PSMILU_LAPACK_INT psmilu_lapack_int;
 
 #ifndef __cplusplus
 }
