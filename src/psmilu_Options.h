@@ -28,14 +28,14 @@ extern "C" {
  * \brief the verbose level for progress report
  */
 enum {
-  PSMILU_VERBOSE_NONE  = 0,                         /*! mute */
-  PSMILU_VERBOSE_INFO  = 1,                         /*! general information */
-  PSMILU_VERBOSE_PRE   = PSMILU_VERBOSE_INFO << 1,  /*! preprocessing */
-  PSMILU_VERBOSE_CROUT = PSMILU_VERBOSE_PRE << 1,   /*! Crout update */
-  PSMILU_VERBOSE_PIVOT = PSMILU_VERBOSE_CROUT << 1, /*! pivoting */
-  PSMILU_VERBOSE_THRES = PSMILU_VERBOSE_PIVOT << 1, /*! inverse-based thres */
-  PSMILU_VERBOSE_SCHUR = PSMILU_VERBOSE_THRES << 1, /*! computing Schur */
-  PSMILU_VERBOSE_MEM   = PSMILU_VERBOSE_SCHUR << 1, /*! memory debug */
+  PSMILU_VERBOSE_NONE  = 0,                         /*!< mute */
+  PSMILU_VERBOSE_INFO  = 1,                         /*!< general information */
+  PSMILU_VERBOSE_PRE   = PSMILU_VERBOSE_INFO << 1,  /*!< preprocessing */
+  PSMILU_VERBOSE_CROUT = PSMILU_VERBOSE_PRE << 1,   /*!< Crout update */
+  PSMILU_VERBOSE_PIVOT = PSMILU_VERBOSE_CROUT << 1, /*!< pivoting */
+  PSMILU_VERBOSE_THRES = PSMILU_VERBOSE_PIVOT << 1, /*!< inverse-based thres */
+  PSMILU_VERBOSE_SCHUR = PSMILU_VERBOSE_THRES << 1, /*!< computing Schur */
+  PSMILU_VERBOSE_MEM   = PSMILU_VERBOSE_SCHUR << 1, /*!< memory debug */
 };
 
 /*!
