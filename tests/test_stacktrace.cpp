@@ -40,7 +40,7 @@ TEST(StackTrace, test) {
     Array<int> v;
     foo2(v);
   } catch (const std::runtime_error &e) {
-#ifdef __linux__
+#ifdef __GNUC__
     const char *msg = e.what();
     std::regex  st(TAG "*");
     std::cmatch mt;
