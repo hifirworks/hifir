@@ -96,6 +96,7 @@ namespace psmilu {
 /*!
  * \brief enum wrapper
  * \note The prefix of \a PSMILU will be dropped
+ * \ingroup itr
  */
 enum : int {
   ALIGN_LVL(NONE),
@@ -115,11 +116,13 @@ enum : int {
 /*!
  * \typedef Options
  * \brief type wrapper
+ * \ingroup itr
  */
 typedef psmilu_Options Options;
 
 /*!
  * \brief get the default configuration
+ * \ingroup itr
  */
 inline Options get_default_options() { return ::psmilu_get_default_options(); }
 
@@ -127,6 +130,7 @@ inline Options get_default_options() { return ::psmilu_get_default_options(); }
  * \brief represent an option control with C++ string
  * \param[in] opt input option controls
  * \return string representation of \a opt
+ * \ingroup itr
  */
 inline std::string opt_repr(const Options &opt) {
   using std::string;
@@ -157,6 +161,7 @@ inline std::string opt_repr(const Options &opt) {
  * \brief return \a true if certain verbose level is defined
  * \note __LVL must be upper case and align with the enumerators
  * \note This macro is for algorithm implementation thus available only in C++
+ * \ingroup itr
  *
  * \code{.cpp}
  * if (psmilu_verbose(INFO, opt)) ...;
