@@ -623,6 +623,27 @@ class AugCRS : public CrsType,
     crs_type::template push_back_row<Iter, ValueArray>(row, first, last, v);
     _base::template _push_back_nodes<Iter, ONE_BASED>(row, first, last);
   }
+
+  /// \brief push back a row with two lists of column indices
+  /// \tparam Iter1 iterator type
+  /// \tparam ValueArray1 dense value array
+  /// \tparam Iter2 iterator type
+  /// \tparam ValueArray2 dense value array
+  /// \param[in] row current row index (c-based)
+  /// \param[in] first1 starting iterator of list 1
+  /// \param[in] last1 pass-of-end iterator of list 1
+  /// \param[in] v1 dense value array for list 1
+  /// \param[in] first2 starting iterator of list 2
+  /// \param[in] last2 pass-of-end iterator of list 2
+  /// \param[in] v2 dense value array for list 2
+  template <class Iter1, class ValueArray1, class Iter2, class ValueArray2>
+  inline void push_back_row(const size_type row, Iter1 first1, Iter1 last1,
+                            const ValueArray1 &v1, Iter2 first2, Iter2 last2,
+                            const ValueArray2 &v2) {
+    crs_type::push_back_row(row, first1, last1, v1, first2, last2, v2);
+    _base::template _push_back_nodes<Iter1, ONE_BASED>(row, first1, last1);
+    _base::template _push_back_nodes<Iter2, ONE_BASED>(row, first2, last2);
+  }
 };
 
 /// \class AugCCS
@@ -902,6 +923,27 @@ class AugCCS : public CcsType,
                             const ValueArray &v) {
     ccs_type::template push_back_col<Iter, ValueArray>(col, first, last, v);
     _base::template _push_back_nodes<Iter, ONE_BASED>(col, first, last);
+  }
+
+  /// \brief push back a clumn with two lists of row indices
+  /// \tparam Iter1 iterator type
+  /// \tparam ValueArray1 dense value array
+  /// \tparam Iter2 iterator type
+  /// \tparam ValueArray2 dense value array
+  /// \param[in] col current column index (c-based)
+  /// \param[in] first1 starting iterator for list 1
+  /// \param[in] last1 pass-of-end iterator for list 1
+  /// \param[in] v1 dense value array for list 1
+  /// \param[in] first2 starting iterator for list 2
+  /// \param[in] last2 pass-of-end iterator for list 2
+  /// \param[in] v2 dense value array for list 2
+  template <class Iter1, class ValueArray1, class Iter2, class ValueArray2>
+  inline void push_back_col(const size_type col, Iter1 first1, Iter1 last1,
+                            const ValueArray1 &v1, Iter2 first2, Iter2 last2,
+                            const ValueArray2 &v2) {
+    ccs_type::push_back_col(col, first1, last1, v1, first2, last2, v2);
+    _base::template _push_back_nodes<Iter1, ONE_BASED>(col, first1, last1);
+    _base::template _push_back_nodes<Iter2, ONE_BASED>(col, first2, last2);
   }
 };
 
