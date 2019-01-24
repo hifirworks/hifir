@@ -398,8 +398,10 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   typedef CCS<ValueType, IndexType, OneBased> other_type;   ///< ccs type
   typedef typename _base::i_iterator          i_iterator;   ///< index iterator
   typedef typename _base::const_i_iterator    const_i_iterator;
+  ///< const index iterator
   typedef typename _base::v_iterator          v_iterator;  ///< value iterator
   typedef typename _base::const_v_iterator    const_v_iterator;
+  ///< const value iterator
   constexpr static bool ONE_BASED = OneBased;  ///< C or Fortran based
   constexpr static bool ROW_MAJOR = true;      ///< row major
 
@@ -555,6 +557,26 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
     _base::_push_back_primary(row, first, last, v);
   }
 
+  /// \brief push back a new row from two lists
+  /// \tparam Iter1 iterator type
+  /// \tparam ValueArray1 dense value array
+  /// \tparam Iter2 iterator type
+  /// \tparam ValueArray2 dense value array
+  /// \param[in] row current row (C-based index)
+  /// \param[in] first1 starting iterator
+  /// \param[in] last1 ending iterator
+  /// \param[in] v1 dense value array, the value can be queried from indices
+  /// \param[in] first2 starting iterator
+  /// \param[in] last2 ending iterator
+  /// \param[in] v2 dense value array, the value can be queried from indices
+  /// \warning The indices are assumed to be sorted
+  template <class Iter1, class ValueArray1, class Iter2, class ValueArray2>
+  inline void push_back_row(const size_type row, Iter1 first1, Iter1 last1,
+                            const ValueArray1 &v1, Iter2 first2, Iter2 last2,
+                            const ValueArray2 &v2) {
+    _base::_push_back_primary(row, first1, last1, v1, first2, last2, v2);
+  }
+
   /// \brief scale by a diagonal matrix from left
   /// \tparam DiagArray diagonal array type
   /// \param[in] s diagonal matrix multiplying from left-hand side
@@ -635,8 +657,10 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   typedef CRS<ValueType, IndexType, OneBased> other_type;   ///< crs type
   typedef typename _base::i_iterator          i_iterator;   ///< index iterator
   typedef typename _base::const_i_iterator    const_i_iterator;
+  ///< const index iterator
   typedef typename _base::v_iterator          v_iterator;  ///< value iterator
   typedef typename _base::const_v_iterator    const_v_iterator;
+  ///< const value iterator
   constexpr static bool ONE_BASED = OneBased;  ///< C or Fortran based
   constexpr static bool ROW_MAJOR = false;     ///< column major
 
@@ -788,6 +812,26 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   inline void push_back_col(const size_type col, Iter first, Iter last,
                             const ValueArray &v) {
     _base::_push_back_primary(col, first, last, v);
+  }
+
+  /// \brief push back a new column from two lists
+  /// \tparam Iter1 iterator type
+  /// \tparam ValueArray1 dense value array
+  /// \tparam Iter2 iterator type
+  /// \tparam ValueArray2 dense value array
+  /// \param[in] col current col (C-based index)
+  /// \param[in] first1 starting iterator
+  /// \param[in] last1 ending iterator
+  /// \param[in] v1 dense value array, the value can be queried from indices
+  /// \param[in] first2 starting iterator
+  /// \param[in] last2 ending iterator
+  /// \param[in] v2 dense value array, the value can be queried from indices
+  /// \warning The indices are assumed to be sorted
+  template <class Iter1, class ValueArray1, class Iter2, class ValueArray2>
+  inline void push_back_col(const size_type col, Iter1 first1, Iter1 last1,
+                            const ValueArray1 &v1, Iter2 first2, Iter2 last2,
+                            const ValueArray2 &v2) {
+    _base::_push_back_primary(col, first1, last1, v1, first2, last2, v2);
   }
 
   /// \brief scale by a diagonal matrix from left
