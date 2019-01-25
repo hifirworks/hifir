@@ -21,7 +21,7 @@ using namespace psmilu;
 static const RandIntGen  i_rand(0, 50);
 static const RandRealGen r_rand;
 
-constexpr static double eps = 1e-13;
+constexpr static double eps = 1e-12;
 
 // this test script is to test the Crout by factorizing a matrix with
 // LU w/o pivoting. We start with multiplying exact dense matrices L and U
