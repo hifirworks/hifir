@@ -81,21 +81,19 @@ convert2dense(const CS &cs) {
 
 #define COMPARE_MATS(mat1, mat2)                                              \
   do {                                                                        \
-    ASSERT_EQ(mat1.size(), mat2.size());                                      \
-    ASSERT_EQ(mat1.front().size(), mat2.front().size());                      \
-    const auto n = mat1.size(), m = mat1.front().size();                      \
+    const auto n = std::min(mat1.size(), mat2.size());                        \
+    const auto m = std::min(mat1.front().size(), mat2.front().size());        \
     for (decltype(mat1.size()) i = 0u; i < n; ++i)                            \
       for (decltype(i) j = 0u; j < m; ++j) ASSERT_EQ(mat1[i][j], mat2[i][j]); \
   } while (false)
 
-#define COMPARE_MATS_TOL(mat1, mat2, tol)                  \
-  do {                                                     \
-    ASSERT_EQ(mat1.size(), mat2.size());                   \
-    ASSERT_EQ(mat1.front().size(), mat2.front().size());   \
-    const auto n = mat1.size(), m = mat1.front().size();   \
-    for (decltype(mat1.size()) i = 0u; i < n; ++i)         \
-      for (decltype(i) j = 0u; j < m; ++j)                 \
-        ASSERT_LE(std::abs(mat1[i][j] - mat2[i][j]), tol); \
+#define COMPARE_MATS_TOL(mat1, mat2, tol)                              \
+  do {                                                                 \
+    const auto n = std::min(mat1.size(), mat2.size());                 \
+    const auto m = std::min(mat1.front().size(), mat2.front().size()); \
+    for (decltype(mat1.size()) i = 0u; i < n; ++i)                     \
+      for (decltype(i) j = 0u; j < m; ++j)                             \
+        ASSERT_LE(std::abs(mat1[i][j] - mat2[i][j]), tol);             \
   } while (false)
 
 template <class T>
@@ -161,6 +159,15 @@ static matrix<T> dense_mm(const matrix<T> &A, const matrix<T> &B) {
     }
   }
   return C;
+}
+
+template <class T>
+static matrix<T> extract_leading_block(const matrix<T> &A, const int n) {
+  // assume n is no larger than min(size(A))!
+  auto mat = create_mat<T>(n, n);
+  for (int i = 0; i < n; ++i)
+    for (int j = 0; j < n; ++j) mat[i][j] = A[i][j];
+  return mat;
 }
 
 template <class T>
