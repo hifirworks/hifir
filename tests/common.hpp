@@ -161,6 +161,30 @@ static matrix<T> dense_mm(const matrix<T> &A, const matrix<T> &B) {
   return C;
 }
 
+template <class T, class V>
+static std::vector<T> dense_mv(const matrix<T> &A, const V &x,
+                               bool tranA = false) {
+  if (!tranA) {
+    const int      nrows = A.size();
+    const int      ncols = x.size();
+    std::vector<T> y(nrows, T());
+    for (int i = 0; i < nrows; ++i) {
+      const auto &row = A[i];
+      for (int j = 0; j < ncols; ++j) y[i] += row[j] * x[j];
+    }
+    return y;
+  }
+  const int      ncols = A.size();
+  const int      nrows = A.front().size();
+  std::vector<T> y(nrows, T());
+  for (int j = 0; j < ncols; ++j) {
+    const auto &col = A[j];
+    const T     xj  = x[j];
+    for (int i = 0; i < nrows; ++i) y[i] += col[i] * xj;
+  }
+  return y;
+}
+
 template <class T>
 static matrix<T> extract_leading_block(const matrix<T> &A, const int n) {
   // assume n is no larger than min(size(A))!
