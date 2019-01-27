@@ -27,6 +27,21 @@ namespace psmilu {
 /// \param[in,out] kappa_l previous solutions in and current solution out
 /// \return if \a true, then the current rhs is one; ow, it's negative one
 /// \ingroup alg
+/// \note Recall that the lower part is unit diagonal without explicitly
+///       storing diagonal entries
+///
+/// This routine is to bound the \f$\infty\f$-norm of
+/// \f$\left\vert\boldsymbol{L}^{-1}\right\vert\f$ by using a greedy strategy,
+/// i.e. bounding the
+/// \f$\left\vert\boldsymbol{L}^{-1}\boldsymbol{c}\right\vert\f$, where
+/// \f$c_i=\pm 1\f$ for \f$i\f$ in \f$1,...,n\f$, s.t.
+/// \f$\left|\boldsymbol{e}_i^T\boldsymbol{L}^{-1}\boldsymbol{c}\right|\f$ is
+/// maximized. Here, to achieve linear time complexity, we maintain an array
+/// that stores all previous solutions, i.e. \f$\kappa_l\f$, and use it to
+/// update the current one.
+///
+/// Complexity is linear, i.e.
+/// \f$\mathcal{O}(\textrm{nnz}(\boldsymbol{L}_{k,:}))\f$
 template <class L_AugCcsType, class KappaL_Type>
 inline bool update_kappa_l(const typename L_AugCcsType::size_type step,
                            const L_AugCcsType &L, KappaL_Type &kappa_l) {
@@ -76,6 +91,10 @@ inline bool update_kappa_l(const typename L_AugCcsType::size_type step,
 /// \param[out] kappa_u kappa vector for u
 /// \return to keep the API consistent, we return \a true here
 /// \ingroup alg
+///
+/// Notice that this routine is \a SFINAE-able by \a IsSymm, and this is for
+/// the \a true case, i.e. symmetric leading block. In this case, the solution
+/// vector of \f$\boldsymbol{U}^T\f$ is the same as that of \f$\boldsymbol{L}\f$
 template <bool IsSymm, class U_AugCrsType, class KappaL_Type, class KappaU_Type,
           typename T = bool>
 inline typename std::enable_if<IsSymm, T>::type update_kappa_ut(
@@ -97,6 +116,21 @@ inline typename std::enable_if<IsSymm, T>::type update_kappa_ut(
 /// \param[in,out] kappa_u older slutions in and new solution out
 /// \return if \a true, then the current rhs is one; ow, it's negative one
 /// \ingroup alg
+///
+/// Notice that this routine is \a SFINAE-able by parameter \a IsSymm, and this
+/// case is for \a IsSymm is \a false, i.e. asymmetric leading blocks.
+/// This routine is to bound the \f$\infty\f$-norm of
+/// \f$\left\vert\boldsymbol{U}^{-T}\right\vert\f$ by using a greedy strategy,
+/// i.e. bounding the
+/// \f$\left\vert\boldsymbol{U}^{-T}\boldsymbol{c}\right\vert\f$, where
+/// \f$c_i=\pm 1\f$ for \f$i\f$ in \f$1,...,n\f$, s.t.
+/// \f$\left|\boldsymbol{e}_i^T\boldsymbol{U}^{-T}\boldsymbol{c}\right|\f$ is
+/// maximized. Here, to achieve linear time complexity, we maintain an array
+/// that stores all previous solutions, i.e. \f$\kappa_u\f$, and use it to
+/// update the current one.
+///
+/// Complexity is linear, i.e.
+/// \f$\mathcal{O}(\textrm{nnz}(\boldsymbol{U}_{:,k}))\f$
 template <bool IsSymm, class U_AugCrsType, class KappaL_Type, class KappaU_Type,
           typename T = bool>
 inline typename std::enable_if<!IsSymm, T>::type update_kappa_ut(
