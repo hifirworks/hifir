@@ -29,7 +29,7 @@ namespace psmilu {
 /// \param[in,out] v sparse vector
 /// \return the intermediate vector size before applying final limitation
 /// \note The returned parameter is mainly for unit-testing/debugging
-/// \ingroup alg
+/// \ingroup inv
 ///
 /// This subroutine is to apply the dropping and, then, sort the remaining
 /// index list. Mathematically, there are three steps:
@@ -39,7 +39,7 @@ namespace psmilu {
 /// "no smaller", we mean the magnitude.
 ///
 /// \f[
-///   \left|v_i\right|\gt\frac{\tau}{\kappa}
+///   \left|v_i\right|>\frac{\tau}{\kappa}
 /// \f]
 ///
 /// Note that the complexity for first step is \f$\mathcal{O}(n_1)\f$, where
@@ -53,7 +53,7 @@ namespace psmilu {
 ///   n_3=\alpha\times\textrm{nnz}
 /// \f]
 ///
-/// if \f$n_2\gt n_3\f$, then we need to perform further dropping to ensure the
+/// if \f$n_2>n_3\f$, then we need to perform further dropping to ensure the
 /// size is well-bounded for optimal time complexity. The strategy is
 /// straightforward, i.e. we choose first \f$n_3\f$ entries with largest values.
 /// However, as regards of implementation, this requires a selection/partition

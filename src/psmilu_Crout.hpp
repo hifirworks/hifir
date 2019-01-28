@@ -21,7 +21,7 @@ namespace psmilu {
 
 /// \class Crout
 /// \brief Crout update
-/// \ingroup alg
+/// \ingroup crout
 ///
 /// The idea of this class is to implement Crout kernels that wrap around a
 /// common factor---step. In this case, the class Crout is as simple (in terms

@@ -26,7 +26,7 @@ namespace psmilu {
 /// \param[in] L lower part at current step
 /// \param[in,out] kappa_l previous solutions in and current solution out
 /// \return if \a true, then the current rhs is one; ow, it's negative one
-/// \ingroup alg
+/// \ingroup diag
 /// \note Recall that the lower part is unit diagonal without explicitly
 ///       storing diagonal entries
 ///
@@ -90,7 +90,7 @@ inline bool update_kappa_l(const typename L_AugCcsType::size_type step,
 /// \param[in] kappa_l kappa for lower part estimation
 /// \param[out] kappa_u kappa vector for u
 /// \return to keep the API consistent, we return \a true here
-/// \ingroup alg
+/// \ingroup diag
 ///
 /// Notice that this routine is \a SFINAE-able by \a IsSymm, and this is for
 /// the \a true case, i.e. symmetric leading block. In this case, the solution
@@ -115,7 +115,7 @@ inline typename std::enable_if<IsSymm, T>::type update_kappa_ut(
 /// \param[in] U upper part
 /// \param[in,out] kappa_u older slutions in and new solution out
 /// \return if \a true, then the current rhs is one; ow, it's negative one
-/// \ingroup alg
+/// \ingroup diag
 ///
 /// Notice that this routine is \a SFINAE-able by parameter \a IsSymm, and this
 /// case is for \a IsSymm is \a false, i.e. asymmetric leading blocks.

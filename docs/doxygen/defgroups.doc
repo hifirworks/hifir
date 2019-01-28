@@ -11,4 +11,13 @@
 
 /// \defgroup alg Algorithms
 
+/// \defgroup crout Crout Update
+/// \ingroup alg
+
+/// \defgroup diag Diagonal Pivoting
+/// \ingroup alg
+
+/// \defgroup inv Inverse-based Threshold
+/// \ingroup alg
+
 /// \defgroup itr PSMILU User Interfaces
