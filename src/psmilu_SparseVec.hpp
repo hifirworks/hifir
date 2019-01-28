@@ -86,7 +86,7 @@ class IndexValueArray {
   inline bool empty() const { return _counts == 0u; }
 
   /// \brief sort the indices
-  /// \note Complexity: \f$\mathcal{O}(n\log n)\f$, where m is _counts
+  /// \note Complexity: \f$\mathcal{O}(n\log n)\f$, \f$n\f$ is \ref _counts
   inline void sort_indices() {
     std::sort(_inds.begin(), _inds.begin() + _counts);
   }
