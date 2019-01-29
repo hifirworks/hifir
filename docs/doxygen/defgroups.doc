@@ -20,4 +20,7 @@
 /// \defgroup inv Inverse-based Threshold
 /// \ingroup alg
 
+/// \defgroup schur Schur Complements
+/// \ingroup alg
+
 /// \defgroup itr PSMILU User Interfaces
