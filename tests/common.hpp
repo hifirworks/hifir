@@ -79,12 +79,13 @@ convert2dense(const CS &cs) {
   return mat;
 }
 
-#define COMPARE_MATS(mat1, mat2)                                              \
-  do {                                                                        \
-    const auto n = std::min(mat1.size(), mat2.size());                        \
-    const auto m = std::min(mat1.front().size(), mat2.front().size());        \
-    for (decltype(mat1.size()) i = 0u; i < n; ++i)                            \
-      for (decltype(i) j = 0u; j < m; ++j) ASSERT_EQ(mat1[i][j], mat2[i][j]); \
+#define COMPARE_MATS(mat1, mat2)                                       \
+  do {                                                                 \
+    const auto n = std::min(mat1.size(), mat2.size());                 \
+    const auto m = std::min(mat1.front().size(), mat2.front().size()); \
+    for (decltype(mat1.size()) i = 0u; i < n; ++i)                     \
+      for (decltype(i) j = 0u; j < m; ++j)                             \
+        ASSERT_EQ(mat1[i][j], mat2[i][j]) << i << ',' << j << '\n';    \
   } while (false)
 
 #define COMPARE_MATS_TOL(mat1, mat2, tol)                              \
@@ -93,7 +94,8 @@ convert2dense(const CS &cs) {
     const auto m = std::min(mat1.front().size(), mat2.front().size()); \
     for (decltype(mat1.size()) i = 0u; i < n; ++i)                     \
       for (decltype(i) j = 0u; j < m; ++j)                             \
-        ASSERT_LE(std::abs(mat1[i][j] - mat2[i][j]), tol);             \
+        ASSERT_LE(std::abs(mat1[i][j] - mat2[i][j]), tol)              \
+            << i << ',' << j << '\n';                                  \
   } while (false)
 
 template <class T>
@@ -218,6 +220,31 @@ template <class T>
 static void add_diag(const std::vector<T> &diag, matrix<T> &A) {
   const int n = std::min(std::min(A.size(), A.front().size()), diag.size());
   for (int i = 0; i < n; ++i) A[i][i] += diag[i];
+}
+
+// no permutation
+template <class T, class Diag>
+static matrix<T> compute_dense_Schur_c(const matrix<T> &A, const matrix<T> &L,
+                                       const matrix<T> &U, const Diag &d,
+                                       const int m) {
+  const int n    = A.size() - m;
+  matrix<T> temp = create_mat<T>(n, n);
+  if (n) {
+    // load A
+    for (int i = 0; i < n; ++i)
+      for (int j = 0; j < n; ++j) temp[i][j] = A[i + m][j + m];
+
+    for (int i = 0; i < n; ++i) {
+      const auto &l_i    = L[i + m];
+      auto &      temp_i = temp[i];
+      for (int k = 0; k < m; ++k) {
+        const T     ld  = l_i[k] * d[k];
+        const auto &u_k = U[k];
+        for (int j = 0; j < n; ++j) temp_i[j] -= ld * u_k[j + m];
+      }
+    }
+  }
+  return temp;
 }
 
 //----------------------
