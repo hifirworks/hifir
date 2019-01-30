@@ -12,6 +12,7 @@
 #define _PSMILU_COMPRESSEDSTORAGE_HPP
 
 #include <algorithm>
+#include <type_traits>
 #include <utility>
 
 #include "psmilu_Array.hpp"
@@ -693,6 +694,130 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   size_type _ncols;     ///< number of columns
   using _base::_psize;  ///< number of rows (primary entries)
 };
+
+/// \brief wrap user data
+/// \tparam OneBased if \a true, then assume Fortran index system
+/// \tparam ValueType value type, e.g. \a double
+/// \tparam IndexType index type, e.g. \a int
+/// \param[in] nrows number of rows
+/// \param[in] ncols number of columns
+/// \param[in] row_start data for row pointer, size of \a nrows + 1
+/// \param[in] col_ind column indices
+/// \param[in] vals numerical data
+/// \param[in] check if \a true (default), then perform validation checking
+/// \param[in] help_sort help sort unsorted rows (if any), require \a check=1
+/// \return a \ref CSR matrix wrapped around user data.
+/// \warning It's the user's responsibility to maintain the external data
+/// \ingroup ds
+template <bool OneBased, class ValueType, class IndexType>
+inline CRS<ValueType, IndexType, OneBased> wrap_crs(
+    const typename CRS<ValueType, IndexType, OneBased>::size_type nrows,
+    const typename CRS<ValueType, IndexType, OneBased>::size_type ncols,
+    IndexType *row_start, IndexType *col_ind, ValueType *vals,
+    bool check = true, bool help_sort = false) {
+  using return_type = CRS<ValueType, IndexType, OneBased>;
+  using size_type   = typename CRS<ValueType, IndexType, OneBased>::size_type;
+  constexpr static bool WRAP = true;
+  static_assert(std::is_integral<IndexType>::value, "must be integer");
+
+  // run time
+
+  return_type mat(nrows, ncols, const_cast<IndexType *>(row_start),
+                  const_cast<IndexType *>(col_ind),
+                  const_cast<ValueType *>(vals), WRAP);
+
+  if (check) {
+    if (row_start[0] != (IndexType)OneBased)
+      psmilu_error("first entry of row_start does not agree with OneBased.");
+    Array<ValueType> buf;
+    for (size_type i = 0u; i < nrows; ++i) {
+      if (!mat.nnz_in_row(i)) {
+        psmilu_warning("row %zd is empty!", i);
+        continue;
+      }
+      auto last = mat.col_ind_cend(i), first = mat.col_ind_cbegin(i);
+      auto itr = std::is_sorted_until(
+          first, last,
+          [](const IndexType i, const IndexType j) { return i <= j; });
+      if (itr != last) {
+        if (!help_sort)
+          psmilu_error(
+              "%zd row is not sorted, the checking failed at entry %td, run "
+              "with help_sort=true",
+              i, itr - first);
+        else {
+          buf.resize(mat.ncols() + OneBased);
+          if (buf.status() == DATA_UNDEF)
+            psmilu_error("memory allocation failed!");
+          // load values, note that we can just load [itr,last), but we want to
+          // loop through all indices to ensure they are bounded
+          auto v_itr = mat.val_cbegin(i);
+          for (itr = first; itr != last; ++itr, ++v_itr) {
+            psmilu_error_if(
+                *itr < OneBased || (size_type)*itr >= mat.ncols() + OneBased,
+                "%zd exceeds column size %zd", size_type(*itr), mat.ncols());
+            buf[*itr] = *v_itr;
+          }
+          std::sort(mat.col_ind_begin(i), mat.col_ind_end(i));
+          auto vv_itr = mat.val_begin(i);
+          last        = mat.col_ind_cend(i);
+          first       = mat.col_ind_cbegin(i);
+          for (itr = first; itr != last; ++itr, ++vv_itr) *vv_itr = buf[*itr];
+        }
+      } else
+        psmilu_error_if(size_type(*(last - 1)) >= mat.ncols() + OneBased,
+                        "%zd exceeds column size %zd", size_type(*(last - 1)),
+                        mat.ncols());
+    }
+  }
+  return mat;
+}
+
+/// \brief wrap user data in C index
+/// \tparam ValueType value type, e.g. \a double
+/// \tparam IndexType index type, e.g. \a int
+/// \param[in] nrows number of rows
+/// \param[in] ncols number of columns
+/// \param[in] row_start data for row pointer, size of \a nrows + 1
+/// \param[in] col_ind column indices
+/// \param[in] vals numerical data
+/// \param[in] check if \a true (default), then perform validation checking
+/// \param[in] help_sort help sort unsorted rows (if any), require \a check=1
+/// \return a \ref CSR matrix wrapped around user data.
+/// \warning It's the user's responsibility to maintain the external data
+/// \ingroup ds
+template <class ValueType, class IndexType>
+inline CRS<ValueType, IndexType> wrap_crs_0(
+    const typename CRS<ValueType, IndexType>::size_type nrows,
+    const typename CRS<ValueType, IndexType>::size_type ncols,
+    const IndexType *row_start, const IndexType *col_ind, const ValueType *vals,
+    bool check = true, bool help_sort = false) {
+  return wrap_crs<false>(nrows, ncols, row_start, col_ind, vals, check,
+                         help_sort);
+}
+
+/// \brief wrap user data in Fortran index
+/// \tparam ValueType value type, e.g. \a double
+/// \tparam IndexType index type, e.g. \a int
+/// \param[in] nrows number of rows
+/// \param[in] ncols number of columns
+/// \param[in] row_start data for row pointer, size of \a nrows + 1
+/// \param[in] col_ind column indices
+/// \param[in] vals numerical data
+/// \param[in] check if \a true (default), then perform validation checking
+/// \param[in] help_sort help sort unsorted rows (if any), require \a check=1
+/// \return a \ref CSR matrix wrapped around user data.
+/// \warning It's the user's responsibility to maintain the external data
+/// \ingroup ds
+template <class ValueType, class IndexType>
+inline CRS<ValueType, IndexType, true> wrap_crs_1(
+    const typename CRS<ValueType, IndexType, true>::size_type nrows,
+    const typename CRS<ValueType, IndexType, true>::size_type ncols,
+    const IndexType *row_start, const IndexType *col_ind, const ValueType *vals,
+    bool check = true, bool help_sort = false) {
+  return wrap_crs<true>(nrows, ncols, row_start, col_ind, vals, check,
+                        help_sort);
+}
 
 /// \class CCS
 /// \brief Compressed Column Storage (CCS) format for sparse matrices
