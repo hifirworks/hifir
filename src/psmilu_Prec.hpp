@@ -88,9 +88,9 @@ struct Prec {
   /// calling this routine.
   ///
   /// \warn Everything on output is destroyed, as the routine name says.
-  inline void move_destroy(ccs_type &&L_b, array_type &&d_b, crs_type &&U_b,
-                           crs_type &&e, crs_type &&f, array_type &&S,
-                           array_type &&T, perm_type &&P, perm_type &&Q) {
+  inline void move_destroy(ccs_type &L_b, array_type &d_b, crs_type &U_b,
+                           crs_type &e, crs_type &f, array_type &S,
+                           array_type &T, perm_type &P, perm_type &Q) {
     L_B = std::move(L_b);
     d_B = std::move(d_b);
     U_B = std::move(U_b);
