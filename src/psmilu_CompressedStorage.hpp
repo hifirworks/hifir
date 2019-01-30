@@ -399,8 +399,8 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   typedef typename _base::i_iterator          i_iterator;   ///< index iterator
   typedef typename _base::const_i_iterator    const_i_iterator;
   ///< const index iterator
-  typedef typename _base::v_iterator          v_iterator;  ///< value iterator
-  typedef typename _base::const_v_iterator    const_v_iterator;
+  typedef typename _base::v_iterator       v_iterator;  ///< value iterator
+  typedef typename _base::const_v_iterator const_v_iterator;
   ///< const value iterator
   constexpr static bool ONE_BASED = OneBased;  ///< C or Fortran based
   constexpr static bool ROW_MAJOR = true;      ///< row major
@@ -631,6 +631,64 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
     scale_diag_right(t);
   }
 
+  /// \brief matrix vector multiplication
+  /// \tparam IArray input array type
+  /// \tparam OArray output array type
+  /// \param[in] x input array
+  /// \param[out] y output array
+  /// \note Sizes must match
+  template <class IArray, class OArray>
+  inline void mv_nt(const IArray &x, OArray &y) const {
+    psmilu_error_if(nrows() != y.size() || ncols() != x.size(),
+                    "matrix vector multiplication unmatched sizes!");
+    for (size_type i = 0u; i < _psize; ++i) {
+      y[i]       = 0;
+      auto v_itr = _base::val_cbegin(i);
+      auto i_itr = col_ind_cbegin(i);
+      for (auto last = col_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
+        const size_type j = to_c_idx<size_type, ONE_BASED>(*i_itr);
+        psmilu_assert(j < _ncols, "%zd exceeds column size", j);
+        y[i] += *v_itr * x[j];
+      }
+    }
+  }
+
+  /// \brief matrix transpose vector multiplication
+  /// \tparam IArray input array type
+  /// \tparam OArray output array type
+  /// \param[in] x input array
+  /// \param[out] y output array
+  /// \note Sizes must match
+  /// \note Compute \f$y=\boldsymbol{A}^Tx\f$
+  template <class IArray, class OArray>
+  inline void mv_t(const IArray &x, OArray &y) const {
+    psmilu_error_if(nrows() != x.size() || ncols() != y.size(),
+                    "T(matrix) vector multiplication unmatched sizes!");
+    std::fill(y.begin(), y.end(), 0);
+    for (size_type i = 0u; i < _psize; ++i) {
+      const auto temp  = x[i];
+      auto       v_itr = _base::val_cbegin(i);
+      auto       i_itr = col_ind_cbegin(i);
+      for (auto last = col_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
+        const size_type j = to_c_idx<size_type, ONE_BASED>(*i_itr);
+        psmilu_assert(j < _ncols, "%zd exceeds column size", j);
+        y[j] += *v_itr * temp;
+      }
+    }
+  }
+
+  /// \brief matrix vector multiplication
+  /// \tparam IArray input array type
+  /// \tparam OArray output array type
+  /// \param[in] x input array
+  /// \param[out] y output array
+  /// \param[in] tran if \a false (default), perform normal matrix vector
+  /// \sa mv_nt, mv_t
+  template <class IArray, class OArray>
+  inline void mv(const IArray &x, OArray &y, bool tran = false) const {
+    !tran ? mv_nt(x, y) : mv_t(x, y);
+  }
+
  protected:
   size_type _ncols;     ///< number of columns
   using _base::_psize;  ///< number of rows (primary entries)
@@ -658,8 +716,8 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   typedef typename _base::i_iterator          i_iterator;   ///< index iterator
   typedef typename _base::const_i_iterator    const_i_iterator;
   ///< const index iterator
-  typedef typename _base::v_iterator          v_iterator;  ///< value iterator
-  typedef typename _base::const_v_iterator    const_v_iterator;
+  typedef typename _base::v_iterator       v_iterator;  ///< value iterator
+  typedef typename _base::const_v_iterator const_v_iterator;
   ///< const value iterator
   constexpr static bool ONE_BASED = OneBased;  ///< C or Fortran based
   constexpr static bool ROW_MAJOR = false;     ///< column major
@@ -886,6 +944,63 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   inline void scale_diags(const LeftDiagArray &s, const RightDiagArray &t) {
     scale_diag_left(s);
     scale_diag_right(t);
+  }
+
+  /// \brief matrix vector multiplication
+  /// \tparam IArray input array type
+  /// \tparam OArray output array type
+  /// \param[in] x input array
+  /// \param[out] y output array
+  /// \note Sizes must match
+  template <class IArray, class OArray>
+  inline void mv_nt(const IArray &x, OArray &y) const {
+    psmilu_error_if(nrows() != y.size() || ncols() != x.size(),
+                    "matrix vector unmatched sizes!");
+    std::fill(y.begin(), y.end(), 0);
+    for (size_type i = 0u; i < _psize; ++i) {
+      const auto temp  = x[i];
+      auto       v_itr = _base::val_cbegin(i);
+      auto       i_itr = row_ind_cbegin(i);
+      for (auto last = row_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
+        const size_type j = to_c_idx<size_type, ONE_BASED>(*i_itr);
+        psmilu_assert(j < _nrows, "%zd exceeds the size bound", j);
+        y[j] += temp * *v_itr;
+      }
+    }
+  }
+
+  /// \brief matrix transpose vector multiplication
+  /// \tparam IArray input array type
+  /// \tparam OArray output array type
+  /// \param[in] x input array
+  /// \param[out] y output array
+  /// \note Sizes must match
+  template <class IArray, class OArray>
+  inline void mv_t(const IArray &x, OArray &y) const {
+    psmilu_error_if(nrows() != x.size() || ncols() != y.size(),
+                    "T(matrix) vector unmatched sizes!");
+    for (size_type i = 0u; i < _psize; ++i) {
+      y[i]       = 0;
+      auto v_itr = _base::val_cbegin(i);
+      auto i_itr = row_ind_cbegin(i);
+      for (auto last = row_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
+        const size_type j = to_c_idx<size_type, ONE_BASED>(*i_itr);
+        psmilu_assert(j < _nrows, "%zd exceeds the size bound", j);
+        y[i] += x[j] * *v_itr;
+      }
+    }
+  }
+
+  /// \brief matrix vector multiplication
+  /// \tparam IArray input array type
+  /// \tparam OArray output array type
+  /// \param[in] x input array
+  /// \param[out] y output array
+  /// \param[in] tran if \a false (default), then perform normal matrix vector
+  /// \sa mv_t, mv_nt
+  template <class IArray, class OArray>
+  inline void mv(const IArray &x, OArray &y, bool tran = false) const {
+    !tran ? mv_nt(x, y) : mv_t(x, y);
   }
 
  protected:
