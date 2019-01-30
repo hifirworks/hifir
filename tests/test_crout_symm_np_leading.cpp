@@ -133,9 +133,12 @@ TEST(LU, c) {
     L2.push_back_col(crout, l.inds().cbegin(), l.inds().cbegin() + l.size(),
                      l.vals());
     std::cout << "\tpushing back to U...\n";
-    U2.push_back_row(crout, l.inds().cbegin(), l.inds().cbegin() + l.size(),
-                     l.vals(), ut.inds().cbegin(),
-                     ut.inds().cbegin() + ut.size(), ut.vals());
+    auto itr =
+        std::lower_bound(l.inds().cbegin(), l.inds().cbegin() + l.size(), m);
+    ASSERT_LE(*itr, ut.inds().front());
+    U2.push_back_row(crout, l.inds().cbegin(), itr, l.vals(),
+                     ut.inds().cbegin(), ut.inds().cbegin() + ut.size(),
+                     ut.vals());
   }
 
   U2.end_assemble_rows();
