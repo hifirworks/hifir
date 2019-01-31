@@ -70,17 +70,128 @@ class Crout {
   /// \brief implicitly casting to size_type
   inline operator size_type() const { return _step; }
 
+  /// \brief dual of the \ref compute_l, i.e. computing the row of U
+  /// \tparam LeftDiagType row scaling diagonal matrix type, see \ref Array
+  /// \tparam A_CrsType crs format for input matrix, see \ref CRS
+  /// \tparam RightDiagType column scaling diagonal matrix type, see \ref Array
+  /// \tparam PermType permutation matrix type, see \ref BiPermMatrix
+  /// \tparam L_AugCcsType augmented storage type for L, see \ref AugCCS
+  /// \tparam DiagType diagonal matrix type, see \ref Array
+  /// \tparam U_CrsType crs storage format for U, see \ref AugCRS
+  /// \tparam U_StartType array type storing U_start, see \ref Array
+  /// \tparam SpVecType work array for current row vector, see \ref SparseVector
+  /// \param[in] s row scaling matrix from preprocessing
+  /// \param[in] crs_A input matrix in crs scheme
+  /// \param[in] t column scaling matrix from preprocessing
+  /// \param[in] pk permutated row index
+  /// \param[in] q column permutation matrix (right-hand side)
+  /// \param[in] L lower part
+  /// \param[in] d diagonal vector
+  /// \param[in] U upper part
+  /// \param[in] U_start leading row positions of current \ref _step
+  /// \param[out] ut current row vector of U
+  /// \note For arrays, this routine is compatible with both \ref Array and
+  ///       \a std::vector
+  ///
+  /// This routine computes the current row vector of \f$\boldsymbol{U}\f$
+  /// (w/o diagonal scaling). Mathematically, this routine is to compute:
+  ///
+  /// \f[
+  ///   \boldsymbol{u}_{k}^{T}=
+  ///     \hat{\boldsymbol{A}}[p_{k},\boldsymbol{q}_{k+1:n}]-
+  ///     \boldsymbol{L}_{k,1:k-1}\boldsymbol{D}_{k-1}
+  ///       \boldsymbol{U}_{1:k-1,k+1:n}
+  /// \f]
+  ///
+  /// It's worth noting that, conceptally, the formula above is nothing but
+  /// a vector matrix operation. However, standard implementation won't give
+  /// good performance (especially with consideration of cache performance),
+  /// this is because \f$\boldsymbol{L}\f$ is stored in column major whereas
+  /// row major for \f$\boldsymbol{U}\f$. Therefore, the actual implementation
+  /// is in the fashion that loops through \f$\boldsymbol{U}\f$ in row major
+  /// while keeping \f$\boldsymbol{L}\f$ as much static as possible.
+  ///
+  /// Regarding the complexity cost, it takes
+  /// \f$\matchcal{O}(\textrm{nnz}(\boldsymbol{A}_{p_k,:}))\f$ to first load the
+  /// row of A to \f$\boldsymbol{u}_k^T\f$, and takes
+  /// \f$\mathcal{O}(\cup_j \textrm{nnz}(\boldsymbol{U}_{j,:}))\f$, where
+  /// \f$l_{kj}\neq 0\f$ for computing the vector matrix operation.
+  template <class LeftDiagType, class A_CrsType, class RightDiagType,
+            class PermType, class U_CrsType, class U_StartType, class DiagType,
+            class L_AugCcsType, class SpVecType>
+  void compute_ut(const LeftDiagType &s, const A_CrsType &crs_A,
+                  const RightDiagType &t, const size_type pk, const PermType &q,
+                  const L_AugCcsType &L, const DiagType &d, const U_CrsType &U,
+                  const U_StartType &U_start, SpVecType &ut) {
+    // compilation checking
+    static_assert(A_CrsType::ROW_MAJOR, "input A must be CRS for loading ut");
+    static_assert(!(A_CrsType::ONE_BASED ^ L_AugCcsType::ONE_BASED),
+                  "ionconsistent one-based");
+    static_assert(!(A_CrsType::ONE_BASED ^ U_CrsType::ONE_BASED),
+                  "ionconsistent one-based");
+    using index_type           = typename L_AugCcsType::index_type;
+    constexpr static bool base = A_CrsType::ONE_BASED;
+
+    //------------
+    // run time
+    //------------
+
+    // first load the A
+    _load_A2ut(s, crs_A, t, pk, q, ut);
+
+    // if not the first step
+    // compute -L(k,1:k-1)d(1:k-1,1:k-1)U(1:k-1,k+1:n)
+    if (_step) {
+      // get leading value and index iterators for U
+      auto U_v_first = U.vals().cbegin();
+      auto U_i_first = U.col_ind().cbegin();
+      // get starting row ID
+      index_type aug_id = L.start_row_id(_step);
+      while (!L.is_nil(aug_id)) {
+        // get the column index (C-based)
+        // NOTE the column index is that of the row in U
+        const index_type c_idx = L.col_idx(aug_id);
+        psmilu_assert((size_type)c_idx < d.size(),
+                      "%zd exceeds the diagonal vector size", (size_type)c_idx);
+        psmilu_assert((size_type)c_idx < U_start.size(),
+                      "%zd exceeds the U_start size", (size_type)c_idx);
+        // NOTE once we drop val-pos impl, change this accordingly (L_start)
+        // compute L*D
+        const auto ld = L.val_from_row_id(aug_id) * d[c_idx];
+        // get the starting position from U_start
+        auto U_v_itr  = U_v_first + U_start[c_idx];
+        auto U_i_itr  = U_i_first + U_start[c_idx],
+             U_i_last = U.col_ind_cend(c_idx);
+        // for this local range
+        for (; U_i_itr != U_i_last; ++U_i_itr, ++U_v_itr) {
+          // convert to c index
+          const auto c_idx = to_c_idx<size_type, base>(*U_i_itr);
+          ut.push_back(*U_i_itr, _step) ? ut.vals()[c_idx] = -ld * *U_v_itr
+                                        : ut.vals()[c_idx] -= ld * *U_v_itr;
+        }
+        // advance augmented handle
+        aug_id = L.next_row_id(aug_id);
+      }  // while
+    }
+  }
+
   /// \brief compute the column vector of L of current step
+  /// \tparam IsSymm if \a true, then a symmetric leading block is assumed
+  /// \tparam LeftDiagType row scaling diagonal matrix type, see \ref Array
   /// \tparam A_CcsType ccs format of input A, see \ref CCS
+  /// \tparam RightDiagType column scaling diagonal matrix type, see \ref Array
   /// \tparam PermType permutation matrix type, see \ref BiPermMatrix
   /// \tparam L_CcsType ccs format of L matrix, see \ref AugCCS
   /// \tparam L_StartType array used for storing L_start, see \ref Array
   /// \tparam DiagType array used for storing diagonal array, see \ref Array
   /// \tparam U_AugCrsType augmented crs for U matrix, see \ref AugCRS
   /// \tparam SpVecType sparse vector for storing l, see \ref SparseVector
-  /// \param[in] ccs_A input matrix A
-  /// \param[in] p permutation matrix (row-wise)
-  /// \param[in] qk column index of A, which points to current step
+  /// \param[in] s row scaling matrix from preprocessing
+  /// \param[in] ccs_A input matrix in ccs scheme
+  /// \param[in] t column scaling matrix from preprocessing
+  /// \param[in] p row permutation matrix
+  /// \param[in] qk permutated column index
+  /// \param[in] m leading block size
   /// \param[in] L lower part of decomposition
   /// \param[in] L_start position array storing the starting locations of \a L
   /// \param[in] d diagonal entries
@@ -112,11 +223,16 @@ class Crout {
   /// column of A to \f$\boldsymbol{\ell}_k\f$, and takes
   /// \f$\mathcal{O}(\cup_i \textrm{nnz}(\boldsymbol{L}_{:,i}))\f$, where
   /// \f$u_{ik}\neq 0\f$ for computing the matrix vector operation.
-  template <class A_CcsType, class PermType, class L_CcsType, class L_StartType,
-            class DiagType, class U_AugCrsType, class SpVecType>
-  void compute_l(const A_CcsType &ccs_A, const PermType &p, const size_type qk,
-                 const L_CcsType &L, const L_StartType &L_start,
-                 const DiagType &d, const U_AugCrsType &U, SpVecType &l) const {
+  template <bool IsSymm, class LeftDiagType, class A_CcsType,
+            class RightDiagType, class PermType, class L_CcsType,
+            class L_StartType, class DiagType, class U_AugCrsType,
+            class SpVecType>
+  inline void compute_l(const LeftDiagType &s, const A_CcsType &ccs_A,
+                        const RightDiagType &t, const PermType &p,
+                        const size_type qk, const size_type m,
+                        const L_CcsType &L, const L_StartType &L_start,
+                        const DiagType &d, const U_AugCrsType &U,
+                        SpVecType &l) {
     // compilation checking
     static_assert(!A_CcsType::ROW_MAJOR, "input A must be CCS for loading l");
     static_assert(!(A_CcsType::ONE_BASED ^ L_CcsType::ONE_BASED),
@@ -131,7 +247,7 @@ class Crout {
     //------------
 
     // first load the A
-    _load_A2l(ccs_A, p, qk, l);
+    _load_A2l<IsSymm>(s, ccs_A, t, p, qk, m, l);
     // if not the first step
     // compute -L(k+1:n,1:k-1)d(1:k-1,1:k-1)U(1:k-1,k)
     if (_step) {
@@ -166,113 +282,6 @@ class Crout {
         }
         // advance augmented handle
         aug_id = U.next_col_id(aug_id);
-      }  // while
-    }
-  }
-
-  /// \brief dual of the \ref compute_l, i.e. computing the row of U
-  /// \tparam IsSymm if \a true, then assuming a leading symmetric block
-  /// \tparam LeftDiagType row scaling diagonal matrix type, see \ref Array
-  /// \tparam A_CrsType crs format for input matrix, see \ref CRS
-  /// \tparam RightDiagType column scaling diagonal matrix type, see \ref Array
-  /// \tparam PermType permutation matrix type, see \ref BiPermMatrix
-  /// \tparam L_augCcsType augmented storage type for L, see \ref AugCCS
-  /// \tparam DiagType diagonal matrix type, see \ref Array
-  /// \tparam U_CrsType crs storage format for U, see \ref AugCRS
-  /// \tparam U_StartType array type storing U_start, see \ref Array
-  /// \tparam SpVecType work array for current row vector, see \ref SparseVector
-  /// \param[in] s row scaling matrix from preprocessing
-  /// \param[in] crs_A input matrix in crs scheme
-  /// \param[in] t column scaling matrix from preprocessing
-  /// \param[in] q column permutation matrix (right-hand side)
-  /// \param[in] pk current row in A w.r.t. \ref _step
-  /// \param[in] m leading block size, used if \a IsSymm is \a true
-  /// \param[in] L lower part
-  /// \param[in] d diagonal vector
-  /// \param[in] U upper part
-  /// \param[in] U_start leading row positions of current \ref _step
-  /// \param[out] ut current row vector of U
-  /// \note For arrays, this routine is compatible with both \ref Array and
-  ///       \a std::vector
-  ///
-  /// This routine computes the current row vector of \f$\boldsymbol{U}\f$
-  /// (w/o diagonal scaling). Mathematically, this routine is to compute:
-  ///
-  /// \f[
-  ///   \boldsymbol{u}_{k}^{T}=
-  ///     \hat{\boldsymbol{A}}[p_{k},\boldsymbol{q}_{k+1:n}]-
-  ///     \boldsymbol{L}_{k,1:k-1}\boldsymbol{D}_{k-1}
-  ///       \boldsymbol{U}_{1:k-1,k+1:n}
-  /// \f]
-  ///
-  /// It's worth noting that, conceptally, the formula above is nothing but
-  /// a vector matrix operation. However, standard implementation won't give
-  /// good performance (especially with consideration of cache performance),
-  /// this is because \f$\boldsymbol{L}\f$ is stored in column major whereas
-  /// row major for \f$\boldsymbol{U}\f$. Therefore, the actual implementation
-  /// is in the fashion that loops through \f$\boldsymbol{U}\f$ in row major
-  /// while keeping \f$\boldsymbol{L}\f$ as much static as possible.
-  ///
-  /// Regarding the complexity cost, it takes
-  /// \f$\matchcal{O}(\textrm{nnz}(\boldsymbol{A}_{p_k,:}))\f$ to first load the
-  /// row of A to \f$\boldsymbol{u}_k^T\f$, and takes
-  /// \f$\mathcal{O}(\cup_j \textrm{nnz}(\boldsymbol{U}_{j,:}))\f$, where
-  /// \f$l_{kj}\neq 0\f$ for computing the vector matrix operation.
-  template <bool IsSymm, class LeftDiagType, class A_CrsType,
-            class RightDiagType, class PermType, class L_augCcsType,
-            class DiagType, class U_CrsType, class U_StartType, class SpVecType>
-  void compute_ut(const LeftDiagType &s, const A_CrsType &crs_A,
-                  const RightDiagType &t, const PermType &q, const size_type pk,
-                  const size_type m, const L_augCcsType &L, const DiagType &d,
-                  const U_CrsType &U, const U_StartType &U_start,
-                  SpVecType &ut) const {
-    // compilation checking
-    static_assert(A_CrsType::ROW_MAJOR, "input A must be CRS for loading ut");
-    static_assert(!(A_CrsType::ONE_BASED ^ L_augCcsType::ONE_BASED),
-                  "ionconsistent one-based");
-    static_assert(!(A_CrsType::ONE_BASED ^ U_CrsType::ONE_BASED),
-                  "ionconsistent one-based");
-    using index_type           = typename L_augCcsType::index_type;
-    constexpr static bool base = A_CrsType::ONE_BASED;
-
-    //------------
-    // run time
-    //------------
-
-    // first load the A
-    _load_A2ut<IsSymm>(s, crs_A, t, q, pk, m, ut);
-    // if not the first step
-    // compute -L(k,1:k-1)d(1:k-1,1:k-1)U(1:k-1,k+1:n)
-    if (_step) {
-      // get leading value and index iterators for U
-      auto U_v_first = U.vals().cbegin();
-      auto U_i_first = U.col_ind().cbegin();
-      // get starting row ID
-      index_type aug_id = L.start_row_id(_step);
-      while (!L.is_nil(aug_id)) {
-        // get the column index (C-based)
-        // NOTE the column index is that of the row in U
-        const index_type c_idx = L.col_idx(aug_id);
-        psmilu_assert((size_type)c_idx < d.size(),
-                      "%zd exceeds the diagonal vector size", (size_type)c_idx);
-        psmilu_assert((size_type)c_idx < U_start.size(),
-                      "%zd exceeds the U_start size", (size_type)c_idx);
-        // NOTE once we drop val-pos impl, change this accordingly (L_start)
-        // compute L*D
-        const auto ld = L.val_from_row_id(aug_id) * d[c_idx];
-        // get the starting position from U_start
-        auto U_v_itr  = U_v_first + U_start[c_idx];
-        auto U_i_itr  = U_i_first + U_start[c_idx],
-             U_i_last = U.col_ind_cend(c_idx);
-        // for this local range
-        for (; U_i_itr != U_i_last; ++U_i_itr, ++U_v_itr) {
-          // convert to c index
-          const auto c_idx = to_c_idx<size_type, base>(*U_i_itr);
-          ut.push_back(*U_i_itr, _step) ? ut.vals()[c_idx] = -ld * *U_v_itr
-                                        : ut.vals()[c_idx] -= ld * *U_v_itr;
-        }
-        // advance augmented handle
-        aug_id = L.next_row_id(aug_id);
       }  // while
     }
   }
@@ -315,18 +324,54 @@ class Crout {
     return okay;
   }
 
+  /// \brief updating position array for leading column locations in U
+  /// \tparam U_AugCrsType augmented crs for U matrix, see \ref AugCRS
+  /// \tparam U_StartType array type for U_start, see \ref Array
+  /// \param[in] U upper part
+  /// \param[in,out] U_start array storing the leading locations
+  /// \note Complexity: \f$\mathcal{O}(\textrm{nnz}(\boldsymbol{U}(:,k)))\f$
+  /// \note This routine should be called before \ref compute_ut
+  template <class U_AugCrsType, class U_StartType>
+  inline void update_U_start(const U_AugCrsType &U,
+                             U_StartType &       U_start) const {
+    static_assert(U_AugCrsType::ROW_MAJOR, "U must be AugCRS");
+    using index_type = typename U_AugCrsType::index_type;
+
+    // NOTE this routine should be called at the beginning of the crout update
+    // this is easy to handle
+    if (!_step) return;
+    // we just added a new row to U, which is _step-1
+    // we, then, assign the starting ID to be its start_ind
+    U_start[_step - 1] = U.row_start()[_step - 1];
+    // get the aug handle
+    index_type aug_id = U.start_col_id(_step);
+    // loop thru current column, O(u_k)
+    while (!U.is_nil(aug_id)) {
+      // get the row index, C based
+      const index_type c_idx = U.row_idx(aug_id);
+      if (U_start[c_idx] < U.row_start()[c_idx + 1]) ++U_start[c_idx];
+      // advance augmented handle
+      aug_id = U.next_col_id(aug_id);
+    }
+  }
+
   /// \brief updating position array for leading row locations in L
-  /// \tparam L_augCcsType augmented ccs type for L, see \ref AugCCS
+  /// \tparam IsSymm if \a true, then assuming a symmetric leading block
+  /// \tparam L_AugCcsType augmented ccs type for L, see \ref AugCCS
   /// \tparam L_StartType array type storing leading positions, see \ref Array
   /// \param[in] L lower part
   /// \param[in,out] L_start leading location array
   /// \note Complexity: \f$\mathcal{O}(\textrm{nnz}(\boldsymbol{L}(k,:)))\f$
   /// \note This routine should be called before \ref compute_l
-  template <class L_augCcsType, class L_StartType>
-  inline void update_L_start(const L_augCcsType &L,
-                             L_StartType &       L_start) const {
-    static_assert(!L_augCcsType::ROW_MAJOR, "L must be AugCCS");
-    using index_type = typename L_augCcsType::index_type;
+  ///
+  /// This routine is \a SFINAE-able by \a IsSymm, where this is for \a false
+  /// cases, i.e. no leading symmetric block
+  template <bool IsSymm, class L_AugCcsType, class L_StartType>
+  inline typename std::enable_if<!IsSymm>::type update_L_start(
+      const L_AugCcsType &L, const size_type /* m */, L_StartType &L_start,
+      bool /* no_pivot */ = false) const {
+    static_assert(!L_AugCcsType::ROW_MAJOR, "L must be AugCCS");
+    using index_type = typename L_AugCcsType::index_type;
 
     // NOTE this routine should be called at the beginning of the crout update
     // this is easy to handle
@@ -347,71 +392,36 @@ class Crout {
     }
   }
 
-  /// \brief updating position array for leading column locations in U
-  /// \tparam IsSymm if \a true, then assume a leading symmetric block
-  /// \tparam U_augCrsType augmented crs for U matrix, see \ref AugCRS
-  /// \tparam U_StartType array type for U_start, see \ref Array
-  /// \param[in] U upper part
-  /// \param[in,out] U_start array storing the leading locations
-  /// \note Complexity: \f$\mathcal{O}(\textrm{nnz}(\boldsymbol{U}(:,k)))\f$
-  ///
-  /// This routine is \a SFINAE-able by \a IsSymm, where this is for \a false
-  /// cases, i.e. no leading symmetric block
-  template <bool IsSymm, class U_augCrsType, class U_StartType>
-  inline typename std::enable_if<!IsSymm>::type update_U_start(
-      const U_augCrsType &U, const size_type /* m */, U_StartType &U_start,
-      bool /* no_pivot */ = false) const {
-    static_assert(U_augCrsType::ROW_MAJOR, "U must be AugCRS");
-    using index_type = typename U_augCrsType::index_type;
-
-    // NOTE this routine should be called at the beginning of Crout update
-    if (!_step) return;
-    // We need to handle the previous (just added) row
-    U_start[_step - 1] = U.row_start()[_step - 1];
-    // get the aug handle
-    index_type aug_id = U.start_col_id(_step);
-    // loop through current column, O(u_{k,m})
-    // NOTE that since m is dynamic, we must start from beginning even for symm
-    // case
-    while (!U.is_nil(aug_id)) {
-      // get the row index, C based
-      const index_type c_idx = U.row_idx(aug_id);
-      if (U_start[c_idx] < U.row_start()[c_idx + 1]) ++U_start[c_idx];
-      // advance augmented handle
-      aug_id = U.next_col_id(aug_id);
-    }
-  }
-
-  /// \brief updating position array for leading column locations in U
-  /// \tparam IsSymm if \a true, then assume a leading symmetric block
-  /// \tparam U_augCrsType augmented crs for U matrix, see \ref AugCRS
-  /// \tparam U_StartType array type for U_start, see \ref Array
-  /// \param[in] U upper part
-  /// \param[in] m leading block size
-  /// \param[out] U_start array storing the leading locations
-  /// \param[in] no_pivot if \a false (default), then pivoting occurs previously
+  /// \brief updating position array for leading row locations in L
+  /// \tparam IsSymm if \a true, then assuming a symmetric leading block
+  /// \tparam L_AugCcsType augmented ccs type for L, see \ref AugCCS
+  /// \tparam L_StartType array type storing leading positions, see \ref Array
+  /// \param[in] L lower part
+  /// \param[in,out] L_start leading location array
+  /// \note Complexity: \f$\mathcal{O}(\textrm{nnz}(\boldsymbol{L}(k,:)))\f$
+  /// \note This routine should be called before \ref compute_l
   ///
   /// This routine is \a SFINAE-able by \a IsSymm, where this is for \a true
   /// cases. For the symmetric case, things become more interesting, because we
-  /// just need to make \a U_start pointing to leading entries where the system
+  /// just need to make \a L_start pointing to leading entries where the system
   /// just passes the symmetric block.
   ///
   /// Regarding the complexity, in short, this routine, at most, takes
   ///
   /// \f[
-  ///   \mathcal{O}(\textrm{nnz}(\boldsymbol{U}(:,k)))+
-  ///     \mathcal{O}(\log \textrm{nnz}(\boldsymbol{U}(k-1,:)))
+  ///   \mathcal{O}(\textrm{nnz}(\boldsymbol{L}(k,:)))+
+  ///     \mathcal{O}(\log \textrm{nnz}(\boldsymbol{L}(k-1,:)))
   /// \f]
   ///
   /// However, in certain cases, only the routine only costs the log part or
   /// the linear part. And in general, the linear term should dominant the
   /// log part, thus overall it's still bounded linearly locally.
-  template <bool IsSymm, class U_augCrsType, class U_StartType>
-  inline typename std::enable_if<IsSymm>::type update_U_start(
-      const U_augCrsType &U, const size_type m, U_StartType &U_start,
+  template <bool IsSymm, class L_AugCcsType, class L_StartType>
+  inline typename std::enable_if<IsSymm>::type update_L_start(
+      const L_AugCcsType &L, const size_type m, L_StartType &L_start,
       bool no_pivot = false) const {
-    static_assert(U_augCrsType::ROW_MAJOR, "U must be AugCRS");
-    using index_type = typename U_augCrsType::index_type;
+    static_assert(!L_AugCcsType::ROW_MAJOR, "L must be AugCCS");
+    using index_type = typename L_AugCcsType::index_type;
 
     psmilu_assert(m, "cannot have empty leading block for symmetric case!");
 
@@ -420,39 +430,40 @@ class Crout {
 
     // NOTE that from step to step, m can only decrease!
 
-    if (m >= U.ncols()) {
+    if (m >= L.nrows()) {
       // if we have leading block that indicates fully symmetric system
       // then the ending position is stored
-      // row_start has an extra element, thus this is valid accessing
+      // col_start has an extra element, thus this is valid accessing
       // or maybe we can use {Array,vector}::back??
-      U_start[_step - 1] = U.row_start()[_step];
+      L_start[_step - 1] = L.col_start()[_step];
       return;
     }
     // if no pivoting previously, we just need to update the step-1 entry
     if (no_pivot) {
       // binary search to point to start of newly added row
-      auto info          = find_sorted(U.col_ind_cbegin(_step - 1),
-                              U.col_ind_cend(_step - 1), m);
-      U_start[_step - 1] = info.second - U.col_ind().cbegin();
+      auto info          = find_sorted(L.row_ind_cbegin(_step - 1),
+                              L.row_ind_cend(_step - 1), m);
+      L_start[_step - 1] = info.second - L.row_ind().cbegin();
       return;
     }
-    index_type aug_id = U.start_col_id(m);
-    // loop thru all columns
-    // NOTE that we track the row_idx (which we need anyway, thus this is not
+
+    index_type aug_id = L.start_row_id(m);
+    // loop thru all rows
+    // NOTE that we track the col_idx (which we need anyway, thus this is not
     // extra operations), to the end, it may allow us to skip binary search
-    size_type row_idx = _step;
-    while (!U.is_nil(aug_id)) {
-      row_idx          = U.row_idx(aug_id);
-      U_start[row_idx] = U.val_pos_idx(aug_id);
+    size_type col_idx = _step;
+    while (!L.is_nil(aug_id)) {
+      col_idx          = L.col_idx(aug_id);
+      L_start[col_idx] = L.val_pos_idx(aug_id);
       // advance augmented handle
-      aug_id = U.next_col_id(aug_id);
+      aug_id = L.next_row_id(aug_id);
     }
-    if (row_idx != _step - 1u) {
-      // well, the newly added row doesn't have m column entry, thus update
+    if (col_idx != _step - 1u) {
+      // well, the newly added column doesn't have m row entry, thus update
       // it using binary search
-      auto info          = find_sorted(U.col_ind_cbegin(_step - 1),
-                              U.col_ind_cend(_step - 1), m);
-      U_start[_step - 1] = info.second - U.col_ind().cbegin();
+      auto info          = find_sorted(L.row_ind_cbegin(_step - 1),
+                              L.row_ind_cend(_step - 1), m);
+      L_start[_step - 1] = info.second - L.row_ind().cbegin();
     }
   }
 
@@ -538,7 +549,7 @@ class Crout {
   /// \tparam IsSymm if \a true, then assuming we have a leading block
   /// \tparam SpVecType sparse vector for storing l, see \ref SparseVector
   /// \tparam DiagType diagonal vector array type, see \ref Array
-  /// \param[in] l newly computed column vector of L
+  /// \param[in] ut newly computed row vector of U
   /// \param[in] m leading block size (not necessary for symmetric)
   /// \param[in,out] d diagonal vector
   ///
@@ -549,108 +560,105 @@ class Crout {
   /// \f[
   ///   \boldsymbol{D}_{k+1:m,k+1:m}=\boldsymbol{D}_{k+1:m,k+1:m}-
   ///     \boldsymbol{D}_{k,k}
-  ///     \left(\boldsymbol{\ell}_k\otimes\boldsymbol{\ell}_k\right)_{k+1:m,k+1:m}
+  ///     \left(\boldsymbol{\ell}_k\otimes\boldsymbol{\u}_k\right)_{k+1:m,k+1:m}
   /// \f]
   ///
   /// The complexity is bounded by:
   ///
   /// \f[
-  ///   \mathcal{O}(\textrm{nnz}(\boldsymbol{\ell}_k))
+  ///   \mathcal{O}(\textrm{nnz}(\boldsymbol{\u}_k))
   ///\f]
   template <bool IsSymm, class SpVecType, class DiagType>
   inline typename std::enable_if<IsSymm>::type update_B_diag(
-      const SpVecType &l, const SpVecType & /* ut */, const size_type m,
+      const SpVecType & /* l */, const SpVecType &ut, const size_type m,
       DiagType &d) const {
     psmilu_assert(m, "fatal, symmetric block cannot be empty!");
     // get the current diagonal entry
     const auto dk = d[_step];
     // NOTE that the diagonal is updated before doing any dropping/sorting,
     // thus the indices are, in general, unsorted
-    const size_type n = l.size();
+    const size_type n = ut.size();
     // get the c index
     for (size_type i = 0u; i < n; ++i) {
-      const auto c_idx = l.c_idx(i);
+      const auto c_idx = ut.c_idx(i);
       psmilu_assert(
           (size_type)c_idx >= _step,
-          "should only contain the lower part of l, (c_idx,step)=(%zd,%zd)!",
+          "ut should only contain the upper part, (c_idx,step)=(%zd,%zd)!",
           (size_type)c_idx, _step);
-      if (c_idx < m) d[c_idx] -= dk * l.val(i) * l.val(i);
+      if (c_idx < m) d[c_idx] -= dk * ut.val(i) * ut.val(i);
     }
   }
 
  protected:
-  /// \brief load A column to l buffer
-  /// \tparam CcsType ccs matrix of input A, see \ref CCS
-  /// \tparam PermType permutation vector type, see \ref BiPermMatrix
-  /// \tparam SpVecType sparse vector type, see \ref SparseVector
-  /// \param[in] ccs_A input matrix in CCS scheme
-  /// \param[in] p left-hand side row permutation matrix
-  /// \param[in] qk column index (C-based) in permutated matrix
-  /// \param[out] l output sparse vector of column vector for L
-  /// \note Complexity is \f$\mathcal{O}(\textrm{nnz}(\boldsymbol{A}(:,qk)))\f$
-  template <class CcsType, class PermType, class SpVecType>
-  inline void _load_A2l(const CcsType &ccs_A, const PermType &p,
-                        const size_type qk, SpVecType &l) const {
-    // compilation consistency checking
-    static_assert(!(CcsType::ONE_BASED ^ SpVecType::ONE_BASED),
-                  "inconsistent one-based in ccs and sparse vector");
-    constexpr static bool base = CcsType::ONE_BASED;
-    // l should be empty
-    psmilu_assert(l.empty(), "l should be empty while loading A");
-    // qk is c index
-    auto v_itr = ccs_A.val_cbegin(qk);
-    auto i_itr = ccs_A.row_ind_cbegin(qk);
-    for (auto last = ccs_A.row_ind_cend(qk); i_itr != last; ++i_itr, ++v_itr) {
-      const auto c_idx = p.inv(to_c_idx<size_type, base>(*i_itr));
-      // push to the sparse vector only if its in range _step+1:n
-      if ((size_type)c_idx > _step) {
-#ifndef NDEBUG
-        const bool val_must_not_exit =
-#endif
-            l.push_back(to_ori_idx<size_type, base>(c_idx), _step);
-        psmilu_assert(val_must_not_exit,
-                      "see prefix, failed on Crout step %zd for l", _step);
-        l.vals()[c_idx] = *v_itr;
-      }
-    }
-  }
+  /*
+   /// \brief load A column to l buffer
+   /// \tparam CcsType ccs matrix of input A, see \ref CCS
+   /// \tparam PermType permutation vector type, see \ref BiPermMatrix
+   /// \tparam SpVecType sparse vector type, see \ref SparseVector
+   /// \param[in] ccs_A input matrix in CCS scheme
+   /// \param[in] p left-hand side row permutation matrix
+   /// \param[in] qk column index (C-based) in permutated matrix
+   /// \param[out] l output sparse vector of column vector for L
+   /// \note Complexity is \f$\mathcal{O}(\textrm{nnz}(\boldsymbol{A}(:,qk)))\f$
+   template <class CcsType, class PermType, class SpVecType>
+   inline void _load_A2l(const CcsType &ccs_A, const PermType &p,
+                         const size_type qk, SpVecType &l) const {
+     // compilation consistency checking
+     static_assert(!(CcsType::ONE_BASED ^ SpVecType::ONE_BASED),
+                   "inconsistent one-based in ccs and sparse vector");
+     constexpr static bool base = CcsType::ONE_BASED;
+     // l should be empty
+     psmilu_assert(l.empty(), "l should be empty while loading A");
+     // qk is c index
+     auto v_itr = ccs_A.val_cbegin(qk);
+     auto i_itr = ccs_A.row_ind_cbegin(qk);
+     for (auto last = ccs_A.row_ind_cend(qk); i_itr != last; ++i_itr, ++v_itr) {
+       const auto c_idx = p.inv(to_c_idx<size_type, base>(*i_itr));
+       // push to the sparse vector only if its in range _step+1:n
+       if ((size_type)c_idx > _step) {
+ #ifndef NDEBUG
+         const bool val_must_not_exit =
+ #endif
+             l.push_back(to_ori_idx<size_type, base>(c_idx), _step);
+         psmilu_assert(val_must_not_exit,
+                       "see prefix, failed on Crout step %zd for l", _step);
+         l.vals()[c_idx] = *v_itr;
+       }
+     }
+   }
+   */
 
-  /// \brief load A row to ut buffer
-  /// \tparam IsSymm if \a true, then only load the offset
-  /// \tparam LeftDiagType diagonal matrix from left-hand side
+  /// \brief load a row of A to ut buffer
+  /// \tparam LeftDiagType diagonal matrix from left-hand side, see \ref Array
   /// \tparam CrsType crs matrix of input A, see \ref CRS
   /// \tparam RightDiagType diagonal matrix from right-hand side
   /// \tparam PermType permutation vector type, see \ref BiPermMatrix
   /// \tparam SpVecType sparse vector type, see \ref SparseVector
-  /// \param[in] s diagonal matrix scaling from left-hand side
+  /// \param[in] s row scaling vector
   /// \param[in] crs_A input matrix in CRS scheme
-  /// \param[in] t diagonal matrix scaling from right-hand side
-  /// \param[in] q right-hand side column permutation matrix
-  /// \param[in] pk row index
-  /// \param[in] m leading size
+  /// \param[in] t column scaling vector
+  /// \param[in] pk permutated row index
+  /// \param[in] q column permutation matrix
   /// \param[out] ut output sparse vector of row vector for U
-  /// \note Complexity is \f$\mathcol{O}(\textrm{nnz}(\boldsymbol{A}(pk,:)))\f$
-  template <bool IsSymm, class LeftDiagType, class CrsType, class RightDiagType,
+  /// \note Complexity is \f$\mathcal{O}(\textrm{nnz}(\boldsymbol{A}(pk,:)))\f$
+  template <class LeftDiagType, class CrsType, class RightDiagType,
             class PermType, class SpVecType>
   inline void _load_A2ut(const LeftDiagType &s, const CrsType &crs_A,
-                         const RightDiagType &t, const PermType &q,
-                         const size_type pk, const size_type m,
-                         SpVecType &ut) const {
+                         const RightDiagType &t, const size_type pk,
+                         const PermType &q, SpVecType &ut) const {
     // compilation consistency checking
     static_assert(!(CrsType::ONE_BASED ^ SpVecType::ONE_BASED),
                   "inconsistent one-based in ccs and sparse vector");
     constexpr static bool base = CrsType::ONE_BASED;
     // ut should be empty
     psmilu_assert(ut.empty(), "ut should be empty while loading A");
-    // note m == 0 should be checked b4 calling this routine
-    const size_type thres = IsSymm ? m - 1u : _step;
     // pk is c index
     auto       v_itr = crs_A.val_cbegin(pk);
     auto       i_itr = crs_A.col_ind_cbegin(pk);
     const auto s_pk  = s[pk];
     for (auto last = crs_A.col_ind_cend(pk); i_itr != last; ++i_itr, ++v_itr) {
       const auto c_idx = q.inv(to_c_idx<size_type, base>(*i_itr));
-      if ((size_type)c_idx > thres) {
+      if ((size_type)c_idx > _step) {
 #ifndef NDEBUG
         const bool val_must_not_exit =
 #endif
@@ -658,6 +666,55 @@ class Crout {
         psmilu_assert(val_must_not_exit,
                       "see prefix, failed on Crout step %zd for ut", _step);
         ut.vals()[c_idx] = s_pk * *v_itr * t[c_idx];  // scale here
+      }
+    }
+  }
+
+  /// \brief load a column of A to l buffer
+  /// \tparam IsSymm if \a true, then only load the offset
+  /// \tparam LeftDiagType diagonal matrix from left-hand side
+  /// \tparam CcsType ccs matrix of input A, see \ref CCS
+  /// \tparam RightDiagType diagonal matrix from right-hand side
+  /// \tparam PermType permutation vector type, see \ref BiPermMatrix
+  /// \tparam SpVecType sparse vector type, see \ref SparseVector
+  /// \param[in] s row scaling vector
+  /// \param[in] ccs_A input matrix in CCS scheme
+  /// \param[in] t column scaling vector
+  /// \param[in] p row permutation matrix
+  /// \param[in] qk permuted column index
+  /// \param[in] m leading size
+  /// \param[out] l output sparse vector of column vector for L
+  /// \note Complexity is \f$\mathcol{O}(\textrm{nnz}(\boldsymbol{A}(:,qk)))\f$
+  template <bool IsSymm, class LeftDiagType, class CcsType, class RightDiagType,
+            class PermType, class SpVecType>
+  inline void _load_A2l(const LeftDiagType &s, const CcsType &ccs_A,
+                        const RightDiagType &t, const PermType &p,
+                        const size_type qk, const size_type m,
+                        SpVecType &l) const {
+    // compilation consistency checking
+    static_assert(!(CcsType::ONE_BASED ^ SpVecType::ONE_BASED),
+                  "inconsistent one-based in ccs and sparse vector");
+    constexpr static bool base = CcsType::ONE_BASED;
+
+    // runtime
+    psmilu_assert(l.empty(), "l should be empty while loading A");
+    const size_type thres = IsSymm ? m - 1u : _step;
+    // qk is c index
+    auto       v_itr = ccs_A.val_cbegin(qk);
+    auto       i_itr = ccs_A.row_ind_cbegin(qk);
+    const auto t_qk  = t[qk];
+    for (auto last = ccs_A.row_ind_cend(qk); i_itr != last; ++i_itr, ++v_itr) {
+      const auto A_idx = to_c_idx<size_type, base>(*i_itr);
+      const auto c_idx = p.inv(A_idx);
+      // push to the sparse vector only if its in range _step+1:n
+      if ((size_type)c_idx > thres) {
+#ifndef NDEBUG
+        const bool val_must_not_exit =
+#endif
+            l.push_back(to_ori_idx<size_type, base>(c_idx), _step);
+        psmilu_assert(val_must_not_exit,
+                      "see prefix, failed on Crout step %zd for l", _step);
+        l.vals()[c_idx] = s[A_idx] * *v_itr * t_qk;  // scale here
       }
     }
   }
