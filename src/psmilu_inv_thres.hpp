@@ -27,6 +27,7 @@ namespace psmilu {
 /// \param[in] nnz reference (local) number of nonzeros, i.e. input matrix
 /// \param[in] alpha filling limiter
 /// \param[in,out] v sparse vector
+/// \param[in] start_size starting size
 /// \return the intermediate vector size before applying final limitation
 /// \note The returned parameter is mainly for unit-testing/debugging
 /// \ingroup inv
@@ -88,21 +89,24 @@ namespace psmilu {
 template <class TauType, class KappaType, class SpVecType>
 inline typename SpVecType::size_type apply_dropping_and_sort(
     const TauType tau, const KappaType kappa,
-    const typename SpVecType::size_type nnz, const int alpha, SpVecType &v) {
+    const typename SpVecType::size_type nnz, const int alpha, SpVecType &v,
+    const typename SpVecType::size_type start_size = 0u) {
   using size_type                 = typename SpVecType::size_type;
   using index_type                = typename SpVecType::index_type;
+  using extractor                 = internal::SpVInternalExtractor<SpVecType>;
   constexpr static bool ONE_BASED = SpVecType::ONE_BASED;
 
-  // we need a helper class to extract the counts from sparse vector
-  class CountsExtactor : public SpVecType {
-   public:
-    using base      = SpVecType;
-    using size_type = typename base::size_type;
-    size_type &counts() { return base::_counts; }
-  };
-
   psmilu_assert(tau != TauType(), "zero threshold tau!");
-  const size_type N = alpha * nnz;
+  const size_type N1 = alpha * nnz;
+  if (start_size >= N1) {
+    psmilu_warning(
+        "inv-thres start size %zd exceeds bound (alpha*nnz) %zd, drop all "
+        "entries!",
+        start_size, N1);
+    static_cast<extractor &>(v).counts() = 0u;
+    return 0u;
+  }
+  const size_type N = N1 - start_size;
   psmilu_assert(N != 0u, "zero number of limitation!");
   // filter coeff based on inverse-based thresholding
   // TODO need to test potential float overflow?
@@ -155,7 +159,7 @@ inline typename SpVecType::size_type apply_dropping_and_sort(
                        });
 
     // directly modify the internal counter O(1)
-    static_cast<CountsExtactor &>(v).counts() = N;
+    static_cast<extractor &>(v).counts() = N;
   }
   // sort indices, O(min(n2,N)log(min(n2,N))), note that we assume min(n2,N)
   // is constant for PDE problems
