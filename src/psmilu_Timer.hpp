@@ -146,6 +146,7 @@ class Timer {
 
 /// \typedef DefaultTimer
 /// \brief default timer used in this package
+/// \ingroup util
 typedef Timer<> DefaultTimer;
 
 }  // namespace psmilu
