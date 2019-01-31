@@ -103,9 +103,9 @@ TEST(DIAG_COND, c) {
   const auto &           U = crs;
   for (crs_t::size_type step = 0u; step < m; ++step) {
     std::cout << "enter step " << step << '\n';
-    update_kappa_l(step, L, kappa_l) ? c_l[step] = 1.0 : c_l[step] = -1.0;
-    update_kappa_ut<false>(step, U, kappa_l, kappa_ut) ? c_u[step] = 1.0
-                                                       : c_u[step] = -1.0;
+    update_kappa_ut(step, U, kappa_ut) ? c_u[step] = 1.0 : c_u[step] = -1.0;
+    update_kappa_l<false>(step, L, kappa_ut, kappa_l) ? c_l[step]    = 1.0
+                                                      : c_l[step]    = -1.0;
   }
 
   auto L2 = convert2dense(L);
