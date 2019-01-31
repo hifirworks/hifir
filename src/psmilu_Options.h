@@ -51,8 +51,8 @@ struct psmilu_Options {
   int    alpha_L;   /*!< growth factor of nnz per col (4) */
   int    alpha_U;   /*!< growth factor of nnz per row (4) */
   double rho;       /*!< density threshold for dense LU (0.25) */
-  int    c_d;       /*!< size parameter for dense LU (1) */
-  int    c_h;       /*!< size parameter for H-version (10) */
+  double c_d;       /*!< size parameter for dense LU (1.0) */
+  double c_h;       /*!< size parameter for H-version (2.0) */
   int    N;         /*!< reference size of matrix (-1, system size) */
   int    verbose;   /*!< message output level (1, i.e. info) */
 };
@@ -75,8 +75,8 @@ inline psmilu_Options psmilu_get_default_options(void) {
                           .alpha_L   = 4,
                           .alpha_U   = 4,
                           .rho       = 0.25,
-                          .c_d       = 1,
-                          .c_h       = 10,
+                          .c_d       = 1.0,
+                          .c_h       = 2.0,
                           .N         = -1,
                           .verbose   = PSMILU_VERBOSE_INFO};
 }
@@ -89,29 +89,21 @@ inline psmilu_Options psmilu_get_default_options(void) {
 
 namespace psmilu {
 
-#  ifndef DOXYGEN_SHOULD_SKIP_THIS
-#    define ALIGN_LVL(__LVL) VERBOSE_##__LVL = ::PSMILU_VERBOSE_##__LVL
-#  endif /* DOXYGEN_SHOULD_SKIP_THIS */
-
 /*!
  * \brief enum wrapper
  * \note The prefix of \a PSMILU will be dropped
  * \ingroup itr
  */
 enum : int {
-  ALIGN_LVL(NONE),
-  ALIGN_LVL(INFO),
-  ALIGN_LVL(PRE),
-  ALIGN_LVL(CROUT),
-  ALIGN_LVL(PIVOT),
-  ALIGN_LVL(THRES),
-  ALIGN_LVL(SCHUR),
-  ALIGN_LVL(MEM),
+  VERBOSE_NONE  = ::PSMILU_VERBOSE_NONE,
+  VERBOSE_INFO  = ::PSMILU_VERBOSE_INFO,
+  VERBOSE_PRE   = ::PSMILU_VERBOSE_PRE,
+  VERBOSE_CROUT = ::PSMILU_VERBOSE_CROUT,
+  VERBOSE_PIVOT = ::PSMILU_VERBOSE_PIVOT,
+  VERBOSE_THRES = ::PSMILU_VERBOSE_THRES,
+  VERBOSE_SCHUR = ::PSMILU_VERBOSE_SCHUR,
+  VERBOSE_MEM   = ::PSMILU_VERBOSE_MEM,
 };
-
-#  ifdef ALIGN_LVL
-#    undef ALIGN_LVL
-#  endif /* ALIGN_LVL */
 
 /*!
  * \typedef Options
@@ -134,8 +126,8 @@ inline Options get_default_options() { return ::psmilu_get_default_options(); }
  */
 inline std::string opt_repr(const Options &opt) {
   using std::string;
-  using std::to_string;                /* C++11 */
-  const static int leading_size = 30;  /* should be enough */
+  using std::to_string;               /* C++11 */
+  const static int leading_size = 30; /* should be enough */
   const auto       pack_int     = [](const string &cat, const int v) -> string {
     return cat + string(leading_size - cat.size(), ' ') + to_string(v) + "\n";
   };
@@ -149,7 +141,8 @@ inline std::string opt_repr(const Options &opt) {
          pack_int("alpha_L", opt.alpha_L) +
          pack_int("alpha_U", opt.alpha_U) +
          pack_double("rho", opt.rho) +
-         pack_int("c_d", opt.c_d) +
+         pack_double("c_d", opt.c_d) +
+         pack_double("c_h", opt.c_h) +
          pack_int("N", opt.N) +
          pack_int("verbose", opt.verbose);
 }
@@ -172,6 +165,6 @@ inline std::string opt_repr(const Options &opt) {
 
 #endif /* __cplusplus */
 
-/*! @}*/  /* interface group */
+/*! @}*/ /* interface group */
 
 #endif /* _PSMILU_OPTIONS_H */
