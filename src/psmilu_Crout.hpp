@@ -500,21 +500,14 @@ class Crout {
     // thus, we can either:
     //    1) make this function a friend of SparseVec, or
     //    2) create a caster class
-    class SpVecDenseTagExtractor : public SpVecType {
-     public:
-      typedef SpVecType                  base;
-      typedef typename base::iarray_type dense_tag_type;
-      using const_reference = const dense_tag_type &;
-      inline const_reference dense_tag() const { return base::_dense_tags; }
-    };
+    using extractor = internal::SpVInternalExtractor<SpVecType>;
 
     // get the current diagonal entry
     const auto dk = d[_step];
     if (ut.size() <= l.size()) {
-      const auto &l_d_tags =
-          static_cast<const SpVecDenseTagExtractor &>(l).dense_tag();
-      const size_type n      = ut.size();
-      const auto &    l_vals = l.vals();
+      const auto &    l_d_tags = static_cast<const extractor &>(l).dense_tags();
+      const size_type n        = ut.size();
+      const auto &    l_vals   = l.vals();
       for (size_type i = 0u; i < n; ++i) {
         const auto c_idx = ut.c_idx(i);
         psmilu_assert(
@@ -527,8 +520,7 @@ class Crout {
           d[c_idx] -= dk * ut.val(i) * l_vals[c_idx];
       }
     } else {
-      const auto &ut_d_tags =
-          static_cast<const SpVecDenseTagExtractor &>(ut).dense_tag();
+      const auto &ut_d_tags  = static_cast<const extractor &>(ut).dense_tags();
       const size_type n      = l.size();
       const auto &    u_vals = ut.vals();
       for (size_type i = 0u; i < n; ++i) {
