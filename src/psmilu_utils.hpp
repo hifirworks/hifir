@@ -16,6 +16,7 @@
 #include <iterator>
 #include <limits>
 #include <type_traits>
+#include <vector>
 
 /** \addtogroup util
  * @{
@@ -141,6 +142,33 @@ class Const {
   static_assert(!std::is_same<value_type, void>::value,
                 "not a support value type, instance ValueTypeTrait first");
 };
+
+namespace internal {
+
+/// \class SpVInternalExtractor
+/// \brief advanced helper class for extract internal data attributes from
+///        \ref SparseVector
+/// \tparam SpVecType sparse vector type, see \ref SparseVector
+/// \ingroup util
+template <class SpVecType>
+class SpVInternalExtractor : public SpVecType {
+ public:
+  typedef SpVecType                  base;         ///< base type
+  typedef typename base::size_type   size_type;    ///< size_type
+  typedef typename base::iarray_type iarray_type;  ///< index array type
+
+  inline size_type &        counts() { return base::_counts; }
+  inline iarray_type &      dense_tags() { return base::_dense_tags; }
+  inline std::vector<bool> &sparse_tags() { return base::_sparse_tags; }
+
+  inline const size_type &  counts() const { return base::_counts; }
+  inline const iarray_type &dense_tags() const { return base::_dense_tags; }
+  inline const std::vector<bool> &sparse_tags() const {
+    return base::_sparse_tags;
+  }
+};
+
+}  // namespace internal
 
 }  // namespace psmilu
 
