@@ -32,8 +32,8 @@ struct Prec {
   typedef CRS<value_type, index_type, OneBased> crs_type;    ///< crs type
   typedef CCS<value_type, index_type, OneBased> ccs_type;    ///< ccs type
   typedef BiPermMatrix<index_type>              perm_type;   ///< permutation
-  typedef typename crs_type::size_type          size_type;   ///< size
-  typedef typename crs_type::array_type         array_type;  ///< array
+  typedef typename ccs_type::size_type          size_type;   ///< size
+  typedef typename ccs_type::array_type         array_type;  ///< array
   static constexpr bool ONE_BASED  = OneBased;               ///< c index flag
   static constexpr char EMPTY_PREC = '\0';                   ///< empty prec
 
@@ -57,7 +57,7 @@ struct Prec {
   /// \param[in] Q column permutation
   /// \note This allows us to use emplace back in STL efficiently
   Prec(index_type mm, index_type nn, ccs_type &&L_b, array_type &&d_b,
-       crs_type &&U_b, crs_type &&e, crs_type &&f, array_type &&S,
+       ccs_type &&U_b, ccs_type &&e, ccs_type &&f, array_type &&S,
        array_type &&T, perm_type &&P, perm_type &&Q)
       : m(mm),
         n(nn),
@@ -88,8 +88,8 @@ struct Prec {
   /// calling this routine.
   ///
   /// \warn Everything on output is destroyed, as the routine name says.
-  inline void move_destroy(ccs_type &L_b, array_type &d_b, crs_type &U_b,
-                           crs_type &e, crs_type &f, array_type &S,
+  inline void move_destroy(ccs_type &L_b, array_type &d_b, ccs_type &U_b,
+                           ccs_type &e, ccs_type &f, array_type &S,
                            array_type &T, perm_type &P, perm_type &Q) {
     L_B = std::move(L_b);
     d_B = std::move(d_b);
@@ -106,9 +106,9 @@ struct Prec {
   index_type n;       ///< system size
   ccs_type   L_B;     ///< lower part of leading block
   array_type d_B;     ///< diagonal block of leading block
-  crs_type   U_B;     ///< upper part of leading block
-  crs_type   E;       ///< scaled and permutated E part
-  crs_type   F;       ///< scaled and permutated F part
+  ccs_type   U_B;     ///< upper part of leading block
+  ccs_type   E;       ///< scaled and permutated E part
+  ccs_type   F;       ///< scaled and permutated F part
   array_type s;       ///< row scaling vector
   array_type t;       ///< column scaling vector
   perm_type  p;       ///< row permutation matrix
