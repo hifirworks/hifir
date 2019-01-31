@@ -99,36 +99,40 @@ TEST(LU, c) {
   std::cout << "begin crout update\n\n";
   for (; (int)crout < n; ++crout) {
     std::cout << "enter crout step " << crout << '\n';
-    std::cout << "\tupdating L_start...\n";
-    crout.update_L_start(L2, L_start);
     std::cout << "\tupdating U_start...\n";
-    crout.update_U_start<true>(U2, n, U_start);
+    crout.update_U_start(U2, U_start);
+    std::cout << "\tupdating L_start...\n";
+    crout.update_L_start<true>(L2, n, L_start);
+
     // compute l and u
-    l.reset_counter();
-    std::cout << "\tcomputing l_k...\n";
-    crout.compute_l(A_ccs, p, crout, L2, L_start, d2, U2, l);
-    std::cout << "\tl_k size: " << l.size() << '\n';
     ut.reset_counter();
     std::cout << "\tcomputing u_k\'...\n";
-    crout.compute_ut<true>(s, A_crs, t, q, crout, n, L2, d2, U2, U_start, ut);
+    crout.compute_ut(s, A_crs, t, crout, q, L2, d2, U2, U_start, ut);
+    std::cout << "\tu_k\' size: " << ut.size() << '\n';
+    l.reset_counter();
+    std::cout << "\tcomputing l_k...\n";
+    crout.compute_l<true>(s, A_ccs, t, p, crout, n, L2, L_start, d2, U2, l);
+    std::cout << "\tl_k size: " << l.size() << '\n';
+
     // scale inv d
-    EXPECT_FALSE(crout.scale_inv_diag(d, l))
-        << "singular at step " << crout << " for l\n";
     EXPECT_FALSE(crout.scale_inv_diag(d, ut))
         << "singular at step " << crout << " for ut\n";
-    std::cout << "\tu_k\' size: " << ut.size() << '\n';
+    EXPECT_FALSE(crout.scale_inv_diag(d, l))
+        << "singular at step " << crout << " for l\n";
+
     std::cout << "\tupdating diagonal matrix...\n";
     crout.update_B_diag<true>(l, ut, n, d2);
     // sort indices
     std::cout << "\tsorting indices...\n";
-    l.sort_indices();
     ut.sort_indices();
-    std::cout << "\tpushing back to L...\n";
-    L2.push_back_col(crout, l.inds().cbegin(), l.inds().cbegin() + l.size(),
-                     l.vals());
+    l.sort_indices();
     std::cout << "\tpushing back to U...\n";
-    U2.push_back_row(crout, l.inds().cbegin(), l.inds().cbegin() + l.size(),
-                     l.vals());
+    // we know everything is stored in ut
+    U2.push_back_row(crout, ut.inds().cbegin(), ut.inds().cbegin() + ut.size(),
+                     ut.vals());
+    std::cout << "\tpushing back to L...\n";
+    L2.push_back_col(crout, ut.inds().cbegin(), ut.inds().cbegin() + ut.size(),
+                     ut.vals());
   }
 
   U2.end_assemble_rows();
