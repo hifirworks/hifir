@@ -590,44 +590,6 @@ class Crout {
   }
 
  protected:
-  /*
-   /// \brief load A column to l buffer
-   /// \tparam CcsType ccs matrix of input A, see \ref CCS
-   /// \tparam PermType permutation vector type, see \ref BiPermMatrix
-   /// \tparam SpVecType sparse vector type, see \ref SparseVector
-   /// \param[in] ccs_A input matrix in CCS scheme
-   /// \param[in] p left-hand side row permutation matrix
-   /// \param[in] qk column index (C-based) in permutated matrix
-   /// \param[out] l output sparse vector of column vector for L
-   /// \note Complexity is \f$\mathcal{O}(\textrm{nnz}(\boldsymbol{A}(:,qk)))\f$
-   template <class CcsType, class PermType, class SpVecType>
-   inline void _load_A2l(const CcsType &ccs_A, const PermType &p,
-                         const size_type qk, SpVecType &l) const {
-     // compilation consistency checking
-     static_assert(!(CcsType::ONE_BASED ^ SpVecType::ONE_BASED),
-                   "inconsistent one-based in ccs and sparse vector");
-     constexpr static bool base = CcsType::ONE_BASED;
-     // l should be empty
-     psmilu_assert(l.empty(), "l should be empty while loading A");
-     // qk is c index
-     auto v_itr = ccs_A.val_cbegin(qk);
-     auto i_itr = ccs_A.row_ind_cbegin(qk);
-     for (auto last = ccs_A.row_ind_cend(qk); i_itr != last; ++i_itr, ++v_itr) {
-       const auto c_idx = p.inv(to_c_idx<size_type, base>(*i_itr));
-       // push to the sparse vector only if its in range _step+1:n
-       if ((size_type)c_idx > _step) {
- #ifndef NDEBUG
-         const bool val_must_not_exit =
- #endif
-             l.push_back(to_ori_idx<size_type, base>(c_idx), _step);
-         psmilu_assert(val_must_not_exit,
-                       "see prefix, failed on Crout step %zd for l", _step);
-         l.vals()[c_idx] = *v_itr;
-       }
-     }
-   }
-   */
-
   /// \brief load a row of A to ut buffer
   /// \tparam LeftDiagType diagonal matrix from left-hand side, see \ref Array
   /// \tparam CrsType crs matrix of input A, see \ref CRS
@@ -641,6 +603,7 @@ class Crout {
   /// \param[in] q column permutation matrix
   /// \param[out] ut output sparse vector of row vector for U
   /// \note Complexity is \f$\mathcal{O}(\textrm{nnz}(\boldsymbol{A}(pk,:)))\f$
+  /// \sa _load_A2l
   template <class LeftDiagType, class CrsType, class RightDiagType,
             class PermType, class SpVecType>
   inline void _load_A2ut(const LeftDiagType &s, const CrsType &crs_A,
@@ -685,6 +648,7 @@ class Crout {
   /// \param[in] m leading size
   /// \param[out] l output sparse vector of column vector for L
   /// \note Complexity is \f$\mathcol{O}(\textrm{nnz}(\boldsymbol{A}(:,qk)))\f$
+  /// \sa _load_A2ut
   template <bool IsSymm, class LeftDiagType, class CcsType, class RightDiagType,
             class PermType, class SpVecType>
   inline void _load_A2l(const LeftDiagType &s, const CcsType &ccs_A,
