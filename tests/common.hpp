@@ -247,6 +247,51 @@ static matrix<T> compute_dense_Schur_c(const matrix<T> &A, const matrix<T> &L,
   return temp;
 }
 
+template <class T>
+static void forward_sub_unit_diag(const matrix<T> &L, matrix<T> &X) {
+  const int n = L.size();
+  const int m = X.front().size();
+  for (int k = 0; k < m; ++k)
+    for (int i = 1; i < n; ++i) {
+      T sum(0);
+      for (int j = 0; j < i; ++j) sum += L[i][j] * X[j][k];
+      X[i][k] = X[i][k] - sum;
+    }
+}
+
+template <class T>
+static void backward_sub_unit_diag(const matrix<T> &U, matrix<T> &X) {
+  const int n = U.size();
+  const int m = X.front().size();
+  for (int k = 0; k < m; ++k)
+    for (int i = n - 2; i > -1; --i) {
+      T sum(0);
+      for (int j = i + 1; j < n; ++j) sum += U[i][j] * X[j][k];
+      X[i][k] = X[i][k] - sum;
+    }
+}
+
+template <class T, class DiagType>
+static matrix<T> compute_dense_Schur_h(const matrix<T> &A, const int m,
+                                       const matrix<T> &L, const matrix<T> &U,
+                                       const DiagType &d, const matrix<T> &L_E,
+                                       const matrix<T> &U_F) {
+  const int n = A.size() - m;
+  if (!n) return matrix<T>();
+  auto B = create_mat<T>(m, m);
+  for (int i = 0; i < m; ++i) std::copy_n(A[i].cbegin(), m, B[i].begin());
+  forward_sub_unit_diag(L, B);
+  for (int i = 0; i < m; ++i) {
+    const auto  dd = d[i];
+    auto &      b  = B[i];
+    const auto &u  = U[i];
+    for (int j = 0; j < m; ++j) b[j] -= dd * u[j];
+  }
+  const auto temp = matrix<T>(U_F);
+  backward_sub_unit_diag(U, temp);
+  return dense_mm(dense_mm(L_E, B), temp);
+}
+
 //----------------------
 // aug ds section
 //----------------------
