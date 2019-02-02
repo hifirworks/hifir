@@ -5,7 +5,7 @@
 //@HEADER
 
 // for unit testing, using full L and U, thus
-#define PSMILU_SCHUR_C_USE_FULL
+#define PSMILU_SCHUR_USE_FULL
 
 #include "common.hpp"
 // line break to avoid sorting
@@ -141,8 +141,9 @@ TEST(Schur, c_ver) {
 
   Array<double> d(n);
   for (auto& v : d) v = r_rand();
-  crs_t Sc;
-  compute_Schur_C(A, p, q, m, n, L, d, U, U_start, Sc);
+  crs_t         Sc;
+  Array<double> s(n, 1.0), t(n, 1.0);
+  compute_Schur_C(s, A, t, p, q, m, n, L, d, U, U_start, Sc);
   ASSERT_EQ((int)Sc.nrows(), N);
   ASSERT_EQ((int)Sc.ncols(), N);
 
