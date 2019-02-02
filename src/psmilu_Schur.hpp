@@ -637,7 +637,13 @@ inline void compute_Schur_H(const L_AugCcsType &L_E, const L_StartType &L_start,
   static_assert(!CcsType::ROW_MAJOR, "A should be CCS type");
   static_assert(!U_B_CcsType::ROW_MAJOR, "U_B should be CCS type");
   static_assert(U_AugCrsType::ROW_MAJOR, "U_F should be CRS type");
+  static_assert(!(L_AugCcsType::ONE_BASED ^ L_B_CcsType::ONE_BASED),
+                "inconsistent index system");
   static_assert(!(L_AugCcsType::ONE_BASED ^ CcsType::ONE_BASED),
+                "inconsistent index system");
+  static_assert(!(L_AugCcsType::ONE_BASED ^ U_B_CcsType::ONE_BASED),
+                "inconsistent index system");
+  static_assert(!(L_AugCcsType::ONE_BASED ^ U_AugCrsType::ONE_BASED),
                 "inconsistent index system");
   using size_type                 = typename CcsType::size_type;
   constexpr static bool ONE_BASED = CcsType::ONE_BASED;
