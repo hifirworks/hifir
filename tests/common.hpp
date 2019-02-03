@@ -287,7 +287,7 @@ static matrix<T> compute_dense_Schur_h(const matrix<T> &A, const int m,
     const auto &u  = U[i];
     for (int j = 0; j < m; ++j) b[j] -= dd * u[j];
   }
-  const auto temp = matrix<T>(U_F);
+  auto temp = matrix<T>(U_F);
   backward_sub_unit_diag(U, temp);
   return dense_mm(dense_mm(L_E, B), temp);
 }
