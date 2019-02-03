@@ -278,6 +278,7 @@ inline void compute_Schur_H_T_E(const L_AugCcsType &L_E,
   // get the size of system
   const size_type m = L_B.nrows();
   psmilu_assert(m == L_B.ncols(), "must be squared system for L_B");
+  const size_type n = L_E.nrows() - m;
 
   const auto load_A_col_symbolic = [&, m](const size_type col,
                                           const size_type tag,
@@ -296,14 +297,14 @@ inline void compute_Schur_H_T_E(const L_AugCcsType &L_E,
     return min_idx;
   };
 
-  sp_vec_type buf(m);
+  sp_vec_type buf(std::max(m, n));
   // we need to direct track the dense tags
   const auto &d_tags = static_cast<const extractor &>(buf).dense_tags();
 
   const auto solve_col_symbolic =
       [&, m](const size_type tag, const size_type start_index, sp_vec_type &v) {
         for (size_type j = start_index; j < m; ++j) {
-          if (d_tags[j] != tag) continue;
+          if (static_cast<size_type>(d_tags[j]) != tag) continue;
           auto last = L_B.row_ind_cend(j);
           auto info = find_sorted(L_B.row_ind_cbegin(j), last, ori_idx(j + 1));
           for (auto itr = info.second; itr != last; ++itr)
@@ -375,7 +376,7 @@ inline void compute_Schur_H_T_E(const L_AugCcsType &L_E,
                                     sp_vec_type &   v) {
     auto &vals = v.vals();
     for (size_type j = start_index; j < m; ++j) {
-      if (d_tags[j] != tag) continue;
+      if (static_cast<size_type>(d_tags[j]) != tag) continue;
       const auto x_j  = vals[j];
       auto       last = L_B.row_ind_cend(j);
       auto info  = find_sorted(L_B.row_ind_cbegin(j), last, ori_idx(j + 1));
@@ -412,7 +413,6 @@ inline void compute_Schur_H_T_E(const L_AugCcsType &L_E,
       *v_itr = buf_vals[c_idx(*itr)];
   }
 
-  const size_type n = L_E.nrows() - m;
   T_E.resize(n, m);
   auto &o_col_start = T_E.col_start();
   o_col_start.resize(m + 1);
@@ -536,7 +536,7 @@ inline void compute_Schur_H_T_F(const U_B_CcsType &U_B, const U_AugCrsType &U_F,
       [&](const size_type tag, const size_type start_index, sp_vec_type &v) {
         // note for first entry, no new entries will be added
         for (size_type j = start_index; j != 0u; --j) {
-          if (d_tags[j] != tag) continue;
+          if (static_cast<size_type>(d_tags[j]) != tag) continue;
           auto info = find_sorted(U_B.row_ind_cbegin(j), U_B.row_ind_cend(j),
                                   ori_idx(j - 1));
           if (info.second != U_B.row_ind_cend(j)) ++info.second;
@@ -563,9 +563,9 @@ inline void compute_Schur_H_T_F(const U_B_CcsType &U_B, const U_AugCrsType &U_F,
   size_type tag_start = n;
   for (size_type col = 0u; col < n; ++col) {
     const size_type tag = col + tag_start;
-    load_U_col_symbolic(col, col, buf);
+    load_U_col_symbolic(col, tag, buf);
     if (buf.size())
-      solve_col_symbolic(col, c_idx(buf.c_idx(buf.size() - 1)), buf);
+      solve_col_symbolic(tag, c_idx(buf.c_idx(buf.size() - 1)), buf);
     buf.sort_indices();
     i_itr =
         std::copy(buf.inds().cbegin(), buf.inds().cbegin() + buf.size(), i_itr);
@@ -592,7 +592,7 @@ inline void compute_Schur_H_T_F(const U_B_CcsType &U_B, const U_AugCrsType &U_F,
     using v_iterator = std::reverse_iterator<decltype(U_B.val_cbegin(0))>;
     auto &buf_vals   = v.vals();
     for (size_type j = start_index; j != 0u; --j) {
-      if (d_tags[j] != tag) continue;
+      if (static_cast<size_type>(d_tags[j]) != tag) continue;
       const auto x_j  = buf_vals[j];
       auto       info = find_sorted(U_B.row_ind_cbegin(j), U_B.row_ind_cend(j),
                               ori_idx(j - 1));
@@ -620,6 +620,7 @@ inline void compute_Schur_H_T_F(const U_B_CcsType &U_B, const U_AugCrsType &U_F,
       *v_itr = buf_vals[c_idx(*itr)];
   }
 }
+
 }  // namespace internal
 
 template <class L_AugCcsType, class L_StartType, class L_B_CcsType,
@@ -663,7 +664,7 @@ inline void compute_Schur_H(const L_AugCcsType &L_E, const L_StartType &L_start,
   psmilu_assert(HC.ncols() == T_F.ncols(),
                 "T_F and HC should have same column size");
 
-  const size_type N = HC.nrows(), M = HC.ncols();
+  const size_type M = HC.ncols();
   for (size_type col = 0u; col < M; ++col) {
     auto rhs_v_itr   = T_F.val_cbegin(col);
     auto dense_v_itr = HC.col_begin(col);
@@ -674,8 +675,11 @@ inline void compute_Schur_H(const L_AugCcsType &L_E, const L_StartType &L_start,
       const auto      temp      = *rhs_v_itr;
       auto            lhs_v_itr = T_E.val_cbegin(j);
       for (auto lhs_itr = T_E.row_ind_cbegin(j), lhs_last = T_E.row_ind_cend(j);
-           lhs_itr != lhs_last; ++lhs_itr, ++lhs_v_itr)
+           lhs_itr != lhs_last; ++lhs_itr, ++lhs_v_itr) {
+        psmilu_assert(c_idx(*lhs_itr) < HC.nrows(),
+                      "%zd exceeds the SC matrix row size", c_idx(*lhs_itr));
         dense_v_itr[c_idx(*lhs_itr)] += *lhs_v_itr * temp;
+      }
     }
   }
 }
