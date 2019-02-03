@@ -29,6 +29,10 @@
 #  define PSMILU_MEMORY_DEBUG
 #endif
 
+#ifndef PSMILU_UNIT_TESTING
+#  define PSMILU_UNIT_TESTING
+#endif
+
 #include "psmilu_log.hpp"
 
 //----------------------
@@ -272,10 +276,11 @@ static void backward_sub_unit_diag(const matrix<T> &U, matrix<T> &X) {
 }
 
 template <class T, class DiagType>
-static matrix<T> compute_dense_Schur_h(const matrix<T> &A, const int m,
-                                       const matrix<T> &L, const matrix<T> &U,
-                                       const DiagType &d, const matrix<T> &L_E,
-                                       const matrix<T> &U_F) {
+static matrix<T> compute_dense_Schur_h_t_e(const matrix<T> &A, const int m,
+                                           const matrix<T> &L,
+                                           const matrix<T> &U,
+                                           const DiagType & d,
+                                           const matrix<T> &L_E) {
   const int n = A.size() - m;
   if (!n) return matrix<T>();
   auto B = create_mat<T>(m, m);
@@ -287,9 +292,34 @@ static matrix<T> compute_dense_Schur_h(const matrix<T> &A, const int m,
     const auto &u  = U[i];
     for (int j = 0; j < m; ++j) b[j] -= dd * u[j];
   }
+  return dense_mm(L_E, B);
+}
+
+template <class T>
+static matrix<T> compute_dense_Schur_h_t_f(const matrix<T> &U,
+                                           const matrix<T> &U_F) {
   auto temp = matrix<T>(U_F);
   backward_sub_unit_diag(U, temp);
-  return dense_mm(dense_mm(L_E, B), temp);
+  return temp;
+}
+
+template <class T, class DiagType>
+static matrix<T> compute_dense_Schur_h(const matrix<T> &A, const int m,
+                                       const matrix<T> &L, const matrix<T> &U,
+                                       const DiagType &d, const matrix<T> &L_E,
+                                       const matrix<T> &U_F) {
+  return dense_mm(compute_dense_Schur_h_t_e(A, m, L, U, d, L_E),
+                  compute_dense_Schur_h_t_f(U, U_F));
+}
+
+template <class GenericDense>
+static matrix<typename GenericDense::value_type> from_gen_dense(
+    const GenericDense &m) {
+  using v_t = typename GenericDense::value_type;
+  auto mat  = create_mat<v_t>(m.nrows(), m.ncols());
+  for (auto i = 0u; i < m.nrows(); ++i)
+    for (auto j = 0u; j < m.ncols(); ++j) mat[i][j] = m(i, j);
+  return mat;
 }
 
 //----------------------
