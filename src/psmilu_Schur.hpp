@@ -150,6 +150,11 @@ inline void compute_Schur_C(const LeftDiagType &s, const CrsType &A,
   // step 2, fill in the column indices
   //-----------------------------------
 
+  if (!row_start[N]) {
+    psmilu_warning("Schur (C version) complement becomes empty!");
+    return;
+  }
+
   // NOTE that we reserve spaces for both values and column indices
   SC.reserve(row_start[N]);
   auto &col_ind = SC.col_ind();
@@ -278,6 +283,7 @@ inline void compute_Schur_H_T_E(const L_AugCcsType &L_E,
   // get the size of system
   const size_type m = L_B.nrows();
   psmilu_assert(m == L_B.ncols(), "must be squared system for L_B");
+  psmilu_assert(L_E.nrows() >= m, "invalid size!");
   const size_type n = L_E.nrows() - m;
 
   const auto load_A_col_symbolic = [&, m](const size_type col,
@@ -330,6 +336,16 @@ inline void compute_Schur_H_T_E(const L_AugCcsType &L_E,
     solve_col_symbolic(col, start_index, buf);
     subtract_du_symbolic(col, col, buf);
     col_start[col + 1] = col_start[col] + buf.size();
+  }
+
+  if (!col_start[m]) {
+    psmilu_warning(
+        "computing H version Schur complement for inv(L)*B-D*U yields an empty "
+        "matrix!");
+    T_E.resize(n, m);
+    T_E.col_start().resize(m + 1);
+    std::fill_n(T_E.col_start().begin(), m + 1, ONE_BASED);
+    return;
   }
 
   T_E2.reserve(col_start[m]);
@@ -433,6 +449,11 @@ inline void compute_Schur_H_T_E(const L_AugCcsType &L_E,
         buf.push_back(*lhs_itr - m, tag);
     }
     o_col_start[col + 1] = o_col_start[col] + buf.size();
+  }
+
+  if (!o_col_start[m]) {
+    psmilu_warning("H version of Schur complement has an empty T_E part!");
+    return;
   }
 
   tag_start += m;
@@ -539,7 +560,7 @@ inline void compute_Schur_H_T_F(const U_B_CcsType &U_B, const U_AugCrsType &U_F,
           if (static_cast<size_type>(d_tags[j]) != tag) continue;
           auto info = find_sorted(U_B.row_ind_cbegin(j), U_B.row_ind_cend(j),
                                   ori_idx(j - 1));
-          if (info.second != U_B.row_ind_cend(j)) ++info.second;
+          if (info.first) ++info.second;
           auto last = iterator(U_B.row_ind_cbegin(j));
           auto itr  = iterator(info.second);
           for (; itr != last; ++itr) v.push_back(*itr, tag);
@@ -553,6 +574,11 @@ inline void compute_Schur_H_T_F(const U_B_CcsType &U_B, const U_AugCrsType &U_F,
     col_start[col + 1] = col_start[col] + buf.size();
   }
 
+  if (!col_start[n]) {
+    psmilu_warning("H version of Schur complement has an empty T_F part!");
+    return;
+  }
+
   T_F.reserve(col_start[n]);
   auto &row_ind = T_F.row_ind();
   auto &vals    = T_F.vals();
@@ -564,6 +590,9 @@ inline void compute_Schur_H_T_F(const U_B_CcsType &U_B, const U_AugCrsType &U_F,
   for (size_type col = 0u; col < n; ++col) {
     const size_type tag = col + tag_start;
     load_U_col_symbolic(col, tag, buf);
+    psmilu_assert(
+        std::is_sorted(buf.inds().cbegin(), buf.inds().cbegin() + buf.size()),
+        "after loading U, the indices should be sorted");
     if (buf.size())
       solve_col_symbolic(tag, c_idx(buf.c_idx(buf.size() - 1)), buf);
     buf.sort_indices();
@@ -596,7 +625,7 @@ inline void compute_Schur_H_T_F(const U_B_CcsType &U_B, const U_AugCrsType &U_F,
       const auto x_j  = buf_vals[j];
       auto       info = find_sorted(U_B.row_ind_cbegin(j), U_B.row_ind_cend(j),
                               ori_idx(j - 1));
-      if (info.second != U_B.row_ind_cend(j)) ++info.second;
+      if (info.first) ++info.second;
       auto v_itr =
           v_iterator(U_B.val_cbegin(j) + (info.second - U_B.row_ind_cbegin(j)));
       auto last = iterator(U_B.row_ind_cbegin(j));
@@ -632,7 +661,12 @@ inline void compute_Schur_H(const L_AugCcsType &L_E, const L_StartType &L_start,
                             const CcsType &A, const RightDiagType &t,
                             const PermType &p, const PermType &q,
                             const DiagType &d, const U_B_CcsType &U_B,
-                            const U_AugCrsType &U_F, DenseType &HC) {
+                            const U_AugCrsType &U_F, DenseType &HC
+#ifdef PSMILU_UNIT_TESTING
+                            ,
+                            CcsType &T_E, CcsType &T_F
+#endif
+) {
   static_assert(!L_AugCcsType::ROW_MAJOR, "L_E should be CCS type");
   static_assert(!L_B_CcsType::ROW_MAJOR, "L_B should be CCS type");
   static_assert(!CcsType::ROW_MAJOR, "A should be CCS type");
@@ -654,9 +688,13 @@ inline void compute_Schur_H(const L_AugCcsType &L_E, const L_StartType &L_start,
 
   psmilu_warning_if(HC.nrows() != HC.ncols(),
                     "dense matrix HC is not squared!");
+#ifndef PSMILU_UNIT_TESTING
   CcsType T_E;
+#endif
   internal::compute_Schur_H_T_E(L_E, L_start, L_B, s, A, t, p, q, d, U_B, T_E);
+#ifndef PSMILU_UNIT_TESTING
   CcsType T_F;
+#endif
   internal::compute_Schur_H_T_F(U_B, U_F, T_F);
 
   psmilu_assert(HC.nrows() == T_E.nrows(),
