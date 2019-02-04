@@ -40,6 +40,7 @@ namespace psmilu {
 /// \param[in] U_start staring positions for rows in U
 /// \param[in] SC Schur complement of C version
 /// \ingroup schur
+/// \sa compute_Schur_H
 ///
 /// Mathematically, this is to compute:
 ///
@@ -652,6 +653,106 @@ inline void compute_Schur_H_T_F(const U_B_CcsType &U_B, const U_AugCrsType &U_F,
 
 }  // namespace internal
 
+/// \brief compute H version of Schur complement
+/// \tparam L_AugCcsType augmented ccs type for L, see \ref AugCCS
+/// \tparam L_StartType starting position after Crout update for L
+/// \tparam L_B_CcsType lower part type, see \ref CCS
+/// \tparam LeftDiagType row scaling vector type, see \ref Array
+/// \tparam CcsType input and output matrix type, see \ref CCS
+/// \tparam RightDiagType column scaling type, see \ref Array
+/// \tparam PermType permutation matrix type, see \ref BiPermMatrix
+/// \tparam DiagType diagonal vector type, see \ref Array
+/// \tparam U_B_CcsType upper part type, see \ref CCS
+/// \tparam U_AugCrsType augmented crs type for upper part, see \ref AugCRS
+/// \tparam DenseType dense matrix for C version, see \ref DenseMatrix
+/// \param[in] L_E whole lower part after \ref Crout update
+/// \param[in] L_start position array after Crout update for lower part
+/// \param[in] L_B lower part of leading block
+/// \param[in] s row scaling vector
+/// \param[in] A input matrix in CCS format
+/// \param[in] t column scaling vector
+/// \param[in] p row permutation matrix
+/// \param[in] q column permutation matrix
+/// \param[in] d diagonal entries (permutated)
+/// \param[in] U_B upper part of leading block
+/// \param[in] U_F whole upper part after Crout update
+/// \param[in,out] HC C version of Schur complement in dense, H version upon
+///                 output
+/// \ingroup schur
+/// \sa compute_Schur_C
+/// \note Both \a L_B and \a U_B are matrices with size m by m, where m is the
+///       leading block size. However, on the other side, both \a L_E and \a U_F
+///       are the complete augmented parts, where only the offsets are accessed.
+///
+/// Computing the H version of Schur complement is one of the most complicated
+/// algorithms in PSMILU library. The analytical formula reads:
+///
+/// \f[
+///   \boldsymbol{H}_C=\boldsymbol{S}_C+\boldsymbol{T}_E\boldsymbol{T}_F
+/// \f]
+///
+/// where
+///
+/// \f[
+///   \boldsymbol{T}_E=\boldsymbol{L}_E\left(\boldsymbol{L}_B^{-1}
+///     \hat{\boldsymbol{B}}-\boldsymbol{D}_B\boldsymbol{U}_B\right)
+/// \f]
+///
+/// and
+///
+/// \f[
+///   \boldsymbol{T}_F=\boldsymbol{U}_B^{-1}\boldsymbol{U}_F
+/// \f]
+///
+/// It's worth noting that \f$\hat{\boldsymbol{B}}\f$ is nothing but just
+/// \f$\left(\boldsymbol{S}\boldsymbol{A}\boldsymbol{T}\right)_ {\boldsymbol
+/// {p}_{1:m},\boldsymbol{q}_{1:m}}\f$
+///
+/// At high level, the H version is computed with two steps, where the first
+/// step is to form \f$\boldsymbol{T}_E\f$ while \f$\boldsymbol{T}_F\f$ for the
+/// second step. Furthermore, \f$\boldsymbol{T}_E\f$ is computed in two substeps
+/// 1) compute \f$\boldsymbol{T}_E^{*}\boldsymbol{L}_B^{-1}\hat{\boldsymbol{B}}
+/// -\boldsymbol{D}_B\boldsymbol{U}_B\f$, and 2) compute \f$\boldsymbol{L}_E
+/// \boldsymbol{T}_E^{*}\f$.
+///
+/// For detailed implementation, each of those steps are computed with a unified
+/// procedure, i.e. symbolic and numerical computations. The symbolic step is to
+/// determine the sparse pattern, which involves computing the exact total
+/// number of nonzeros and filling the indices; once the symbolic step is done,
+/// we can easily fill in the numerical values given all indices are known; the
+/// "easyness" is achieved with a dense vector buffer for values, i.e. using
+/// \ref SparseVector.
+///
+/// As regards the time complexity, it's hard (or even impossible) to give a
+/// precise bound, but easy to estimate the worst case. Assuming all inputs are
+/// dense, then the complexity is bounded by \f$\mathcal{O}(m^3)\f$, where
+/// \f$m\f$ is the leading block size, which should be larger than the Schur
+/// complement size. The above bound is derived from solving
+/// \f$\boldsymbol{L}_B^{-1}\hat{\boldsymbol{B}}\f$. In order to derive the
+/// best case (which is impossible to have in practice), we need to analyze the
+/// complexity of solving forward/backward substitution, e.g.
+/// \f$\boldsymbol{L}^{-1}\boldsymbol{b}\f$ (forward), where
+/// \f$\boldsymbol{b}\f$ is a \b sparse vector. In this case, the complexity is
+/// determined by the \b first nonzero entry in \f$\boldsymbol{b}\f$, thus the
+/// most efficient time is bounded by \f$\mathcal{O}(\textrm{nnz}(b)m)\f$, which
+/// is linear given the assumption of constant value of \f$\textrm{nnz}(b)\f$.
+/// Therefore, the best case for solving
+/// \f$\boldsymbol{L}_B^{-1}\hat{\boldsymbol{B}}\f$ is in 
+/// \f$\mathcal{O}(\textrm{nnz}(b)m^2)\f$. Similar argument can be drew for
+/// backward substitution; the only difference, in this case, is to find the
+/// last nonzero entry. Now, notice that computing sparse matrix multiplication
+/// takes \f$\mathcal{O}(\textrm{nnz}^2m)\f$, where \f$\textrm{nnz}\f$ is some
+/// averaged number of nonzeros; if this is bounded by constant, then the
+/// complexity is linear. Therefore, in best case scenario, computing the H
+/// version requires quadratic complexity in terms of the system size.
+/// \b However, this is just too good to be true, if we use a randomized
+/// analysis procedure, we can see that on average, the complexity is cubic.
+///
+/// With the consideration of the H version computation complexity, we only
+/// apply it on the last level \b and \f$m\sim\match{O}(N^{1/3})\f$, where
+/// \f$N\f$ is the global system size, i.e. input size on first level. This
+/// ensures that computing H version of Schur complement won't destroy our
+/// overall time complexity analysis.
 template <class L_AugCcsType, class L_StartType, class L_B_CcsType,
           class LeftDiagType, class CcsType, class RightDiagType,
           class PermType, class DiagType, class U_B_CcsType, class U_AugCrsType,
