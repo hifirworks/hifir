@@ -706,7 +706,7 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
 /// \param[in] vals numerical data
 /// \param[in] check if \a true (default), then perform validation checking
 /// \param[in] help_sort help sort unsorted rows (if any), require \a check=1
-/// \return a \ref CSR matrix wrapped around user data.
+/// \return a \ref CRS matrix wrapped around user data.
 /// \warning It's the user's responsibility to maintain the external data
 /// \ingroup ds
 template <bool OneBased, class ValueType, class IndexType>
@@ -783,7 +783,7 @@ inline CRS<ValueType, IndexType, OneBased> wrap_crs(
 /// \param[in] vals numerical data
 /// \param[in] check if \a true (default), then perform validation checking
 /// \param[in] help_sort help sort unsorted rows (if any), require \a check=1
-/// \return a \ref CSR matrix wrapped around user data.
+/// \return a \ref CRS matrix wrapped around user data.
 /// \warning It's the user's responsibility to maintain the external data
 /// \ingroup ds
 template <class ValueType, class IndexType>
@@ -806,7 +806,7 @@ inline CRS<ValueType, IndexType> wrap_crs_0(
 /// \param[in] vals numerical data
 /// \param[in] check if \a true (default), then perform validation checking
 /// \param[in] help_sort help sort unsorted rows (if any), require \a check=1
-/// \return a \ref CSR matrix wrapped around user data.
+/// \return a \ref CRS matrix wrapped around user data.
 /// \warning It's the user's responsibility to maintain the external data
 /// \ingroup ds
 template <class ValueType, class IndexType>

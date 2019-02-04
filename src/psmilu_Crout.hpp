@@ -397,7 +397,9 @@ class Crout {
   /// \tparam L_AugCcsType augmented ccs type for L, see \ref AugCCS
   /// \tparam L_StartType array type storing leading positions, see \ref Array
   /// \param[in] L lower part
+  /// \param[in] m leading block size
   /// \param[in,out] L_start leading location array
+  /// \param[in] no_pivot if \a false (default), then assume no pivot previously
   /// \note Complexity: \f$\mathcal{O}(\textrm{nnz}(\boldsymbol{L}(k,:)))\f$
   /// \note This routine should be called before \ref compute_l
   ///

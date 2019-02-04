@@ -87,7 +87,7 @@ struct Prec {
   /// on output. This allows one to avoid writing a ton of \a std::move while
   /// calling this routine.
   ///
-  /// \warn Everything on output is destroyed, as the routine name says.
+  /// \warning Everything on output is destroyed, as the routine name says.
   inline void move_destroy(ccs_type &L_b, array_type &d_b, ccs_type &U_b,
                            ccs_type &e, ccs_type &f, array_type &S,
                            array_type &T, perm_type &P, perm_type &Q) {
