@@ -55,6 +55,7 @@ inline std::string version() { return std::to_string(PSMILU_VERSION); }
 // data structure
 #include "psmilu_Array.hpp"
 #include "psmilu_CompressedStorage.hpp"
+#include "psmilu_DenseMatrix.hpp"
 
 // interfaces
 #include "psmilu_Options.h"
