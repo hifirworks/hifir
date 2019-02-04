@@ -38,11 +38,13 @@ class AMD {
     int i;
 
     if (Control != nullptr) {
-      for (i = 0; i < AMD_CONTROL; i++) {
+      for (i = 0; i < PSMILU_AMD_CONTROL; i++) {
         Control[i] = 0;
       }
-      Control[AMD_DENSE]      = AMD_DEFAULT_DENSE;
-      Control[AMD_AGGRESSIVE] = AMD_DEFAULT_AGGRESSIVE;
+      Control[AMD_DENSE]            = AMD_DEFAULT_DENSE;
+      Control[AMD_AGGRESSIVE]       = AMD_DEFAULT_AGGRESSIVE;
+      Control[PSMILU_AMD_CHECKING]  = 1;
+      Control[PSMILU_AMD_SYMM_FLAG] = 0;
     }
   }
 
@@ -2145,7 +2147,6 @@ class AMD {
   inline static void one(Int n, const Int *Ap, const Int *Ai, Int *P, Int *Pinv,
                          Int *Len, Int slen, Int *S, double *Control,
                          double *Info) {
-    constexpr static Int EMPTY = static_cast<Int>(-1);
     Int i, j, k, p, pfree, iwlen, pj, p1, p2, pj2, *Iw, *Pe, *Nv, *Head, *Elen,
         *Degree, *s, *W, *Sp, *Tp;
 
@@ -2529,7 +2530,8 @@ class AMD {
 
   inline static Int order(Int n, const Int *Ap, const Int *Ai, Int *P,
                           double *Control, double *Info) {
-    Int *  Len, *S, nz, i, *Pinv, info, status, *Rp, *Ri, *Cp, *Ci, ok;
+    Int *Len, *S, nz, i, *Pinv, info, status, *Rp, *Ri, *Cp, *Ci, ok, do_check,
+        symm_flag;
     size_t nzaat, slen;
     double mem = 0;
 
@@ -2569,8 +2571,16 @@ class AMD {
       return (AMD_OUT_OF_MEMORY); /* problem too large */
     }
 
-    /* check the input matrix:	AMD_OK, AMD_INVALID, or AMD_OK_BUT_JUMBLED */
-    status = valid(n, n, Ap, Ai);
+    if ((int)Control[PSMILU_AMD_CHECKING] == 1) {
+      /* check the input matrix:	AMD_OK, AMD_INVALID, or
+       * AMD_OK_BUT_JUMBLED */
+      status = valid(n, n, Ap, Ai);
+    } else {
+      if ((int)Control[PSMILU_AMD_SYMM_FLAG] == 0)
+        status = AMD_OK;
+      else
+        status = AMD_OK_BUT_JUMBLED;
+    }
 
     if (status == AMD_INVALID) {
       if (info) Info[AMD_STATUS] = AMD_INVALID;
@@ -2590,7 +2600,8 @@ class AMD {
       return (AMD_OUT_OF_MEMORY);
     }
 
-    if (status == AMD_OK_BUT_JUMBLED) {
+    if (status == AMD_OK_BUT_JUMBLED &&
+        (int)Control[PSMILU_AMD_SYMM_FLAG] != 0) {
       /* sort the input matrix and remove duplicate entries */
       // AMD_DEBUG1(("Matrix is jumbled\n"));
       Rp = SuiteSparse_malloc(n + 1, sizeof(Int));

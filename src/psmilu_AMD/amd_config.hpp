@@ -52,6 +52,11 @@
 
 #endif  // AMD_H header checking
 
+// PSMILU extensions
+#define PSMILU_AMD_CONTROL (AMD_CONTROL + 2)
+#define PSMILU_AMD_CHECKING AMD_CONTROL
+#define PSMILU_AMD_SYMM_FLAG (AMD_CONTROL + 1)
+
 #ifdef FLIP
 #  undef FLIP
 #endif

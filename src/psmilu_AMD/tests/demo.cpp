@@ -36,7 +36,7 @@ int main() {
           /* column 23: */ 6, 11, 12, 23};
 
   int    P[24], Pinv[24], i, j, k, jnew, p, inew, result;
-  double Control[AMD_CONTROL], Info[AMD_INFO];
+  double Control[PSMILU_AMD_CONTROL], Info[AMD_INFO];
   char   A[24][24];
 
   std::cout << "AMD demo, with the 24-by-24 Harwell/Boeing matrix, can_24:\n";
