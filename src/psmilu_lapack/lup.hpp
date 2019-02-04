@@ -48,9 +48,10 @@ void PSMILU_FC(sgetrs, SGETRS)(char *, psmilu_lapack_int *, psmilu_lapack_int *,
 namespace psmilu {
 namespace internal {
 /// \brief double version of LU with partial pivoting
-inline int getrf(const psmilu_lapack_int m, const psmilu_lapack_int n,
-                 double *A, const psmilu_lapack_int lda,
-                 psmilu_lapack_int *ipiv) {
+inline psmilu_lapack_int getrf(const psmilu_lapack_int m,
+                               const psmilu_lapack_int n, double *A,
+                               const psmilu_lapack_int lda,
+                               psmilu_lapack_int *     ipiv) {
   psmilu_lapack_int info;
   PSMILU_FC(dgetrf, DGETRF)
   ((psmilu_lapack_int *)&m, (psmilu_lapack_int *)&n, A,
@@ -59,8 +60,10 @@ inline int getrf(const psmilu_lapack_int m, const psmilu_lapack_int n,
 }
 
 /// \brief single version of LU with partial pivoting
-inline int getrf(const psmilu_lapack_int m, const psmilu_lapack_int n, float *A,
-                 const psmilu_lapack_int lda, psmilu_lapack_int *ipiv) {
+inline psmilu_lapack_int getrf(const psmilu_lapack_int m,
+                               const psmilu_lapack_int n, float *A,
+                               const psmilu_lapack_int lda,
+                               psmilu_lapack_int *     ipiv) {
   psmilu_lapack_int info;
   PSMILU_FC(sgetrf, SGETRF)
   ((psmilu_lapack_int *)&m, (psmilu_lapack_int *)&n, A,
@@ -72,10 +75,11 @@ inline int getrf(const psmilu_lapack_int m, const psmilu_lapack_int n, float *A,
 ///
 /// The parameter \a tran should be 0, 1, 2, which means 'N', 'T', and 'C',
 /// resp, for the original lapack routine
-inline int getrs(const int tran, const psmilu_lapack_int n,
-                 const psmilu_lapack_int nrhs, const double *a,
-                 const psmilu_lapack_int lda, const psmilu_lapack_int *ipiv,
-                 double *b, const psmilu_lapack_int ldb) {
+inline psmilu_lapack_int getrs(const int tran, const psmilu_lapack_int n,
+                               const psmilu_lapack_int nrhs, const double *a,
+                               const psmilu_lapack_int  lda,
+                               const psmilu_lapack_int *ipiv, double *b,
+                               const psmilu_lapack_int ldb) {
   static char       trans[3] = {'N', 'T', 'C'};
   psmilu_lapack_int info;
   PSMILU_FC(dgetrs, DGETRS)
@@ -89,10 +93,11 @@ inline int getrs(const int tran, const psmilu_lapack_int n,
 ///
 /// The parameter \a tran should be 0, 1, 2, which means 'N', 'T', and 'C',
 /// resp, for the original lapack routine
-inline int getrs(const int tran, const psmilu_lapack_int n,
-                 const psmilu_lapack_int nrhs, const float *a,
-                 const psmilu_lapack_int lda, const psmilu_lapack_int *ipiv,
-                 float *b, const psmilu_lapack_int ldb) {
+inline psmilu_lapack_int getrs(const int tran, const psmilu_lapack_int n,
+                               const psmilu_lapack_int nrhs, const float *a,
+                               const psmilu_lapack_int  lda,
+                               const psmilu_lapack_int *ipiv, float *b,
+                               const psmilu_lapack_int ldb) {
   static char       trans[3] = {'N', 'T', 'C'};
   psmilu_lapack_int info;
   PSMILU_FC(sgetrs, SGETRS)

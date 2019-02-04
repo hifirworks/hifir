@@ -15,9 +15,12 @@
 #include <type_traits>
 #include <vector>
 
+#include "psmilu_Array.hpp"
 #include "psmilu_DenseMatrix.hpp"
-#include "psmilu_lapack/lup.hpp"
 #include "psmilu_log.hpp"
+
+#include "psmilu_lapack/lup.hpp"
+#include "psmilu_lapack/qrcp.hpp"
 
 namespace psmilu {
 
@@ -39,25 +42,112 @@ class Lapack {
   static_assert(std::is_integral<int_type>::value, "must be integer type!");
 
  public:
-  template <typename T = int>
+  /// \name LU
+  ///@{
+
+  template <typename T = psmilu_lapack_int>
   inline static typename std::enable_if<_INT_TYPE_CONSIS, T>::type getrf(
       const int_type n, pointer a, const int_type lda, int_type *ipiv) {
     return internal::getrf(n, n, a, lda, (psmilu_lapack_int *)ipiv);
   }
 
-  template <typename T = int>
+  template <typename T = psmilu_lapack_int>
   inline static typename std::enable_if<!_INT_TYPE_CONSIS, T>::type getrf(
       const int_type n, pointer a, const int_type lda, int_type *ipiv) {
     std::vector<psmilu_lapack_int> buf(n);
-    const int info = internal::getrf(n, n, a, lda, buf.data());
+    const psmilu_lapack_int info = internal::getrf(n, n, a, lda, buf.data());
     std::copy(buf.cbegin(), buf.cend(), ipiv);
     return info;
   }
 
-  inline static void getrf(DenseMatrix<value_type> &a, int_type *ipiv) {
-    const int info = getrf(a.nrows(), a.data(), a.nrows(), ipiv);
-    (void)info;
+  inline static int_type getrf(DenseMatrix<value_type> &a,
+                               Array<int_type> &        ipiv) {
+    psmilu_assert(a.nrows() == ipiv.size(),
+                  "row size should match permutation vector length");
+    return getrf(a.nrows(), a.data(), a.nrows(), ipiv.data());
   }
+
+  template <typename T = psmilu_lapack_int>
+  inline static typename std::enable_if<_INT_TYPE_CONSIS, T>::type getrs(
+      const int tran, const int_type n, const int_type nrhs,
+      const value_type *a, const int_type lda, const int_type *ipiv, pointer b,
+      const int_type ldb) {
+    return internal::getrs(tran, n, nrhs, a, lda, ipiv, b, ldb);
+  }
+
+  template <typename T = psmilu_lapack_int>
+  inline static typename std::enable_if<!_INT_TYPE_CONSIS, T>::type getrs(
+      const int tran, const int_type n, const int_type nrhs,
+      const value_type *a, const int_type lda, const int_type *ipiv, pointer b,
+      const int_type ldb) {
+    std::vector<psmilu_lapack_int> buf(ipiv, ipiv + n);
+    return internal::getrs(tran, n, nrhs, a, lda, buf.data(), b, ldb);
+  }
+
+  inline static int_type getrs(const DenseMatrix<value_type> &a,
+                               const Array<int_type> &ipiv, Array<int_type> &b,
+                               int tran = 0) {
+    psmilu_assert(a.nrows() == a.ncols(), "matrix must be squared");
+    psmilu_assert(a.nrows() == ipiv.size(),
+                  "row size should match permutation vector length");
+    psmilu_assert(a.nrows() == b.size(), "inconsistent matrix and rhs size");
+    return getrs(tran, a.nrows(), 1, a.data(), a.nrows(), ipiv.data(), b.data(),
+                 b.size());
+  }
+
+  inline static int_type getrs(const DenseMatrix<value_type> &a,
+                               const Array<int_type> &        ipiv,
+                               DenseMatrix<int_type> &b, int tran = 0) {
+    psmilu_assert(a.nrows() == a.ncols(), "matrix must be squared");
+    psmilu_assert(a.nrows() == ipiv.size(),
+                  "row size should match permutation vector length");
+    psmilu_assert(a.nrows() == b.nrows(), "inconsistent matrix and rhs size");
+    return getrs(tran, a.nrows(), b.ncols(), a.data(), a.nrows(), ipiv.data(),
+                 b.data(), b.nrows());
+  }
+
+  ///@}
+
+  /// \name QRCP
+  ///@{
+
+  template <typename T = psmilu_lapack_int>
+  inline static typename std::enable_if<_INT_TYPE_CONSIS, T>::type geqp3(
+      const int_type m, const int_type n, pointer a, const int_type lda,
+      int_type *jpvt, pointer tau, pointer work, const int_type lwork) {
+    return internal::geqp3(m, n, a, lda, jpvt, tau, work, lwork);
+  }
+
+  template <typename T = psmilu_lapack_int>
+  inline static typename std::enable_if<!_INT_TYPE_CONSIS, T>::type geqp3(
+      const int_type m, const int_type n, pointer a, const int_type lda,
+      int_type *jpvt, pointer tau, pointer work, const int_type lwork) {
+    if (lwork == (int_type)-1)
+      internal::geqp3(m, n, a, lda, nullptr, tau, work, -1);
+    // NOTE jpvt can be input as well
+    std::vector<psmilu_lapack_int> buf(jpvt, jpvt + n);
+    const auto                     info =
+        internal::geqp3(m, n, a, lda, buf.data(), tau, work, lwork);
+    std::copy(buf.cbegin(), buf.cend(), jpvt);
+    return info;
+  }
+
+  inline static int_type geqp3(DenseMatrix<value_type> &a,
+                               Array<int_type> &jpvt, Array<value_type> &tau) {
+    // query opt size
+    psmilu_assert(jpvt.size() == a.ncols(),
+                  "column pivoting should have size of column");
+    psmilu_assert(tau.sie() == std::min(a.nrows(), a.ncols()),
+                  "tau should have size of min(m,n)");
+    value_type lwork;
+    geqp3(a.nrows(), a.ncols(), a.data(), a.nrows(), jpvt.data(), tau.data(),
+          &lwork, -1);
+    std::vector<value_type> work((int_type)lwork);
+    return geqp3(a.nrows(), a.ncols(), a.data(), a.nrows(), jpvt.data(),
+                 tau.data(), work.data(), (int_type)lwork);
+  }
+
+  ///@}
 };
 
 }  // namespace psmilu
