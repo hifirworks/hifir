@@ -47,3 +47,7 @@ In addition, the modification has the following copyright announcement:
 ```
 Copyright (C) 2019 The PSMILU AUTHORS
 ```
+
+## Warning ##
+
+Regarding create `Control` parameters, one should create an array of `double` of size `PSMILU_AMD_CONTROL` instead of `AMD_CONTROL`!
