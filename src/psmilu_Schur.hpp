@@ -918,7 +918,7 @@ inline void compute_Schur_H_T_F(const U_B_CcsType &U_B, const U_AugCrsType &U_F,
 /// At high level, the H version is computed with two steps, where the first
 /// step is to form \f$\boldsymbol{T}_E\f$ while \f$\boldsymbol{T}_F\f$ for the
 /// second step. Furthermore, \f$\boldsymbol{T}_E\f$ is computed in two substeps
-/// 1) compute \f$\boldsymbol{T}_E^{*}\boldsymbol{L}_B^{-1}\hat{\boldsymbol{B}}
+/// 1) compute \f$\boldsymbol{T}_E^{*}=\boldsymbol{L}_B^{-1}\hat{\boldsymbol{B}}
 /// -\boldsymbol{D}_B\boldsymbol{U}_B\f$, and 2) compute \f$\boldsymbol{L}_E
 /// \boldsymbol{T}_E^{*}\f$.
 ///
@@ -949,7 +949,7 @@ inline void compute_Schur_H_T_F(const U_B_CcsType &U_B, const U_AugCrsType &U_F,
 /// \f$\mathcal{O}(\textrm{nnz}(b)\textrm{nnz}(\cup_{j,b_j\neq 0}L)m)\f$, which
 /// is linear. Similar argument can be drew for backward substitution; the only
 /// difference, in this case, is to find the last nonzero entry. Now, notice
-/// that computing sparse matrix multiplication takes
+/// that computing sparse matrix multiplication costs
 /// \f$\mathcal{O}(\textrm{nnz}^2m)\f$, where \f$\textrm{nnz}\f$ is some
 /// averaged number of nonzeros; if this is bounded by constant, then the
 /// complexity is linear. Therefore, in best case scenario, computing the H
