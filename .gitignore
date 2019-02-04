@@ -15,3 +15,5 @@ dist
 *.exe
 html
 latex
+tmp
+*.so.*
