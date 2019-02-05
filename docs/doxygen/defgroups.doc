@@ -23,4 +23,7 @@
 /// \defgroup schur Schur Complements
 /// \ingroup alg
 
+/// \defgroup sss Small Scale Solver
+/// \ingroup alg
+
 /// \defgroup itr PSMILU User Interfaces
