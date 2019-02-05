@@ -72,36 +72,28 @@ inline psmilu_lapack_int getrf(const psmilu_lapack_int m,
 }
 
 /// \brief solve with factorized matrix, double version
-///
-/// The parameter \a tran should be 0, 1, 2, which means 'N', 'T', and 'C',
-/// resp, for the original lapack routine
-inline psmilu_lapack_int getrs(const int tran, const psmilu_lapack_int n,
+inline psmilu_lapack_int getrs(const char tran, const psmilu_lapack_int n,
                                const psmilu_lapack_int nrhs, const double *a,
                                const psmilu_lapack_int  lda,
                                const psmilu_lapack_int *ipiv, double *b,
                                const psmilu_lapack_int ldb) {
-  static char       trans[3] = {'N', 'T', 'C'};
   psmilu_lapack_int info;
   PSMILU_FC(dgetrs, DGETRS)
-  (trans + tran, (psmilu_lapack_int *)&n, (psmilu_lapack_int *)&nrhs,
+  ((char *)&tran, (psmilu_lapack_int *)&n, (psmilu_lapack_int *)&nrhs,
    (double *)a, (psmilu_lapack_int *)&lda, (psmilu_lapack_int *)ipiv, b,
    (psmilu_lapack_int *)&ldb, &info);
   return info;
 }
 
 /// \brief solve with factorized matrix, single version
-///
-/// The parameter \a tran should be 0, 1, 2, which means 'N', 'T', and 'C',
-/// resp, for the original lapack routine
-inline psmilu_lapack_int getrs(const int tran, const psmilu_lapack_int n,
+inline psmilu_lapack_int getrs(const char tran, const psmilu_lapack_int n,
                                const psmilu_lapack_int nrhs, const float *a,
                                const psmilu_lapack_int  lda,
                                const psmilu_lapack_int *ipiv, float *b,
                                const psmilu_lapack_int ldb) {
-  static char       trans[3] = {'N', 'T', 'C'};
   psmilu_lapack_int info;
   PSMILU_FC(sgetrs, SGETRS)
-  (trans + tran, (psmilu_lapack_int *)&n, (psmilu_lapack_int *)&nrhs,
+  ((char *)&tran, (psmilu_lapack_int *)&n, (psmilu_lapack_int *)&nrhs,
    (float *)a, (psmilu_lapack_int *)&lda, (psmilu_lapack_int *)ipiv, b,
    (psmilu_lapack_int *)&ldb, &info);
   return info;
