@@ -235,6 +235,7 @@ class DenseMatrix {
   inline pointer           data() { return _data.data(); }
   inline const_pointer     data() const { return _data.data(); }
   inline bool              empty() const { return _data.empty(); }
+  inline bool              is_squared() const { return _nrows == _ncols; }
 
   /// \brief resize a matrix
   /// \param[in] n1 number of rows
