@@ -19,8 +19,9 @@
 #include "psmilu_DenseMatrix.hpp"
 #include "psmilu_log.hpp"
 
-#include "psmilu_lapack/lup.hpp"
-#include "psmilu_lapack/qrcp.hpp"
+#include "lup.hpp"
+#include "qrcp.hpp"
+#include "trsv.hpp"
 
 namespace psmilu {
 
@@ -86,7 +87,7 @@ class Lapack {
 
   inline static int_type getrs(const DenseMatrix<value_type> &a,
                                const Array<int_type> &ipiv, Array<int_type> &b,
-                               int tran = 0) {
+                               char tran = 'N') {
     psmilu_assert(a.nrows() == a.ncols(), "matrix must be squared");
     psmilu_assert(a.nrows() == ipiv.size(),
                   "row size should match permutation vector length");
@@ -97,7 +98,7 @@ class Lapack {
 
   inline static int_type getrs(const DenseMatrix<value_type> &a,
                                const Array<int_type> &        ipiv,
-                               DenseMatrix<int_type> &b, int tran = 0) {
+                               DenseMatrix<int_type> &b, char tran = 'N') {
     psmilu_assert(a.nrows() == a.ncols(), "matrix must be squared");
     psmilu_assert(a.nrows() == ipiv.size(),
                   "row size should match permutation vector length");
@@ -145,6 +146,25 @@ class Lapack {
     std::vector<value_type> work((int_type)lwork);
     return geqp3(a.nrows(), a.ncols(), a.data(), a.nrows(), jpvt.data(),
                  tau.data(), work.data(), (int_type)lwork);
+  }
+
+  ///@}
+
+  /// \name common
+  ///@{
+
+  inline static void trsv(const char uplo, const char trans, const char diag,
+                          const psmilu_lapack_int n, const value_type *a,
+                          const psmilu_lapack_int lda, pointer x,
+                          const psmilu_lapack_int incx) {
+    internal::trsv(uplo, trans, diag, n, a, lda, x, incx);
+  }
+
+  inline static void trsv(const char uplo, const char trans, const char diag,
+                          const DenseMatrix<value_type> &a,
+                          Array<value_type> &            x) {
+    psmilu_assert(a.is_squared(), "input must be squared matrix");
+    trsv(uplo, trans, diag, a.nrows(), a.data(), a.nrows(), x.data(), 1);
   }
 
   ///@}
