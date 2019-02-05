@@ -28,6 +28,9 @@ class LUP : public internal::SmallScaleBase<ValueType> {
   typedef Lapack<value_type>        lapack_kernel;  ///< lapack backend
   typedef typename _base::size_type size_type;      ///< size type
 
+  /// \brief get the solver type
+  inline static const char *method() { return "LUP"; }
+
   /// \brief default constructor
   LUP() = default;
 

@@ -22,9 +22,10 @@ namespace internal {
 template <class ValueType>
 class SmallScaleBase {
  public:
-  typedef ValueType                      value_type;  ///< value type
-  typedef DenseMatrix<value_type>        dense_type;  ///< dense type
-  typedef typename dense_type::size_type size_type;   ///< size type
+  typedef ValueType                      value_type;       ///< value type
+  typedef DenseMatrix<value_type>        dense_type;       ///< dense type
+  typedef typename dense_type::size_type size_type;        ///< size type
+  constexpr static bool                  IS_DENSE = true;  ///< dense flag
 
   /// \brief default constructor
   SmallScaleBase() : _mat(), _rank(0u) {}
