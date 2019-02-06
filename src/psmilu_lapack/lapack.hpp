@@ -124,7 +124,7 @@ class Lapack {
       const int_type m, const int_type n, pointer a, const int_type lda,
       int_type *jpvt, pointer tau, pointer work, const int_type lwork) {
     if (lwork == (int_type)-1)
-      internal::geqp3(m, n, a, lda, nullptr, tau, work, -1);
+      return internal::geqp3(m, n, a, lda, nullptr, tau, work, -1);
     // NOTE jpvt can be input as well
     std::vector<psmilu_lapack_int> buf(jpvt, jpvt + n);
     const auto                     info =
@@ -138,7 +138,7 @@ class Lapack {
     // query opt size
     psmilu_assert(jpvt.size() == a.ncols(),
                   "column pivoting should have size of column");
-    psmilu_assert(tau.sie() == std::min(a.nrows(), a.ncols()),
+    psmilu_assert(tau.size() == std::min(a.nrows(), a.ncols()),
                   "tau should have size of min(m,n)");
     value_type lwork;
     geqp3(a.nrows(), a.ncols(), a.data(), a.nrows(), jpvt.data(), tau.data(),
@@ -146,6 +146,49 @@ class Lapack {
     std::vector<value_type> work((int_type)lwork);
     return geqp3(a.nrows(), a.ncols(), a.data(), a.nrows(), jpvt.data(),
                  tau.data(), work.data(), (int_type)lwork);
+  }
+
+  inline static int_type ormqr(const char side, const char trans,
+                               const int_type m, const int_type n,
+                               const int_type k, const value_type *a,
+                               const int_type lda, const value_type *tau,
+                               pointer c, const int_type ldc, pointer work,
+                               const int_type lwork) {
+    return internal::ormqr(side, trans, m, n, k, a, lda, tau, c, ldc, work,
+                           lwork);
+  }
+
+  inline static int_type trcon(const char norm, const char uplo,
+                               const char diag, const psmilu_lapack_int n,
+                               const value_type *a, const psmilu_lapack_int lda,
+                               value_type &rcond, pointer work,
+                               psmilu_lapack_int *iwork) {
+    return internal::trcon(norm, uplo, diag, n, a, lda, rcond, work, iwork);
+  }
+
+  inline static int_type trcon(const char norm, const char uplo,
+                               const char                     diag,
+                               const DenseMatrix<value_type> &a,
+                               value_type &                   rcond) {
+    psmilu_assert(
+        a.nrows() >= a.ncols(),
+        "a must have row size that is no smaller than its column size");
+    std::vector<value_type>        work(3 * a.ncols());
+    std::vector<psmilu_lapack_int> iwork(a.ncols());
+    return trcon(norm, uplo, diag, a.ncols(), a.data(), a.nrows(), rcond,
+                 work.data(), iwork.data());
+  }
+
+  inline static int_type trcon(const char norm, const char uplo,
+                               const char                     diag,
+                               const DenseMatrix<value_type> &a,
+                               const int_type rank, value_type &rcond) {
+    psmilu_assert((int_type)a.nrows() >= rank,
+                  "a must have row size that is no smaller than its rank size");
+    std::vector<value_type>        work(3 * a.ncols());
+    std::vector<psmilu_lapack_int> iwork(a.ncols());
+    return trcon(norm, uplo, diag, rank, a.data(), a.nrows(), rcond,
+                 work.data(), iwork.data());
   }
 
   ///@}
