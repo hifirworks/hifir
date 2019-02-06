@@ -70,7 +70,7 @@ class Lapack {
 
   template <typename T = psmilu_lapack_int>
   inline static typename std::enable_if<_INT_TYPE_CONSIS, T>::type getrs(
-      const int tran, const int_type n, const int_type nrhs,
+      const char tran, const int_type n, const int_type nrhs,
       const value_type *a, const int_type lda, const int_type *ipiv, pointer b,
       const int_type ldb) {
     return internal::getrs(tran, n, nrhs, a, lda, ipiv, b, ldb);
@@ -78,7 +78,7 @@ class Lapack {
 
   template <typename T = psmilu_lapack_int>
   inline static typename std::enable_if<!_INT_TYPE_CONSIS, T>::type getrs(
-      const int tran, const int_type n, const int_type nrhs,
+      const char tran, const int_type n, const int_type nrhs,
       const value_type *a, const int_type lda, const int_type *ipiv, pointer b,
       const int_type ldb) {
     std::vector<psmilu_lapack_int> buf(ipiv, ipiv + n);
@@ -86,9 +86,9 @@ class Lapack {
   }
 
   inline static int_type getrs(const DenseMatrix<value_type> &a,
-                               const Array<int_type> &ipiv, Array<int_type> &b,
-                               char tran = 'N') {
-    psmilu_assert(a.nrows() == a.ncols(), "matrix must be squared");
+                               const Array<int_type> &        ipiv,
+                               Array<value_type> &b, char tran = 'N') {
+    psmilu_assert(a.is_squared(), "matrix must be squared");
     psmilu_assert(a.nrows() == ipiv.size(),
                   "row size should match permutation vector length");
     psmilu_assert(a.nrows() == b.size(), "inconsistent matrix and rhs size");
@@ -98,8 +98,8 @@ class Lapack {
 
   inline static int_type getrs(const DenseMatrix<value_type> &a,
                                const Array<int_type> &        ipiv,
-                               DenseMatrix<int_type> &b, char tran = 'N') {
-    psmilu_assert(a.nrows() == a.ncols(), "matrix must be squared");
+                               DenseMatrix<value_type> &b, char tran = 'N') {
+    psmilu_assert(a.is_squared(), "matrix must be squared");
     psmilu_assert(a.nrows() == ipiv.size(),
                   "row size should match permutation vector length");
     psmilu_assert(a.nrows() == b.nrows(), "inconsistent matrix and rhs size");
