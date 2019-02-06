@@ -33,7 +33,7 @@ extern "C" {
 /*!
  * \brief check version
  */
-const char *psmilu_version(void);
+const char *psmilu_get_version(void);
 
 /*!
  * \brief check error code
