@@ -52,11 +52,11 @@ library (assuming `LAPACK` stays in some standard locations that can be found
 by linker). For instance, to run LUP test, invoke
 
 ```console
-make LAPACK_LIB=-llapack test_sss_lup
+make LAPACK_LIB="-llapack -lblas" test_sss_lup
 ```
 
 If you want to test all scripts, then you **must** add `LAPACK` library, i.e.
 
 ```console
-make LAPACK_LIB=-llapack
+make LAPACK_LIB="-llapack -lblas"
 ```
