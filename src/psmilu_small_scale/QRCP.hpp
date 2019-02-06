@@ -143,14 +143,14 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
     // query the optimal work space
     v_t lwork;
     lapack_kernel::ormqr('L', 'T', x.size(), 1, _rank, _mat.data(),
-                         _mat.nrows(), _tau.data(), x.data(), _tau.size(),
-                         &lwork, -1);
+                         _mat.nrows(), _tau.data(), x.data(), x.size(), &lwork,
+                         -1);
     _work.resize((size_type)lwork);
 
     // compute x=Q(:,1:_rank)'*x
     const auto info = lapack_kernel::ormqr(
         'L', 'T', x.size(), 1, _rank, _mat.data(), _mat.nrows(), _tau.data(),
-        x.data(), _tau.size(), _work.data(), (size_type)lwork);
+        x.data(), x.size(), _work.data(), (size_type)lwork);
     psmilu_error_if(info < 0, "ORMQR returned negative info (Q'*x)");
 
     // compute x(1:_rank)=inv(R(1:_rank,1:_rank))*x(1:_rank)
@@ -167,16 +167,16 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
     const size_type n = _jpvt.size();
     _work.resize(x.size());
     for (size_type i = 0u; i < n; ++i) _work[_jpvt[i] - 1] = x[i];
-    std::copy_n(_iwork.cbegin(), n, x.begin());
+    std::copy_n(_work.cbegin(), n, x.begin());
   }
 
  protected:
-  using _base::_mat;                ///< matrix
-  using _base::_rank;               ///< rank
-  Array<psmilu_lapack_int> _jpvt;   ///< column pivoting array
-  Array<value_type>        _tau;    ///< tau array
-  Array<value_type>        _work;   ///< work buffer
-  Array<psmilu_lapack_int> _iwork;  ///< integer work buffer
+  using _base::_mat;                        ///< matrix
+  using _base::_rank;                       ///< rank
+  Array<psmilu_lapack_int>         _jpvt;   ///< column pivoting array
+  Array<value_type>                _tau;    ///< tau array
+  mutable Array<value_type>        _work;   ///< work buffer
+  mutable Array<psmilu_lapack_int> _iwork;  ///< integer work buffer
 };
 
 }  // namespace psmilu
