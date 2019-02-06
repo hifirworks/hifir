@@ -18,7 +18,7 @@ namespace psmilu {
 
 /// \enum SmallScaleType
 /// \brief type enumerators for small scaled solvers
-/// \ingroup itr
+/// \ingroup cpp
 enum SmallScaleType {
   SMALLSCALE_LUP = 0,  ///< LU with partial pivoting
   SMALLSCALE_QRCP,     ///< QR with column pivoting

@@ -26,7 +26,7 @@ namespace psmilu {
 /// \tparam IndexType index data type, e.g. \a int
 /// \tparam OneBased if \a false (default), using C-based index system
 /// \tparam SSSType default is LU with partial pivoting
-/// \ingroup itr
+/// \ingroup cpp
 template <class ValueType, class IndexType, bool OneBased = false,
           SmallScaleType SSSType = SMALLSCALE_LUP>
 struct Prec {
