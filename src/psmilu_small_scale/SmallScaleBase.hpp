@@ -8,8 +8,8 @@
 /// \brief Small scale solver common interface
 /// \authors Qiao,
 
-#ifndef _PSMILU_SMALLSCALE_SOLVER_HPP
-#define _PSMILU_SMALLSCALE_SOLVER_HPP
+#ifndef _PSMILU_SMALLSCALE_SMALLSCALEBASE_HPP
+#define _PSMILU_SMALLSCALE_SMALLSCALEBASE_HPP
 
 #include "psmilu_DenseMatrix.hpp"
 
@@ -54,4 +54,4 @@ class SmallScaleBase {
 }  // namespace internal
 }  // namespace psmilu
 
-#endif  // _PSMILU_SMALLSCALE_SOLVER_HPP
+#endif  // _PSMILU_SMALLSCALE_SMALLSCALEBASE_HPP
