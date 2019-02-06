@@ -24,10 +24,6 @@
 #include "psmilu_print.hpp"
 #include "psmilu_stacktrace.hpp"
 
-/** \addtogroup util
- * @{
- */
-
 namespace psmilu {
 namespace internal {
 
@@ -39,6 +35,7 @@ static std::vector<char> msg_buf;
 /// \brief estimate and allocate space for \a msg_buf
 /// \param[in] msg message without va args
 /// \note We allocate twice as length of \a msg, this should be okay.
+/// \ingroup util
 inline void alloc_buf(const std::string &msg) {
   // NOTE that we allocate twice more space for va_list
   const auto n = std::max(msg_buf.size(), 2u * msg.size() + 1u);
@@ -63,6 +60,7 @@ inline void alloc_buf(const std::string &msg) {
 /// \brief common information streaming, dump \a msg to \ref PSMILU_STDOUT
 /// \param[in] msg message string
 /// \sa psmilu_info top level macro wrapper
+/// \ingroup util
 inline void info(std::string msg, ...) {
   _PARSE_VA(msg);
   PSMILU_STDOUT(internal::msg_buf.data());
@@ -75,6 +73,7 @@ inline void info(std::string msg, ...) {
 /// \param[in] line line number, i.e. \a __LINE__
 /// \param[in] msg message string
 /// \sa psmilu_warning, psmilu_warning_if
+/// \ingroup util
 inline void warning(const char *prefix, const char *file, const char *func,
                     const unsigned line, std::string msg, ...) {
   const bool print_pre = prefix;
@@ -98,6 +97,7 @@ inline void warning(const char *prefix, const char *file, const char *func,
 /// \param[in] line line number, i.e. \a __LINE__
 /// \param[in] msg message string
 /// \sa psmilu_error, psmilu_error_if
+/// \ingroup util
 inline void error(const char *prefix, const char *file, const char *func,
                   const unsigned line, std::string msg, ...) {
   const bool print_pre = prefix;
@@ -124,6 +124,7 @@ inline void error(const char *prefix, const char *file, const char *func,
 /// \def psmilu_info(__msgs)
 /// \brief general message streaming macro wrapper
 /// \sa psmilu::info
+/// \ingroup util
 #define psmilu_info(__msgs...) ::psmilu::info(__msgs)
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -143,12 +144,14 @@ inline void error(const char *prefix, const char *file, const char *func,
 /// \def psmilu_warning(__msgs)
 /// \brief print warning message
 /// \sa psmilu::warning
+/// \ingroup util
 #define psmilu_warning(__msgs...) \
   ::psmilu::warning(nullptr, __PSMILU_FILE__, __PSMILU_FUNC__, __LINE__, __msgs)
 
 /// \def psmilu_warning_if(__cond, __msgs)
 /// \brief conditionally print message, __cond will be shown as \a prefix
 /// \sa psmilu::warning
+/// \ingroup util
 #define psmilu_warning_if(__cond, __msgs...)                          \
   if ((__cond))                                                       \
   ::psmilu::warning("condition " #__cond " alerted", __PSMILU_FILE__, \
@@ -157,12 +160,14 @@ inline void error(const char *prefix, const char *file, const char *func,
 /// \def psmilu_error(__msgs)
 /// \brief print warning message and abort
 /// \sa psmilu::error
+/// \ingroup util
 #define psmilu_error(__msgs...) \
   ::psmilu::error(nullptr, __PSMILU_FILE__, __PSMILU_FUNC__, __LINE__, __msgs)
 
 /// \def psmilu_error_if(__cond, __msgs)
 /// \brief conditionally print warning message and abort
 /// \sa psmilu::error
+/// \ingroup util
 #define psmilu_error_if(__cond, __msgs...)                       \
   if (__cond)                                                    \
   ::psmilu::error("invalid condition " #__cond, __PSMILU_FILE__, \
@@ -170,9 +175,11 @@ inline void error(const char *prefix, const char *file, const char *func,
 
 /// \def psmilu_assert(__cond, __msgs)
 /// \brief internal debugging assertion
+/// \ingroup util
 
 /// \def psmilu_debug_code(__code)
 /// \brief code will only be translated on debug builds
+/// \ingroup util
 
 #ifndef NDEBUG
 #  define psmilu_assert(__cond, __msgs...)                           \
@@ -186,7 +193,5 @@ inline void error(const char *prefix, const char *file, const char *func,
 #endif
 
 #undef _PARSE_VA
-
-/** @}*/  // util group
 
 #endif  // _PSMILU_LOG_HPP
