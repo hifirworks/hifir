@@ -11,6 +11,9 @@
 
 /// \defgroup alg Algorithms
 
+/// \defgroup pre Preprocessing
+/// \ingroup alg
+
 /// \defgroup crout Crout Update
 /// \ingroup alg
 
