@@ -8,7 +8,11 @@ TEST_SRCS = $(shell \ls test_*.cpp)
 TESTS = $(TEST_SRCS:%.cpp=%)
 EXECS = $(TEST_SRCS:%.cpp=%.exe)
 VPATH = $(PSMILU_ROOT)/src
-
+LAPACK_LIB =
+ifneq ($(LAPACK_LIB),)
+# add lapack blas libraries, use generic libraries for testing
+	LIBS += $(LAPACK_LIB)
+endif
 .PHONY: clean
 .PRECIOUS: $(EXECS)
 
