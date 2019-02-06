@@ -19,6 +19,10 @@
 
 namespace psmilu {
 
+/// \class LUP
+/// \brief LU with partial pivoting for small scale solver
+/// \tparam ValueType value type, e.g. \a double
+/// \ingroup sss
 template <class ValueType>
 class LUP : public internal::SmallScaleBase<ValueType> {
   using _base = internal::SmallScaleBase<ValueType>;
