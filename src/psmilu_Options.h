@@ -16,13 +16,14 @@
 #ifndef _PSMILU_OPTIONS_H
 #define _PSMILU_OPTIONS_H
 
-/*! \addtogroup itr
- *@{
- */
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/*!
+ * \addtogroup c
+ * @{
+ */
 
 /*!
  * \brief the verbose level for progress report
@@ -81,6 +82,10 @@ inline psmilu_Options psmilu_get_default_options(void) {
                           .verbose   = PSMILU_VERBOSE_INFO};
 }
 
+/*!
+ * @}
+ */ /* c interface group */
+
 #ifdef __cplusplus
 }
 
@@ -92,7 +97,7 @@ namespace psmilu {
 /*!
  * \brief enum wrapper
  * \note The prefix of \a PSMILU will be dropped
- * \ingroup itr
+ * \ingroup cpp
  */
 enum : int {
   VERBOSE_NONE  = ::PSMILU_VERBOSE_NONE,
@@ -108,13 +113,13 @@ enum : int {
 /*!
  * \typedef Options
  * \brief type wrapper
- * \ingroup itr
+ * \ingroup cpp
  */
 typedef psmilu_Options Options;
 
 /*!
  * \brief get the default configuration
- * \ingroup itr
+ * \ingroup cpp
  */
 inline Options get_default_options() { return ::psmilu_get_default_options(); }
 
@@ -122,7 +127,7 @@ inline Options get_default_options() { return ::psmilu_get_default_options(); }
  * \brief represent an option control with C++ string
  * \param[in] opt input option controls
  * \return string representation of \a opt
- * \ingroup itr
+ * \ingroup cpp
  */
 inline std::string opt_repr(const Options &opt) {
   using std::string;
@@ -134,16 +139,12 @@ inline std::string opt_repr(const Options &opt) {
   const auto pack_double = [](const string &cat, const double v) -> string {
     return cat + string(leading_size - cat.size(), ' ') + to_string(v) + "\n";
   };
-  return pack_double("tau_L", opt.tau_L) +
-         pack_double("tau_U", opt.tau_U) +
+  return pack_double("tau_L", opt.tau_L) + pack_double("tau_U", opt.tau_U) +
          pack_double("tau_d", opt.tau_d) +
          pack_double("tau_kappa", opt.tau_kappa) +
-         pack_int("alpha_L", opt.alpha_L) +
-         pack_int("alpha_U", opt.alpha_U) +
-         pack_double("rho", opt.rho) +
-         pack_double("c_d", opt.c_d) +
-         pack_double("c_h", opt.c_h) +
-         pack_int("N", opt.N) +
+         pack_int("alpha_L", opt.alpha_L) + pack_int("alpha_U", opt.alpha_U) +
+         pack_double("rho", opt.rho) + pack_double("c_d", opt.c_d) +
+         pack_double("c_h", opt.c_h) + pack_int("N", opt.N) +
          pack_int("verbose", opt.verbose);
 }
 
@@ -154,7 +155,7 @@ inline std::string opt_repr(const Options &opt) {
  * \brief return \a true if certain verbose level is defined
  * \note __LVL must be upper case and align with the enumerators
  * \note This macro is for algorithm implementation thus available only in C++
- * \ingroup itr
+ * \ingroup util
  *
  * \code{.cpp}
  * if (psmilu_verbose(INFO, opt)) ...;
@@ -164,7 +165,5 @@ inline std::string opt_repr(const Options &opt) {
     (__opt.verbose & ::psmilu::VERBOSE_##__LVL)
 
 #endif /* __cplusplus */
-
-/*! @}*/ /* interface group */
 
 #endif /* _PSMILU_OPTIONS_H */
