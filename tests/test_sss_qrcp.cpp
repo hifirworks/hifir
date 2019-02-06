@@ -18,6 +18,7 @@ constexpr static double tol(1e-12);
 
 TEST(LU, d) {
   // randomized matrix from MATLAB of 20x20, in row order
+  // generate rhs b then solve with backslash and save in x_ref
   const static double
       a[400] = {0.8147236863931789,  0.6557406991565868,   0.4387443596563982,
                 0.7512670593056529,  0.3516595070629968,   0.1621823081932428,
