@@ -43,3 +43,20 @@ can check if or not there are memory leaks; e.g.
 make test_foo
 valgrind ./test_foo.exe
 ```
+
+## Test Scripts with LAPACK ##
+
+Some tests require you to link against `LAPACK`, e.g. `test_sss_lup.cpp` and
+`test_sss_qrcp.cpp`. You need, then, invoke `make` with `LAPACK_LIB` to the
+library (assuming `LAPACK` stays in some standard locations that can be found
+by linker). For instance, to run LUP test, invoke
+
+```console
+make LAPACK_LIB=-llapack test_sss_lup
+```
+
+If you want to test all scripts, then you **must** add `LAPACK` library, i.e.
+
+```console
+make LAPACK_LIB=-llapack
+```
