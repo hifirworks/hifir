@@ -27,3 +27,9 @@
 /// \ingroup alg
 
 /// \defgroup itr PSMILU User Interfaces
+
+/// \defgroup cpp C++ User Interfaces
+/// \ingroup itr
+
+/// \defgroup c C User Interface
+/// \ingroup itr
