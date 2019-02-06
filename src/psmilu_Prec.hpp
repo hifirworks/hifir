@@ -16,6 +16,7 @@
 
 #include "psmilu_CompressedStorage.hpp"
 #include "psmilu_PermMatrix.hpp"
+#include "psmilu_small_scale/solver.hpp"
 
 namespace psmilu {
 
@@ -24,8 +25,10 @@ namespace psmilu {
 /// \tparam ValueType value data type, e.g. \a double
 /// \tparam IndexType index data type, e.g. \a int
 /// \tparam OneBased if \a false (default), using C-based index system
+/// \tparam SSSType default is LU with partial pivoting
 /// \ingroup itr
-template <class ValueType, class IndexType, bool OneBased = false>
+template <class ValueType, class IndexType, bool OneBased = false,
+          SmallScaleType SSSType = SMALLSCALE_LUP>
 struct Prec {
   typedef ValueType                             value_type;  ///< value type
   typedef IndexType                             index_type;  ///< index type
@@ -34,8 +37,15 @@ struct Prec {
   typedef BiPermMatrix<index_type>              perm_type;   ///< permutation
   typedef typename ccs_type::size_type          size_type;   ///< size
   typedef typename ccs_type::array_type         array_type;  ///< array
-  static constexpr bool ONE_BASED  = OneBased;               ///< c index flag
-  static constexpr char EMPTY_PREC = '\0';                   ///< empty prec
+
+  static constexpr bool ONE_BASED  = OneBased;  ///< c index flag
+  static constexpr char EMPTY_PREC = '\0';      ///< empty prec
+
+ private:
+  typedef SmallScaleSolverTrait<SSSType> _sss_trait;  ///< small scale trait
+ public:
+  typedef typename _sss_trait::template solver_type<value_type> sss_solver_type;
+  ///< small scaled solver type
 
   /// \brief default constructor
   Prec() = default;
@@ -102,18 +112,18 @@ struct Prec {
     q   = std::move(Q);
   }
 
-  index_type m;       ///< leading block size
-  index_type n;       ///< system size
-  ccs_type   L_B;     ///< lower part of leading block
-  array_type d_B;     ///< diagonal block of leading block
-  ccs_type   U_B;     ///< upper part of leading block
-  ccs_type   E;       ///< scaled and permutated E part
-  ccs_type   F;       ///< scaled and permutated F part
-  array_type s;       ///< row scaling vector
-  array_type t;       ///< column scaling vector
-  perm_type  p;       ///< row permutation matrix
-  perm_type  q;       ///< column permutation matrix
-  void *     SC_plu;  ///< dense decomposition, TBD
+  index_type      m;             ///< leading block size
+  index_type      n;             ///< system size
+  ccs_type        L_B;           ///< lower part of leading block
+  array_type      d_B;           ///< diagonal block of leading block
+  ccs_type        U_B;           ///< upper part of leading block
+  ccs_type        E;             ///< scaled and permutated E part
+  ccs_type        F;             ///< scaled and permutated F part
+  array_type      s;             ///< row scaling vector
+  array_type      t;             ///< column scaling vector
+  perm_type       p;             ///< row permutation matrix
+  perm_type       q;             ///< column permutation matrix
+  sss_solver_type dense_solver;  ///< dense decomposition
 
  private:
   /// \brief allow casting to \a char, this is needed to add an empty node
