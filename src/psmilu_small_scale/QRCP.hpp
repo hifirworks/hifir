@@ -115,12 +115,23 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
   /// have \f$\boldsymbol{Ax}=\boldsymbol{b}\f$, the derivation is:
   ///
   /// \f[
-  ///   \boldsymbol{QRP}^T\boldsymbol{x}&=\boldsymbol{b} \\&
-  ///   \boldsymbol{RP}^T\boldsymbol{x}&=\boldsymbol{Q}^T\boldsymbol{b} \\&
-  ///   \boldsymbol{P}^T\boldsymbol{x}&=\boldsymbol{R}^{-1}\boldsymbol{Q}^T
-  ///       \boldsymbol{b} \\&
-  ///   \boldsymbol{x}&=\boldsymbol{PR}^{-1}\boldsymbol{Q}^T\boldsymbol{b}
+  ///   \boldsymbol{QRP}^T\boldsymbol{x}&=\boldsymbol{b}
   /// \f]
+  /// \f[
+  ///   \hookrightarrow\boldsymbol{RP}^T\boldsymbol{x}&=\boldsymbol{Q}^T
+  ///     \boldsymbol{b}
+  /// \f]
+  /// \f[
+  ///   \hookrightarrow\boldsymbol{P}^T\boldsymbol{x}&=\boldsymbol{R}^{-1}
+  ///     \boldsymbol{Q}^T\boldsymbol{b}
+  /// \f]
+  /// \f[
+  ///   \hookrightarrow\boldsymbol{x}&=\boldsymbol{PR}^{-1}\boldsymbol{Q}^T
+  ///     \boldsymbol{b}
+  /// \f]
+  ///
+  /// Notice that \f$\boldsymbol{R}^{-1}\boldsymbol{Q}^T\f$ is the
+  /// pseudo-inverse of \f$\boldsymbol{AP}\f$.
   inline void solve(Array<value_type> &x) const {
     using v_t = typename ValueTypeTrait<value_type>::value_type;
 
