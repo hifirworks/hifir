@@ -18,10 +18,6 @@
 #include <type_traits>
 #include <vector>
 
-/** \addtogroup util
- * @{
- */
-
 namespace psmilu {
 
 /// \brief apply binary search on a sorted array
@@ -33,6 +29,7 @@ namespace psmilu {
 /// \return pair<bool, Iter> that the \a first indicates if or not we find
 /// v, while the \a second is the location
 /// \todo replace the implementation with one-sided binary search
+/// \ingroup util
 template <class Iter, class ValueType>
 inline std::pair<bool, Iter> find_sorted(Iter first, Iter last,
                                          const ValueType &v) {
@@ -50,6 +47,7 @@ inline std::pair<bool, Iter> find_sorted(Iter first, Iter last,
 /// \param[in,out] v input and output array
 /// \note Complexity: \f$\mathcal{O}(n)\f$
 /// \sa rotate_right
+/// \ingroup util
 template <class ArrayType>
 inline void rotate_left(const typename ArrayType::size_type n,
                         const typename ArrayType::size_type src, ArrayType &v) {
@@ -64,6 +62,7 @@ inline void rotate_left(const typename ArrayType::size_type n,
 /// \param[in,out] v input and output array
 /// \note Complexity: \f$\mathcal{O}(n)\f$
 /// \sa rotate_left
+/// \ingroup util
 ///
 /// For right rotation, we need to use \a reverse_iterator
 template <class ArrayType>
@@ -81,6 +80,7 @@ inline void rotate_right(const typename ArrayType::size_type n,
 /// \tparam OneBased if \a true not the index is Fortran based
 /// \param[in] i input index
 /// \return C-based index
+/// \ingroup util
 template <class IndexType, bool OneBased>
 inline constexpr IndexType to_c_idx(const IndexType i) {
   return i - static_cast<IndexType>(OneBased);
@@ -91,6 +91,7 @@ inline constexpr IndexType to_c_idx(const IndexType i) {
 /// \tparam OneBased if \a true not the index is Fortran based
 /// \param[in] i input index
 /// \return Original index
+/// \ingroup util
 template <class IndexType, bool OneBased>
 inline constexpr IndexType to_ori_idx(const IndexType i) {
   return i + static_cast<IndexType>(OneBased);
@@ -99,12 +100,15 @@ inline constexpr IndexType to_ori_idx(const IndexType i) {
 /// \brief trait extract value type
 /// \tparam T value type
 /// \note For user-defined types, instance this trait
+/// \ingroup util
 ///
 /// By default, the value type is \a void for compilation error handling
 template <class T>
 struct ValueTypeTrait {
   typedef void value_type;  ///< value type
 };
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 // double
 template <>
@@ -124,9 +128,12 @@ struct ValueTypeTrait<std::complex<T>> {
   typedef typename ValueTypeTrait<T>::value_type value_type;
 };
 
+#endif  // DOXYGEN_SHOULD_SKIP_THIS
+
 /// \class Const
 /// \brief constant values
 /// \tparam T value type
+/// \ingroup util
 template <class T>
 class Const {
  public:
@@ -171,7 +178,5 @@ class SpVInternalExtractor : public SpVecType {
 }  // namespace internal
 
 }  // namespace psmilu
-
-/** @}*/  // util group
 
 #endif
