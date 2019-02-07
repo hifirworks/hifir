@@ -46,6 +46,10 @@ class SmallScaleBase {
     _mat = dense_type::from_sparse(cs);
   }
 
+  /// \brief set a dense operator, this is needed for H version
+  /// \param[in,out] mat input matrix, the data is \b destroyed upon output
+  inline void set_matrix(dense_type &&mat) { _mat = std::move(mat); }
+
  protected:
   dense_type _mat;   ///< matrix
   size_type  _rank;  ///< rank
