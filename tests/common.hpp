@@ -92,6 +92,18 @@ convert2dense(const CS &cs) {
         ASSERT_EQ(mat1[i][j], mat2[i][j]) << i << ',' << j << '\n';    \
   } while (false)
 
+#define COMPARE_MATS_BLOCK_TOL(mat1, mat2, m, tol)        \
+  do {                                                    \
+    using int_t = std::remove_const<decltype(m)>::type;   \
+    for (int_t i = 0; i < m; ++i)                         \
+      for (int_t j = 0; j < m; ++j)                       \
+        ASSERT_LE(std::abs(mat1[i][j] - mat2[i][j]), tol) \
+            << i << ',' << j << '\n';                     \
+  } while (false)
+
+#define COMPARE_MATS_BLOCK(mat1, mat2, m) \
+  COMPARE_MATS_BLOCK_TOL(mat1, mat2, m, 0)
+
 #define COMPARE_MATS_TOL(mat1, mat2, tol)                              \
   do {                                                                 \
     const auto n = std::min(mat1.size(), mat2.size());                 \
