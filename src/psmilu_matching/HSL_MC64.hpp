@@ -202,10 +202,16 @@ inline void set_default_control(matching_control_type &control) {
   control.f_arrays = 1;
 }
 
+/*!
+ * @}
+ */
+
 #endif  // PSMILU_UNIT_TESTING
 
 namespace internal {
 
+/// \brief extract leading diagonal entries for MC64 routine
+/// \ingroup pre
 template <bool IsSymm, class ValueType, class IndexType, bool OneBased>
 inline CCS<ValueType, IndexType, true> extract_leading_block4matching(
     const CCS<ValueType, IndexType, OneBased> &                   A,
@@ -299,12 +305,8 @@ inline CCS<ValueType, IndexType, true> extract_leading_block4matching(
 
   return B;
 }
+
 }  // namespace internal
-
-/*!
- * @}
- */
-
 }  // namespace psmilu
 
 #endif  // _PSMILU_MATCHING_HSL_MC64_HPP
