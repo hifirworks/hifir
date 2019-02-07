@@ -29,6 +29,9 @@
 /// \defgroup sss Small Scale Solver
 /// \ingroup alg
 
+/// \defgroup slv Preconditioner Solver
+/// \ingroup alg
+
 /// \defgroup itr PSMILU User Interfaces
 
 /// \defgroup cpp C++ User Interfaces
