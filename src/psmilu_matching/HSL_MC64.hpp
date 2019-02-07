@@ -211,7 +211,22 @@ inline void set_default_control(matching_control_type &control) {
 namespace internal {
 
 /// \brief extract leading diagonal entries for MC64 routine
+/// \tparam IsSymm if \a true, then assume a symmetric leading block
+/// \tparam ValueType value type for input, e.g. \a double
+/// \tparam IndexType index type for input, e.g. \a int
+/// \tparam OneBased index flag
+/// \param[in] A input matrix
+/// \param[in] m leading block size to extract
+/// \return Fortran index of \f$\boldsymbol{A}(1:m,1:m)\f$ in \ref CCS storage
 /// \ingroup pre
+///
+/// Notice that for efficiency purpose, we return Fortran index matrix. Also,
+/// be aware that the input only accept \ref CCS matrix, which is fine, because
+/// by the time calling this function, we should have both \ref CRS and
+/// CCS versions of the input matrix.
+///
+/// \note This function only allocate memory needed for the leading block. No
+///       additional heap memory is needed.
 template <bool IsSymm, class ValueType, class IndexType, bool OneBased>
 inline CCS<ValueType, IndexType, true> extract_leading_block4matching(
     const CCS<ValueType, IndexType, OneBased> &                   A,
@@ -237,18 +252,24 @@ inline CCS<ValueType, IndexType, true> extract_leading_block4matching(
   B.col_start().resize(m + 1);
   auto &col_start = B.col_start();
   psmilu_error_if(col_start.status() == DATA_UNDEF, "memory allocation failed");
-  auto &row_ind = B.row_ind();
-  auto &vals    = B.vals();
+  auto &          row_ind = B.row_ind();
+  auto &          vals    = B.vals();
+  const size_type tgt     = m + ONE_BASED;
 
   if (IsSymm) {
-    auto      A_v_itr  = A.vals().cbegin();
+    // for symmetric case, we use col_start to store first position
+    // note that two binary searches are needed for each column to determine
+    // the nnz. Then, while filling values, only one binary is needed.
+
+    auto      A_v_itr1 = A.vals().cbegin();
     size_type cur_diag = ONE_BASED;
     size_type nnz(0u);
     for (size_type i = 0u; i < m; ++i, ++cur_diag) {
-      auto info = find_sorted(A.row_ind_cbegin(i), A.row_ind_cend(i), cur_diag);
+      auto info1 = find_sorted(A.row_ind_cbegin(i), A.row_ind_cend(i), tgt);
+      auto info2 = find_sorted(A.row_ind_cbegin(i), info1.second, cur_diag);
       // only lower part
-      nnz += A.row_ind_cend(i) - info.second;
-      col_start[i + 1] = info.second - A_itr;
+      nnz += info1.second - info2.second;
+      col_start[i + 1] = info2.second - A_itr;
     }
 
     // memory allocation
@@ -262,18 +283,22 @@ inline CCS<ValueType, IndexType, true> extract_leading_block4matching(
 
     col_start[0] = 1;
     for (size_type i = 0u; i < m; ++i) {
-      auto first = A_itr + col_start[i + 1], last = A.row_ind_cend(i);
-      auto v_itr       = A_v_itr + col_start[i + 1];
-      col_start[i + 1] = col_start[i] + (last - first);
-      for (auto a_itr = first; a_itr != last;
-           ++a_itr, ++itr, ++v_itr, ++A_v_itr) {
+      auto a_itr   = A_itr + col_start[i + 1],
+           last    = find_sorted(a_itr, A.row_ind_cend(i), tgt).second;
+      auto A_v_itr = A_v_itr1 + col_start[i + 1];
+      // NOTE it's safe to modify col_start now
+      col_start[i + 1] = col_start[i] + (last - a_itr);
+      for (; a_itr != last; ++a_itr, ++itr, ++v_itr, ++A_v_itr) {
         *itr   = f_idx(*a_itr);
         *v_itr = *A_v_itr;
       }
     }
   } else {
-    const size_type tgt = m + ONE_BASED;
-    size_type       nnz(0u);
+    // for asymmetric case, we use col_start to store the pass-of-end positions
+    // it's worth nothing that one a single binary search is needed for
+    // determining the nnz.
+
+    size_type nnz(0u);
     for (size_type i = 0u; i < m; ++i) {
       auto info = find_sorted(A.row_ind_cbegin(i), A.row_ind_cend(i), tgt);
       nnz += info.second - A.row_ind_cbegin(i);
@@ -291,12 +316,12 @@ inline CCS<ValueType, IndexType, true> extract_leading_block4matching(
 
     col_start[0] = 1;
     for (size_type i = 0u; i < m; ++i) {
-      auto first       = A.row_ind_cbegin(i);
-      auto last        = A_itr + col_start[i + 1];
-      auto A_v_itr     = A.val_cbegin(i);
-      col_start[i + 1] = col_start[i] + (last - first);
-      for (auto a_itr = first; a_itr != last;
-           ++a_itr, ++itr, ++v_itr, ++A_v_itr) {
+      auto a_itr   = A.row_ind_cbegin(i);
+      auto last    = A_itr + col_start[i + 1];
+      auto A_v_itr = A.val_cbegin(i);
+      // safe to modify col_start
+      col_start[i + 1] = col_start[i] + (last - a_itr);
+      for (; a_itr != last; ++a_itr, ++itr, ++v_itr, ++A_v_itr) {
         *itr   = f_idx(*a_itr);
         *v_itr = *A_v_itr;
       }
