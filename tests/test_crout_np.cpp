@@ -4,6 +4,8 @@
 //----------------------------------------------------------------------------
 //@HEADER
 
+#define PSMILU_CROUT_USE_FULL
+
 #include "common.hpp"
 // line break to avoid sorting
 #include "psmilu_Array.hpp"
@@ -99,10 +101,6 @@ TEST(LU, c) {
   std::cout << "begin crout update\n\n";
   for (; (int)crout < n; ++crout) {
     std::cout << "enter crout step " << crout << '\n';
-    std::cout << "\tupdating U_start...\n";
-    crout.update_U_start(U2, U_start);
-    std::cout << "\tupdating L_start...\n";
-    crout.update_L_start<false>(L2, n, L_start);
     // compute l and u
     ut.reset_counter();
     std::cout << "\tcomputing u_k\'...\n";
@@ -129,6 +127,11 @@ TEST(LU, c) {
     std::cout << "\tpushing back to L...\n";
     L2.push_back_col(crout, l.inds().cbegin(), l.inds().cbegin() + l.size(),
                      l.vals());
+    // update start positions
+    std::cout << "\tupdating U_start...\n";
+    crout.update_U_start(U2, U_start);
+    std::cout << "\tupdating L_start...\n";
+    crout.update_L_start<false>(L2, n, L_start);
   }
 
   U2.end_assemble_rows();

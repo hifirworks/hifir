@@ -330,28 +330,33 @@ class Crout {
   /// \param[in] U upper part
   /// \param[in,out] U_start array storing the leading locations
   /// \note Complexity: \f$\mathcal{O}(\textrm{nnz}(\boldsymbol{U}(:,k)))\f$
-  /// \note This routine should be called before \ref compute_ut
   template <class U_AugCrsType, class U_StartType>
   inline void update_U_start(const U_AugCrsType &U,
                              U_StartType &       U_start) const {
     static_assert(U_AugCrsType::ROW_MAJOR, "U must be AugCRS");
     using index_type = typename U_AugCrsType::index_type;
 
-    // NOTE this routine should be called at the beginning of the crout update
-    // this is easy to handle
-    if (!_step) return;
-    // we just added a new row to U, which is _step-1
+    // we just added a new row to U, which is _step
     // we, then, assign the starting ID to be its start_ind
-    U_start[_step - 1] = U.row_start()[_step - 1];
-    // get the aug handle
-    index_type aug_id = U.start_col_id(_step);
-    // loop thru current column, O(u_k)
-    while (!U.is_nil(aug_id)) {
-      // get the row index, C based
-      const index_type c_idx = U.row_idx(aug_id);
-      if (U_start[c_idx] < U.row_start()[c_idx + 1]) ++U_start[c_idx];
-      // advance augmented handle
-      aug_id = U.next_col_id(aug_id);
+    U_start[_step] = U.row_start()[_step];
+#ifdef PSMILU_CROUT_USE_FULL
+    // This macro is for unit testing, where we want to test m == n, i.e. apply
+    // crout on a whole asymmetric system. In this case, we must ensure for the
+    // last step, we cannot touch U. However, it's a waste of computation in
+    // real MILU code, cuz m cannot be n. Therefore, we use a macro here.
+    if (_step + 1 < U_start.size())
+#endif
+    {
+      // get the aug handle
+      index_type aug_id = U.start_col_id(_step + 1);
+      // loop thru current column, O(u_k)
+      while (!U.is_nil(aug_id)) {
+        // get the row index, C based
+        const index_type c_idx = U.row_idx(aug_id);
+        if (U_start[c_idx] < U.row_start()[c_idx + 1]) ++U_start[c_idx];
+        // advance augmented handle
+        aug_id = U.next_col_id(aug_id);
+      }
     }
   }
 
@@ -362,7 +367,6 @@ class Crout {
   /// \param[in] L lower part
   /// \param[in,out] L_start leading location array
   /// \note Complexity: \f$\mathcal{O}(\textrm{nnz}(\boldsymbol{L}(k,:)))\f$
-  /// \note This routine should be called before \ref compute_l
   ///
   /// This routine is \a SFINAE-able by \a IsSymm, where this is for \a false
   /// cases, i.e. no leading symmetric block
@@ -373,22 +377,28 @@ class Crout {
     static_assert(!L_AugCcsType::ROW_MAJOR, "L must be AugCCS");
     using index_type = typename L_AugCcsType::index_type;
 
-    // NOTE this routine should be called at the beginning of the crout update
-    // this is easy to handle
-    if (!_step) return;
-    // we just added a new column to L, which is _step-1
+    // we just added a new column to L, which is _step
     // we, then, assign the starting ID should be its start_ind
-    L_start[_step - 1] = L.col_start()[_step - 1];
-    // get the aug handle
-    index_type aug_id = L.start_row_id(_step);
-    // loop through current row, O(l_k')
-    while (!L.is_nil(aug_id)) {
-      // get the column index, C based
-      const index_type c_idx = L.col_idx(aug_id);
-      // for each of this starting inds, advance one
-      if (L_start[c_idx] < L.col_start()[c_idx + 1]) ++L_start[c_idx];
-      // advance augmented handle
-      aug_id = L.next_row_id(aug_id);
+    L_start[_step] = L.col_start()[_step];
+#ifdef PSMILU_CROUT_USE_FULL
+    // This macro is for unit testing, where we want to test m == n, i.e. apply
+    // crout on a whole asymmetric system. In this case, we must ensure for the
+    // last step, we cannot touch U. However, it's a waste of computation in
+    // real MILU code, cuz m cannot be n. Therefore, we use a macro here.
+    if (_step + 1 < L_start.size())
+#endif
+    {
+      // get the aug handle
+      index_type aug_id = L.start_row_id(_step + 1);
+      // loop through current row, O(l_k')
+      while (!L.is_nil(aug_id)) {
+        // get the column index, C based
+        const index_type c_idx = L.col_idx(aug_id);
+        // for each of this starting inds, advance one
+        if (L_start[c_idx] < L.col_start()[c_idx + 1]) ++L_start[c_idx];
+        // advance augmented handle
+        aug_id = L.next_row_id(aug_id);
+      }
     }
   }
 
@@ -401,7 +411,6 @@ class Crout {
   /// \param[in,out] L_start leading location array
   /// \param[in] no_pivot if \a false (default), then assume no pivot previously
   /// \note Complexity: \f$\mathcal{O}(\textrm{nnz}(\boldsymbol{L}(k,:)))\f$
-  /// \note This routine should be called before \ref compute_l
   ///
   /// This routine is \a SFINAE-able by \a IsSymm, where this is for \a true
   /// cases. For the symmetric case, things become more interesting, because we
@@ -423,12 +432,13 @@ class Crout {
       const L_AugCcsType &L, const size_type m, L_StartType &L_start,
       bool no_pivot = false) const {
     static_assert(!L_AugCcsType::ROW_MAJOR, "L must be AugCCS");
-    using index_type = typename L_AugCcsType::index_type;
+    using index_type                = typename L_AugCcsType::index_type;
+    constexpr static bool ONE_BASED = L_AugCcsType::ONE_BASED;
+    const auto            ori_idx   = [](const size_type i) {
+      return to_ori_idx<size_type, ONE_BASED>(i);
+    };
 
     psmilu_assert(m, "cannot have empty leading block for symmetric case!");
-
-    // fast return in first step
-    if (!_step) return;
 
     // NOTE that from step to step, m can only decrease!
 
@@ -437,15 +447,15 @@ class Crout {
       // then the ending position is stored
       // col_start has an extra element, thus this is valid accessing
       // or maybe we can use {Array,vector}::back??
-      L_start[_step - 1] = L.col_start()[_step];
+      L_start[_step] = L.col_start()[_step + 1];
       return;
     }
-    // if no pivoting previously, we just need to update the step-1 entry
+    // if no pivoting previously, we just need to update the step entry
     if (no_pivot) {
       // binary search to point to start of newly added row
-      auto info          = find_sorted(L.row_ind_cbegin(_step - 1),
-                              L.row_ind_cend(_step - 1), m);
-      L_start[_step - 1] = info.second - L.row_ind().cbegin();
+      auto info = find_sorted(L.row_ind_cbegin(_step), L.row_ind_cend(_step),
+                              ori_idx(m));
+      L_start[_step] = info.second - L.row_ind().cbegin();
       return;
     }
 
@@ -460,12 +470,12 @@ class Crout {
       // advance augmented handle
       aug_id = L.next_row_id(aug_id);
     }
-    if (col_idx != _step - 1u) {
+    if (col_idx != _step) {
       // well, the newly added column doesn't have m row entry, thus update
       // it using binary search
-      auto info          = find_sorted(L.row_ind_cbegin(_step - 1),
-                              L.row_ind_cend(_step - 1), m);
-      L_start[_step - 1] = info.second - L.row_ind().cbegin();
+      auto info = find_sorted(L.row_ind_cbegin(_step), L.row_ind_cend(_step),
+                              ori_idx(m));
+      L_start[_step] = info.second - L.row_ind().cbegin();
     }
   }
 
