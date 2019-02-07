@@ -11,6 +11,7 @@
 #include "psmilu_CompressedStorage.hpp"
 #include "psmilu_Crout.hpp"
 #include "psmilu_PermMatrix.hpp"
+#include "psmilu_Schur.hpp"
 #include "psmilu_SparseVec.hpp"
 #include "psmilu_diag_pivot.hpp"
 #include "psmilu_inv_thres.hpp"
@@ -116,8 +117,6 @@ TEST(CRS_api, test_core_c) {
                    k_l  = std::abs(kappa_l[crout]);
       pvt               = k_ut > 100.0 || k_l > 100.0;
       if (pvt) continue;
-      crout.update_U_start(U, U_start);
-      crout.update_L_start<false>(L, m, L_start);
       ut.reset_counter();
       crout.compute_ut(s, A, t, crout, q, L, d, U, U_start, ut);
       l.reset_counter();
@@ -133,9 +132,36 @@ TEST(CRS_api, test_core_c) {
                       ut.vals());
       L.push_back_col(crout, l.inds().cbegin(), l.inds().cbegin() + l.size(),
                       l.vals());
+      crout.update_U_start(U, U_start);
+      crout.update_L_start<false>(L, m, L_start);
       break;
     }
   }
   U.end_assemble_rows();
   L.end_assemble_cols();
+
+  std::cout << "M=" << START_M << ", m=" << m << std::endl;
+  std::cout << "U_start=\n";
+  auto itr = U.col_ind().cbegin();
+  for (int i = 0; i < m; ++i) {
+    std::cout << "row " << i << ':';
+    for (auto j = itr + U_start[i]; j != U.col_ind_cend(i); ++j) {
+      std::cout << *j << ' ';
+      EXPECT_GE(*j, m);
+    }
+    std::cout << std::endl;
+  }
+  std::cout << "L_start=\n";
+  for (int i = 0; i < m; ++i) {
+    std::cout << "col " << i << ':';
+    for (auto j = L.row_ind().cbegin() + L_start[i]; j != L.row_ind_cend(i);
+         ++j) {
+      EXPECT_GE(*j, m);
+      std::cout << *j << ' ';
+    }
+    std::cout << std::endl;
+  }
+
+  crs_t Sc;
+  compute_Schur_C(s, A, t, p, q, m, N, L, d, U, U_start, Sc);
 }
