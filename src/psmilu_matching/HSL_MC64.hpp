@@ -194,7 +194,7 @@ typedef struct mc64_control matching_control_type;  ///< control parameters
 typedef struct mc64_info    matching_info_type;     ///< return info
 
 /// \brief set default control parameters
-/// \control[out] control paramteres
+/// \param[out] control control paramteres
 /// \note We explicitly assume the index is one based, which is achieved by
 ///       calling \ref internal::extract_leading_block4matching
 inline void set_default_control(matching_control_type &control) {
