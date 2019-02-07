@@ -4,8 +4,6 @@
 //----------------------------------------------------------------------------
 //@HEADER
 
-#define PSMILU_CROUT_USE_FULL
-
 #include "common.hpp"
 // line break to avoid sorting
 #include "psmilu_Array.hpp"
@@ -31,7 +29,7 @@ constexpr static double eps = 1e-13;
 // simplify the process, we make the system diagonal dominant.
 
 TEST(LU, c) {
-  const int n = i_rand() + 2;
+  const int n = 5; //i_rand() + 2;
   std::cout << "Problem size is " << n << '\n';
   auto          L = create_mat<double>(n, n);
   auto          U = create_mat<double>(n, n);
