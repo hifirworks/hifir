@@ -339,21 +339,20 @@ class Crout {
     // we just added a new row to U, which is _step
     // we, then, assign the starting ID to be its start_ind
     U_start[_step] = U.row_start()[_step];
-#ifdef PSMILU_CROUT_USE_FULL
-    // This macro is for unit testing, where we want to test m == n, i.e. apply
-    // crout on a whole asymmetric system. In this case, we must ensure for the
-    // last step, we cannot touch U. However, it's a waste of computation in
-    // real MILU code, cuz m cannot be n. Therefore, we use a macro here.
-    if (_step + 1 < U_start.size())
-#endif
+    // if the newly added entry is _step+1, we need to increment it
+    if (*U.col_ind_cbegin(_step) <= static_cast<index_type>(_step + 1))
+      ++U_start[_step];
+    // #ifdef PSMILU_CROUT_USE_FULL
+    //     if (_step + 1 < U_start.size())
+    // #endif
     {
       // get the aug handle
-      index_type aug_id = U.start_col_id(_step + 1);
+      index_type aug_id = U.start_col_id(_step);
       // loop thru current column, O(u_k)
       while (!U.is_nil(aug_id)) {
         // get the row index, C based
-        const index_type c_idx = U.row_idx(aug_id);
-        if (U_start[c_idx] < U.row_start()[c_idx + 1]) ++U_start[c_idx];
+        const index_type row = U.row_idx(aug_id);
+        if (U_start[row] < U.row_start()[row + 1]) ++U_start[row];
         // advance augmented handle
         aug_id = U.next_col_id(aug_id);
       }
@@ -380,22 +379,21 @@ class Crout {
     // we just added a new column to L, which is _step
     // we, then, assign the starting ID should be its start_ind
     L_start[_step] = L.col_start()[_step];
-#ifdef PSMILU_CROUT_USE_FULL
-    // This macro is for unit testing, where we want to test m == n, i.e. apply
-    // crout on a whole asymmetric system. In this case, we must ensure for the
-    // last step, we cannot touch U. However, it's a waste of computation in
-    // real MILU code, cuz m cannot be n. Therefore, we use a macro here.
-    if (_step + 1 < L_start.size())
-#endif
+    // if the newly added entry is _step+1, we need to increment it
+    if (*L.row_ind_cbegin(_step) <= static_cast<index_type>(_step + 1))
+      ++L_start[_step];
+    // #ifdef PSMILU_CROUT_USE_FULL
+    //     if (_step + 1 < L_start.size())
+    // #endif
     {
       // get the aug handle
-      index_type aug_id = L.start_row_id(_step + 1);
+      index_type aug_id = L.start_row_id(_step);
       // loop through current row, O(l_k')
       while (!L.is_nil(aug_id)) {
         // get the column index, C based
-        const index_type c_idx = L.col_idx(aug_id);
+        const index_type col = L.col_idx(aug_id);
         // for each of this starting inds, advance one
-        if (L_start[c_idx] < L.col_start()[c_idx + 1]) ++L_start[c_idx];
+        if (L_start[col] < L.col_start()[col + 1]) ++L_start[col];
         // advance augmented handle
         aug_id = L.next_row_id(aug_id);
       }
@@ -463,7 +461,7 @@ class Crout {
     // loop thru all rows
     // NOTE that we track the col_idx (which we need anyway, thus this is not
     // extra operations), to the end, it may allow us to skip binary search
-    size_type col_idx = _step;
+    size_type col_idx(-1);
     while (!L.is_nil(aug_id)) {
       col_idx          = L.col_idx(aug_id);
       L_start[col_idx] = L.val_pos_idx(aug_id);
