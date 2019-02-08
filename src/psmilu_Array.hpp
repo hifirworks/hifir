@@ -270,6 +270,16 @@ class Array {
     return _data[i];
   }
 
+  // bound checking acessing
+  inline reference at(const size_type i) {
+    psmilu_error_if(i >= _size, "%zd exceeds the size bound %zd", i, _size);
+    return _data[i];
+  }
+  inline const_reference at(const size_type i) const {
+    psmilu_error_if(i >= _size, "%zd exceeds the size bound %zd", i, _size);
+    return _data[i];
+  }
+
   // utilities mimic STL
   inline pointer         data() { return _data; }
   inline const_pointer   data() const { return _data; }
