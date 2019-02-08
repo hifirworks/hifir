@@ -632,6 +632,23 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
     scale_diag_right(t);
   }
 
+  /// \brief matrix vector multiplication (low level API)
+  /// \param[in] x input array pointer
+  /// \param[out] y output array pointer
+  /// \warning User's responsibility to maintain valid pointers
+  inline void mv_nt_low(const value_type *x, value_type *y) const {
+    for (size_type i = 0u; i < _psize; ++i) {
+      y[i]       = 0;
+      auto v_itr = _base::val_cbegin(i);
+      auto i_itr = col_ind_cbegin(i);
+      for (auto last = col_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
+        const size_type j = to_c_idx<size_type, ONE_BASED>(*i_itr);
+        psmilu_assert(j < _ncols, "%zd exceeds column size", j);
+        y[i] += *v_itr * x[j];
+      }
+    }
+  }
+
   /// \brief matrix vector multiplication
   /// \tparam IArray input array type
   /// \tparam OArray output array type
@@ -642,14 +659,23 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   inline void mv_nt(const IArray &x, OArray &y) const {
     psmilu_error_if(nrows() != y.size() || ncols() != x.size(),
                     "matrix vector multiplication unmatched sizes!");
+    mv_nt_low(x.data(), y.data());
+  }
+
+  /// \brief matrix transpose vector multiplication (low level API)
+  /// \param[in] x input array pointer
+  /// \param[out] y output array pointer
+  /// \warning User's responsibility to maintain valid pointers
+  inline void mv_t_low(const value_type *x, value_type *y) const {
+    std::fill_n(y, ncols(), 0);
     for (size_type i = 0u; i < _psize; ++i) {
-      y[i]       = 0;
-      auto v_itr = _base::val_cbegin(i);
-      auto i_itr = col_ind_cbegin(i);
+      const auto temp  = x[i];
+      auto       v_itr = _base::val_cbegin(i);
+      auto       i_itr = col_ind_cbegin(i);
       for (auto last = col_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
         const size_type j = to_c_idx<size_type, ONE_BASED>(*i_itr);
         psmilu_assert(j < _ncols, "%zd exceeds column size", j);
-        y[i] += *v_itr * x[j];
+        y[j] += *v_itr * temp;
       }
     }
   }
@@ -665,17 +691,7 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   inline void mv_t(const IArray &x, OArray &y) const {
     psmilu_error_if(nrows() != x.size() || ncols() != y.size(),
                     "T(matrix) vector multiplication unmatched sizes!");
-    std::fill(y.begin(), y.end(), 0);
-    for (size_type i = 0u; i < _psize; ++i) {
-      const auto temp  = x[i];
-      auto       v_itr = _base::val_cbegin(i);
-      auto       i_itr = col_ind_cbegin(i);
-      for (auto last = col_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
-        const size_type j = to_c_idx<size_type, ONE_BASED>(*i_itr);
-        psmilu_assert(j < _ncols, "%zd exceeds column size", j);
-        y[j] += *v_itr * temp;
-      }
-    }
+    mv_t_low(x.data(), y.data());
   }
 
   /// \brief matrix vector multiplication
@@ -1071,6 +1087,24 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
     scale_diag_right(t);
   }
 
+  /// \brief matrix vector multiplication (low level API)
+  /// \param[in] x input array pointer
+  /// \param[out] y output array pointer
+  /// \warning User's responsibilty to ensure valid pointers
+  inline void mv_nt_low(const value_type *x, value_type *y) const {
+    std::fill_n(y, nrows(), 0);
+    for (size_type i = 0u; i < _psize; ++i) {
+      const auto temp  = x[i];
+      auto       v_itr = _base::val_cbegin(i);
+      auto       i_itr = row_ind_cbegin(i);
+      for (auto last = row_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
+        const size_type j = to_c_idx<size_type, ONE_BASED>(*i_itr);
+        psmilu_assert(j < _nrows, "%zd exceeds the size bound", j);
+        y[j] += temp * *v_itr;
+      }
+    }
+  }
+
   /// \brief matrix vector multiplication
   /// \tparam IArray input array type
   /// \tparam OArray output array type
@@ -1081,15 +1115,22 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   inline void mv_nt(const IArray &x, OArray &y) const {
     psmilu_error_if(nrows() != y.size() || ncols() != x.size(),
                     "matrix vector unmatched sizes!");
-    std::fill(y.begin(), y.end(), 0);
+    mv_nt_low(x.data(), y.data());
+  }
+
+  /// \brief matrix transpose vector multiplication (low level API)
+  /// \param[in] x input array pointer
+  /// \param[out] y output array pointer
+  /// \warning User's responsibilty to ensure valid pointers
+  inline void mv_t_low(const value_type *x, value_type *y) const {
     for (size_type i = 0u; i < _psize; ++i) {
-      const auto temp  = x[i];
-      auto       v_itr = _base::val_cbegin(i);
-      auto       i_itr = row_ind_cbegin(i);
+      y[i]       = 0;
+      auto v_itr = _base::val_cbegin(i);
+      auto i_itr = row_ind_cbegin(i);
       for (auto last = row_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
         const size_type j = to_c_idx<size_type, ONE_BASED>(*i_itr);
         psmilu_assert(j < _nrows, "%zd exceeds the size bound", j);
-        y[j] += temp * *v_itr;
+        y[i] += x[j] * *v_itr;
       }
     }
   }
@@ -1104,16 +1145,7 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   inline void mv_t(const IArray &x, OArray &y) const {
     psmilu_error_if(nrows() != x.size() || ncols() != y.size(),
                     "T(matrix) vector unmatched sizes!");
-    for (size_type i = 0u; i < _psize; ++i) {
-      y[i]       = 0;
-      auto v_itr = _base::val_cbegin(i);
-      auto i_itr = row_ind_cbegin(i);
-      for (auto last = row_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
-        const size_type j = to_c_idx<size_type, ONE_BASED>(*i_itr);
-        psmilu_assert(j < _nrows, "%zd exceeds the size bound", j);
-        y[i] += x[j] * *v_itr;
-      }
-    }
+    mv_t_low(x.data(), y.data());
   }
 
   /// \brief matrix vector multiplication
