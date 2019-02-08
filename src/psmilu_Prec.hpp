@@ -66,7 +66,7 @@ struct Prec {
   /// \param[in] P row permutation
   /// \param[in] Q column permutation
   /// \note This allows us to use emplace back in STL efficiently
-  Prec(index_type mm, index_type nn, ccs_type &&L_b, array_type &&d_b,
+  Prec(size_type mm, size_type nn, ccs_type &&L_b, array_type &&d_b,
        ccs_type &&U_b, ccs_type &&e, ccs_type &&f, array_type &&S,
        array_type &&T, perm_type &&P, perm_type &&Q)
       : m(mm),
@@ -112,8 +112,8 @@ struct Prec {
     q   = std::move(Q);
   }
 
-  index_type      m;             ///< leading block size
-  index_type      n;             ///< system size
+  size_type       m;             ///< leading block size
+  size_type       n;             ///< system size
   ccs_type        L_B;           ///< lower part of leading block
   array_type      d_B;           ///< diagonal block of leading block
   ccs_type        U_B;           ///< upper part of leading block
