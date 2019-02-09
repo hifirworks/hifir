@@ -32,6 +32,9 @@
 /// \defgroup slv Preconditioner Solver
 /// \ingroup alg
 
+/// \def fac Multilevel Factorization
+/// \ingroup alg
+
 /// \defgroup itr PSMILU User Interfaces
 
 /// \defgroup cpp C++ User Interfaces
