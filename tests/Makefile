@@ -22,7 +22,7 @@ test_%: test_%.exe
 	./$<
 
 define MAKE_EXE_RULE =
-$(1).exe: $(1).cpp $$(shell ./get_deps.sh $(1))
+$(1).exe: $(1).cpp common.hpp $$(shell ./get_deps.sh $(1))
 	$(CXX) $(CXXFLAGS) $$< -o $$@ $(LIBS) $(LDFLAGS)
 endef
 
