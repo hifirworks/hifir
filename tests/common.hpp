@@ -392,3 +392,100 @@ class RandGen {
 
 typedef RandGen<int>    RandIntGen;
 typedef RandGen<double> RandRealGen;
+
+// generate random sparse matrices
+template <class CsType>
+static typename std::enable_if<CsType::ROW_MAJOR, CsType>::type gen_rand_sparse(
+    const int m, const int n, const bool ensure_diag = true) {
+  using index_type                               = typename CsType::index_type;
+  using value_type                               = typename CsType::value_type;
+  constexpr static bool                ONE_BASED = CsType::ONE_BASED;
+  const RandGen<index_type>            i_rand(0, n - 1);
+  const RandGen<value_type>            v_rand;
+  CsType                               A(m, n);
+  std::vector<std::vector<index_type>> col_inds(m);
+  std::vector<bool>                    tags(n, false);
+  typename CsType::size_type           N(0);
+  for (int i = 0; i < m; ++i) {
+    auto &    col_ind = col_inds[i];
+    const int nnz     = i_rand() + 1;
+    col_ind.reserve(nnz + ensure_diag);
+    index_type counts = 0, guard = 0;
+    for (;;) {
+      if (counts == nnz || guard > 2 * n) break;
+      const index_type idx = i_rand();
+      ++guard;
+      if (tags[idx]) continue;
+      ++counts;
+      col_ind.push_back(idx);
+      tags[idx] = true;
+    }
+    if (ensure_diag && i < n &&
+        std::find(col_ind.cbegin(), col_ind.cend(), i) == col_ind.cend())
+      col_ind.push_back(i);
+    std::sort(col_ind.begin(), col_ind.end());
+    N += col_ind.size();
+    for (const auto j : col_ind) tags[j] = false;
+  }
+  A.reserve(N);
+  std::vector<value_type> buf(n);
+  A.begin_assemble_rows();
+  for (int i = 0; i < m; ++i) {
+    auto &col_ind = col_inds[i];
+    for (auto &j : col_ind) {
+      buf[j] = v_rand();
+      j += ONE_BASED;
+    }
+    A.push_back_row(i, col_ind.cbegin(), col_ind.cend(), buf);
+  }
+  A.end_assemble_rows();
+  return A;
+}
+
+template <class CsType>
+static typename std::enable_if<!CsType::ROW_MAJOR, CsType>::type
+gen_rand_sparse(const int m, const int n, const bool ensure_diag = true) {
+  using index_type                               = typename CsType::index_type;
+  using value_type                               = typename CsType::value_type;
+  constexpr static bool                ONE_BASED = CsType::ONE_BASED;
+  const RandGen<index_type>            i_rand(0, m - 1);
+  const RandGen<value_type>            v_rand;
+  CsType                               A(m, n);
+  std::vector<std::vector<index_type>> row_inds(n);
+  std::vector<bool>                    tags(m, false);
+  typename CsType::size_type           N(0);
+  for (int i = 0; i < n; ++i) {
+    auto &    row_ind = row_inds[i];
+    const int nnz     = i_rand() + 1;
+    row_ind.reserve(nnz + ensure_diag);
+    index_type counts = 0, guard = 0;
+    for (;;) {
+      if (counts == nnz || guard > 2 * m) break;
+      const index_type idx = i_rand();
+      ++guard;
+      if (tags[idx]) continue;
+      ++counts;
+      row_ind.push_back(idx);
+      tags[idx] = true;
+    }
+    if (ensure_diag && i < m &&
+        std::find(row_ind.cbegin(), row_ind.cend(), i) == row_ind.cend())
+      row_ind.push_back(i);
+    std::sort(row_ind.begin(), row_ind.end());
+    N += row_ind.size();
+    for (const auto j : row_ind) tags[j] = false;
+  }
+  A.reserve(N);
+  std::vector<value_type> buf(m);
+  A.begin_assemble_cols();
+  for (int i = 0; i < n; ++i) {
+    auto &row_ind = row_inds[i];
+    for (auto &j : row_ind) {
+      buf[j] = v_rand();
+      j += ONE_BASED;
+    }
+    A.push_back_col(i, row_ind.cbegin(), row_ind.cend(), buf);
+  }
+  A.end_assemble_cols();
+  return A;
+}
