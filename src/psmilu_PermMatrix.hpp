@@ -82,6 +82,12 @@ class PermMatrix {
   /// \param[in] i i-th permutation entry
   inline const_reference operator[](const size_type i) const { return _p[i]; }
 
+  /// \brief get the underlaying data
+  inline iarray_type &operator()() { return _p; }
+
+  /// \brief get the underlaying data, constant reference
+  inline const iarray_type &operator()() const { return _p; }
+
  protected:
   iarray_type _p;  ///< underlying permutation array
 };
@@ -171,6 +177,12 @@ class BiPermMatrix : public PermMatrix<IndexType> {
     _base::interchange(i, j);
     std::swap(_p_inv[_p[i]], _p_inv[_p[j]]);
   }
+
+  /// \brief get the underlaying data
+  inline iarray_type &inv() { return _p_inv; }
+
+  /// \brief get the underlaying data, constant reference
+  inline const iarray_type &inv() const { return _p_inv; }
 
  protected:
   using _base::_p;
