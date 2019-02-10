@@ -137,7 +137,7 @@ inline bool prec_solve(
   // preparation
   const auto &    prec = *prec_itr;
   const size_type m = prec.m, n = prec.n, nm = n - m;
-  const auto &    p = prec.p, &q = prec.q;
+  const auto &    p = prec.p, &q_inv = prec.q;
   const auto &    s = prec.s, &t = prec.t;
 
   {
@@ -200,7 +200,7 @@ inline bool prec_solve(
   // Now, we have work(1:n) storing the complete solution before final scaling
   // and permutation
 
-  for (size_type i = 0u; i < n; ++i) y[i] = t[i] * work[q.inv(i)];
+  for (size_type i = 0u; i < n; ++i) y[i] = t[i] * work[q_inv[i]];
 }
 
 /// \brief compute the \b safe buffer size for \ref prec_solve

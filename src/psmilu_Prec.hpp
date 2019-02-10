@@ -15,7 +15,6 @@
 #include <utility>
 
 #include "psmilu_CompressedStorage.hpp"
-#include "psmilu_PermMatrix.hpp"
 #include "psmilu_small_scale/solver.hpp"
 
 namespace psmilu {
@@ -34,7 +33,7 @@ struct Prec {
   typedef IndexType                             index_type;  ///< index type
   typedef CRS<value_type, index_type, OneBased> crs_type;    ///< crs type
   typedef CCS<value_type, index_type, OneBased> ccs_type;    ///< ccs type
-  typedef BiPermMatrix<index_type>              perm_type;   ///< permutation
+  typedef Array<index_type>                     perm_type;   ///< permutation
   typedef typename ccs_type::size_type          size_type;   ///< size
   typedef typename ccs_type::array_type         array_type;  ///< array
 
@@ -64,11 +63,11 @@ struct Prec {
   /// \param[in] S row scaling
   /// \param[in] T column scaling
   /// \param[in] P row permutation
-  /// \param[in] Q column permutation
+  /// \param[in] Q_inv inverse column permutation
   /// \note This allows us to use emplace back in STL efficiently
   Prec(size_type mm, size_type nn, ccs_type &&L_b, array_type &&d_b,
        ccs_type &&U_b, ccs_type &&e, ccs_type &&f, array_type &&S,
-       array_type &&T, perm_type &&P, perm_type &&Q)
+       array_type &&T, perm_type &&P, perm_type &&Q_inv)
       : m(mm),
         n(nn),
         L_B(std::move(L_b)),
@@ -79,7 +78,7 @@ struct Prec {
         s(std::move(S)),
         t(std::move(T)),
         p(std::move(P)),
-        q(std::move(Q)) {}
+        q_inv(std::move(Q_inv)) {}
 
   /// \brief enable explicitly calling move
   /// \param[in,out] L_b lower part
@@ -90,7 +89,7 @@ struct Prec {
   /// \param[in,out] S row scaling
   /// \param[in,out] T column scaling
   /// \param[in,out] P row permutation
-  /// \param[in,out] Q column permutation
+  /// \param[in,out] Q_inv inverse column permutation
   /// \note Sizes are not included, assign them explicitly.
   ///
   /// we pass lvalue reference, but will explicitly destroy all input arguments
@@ -100,16 +99,16 @@ struct Prec {
   /// \warning Everything on output is destroyed, as the routine name says.
   inline void move_destroy(ccs_type &L_b, array_type &d_b, ccs_type &U_b,
                            ccs_type &e, ccs_type &f, array_type &S,
-                           array_type &T, perm_type &P, perm_type &Q) {
-    L_B = std::move(L_b);
-    d_B = std::move(d_b);
-    U_B = std::move(U_b);
-    E   = std::move(e);
-    F   = std::move(f);
-    s   = std::move(S);
-    t   = std::move(T);
-    p   = std::move(P);
-    q   = std::move(Q);
+                           array_type &T, perm_type &P, perm_type &Q_inv) {
+    L_B   = std::move(L_b);
+    d_B   = std::move(d_b);
+    U_B   = std::move(U_b);
+    E     = std::move(e);
+    F     = std::move(f);
+    s     = std::move(S);
+    t     = std::move(T);
+    p     = std::move(P);
+    q_inv = std::move(Q_inv);
   }
 
   size_type       m;             ///< leading block size
@@ -122,7 +121,7 @@ struct Prec {
   array_type      s;             ///< row scaling vector
   array_type      t;             ///< column scaling vector
   perm_type       p;             ///< row permutation matrix
-  perm_type       q;             ///< column permutation matrix
+  perm_type       q_inv;         ///< column inverse permutation matrix
   sss_solver_type dense_solver;  ///< dense decomposition
 
  private:
