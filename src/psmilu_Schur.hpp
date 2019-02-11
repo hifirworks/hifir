@@ -151,13 +151,13 @@ inline void compute_Schur_C(const LeftDiagType &s, const CrsType &A,
   // step 2, fill in the column indices
   //-----------------------------------
 
-  if (!row_start[N]) {
+  if (!(row_start[N] - ONE_BASED)) {
     psmilu_warning("Schur (C version) complement becomes empty!");
     return;
   }
 
   // NOTE that we reserve spaces for both values and column indices
-  SC.reserve(row_start[N]);
+  SC.reserve(row_start[N] - ONE_BASED);
   auto &col_ind = SC.col_ind();
   col_ind.resize(0);  // just reset the internal counter, O(1) for Array
   for (size_type i = 0u; i < N; ++i) {
@@ -199,7 +199,8 @@ inline void compute_Schur_C(const LeftDiagType &s, const CrsType &A,
       col_ind[j] = *ind_itr;
   }
 
-  psmilu_assert(col_ind.size() == (size_type)row_start[N], "fatal error!");
+  psmilu_assert(col_ind.size() + ONE_BASED == (size_type)row_start[N],
+                "fatal error!");
 
   //---------------------------
   // step 3, fill in the values
@@ -430,7 +431,7 @@ inline void compute_Schur_H_T_E(const L_AugCcsType &L_E,
   }
 
   // check if empty
-  if (!col_start[m]) {
+  if (!(col_start[m] - ONE_BASED)) {
     psmilu_warning(
         "computing H version Schur complement for inv(L)*B-D*U yields an empty "
         "matrix!");
@@ -443,13 +444,13 @@ inline void compute_Schur_H_T_E(const L_AugCcsType &L_E,
   }
 
   // reserve the nnz array storage
-  T_E2.reserve(col_start[m]);
+  T_E2.reserve(col_start[m] - ONE_BASED);
   auto &row_ind = T_E2.row_ind();
   auto &vals    = T_E2.vals();
   psmilu_error_if(row_ind.status() == DATA_UNDEF || vals.status() == DATA_UNDEF,
                   "memory allocation failed!");
   // for Array, this is just restting the internal size counter
-  row_ind.resize(col_start[m]);
+  row_ind.resize(col_start[m] - ONE_BASED);
   auto      i_itr     = row_ind.begin();
   size_type tag_start = m;
   // redo the loop above, this time, we also push back the indices
@@ -530,7 +531,7 @@ inline void compute_Schur_H_T_E(const L_AugCcsType &L_E,
   };
 
   // resize the value array in T_E, O(1) operation for Array
-  vals.resize(col_start[m]);
+  vals.resize(col_start[m] - ONE_BASED);
   auto v_itr = vals.begin();
   tag_start += m;
   // get the buf value reference
@@ -597,19 +598,19 @@ inline void compute_Schur_H_T_E(const L_AugCcsType &L_E,
     o_col_start[col + 1] = o_col_start[col] + buf.size();
   }
 
-  if (!o_col_start[m]) {
+  if (!(o_col_start[m] - ONE_BASED)) {
     psmilu_warning("H version of Schur complement has an empty T_E part!");
     return;
   }
 
   tag_start += m;
-  T_E.reserve(o_col_start[m]);
+  T_E.reserve(o_col_start[m] - ONE_BASED);
   auto &o_row_ind = T_E.row_ind();
   auto &o_vals    = T_E.vals();
   psmilu_error_if(
       o_row_ind.status() == DATA_UNDEF || o_vals.status() == DATA_UNDEF,
       "memory allocation failed!");
-  o_row_ind.resize(o_col_start[m]);
+  o_row_ind.resize(o_col_start[m] - ONE_BASED);
   auto o_itr = o_row_ind.begin();
   // redo the loop above to fill in the indices, aka symbolic pattern
   for (size_type col = 0u; col < m; ++col) {
@@ -631,7 +632,7 @@ inline void compute_Schur_H_T_E(const L_AugCcsType &L_E,
 
   // finally, we compute the numerical values of L_E*T_E2
 
-  o_vals.resize(o_col_start[m]);
+  o_vals.resize(o_col_start[m] - ONE_BASED);
   auto o_v_itr     = o_vals.begin();
   auto start_v_pos = L_E.vals().cbegin();
   for (size_type col = 0u; col < m; ++col) {
@@ -777,18 +778,18 @@ inline void compute_Schur_H_T_F(const U_B_CcsType &U_B, const U_AugCrsType &U_F,
     col_start[col + 1] = col_start[col] + buf.size();  // build col_start
   }
 
-  if (!col_start[n]) {
+  if (!(col_start[n] - ONE_BASED)) {
     psmilu_warning("H version of Schur complement has an empty T_F part!");
     return;
   }
 
   // reserve the nnz arrays
-  T_F.reserve(col_start[n]);
+  T_F.reserve(col_start[n] - ONE_BASED);
   auto &row_ind = T_F.row_ind();
   auto &vals    = T_F.vals();
   psmilu_error_if(row_ind.status() == DATA_UNDEF || vals.status() == DATA_UNDEF,
                   "memory allocation failed!");
-  row_ind.reserve(col_start[n]);
+  row_ind.reserve(col_start[n] - ONE_BASED);
   auto      i_itr     = row_ind.begin();
   size_type tag_start = n;
   // same loop but for indices
@@ -844,7 +845,7 @@ inline void compute_Schur_H_T_F(const U_B_CcsType &U_B, const U_AugCrsType &U_F,
   };
 
   // finally, fetch values directly from the dense value buffer
-  vals.resize(col_start[n]);
+  vals.resize(col_start[n] - ONE_BASED);
   auto v_itr = vals.begin();
   tag_start += n;
   const auto &buf_vals = buf.vals();
