@@ -386,6 +386,7 @@ class RandGen {
       : _eng(std::time(0)), _d(low, hi) {}
   RandGen(const RandGen &) = delete;
   RandGen &operator=(const RandGen &) = delete;
+  RandGen(RandGen &&)                 = default;
 
   inline T operator()() const { return _d(_eng); }
 };
@@ -488,4 +489,22 @@ gen_rand_sparse(const int m, const int n, const bool ensure_diag = true) {
   }
   A.end_assemble_cols();
   return A;
+}
+
+template <class Vector>
+static void fill_ran_vec(Vector &v, typename Vector::value_type low = 0,
+                         typename Vector::value_type hi = 0) {
+  using v_t                      = typename Vector::value_type;
+  const bool         use_default = low == hi;
+  const RandGen<v_t> r(use_default ? RandGen<v_t>() : RandGen<v_t>(low, hi));
+  for (auto &vv : v) vv = r();
+}
+
+template <class Vector>
+static Vector gen_ran_vec(const typename Vector::size_type n,
+                          typename Vector::value_type      low = 0,
+                          typename Vector::value_type      hi  = 0) {
+  Vector v(n);
+  fill_ran_vec(v, low, hi);
+  return v;
 }
