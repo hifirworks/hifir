@@ -259,14 +259,14 @@ class Array {
   /// \brief accessing data position i
   /// \param[in] i i-th position
   inline reference operator[](const size_type i) {
-    psmilu_assert(i >= _ZERO && i < _size, "%zd exceeds the size bound", i);
+    psmilu_assert(i < _size, "%zd exceeds the size bound %zd", i, _size);
     return _data[i];
   }
 
   /// \brief accessing data position i
   /// \param[in] i i-th position
   inline const_reference operator[](const size_type i) const {
-    psmilu_assert(i >= _ZERO && i < _size, "%zd exceeds the size bound", i);
+    psmilu_assert(i < _size, "%zd exceeds the size bound %zd", i, _size);
     return _data[i];
   }
 
