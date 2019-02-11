@@ -508,3 +508,62 @@ static Vector gen_ran_vec(const typename Vector::size_type n,
   fill_ran_vec(v, low, hi);
   return v;
 }
+
+template <class CssType>
+static CssType gen_rand_strict_lower_sparse(
+    const typename CssType::size_type n) {
+  using index_type                = typename CssType::index_type;
+  using value_type                = typename CssType::value_type;
+  constexpr static bool ONE_BASED = CssType::ONE_BASED;
+  static_assert(!CssType::ROW_MAJOR, "must be CCS type");
+  CssType                              A(n, n);
+  std::vector<value_type>              buf(n);
+  const RandGen<value_type>            v_rand;
+  const RandGen<index_type>            nnz_rand(1, n);
+  std::vector<std::vector<index_type>> row_inds(n);
+  std::vector<bool>                    tags(n, false);
+  const int                            N = n - 1;
+  int                                  M = 0;
+  for (int i = 0; i < N; ++i) {
+    auto &                    row_ind = row_inds[i];
+    const RandGen<index_type> i_rand(i + 1, N);
+    const int                 nnz    = (nnz_rand() % (N - i)) + 1;
+    index_type                counts = 0, guard = 0;
+    for (;;) {
+      if (counts == nnz || guard > 2 * (N - i)) break;
+      const index_type idx = i_rand();
+      ++guard;
+      if (tags[idx]) continue;
+      ++counts;
+      row_ind.push_back(idx);
+      tags[idx] = true;
+    }
+    std::sort(row_ind.begin(), row_ind.end());
+    M += row_ind.size();
+    for (const auto j : row_ind) tags[j] = false;
+  }
+  A.reserve(M);
+  A.begin_assemble_cols();
+  for (int i = 0; i < (index_type)n; ++i) {
+    auto &row_ind = row_inds[i];
+    for (auto &j : row_ind) {
+      buf[j] = v_rand();
+      j += ONE_BASED;
+    }
+    A.push_back_col(i, row_ind.cbegin(), row_ind.cend(), buf);
+  }
+  A.end_assemble_cols();
+  return A;
+}
+
+template <class CrsType>
+static CrsType gen_rand_strict_upper_sparse(
+    const typename CrsType::size_type n) {
+  static_assert(CrsType::ROW_MAJOR, "must be CRS type");
+  auto    B = gen_rand_strict_lower_sparse<typename CrsType::other_type>(n);
+  CrsType A(n, n);
+  A.row_start() = std::move(B.col_start());
+  A.col_ind()   = std::move(B.row_ind());
+  A.vals()      = std::move(B.vals());
+  return A;
+}
