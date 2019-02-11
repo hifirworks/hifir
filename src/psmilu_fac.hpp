@@ -76,9 +76,11 @@ inline typename AugCcsType::ccs_type extract_L_B(
   };
 #endif
 
+#ifndef PSMILU_UNIT_TESTING
   psmilu_assert(m == L.ncols(),
                 "column of L should have the size of leading block %zd", m);
-  psmilu_assert(m > L.nrows(), "invalid row size");
+#endif  // PSMILU_UNIT_TESTING
+  psmilu_assert(m <= L.nrows(), "invalid row size");
 
   ccs_type L_B(m, m);
   auto &   col_start = L_B.col_start();
@@ -89,10 +91,10 @@ inline typename AugCcsType::ccs_type extract_L_B(
   auto L_i_begin = L.row_ind().cbegin();
   for (size_type i = 0u; i < m; ++i) {
     auto last = L_i_begin + L_start[i];
-    psmilu_assert(last != L.row_ind_cend(i) && c_idx(*last) >= m ||
+    psmilu_assert((last != L.row_ind_cend(i) && c_idx(*last) >= m) ||
                       last == L.row_ind_cend(i),
-                  "L_start should not point anywhere within (1:m,:) region");
-    col_start[i + 1] += col_start[i] + (last - L.row_ind_cbegin(i));
+                  "L_start should not point anywhere inside (1:m,:) region");
+    col_start[i + 1] = col_start[i] + (last - L.row_ind_cbegin(i));
   }
 
   if (!(col_start[m] - ONE_BASED)) {
@@ -101,7 +103,7 @@ inline typename AugCcsType::ccs_type extract_L_B(
     return L_B;
   }
 
-  L_B.reserve(col_start[m]);
+  L_B.reserve(col_start[m] - ONE_BASED);
   auto &row_ind = L_B.row_ind();
   auto &vals    = L_B.vals();
   psmilu_error_if(row_ind.status() == DATA_UNDEF || vals.status() == DATA_UNDEF,
@@ -117,8 +119,10 @@ inline typename AugCcsType::ccs_type extract_L_B(
 
   for (size_type i = 0u; i < m; ++i) {
     itr   = std::copy(L.row_ind_cbegin(i), L_i_begin + L_start[i], itr);
-    v_itr = std::copy(L.val_cbegin(i), L_v_begin + L_start[i]);
+    v_itr = std::copy(L.val_cbegin(i), L_v_begin + L_start[i], v_itr);
   }
+
+  psmilu_assert(itr == row_ind.end(), "fatal issue!");
 
   return L_B;
 }
@@ -137,9 +141,11 @@ inline typename AugCrsType::ccs_type extract_U_B(
     return to_c_idx<size_type, ONE_BASED>(i);
   };
 
+#ifndef PSMILU_UNIT_TESTING
   psmilu_assert(m == U.nrows(),
                 "row size of U should have the size of leading block %zd", m);
-  psmilu_assert(m > U.ncols(), "invalid col size");
+#endif  // PSMILU_UNIT_TESTING
+  psmilu_assert(m <= U.ncols(), "invalid col size");
 
   ccs_type U_B(m, m);
   auto &   col_start = U_B.col_start();
@@ -151,9 +157,9 @@ inline typename AugCrsType::ccs_type extract_U_B(
   auto U_i_begin = U.col_ind().cbegin();
   for (size_type i = 0u; i < m; ++i) {
     auto last = U_i_begin + U_start[i];
-    psmilu_assert(last != U.col_ind_cend(i) && c_idx(*last) >= m ||
+    psmilu_assert((last != U.col_ind_cend(i) && c_idx(*last) >= m) ||
                       last == U.col_ind_cend(i),
-                  "U_start should not point anywhere within (:,1:m) region");
+                  "U_start should not point anywhere inside (:,1:m) region");
     std::for_each(U.col_ind_cbegin(i), last,
                   [&](const index_type i) { ++col_start[c_idx(i) + 1]; });
   }
@@ -172,13 +178,15 @@ inline typename AugCrsType::ccs_type extract_U_B(
   auto &vals    = U_B.vals();
   psmilu_error_if(row_ind.status() == DATA_UNDEF || vals.status() == DATA_UNDEF,
                   "memory allocation failed");
+  row_ind.resize(col_start[m]);
+  vals.resize(col_start[m]);
 
   for (size_type i = 0u; i < m; ++i) {
     auto last = U_i_begin + U_start[i];
     auto itr  = U.col_ind_cbegin(i);
     for (auto v_itr = U.val_cbegin(i); itr != last; ++itr, ++v_itr) {
       const auto j          = c_idx(*itr);
-      row_ind[col_start[j]] = i;
+      row_ind[col_start[j]] = i + ONE_BASED;
       vals[col_start[j]]    = *v_itr;
       ++col_start[j];
     }
@@ -198,10 +206,11 @@ inline typename AugCrsType::ccs_type extract_U_B(
 }
 
 /// \ingroup fac
-template <class CrsType, class PermType>
+template <class LeftDiagType, class CrsType, class RightdiagType,
+          class PermType>
 inline typename CrsType::other_type extract_E(
-    const CrsType &A, const typename CrsType::size_type m, const PermType &p,
-    const PermType &q) {
+    const LeftDiagType &s, const CrsType &A, const RightdiagType &t,
+    const typename CrsType::size_type m, const PermType &p, const PermType &q) {
   // it's efficient to extract E from CRS
   static_assert(CrsType::ROW_MAJOR, "input A must be CRS!");
   using ccs_type   = typename CrsType::other_type;
@@ -228,7 +237,7 @@ inline typename CrsType::other_type extract_E(
   std::fill(col_start.begin(), col_start.end(), 0);
 
   for (size_type i = m; i < n; ++i) {
-    for (auto itr = A.col_ind_cbegin(p[i]), last = A.cool_ind_cend(p[i]);
+    for (auto itr = A.col_ind_cbegin(p[i]), last = A.col_ind_cend(p[i]);
          itr != last; ++itr) {
       const size_type qi = q.inv(c_idx(*itr));
       if (qi < m) ++col_start[qi + 1];
@@ -258,11 +267,13 @@ inline typename CrsType::other_type extract_E(
     const size_type pi  = p[i];
     auto            itr = A.col_ind_cbegin(pi), last = A.col_ind_cend(pi);
     auto            v_itr = A.val_cbegin(pi);
+    const auto      si    = s[pi];
     for (; itr != last; ++itr, ++v_itr) {
-      const size_type qi = q.inv(c_idx(*itr));
+      const size_type j  = c_idx(*itr);
+      const size_type qi = q.inv(j);
       if (qi < m) {
-        row_ind[col_start[qi]] = i - m;
-        vals[col_start[qi]]    = *v_itr;
+        row_ind[col_start[qi]] = i - m + CrsType::ONE_BASED;
+        vals[col_start[qi]]    = si * *v_itr * t[j];
         ++col_start[qi];
       }
     }
@@ -280,10 +291,12 @@ inline typename CrsType::other_type extract_E(
 }
 
 /// \ingroup fac
-template <class CcsType, class PermType, class BufferType>
-inline CcsType extract_F(const CcsType &A, const typename CcsType::size_type m,
-                         const PermType &p, const PermType &q,
-                         BufferType &buf) {
+template <class LeftDiagType, class CcsType, class RightDiagType,
+          class PermType, class BufferType>
+inline CcsType extract_F(const LeftDiagType &s, const CcsType &A,
+                         const RightDiagType &             t,
+                         const typename CcsType::size_type m, const PermType &p,
+                         const PermType &q, BufferType &buf) {
   static_assert(!CcsType::ROW_MAJOR, "input A must be CCS!");
   using size_type                 = typename CcsType::size_type;
   using index_type                = typename CcsType::index_type;
@@ -310,44 +323,46 @@ inline CcsType extract_F(const CcsType &A, const typename CcsType::size_type m,
   col_start.front() = ONE_BASED;
 
   for (size_type i = 0u; i < N; ++i) {
-    const size_type pi = p[i + m];
+    const size_type qi = q[i + m];
     size_type       nnz(0);
-    std::for_each(A.row_ind_cbegin(pi), A.row_ind_cend(pi),
+    std::for_each(A.row_ind_cbegin(qi), A.row_ind_cend(qi),
                   [&](const index_type i) {
-                    if (q.inv(c_idx(i)) < m) ++nnz;
+                    if (static_cast<size_type>(p.inv(c_idx(i))) < m) ++nnz;
                   });
     col_start[i + 1] = col_start[i] + nnz;
   }
 
-  if (!(col_start[m] - ONE_BASED)) {
+  if (!(col_start[N] - ONE_BASED)) {
     psmilu_warning(
         "exactly zero F, this most likely is a bug! Continue anyway...");
     return F;
   }
 
-  F.reserve(col_start[m]);
+  F.reserve(col_start[N] - ONE_BASED);
   auto &row_ind = F.row_ind();
   auto &vals    = F.vals();
   psmilu_error_if(row_ind.status() == DATA_UNDEF || vals.status() == DATA_UNDEF,
                   "memory allocation failed");
 
-  row_ind.resize(col_start[m] - ONE_BASED);
-  vals.resize(col_start[m] - ONE_BASED);
+  row_ind.resize(col_start[N] - ONE_BASED);
+  vals.resize(col_start[N] - ONE_BASED);
 
   auto v_itr = vals.begin();
 
   for (size_type i = 0u; i < N; ++i) {
-    const size_type pi      = p[i + m];
+    const size_type qi      = q[i + m];
     auto            itr     = F.row_ind_begin(i);
-    auto            A_itr   = A.row_ind_cbegin(pi);
-    auto            A_v_itr = A.val_cbegin(pi);
-    for (auto A_last = A.row_ind_cend(pi); A_itr != A_last;
+    auto            A_itr   = A.row_ind_cbegin(qi);
+    auto            A_v_itr = A.val_cbegin(qi);
+    const auto      ti      = t[qi];
+    for (auto A_last = A.row_ind_cend(qi); A_itr != A_last;
          ++A_itr, ++A_v_itr) {
-      const size_type qi = q.inv(c_idx(*A_itr));
-      if (qi < m) {
-        *itr = qi;
+      const size_type j  = c_idx(*A_itr);
+      const size_type pi = p.inv(j);
+      if (pi < m) {
+        *itr = pi;
         ++itr;
-        buf[qi] = *A_v_itr;
+        buf[pi] = s[j] * *A_v_itr * ti;
       }
     }
     std::sort(F.row_ind_begin(i), itr);
