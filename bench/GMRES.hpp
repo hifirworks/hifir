@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <complex>
 #include <cstddef>
 #include <iostream>
 #include <numeric>
@@ -33,6 +34,21 @@ class IdentityPrec {
 
   inline constexpr bool empty() const { return false; }
 };
+
+template <class T>
+inline T conj(const T &v) {
+  return std::conj(v);
+}
+
+template <>
+inline double conj<double>(const double &v) {
+  return v;
+}
+
+template <>
+inline float conj<float>(const float &v) {
+  return v;
+}
 }  // namespace internal
 
 /// \class GMRES
@@ -85,20 +101,25 @@ class GMRES {
                                              const VectorType &b,
                                              VectorType &      x0,
                                              const bool = true) const {
+    using internal::conj;
+
     const size_type n = b.size();
     size_type       iter(0);
     if (n != x0.size()) return std::make_pair(-1, iter);
     if (rtol <= 0 || restart <= 0 || maxit <= 0)
       return std::make_pair(-2, iter);
+    const auto beta0 = std::sqrt(
+        std::inner_product(b.cbegin(), b.cend(), b.cbegin(), value_type()));
     if (_M.empty()) _M.compute(A);
     _ensure_data_capacities(n);
     const size_type max_outer_iters =
         (size_type)std::ceil((scalar_type)maxit / restart);
-    auto &x    = x0;
-    int   flag = 0;
+    auto &      x    = x0;
+    int         flag = 0;
+    scalar_type resid(1);
     for (size_type it_outer = 0u; it_outer < max_outer_iters; ++it_outer) {
       // initial residual
-      if (it_outer > 1u || std::inner_product(x.cbegin(), x.cend(), x.cbegin(),
+      if (it_outer > 0u || std::inner_product(x.cbegin(), x.cend(), x.cbegin(),
                                               value_type()) > 0) {
         A.mv(x, _v);
         for (size_type i = 0u; i < n; ++i) _v[i] = b[i] - _v[i];
@@ -118,13 +139,34 @@ class GMRES {
         _M.solve(_w, _v);
         std::copy(_v.cbegin(), _v.cend(), _Z.begin() + jn);
         A.mv(_v, _w);
-        {
-          auto itr = _R.begin() + restart * j;
-          for (size_type k = 0u; k <= j; ++k)
-            itr[k] = std::inner_product(_w.cbegin(), _w.cend(),
-                                        _Q.cbegin() + k * n, value_type());
+        for (size_type k = 0u; k <= j; ++k) {
+          auto itr = _Q.cbegin() + k * n;
+          _v[k] = std::inner_product(_w.cbegin(), _w.cend(), itr, value_type());
+          const auto tmp = _v[k];
+          for (size_type i = 0u; i < n; ++i) _w[i] -= tmp * itr[i];
         }
-      }
+        const auto w_norm2 = std::inner_product(_w.cbegin(), _w.cend(),
+                                                _w.cbegin(), value_type());
+        const auto w_norm  = std::sqrt(w_norm2);
+        if (j + 1 < (size_type)restart) {
+          auto       itr      = _Q.begin() + jn + n;
+          const auto inv_norm = 1. / w_norm;
+          for (size_type i = 0u; i < n; ++i) itr[i] = inv_norm * _w[i];
+        }
+        auto J1 = _J.begin(), J2 = J1 + restart;
+        for (size_type colJ = 0u; colJ + 1u <= j; ++colJ) {
+          const auto tmp = _v[colJ];
+          _v[colJ]       = conj(J1[colJ]) * tmp + conj(J2[colJ]) * _v[colJ + 1];
+          _v[colJ + 1]   = -J2[colJ] * tmp + J1[colJ] * _v[colJ + 1];
+        }
+        const auto rho = std::sqrt(_v[j] * _v[j] + w_norm2);
+        J1[j]          = _v[j] / rho;
+        J2[j]          = w_norm / rho;
+        _y[j + 1]      = -J2[j] * _y[j];
+        _y[j]          = conj(J1[j]) * _y[j];
+        _v[j]          = rho;
+        std::copy(_v.cbegin(), _v.cbegin() + j + 1, _R.begin() + j * restart);
+      }  // inf loop
     }
     return std::make_pair(flag, iter);
   }
