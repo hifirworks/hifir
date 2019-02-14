@@ -11,11 +11,13 @@
 #ifndef _PSMILU_BUILDER_HPP
 #define _PSMILU_BUILDER_HPP
 
+#include <algorithm>
 #include <iterator>
 
 #include "psmilu_CompressedStorage.hpp"
 #include "psmilu_Options.h"
 #include "psmilu_Prec.hpp"
+#include "psmilu_fac.hpp"
 #include "psmilu_prec_solve.hpp"
 
 namespace psmilu {
@@ -68,8 +70,39 @@ class Builder {
     return *std::advance(_precs.cbegin(), level);
   }
 
-  inline void compute(const crs_type &A, const Options &opts = _def_opts);
-  inline void compute(const ccs_type &A, const Options &opts = _def_opts);
+  template <class CsType>
+  inline void compute(const CsType &A, const size_type m0 = 0u,
+                      const Options &opts = _def_opts) {
+    psmilu_error_if(A.nrows() != A.ncols(),
+                    "Currently only squared systems are supported");
+    size_type       m(m0);
+    size_type       N;
+    const size_type cur_level = levels() + 1;
+    if (opts.N >= 0)
+      N = opts.N;
+    else {
+      if (cur_level == 1u)
+        N = A.nrows();
+      else
+        N = _precs.front().n;
+    }
+    // use a identity permutation vectors
+    BiPermMatrix<index_type> p(A.nrows()), q(A.ncols());
+    p.make_eye();
+    q.make_eye();
+    // use identity scaling for now
+    array_type s(A.nrows()), t(A.ncols());
+    psmilu_error_if(s.status() == DATA_UNDEF,
+                    "memory allocation failed for s at level %zd.", cur_level);
+    psmilu_error_if(t.status() == DATA_UNDEF,
+                    "memory allocation failed for t at level %zd.", cur_level);
+    const bool   sym = cur_level == 1u && m > 0u;
+    const CsType S =
+        sym ? iludp_factor<true>(s, A, t, m, N, opts, p, q, _precs)
+            : iludp_factor<false>(s, A, t, m, N, opts, p, q, _precs);
+    if (_precs.back().dense_solver.empty()) this->compute(S, 0u, opts);
+  }
+
   inline void solve(const array_type &b, array_type &x) const {
     psmilu_error_if(empty(), "MILU-Prec is empty!");
     psmilu_error_if(b.size() != x.size(), "unmatched sizes");

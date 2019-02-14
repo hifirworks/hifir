@@ -12,9 +12,20 @@
 #define _PSMILU_FAC_HPP
 
 #include <algorithm>
+#include <cmath>
 #include <type_traits>
+#include <utility>
 
 #include "psmilu_Array.hpp"
+#include "psmilu_AugmentedStorage.hpp"
+#include "psmilu_Crout.hpp"
+#include "psmilu_DenseMatrix.hpp"
+#include "psmilu_Options.h"
+#include "psmilu_PermMatrix.hpp"
+#include "psmilu_Schur.hpp"
+#include "psmilu_SparseVec.hpp"
+#include "psmilu_diag_pivot.hpp"
+#include "psmilu_inv_thres.hpp"
 #include "psmilu_log.hpp"
 #include "psmilu_utils.hpp"
 
@@ -22,10 +33,11 @@ namespace psmilu {
 namespace internal {
 
 /// \ingroup fac
-template <class CcsType, class PermType>
+template <class LeftDiagType, class CcsType, class RightDiagType,
+          class PermType>
 inline Array<typename CcsType::value_type> extract_perm_diag(
-    const CcsType A, const typename CcsType::size_type m, const PermType &p,
-    const PermType &q) {
+    const LeftDiagType &s, const CcsType A, const RightDiagType &t,
+    const typename CcsType::size_type m, const PermType &p, const PermType &q) {
   using value_type                = typename CcsType::value_type;
   using size_type                 = typename CcsType::size_type;
   using array_type                = Array<value_type>;
@@ -49,10 +61,11 @@ inline Array<typename CcsType::value_type> extract_perm_diag(
     psmilu_assert((size_type)p[i] < A.nrows(),
                   "permutated index %zd exceeds the row bound",
                   (size_type)p[i]);
+
     auto info = find_sorted(A.row_ind_cbegin(q[i]), A.row_ind_cend(q[i]),
                             ori_idx(p[i]));
     if (info.first)
-      diag[i] = *(v_begin + (info.second - i_begin));
+      diag[i] = s[p[i]] * *(v_begin + (info.second - i_begin)) * t[q[i]];
     else {
       psmilu_warning("zero diagonal entry %zd detected!", i);
       diag[i] = 0;
@@ -434,6 +447,236 @@ class CompressedTypeTrait {
 };
 
 }  // namespace internal
+
+/// \ingroup fac
+template <bool IsSymm, class LeftDiagType, class CsType, class RightDiagType,
+          class PermType, class PrecsType>
+inline CsType iludp_factor(LeftDiagType &s, const CsType &A, RightDiagType &t,
+                           const typename CsType::size_type m0,
+                           const typename CsType::size_type N,
+                           const Options &opts, PermType &p, PermType &q,
+                           PrecsType &precs) {
+  typedef CsType                      input_type;
+  typedef typename CsType::other_type other_type;
+  using cs_trait = internal::CompressedTypeTrait<input_type, other_type>;
+  typedef typename cs_trait::crs_type crs_type;
+  typedef typename cs_trait::ccs_type ccs_type;
+  typedef AugCRS<crs_type>            aug_crs_type;
+  typedef AugCCS<ccs_type>            aug_ccs_type;
+  typedef typename CsType::index_type index_type;
+  typedef typename CsType::size_type  size_type;
+  typedef typename CsType::value_type value_type;
+  typedef DenseMatrix<value_type>     dense_type;
+  constexpr static bool               ONE_BASED = CsType::ONE_BASED;
+
+  psmilu_assert(A.nrows() == s.size(),
+                "row scaling vector size should match the row size of A");
+  psmilu_assert(A.ncols() == t.size(),
+                "column scaling vector size should match A\'s column size");
+  psmilu_assert(A.nrows() == p.size(),
+                "row permutation vector size should match A\'s row size");
+  psmilu_assert(A.ncols() == q.size(),
+                "column permutation vector size should match A\'s column size");
+  psmilu_assert(m0 < std::min(A.nrows(), A.ncols()),
+                "leading size should be smaller than size of A");
+  const size_type cur_level = precs.size() + 1;
+#ifndef NDEBUG
+  if (IsSymm)
+    psmilu_error_if(cur_level != 1u,
+                    "symmetric must be applied to first level!");
+#endif
+
+  // build counterpart type
+  const other_type A_counterpart(A);
+  const crs_type & A_crs = cs_trait::select_crs(A, A_counterpart);
+  const ccs_type & A_ccs = cs_trait::select_ccs(A, A_counterpart);
+
+  psmilu_assert(&A_crs != &A_ccs, "fatal!");
+
+  // extract diagonal
+  auto d = internal::extract_perm_diag(s, A_ccs, t, m0, p, q);
+
+  // create U storage
+  aug_crs_type U(m0, A.ncols());
+  psmilu_error_if(U.row_start().status() == DATA_UNDEF,
+                  "memory allocation failed for U:row_start at level %zd.",
+                  cur_level);
+  U.reserve(A.nnz() * opts.alpha_U);
+  psmilu_error_if(
+      U.col_ind().status() == DATA_UNDEF || U.vals().status() == DATA_UNDEF,
+      "memory allocation failed for U-nnz arrays at level %zd.", cur_level);
+
+  // create L storage
+  aug_ccs_type L(A.nrows(), m0);
+  psmilu_error_if(L.col_start().status() == DATA_UNDEF,
+                  "memory allocation failed for L:col_start at level %zd.",
+                  cur_level);
+  L.reserve(A.nnz() * opts.alpha_L);
+  psmilu_error_if(
+      L.row_ind().status() == DATA_UNDEF || L.vals().status() == DATA_UNDEF,
+      "memory allocation failed for L-nnz arrays at level %zd.", cur_level);
+
+  // create l and ut buffer
+  SparseVector<value_type, index_type, ONE_BASED> l(A.nrows()), ut(A.ncols());
+
+  // create buffer for L and U start
+  Array<index_type> L_start(m0), U_start(m0);
+  psmilu_error_if(
+      L_start.status() == DATA_UNDEF || U_start.status() == DATA_UNDEF,
+      "memory allocation failed for L_start and/or U_start at level %zd.",
+      cur_level);
+
+  // create storage for kappa's
+  Array<value_type> kappa_l(m0), kappa_ut(m0);
+  psmilu_error_if(
+      kappa_l.status() == DATA_UNDEF || kappa_ut.status() == DATA_UNDEF,
+      "memory allocation failed for kappa_l and/or kappa_ut at level %zd.",
+      cur_level);
+
+  // initialize m
+  size_type m(m0);
+
+  U.begin_assemble_rows();
+  L.begin_assemble_cols();
+
+  // localize parameters
+  const auto tau_d = opts.tau_d, tau_kappa = opts.tau_kappa, tau_U = opts.tau_U,
+             tau_L   = opts.tau_L;
+  const auto alpha_L = opts.alpha_L, alpha_U = opts.alpha_U;
+
+  for (Crout step; step < m; ++step) {
+    // first check diagonal
+    bool            pvt    = std::abs(1. / d[step]) > tau_d;
+    const size_type m_prev = m;
+
+    // inf loop
+    for (;;) {
+      if (pvt) {
+        while (std::abs(1. / d[m - 1]) > tau_d && m > step) --m;
+        if (m == step) break;
+        // defer bad column to the end for U
+        U.interchange_cols(step, m - 1);
+        // defer bad row to the end for L
+        L.interchange_rows(step, m - 1);
+        // udpate p and q; be aware that the inverse mappings are also updated
+        p.interchange(step, m - 1);
+        q.interchange(step, m - 1);
+        // update diagonal since we maintain a permutated version of it
+        std::swap(d[step], d[m - 1]);
+        --m;
+      }
+      // compute kappa ut
+      update_kappa_ut(step, U, kappa_ut);
+      // then compute kappa for l
+      update_kappa_l<IsSymm>(step, L, kappa_ut, kappa_l);
+      const auto k_ut = std::abs(kappa_ut[step]), k_l = std::abs(kappa_l[step]);
+      // check pivoting
+      pvt = k_ut > tau_kappa || k_l > tau_kappa;
+      if (pvt) continue;
+      // compute Uk'
+      ut.reset_counter();
+      step.compute_ut(s, A_crs, t, p[step], q, L, d, U, U_start, ut);
+      // compute Lk
+      l.reset_counter();
+      step.compute_l<IsSymm>(s, A_ccs, t, p, q[step], m, L, L_start, d, U, l);
+      // update diagonal entries
+#ifndef NDEBUG
+      const bool u_is_nonsingular =
+#endif
+          step.scale_inv_diag(d, ut);
+      psmilu_assert(!u_is_nonsingular, "u is singular at level %zd step %zd",
+                    cur_level, step);
+#ifndef NDEBUG
+      const bool l_is_nonsingular =
+#endif
+          step.scale_inv_diag(d, l);
+      psmilu_assert(!l_is_nonsingular, "l is singular at level %zd step %zd",
+                    cur_level, step);
+      // apply drop for U
+      apply_dropping_and_sort(tau_U, k_ut, A_crs.nnz_in_row(p[step]), alpha_U,
+                              ut);
+      // apply drop for L, for symmetric case, we will pass in the ut size
+      // so that the alg will only drop the remaining part
+      apply_dropping_and_sort(tau_L, k_l, A_ccs.nnz_in_col(q[step]), alpha_L, l,
+                              IsSymm ? ut.size() : 0u);
+      // push back rows to U
+      U.push_back_row(step, ut.inds().cbegin(), ut.inds().cbegin() + ut.size(),
+                      ut.vals());
+      // then push back to L
+      if (IsSymm) {
+        auto info = find_sorted(ut.inds().cbegin(),
+                                ut.inds().cbegin() + ut.size(), m + ONE_BASED);
+        L.push_back_col(step, ut.inds().cbegin(), info.second, ut.vals(),
+                        l.inds().cbegin(), l.inds().cbegin() + l.size(),
+                        l.vals());
+      } else
+        L.push_back_row(step, l.inds().cbegin(), l.inds().cbegin() + l.size(),
+                        l.vals());
+      // update U
+      step.update_U_start(U, U_start);
+      // then update L
+      const bool no_change = m == m_prev;
+      step.update_L_start<IsSymm>(L, m, L_start, no_change);
+      break;
+    }  // inf loop
+  }
+
+  U.end_assemble_rows();
+  L.end_assemble_cols();
+
+  // now we are done
+
+  // compute C version of Schur complement
+  crs_type S_tmp;
+  compute_Schur_C(s, A_crs, t, p, q, m, A.nrows(), L, d, U, U_start, S_tmp);
+  const input_type S(input_type::ROW_MAJOR ? std::move(S_tmp)
+                                           : input_type(S_tmp));
+
+  // compute L_B and U_B
+  auto L_B = internal::extract_L_B(L, m, L_start);
+  auto U_B = internal::extract_U_B(U, m, U_start);
+
+  // test H version
+  const size_type nm     = A.nrows() - m;
+  const auto      cbrt_N = std::cbrt(N);
+  dense_type      S_D;
+  psmilu_assert(S_D.empty(), "fatal!");
+  if (S.nnz() >= static_cast<size_type>(opts.rho * nm * nm) ||
+      nm <= static_cast<size_type>(opts.c_d * cbrt_N)) {
+    S_D = dense_type::from_sparse(S);
+    if (m <= static_cast<size_type>(opts.c_h * cbrt_N)) {
+#ifdef PSMILU_UNIT_TESTING
+      ccs_type T_E, T_F;
+#endif
+      compute_Schur_H(L, L_start, L_B, s, A_ccs, t, p, q, d, U_B, U, S_D
+#ifdef PSMILU_UNIT_TESTING
+                      ,
+                      T_E, T_F
+#endif
+      );
+    }  // H version check
+  }
+
+  precs.emplace_back(m, A.nrows(), std::move(L_B), std::move(d), std::move(U_B),
+                     internal::extract_E(s, A_crs, t, m, p, q),
+                     internal::extract_F(s, A_ccs, t, m, p, q, ut.vals()),
+                     std::move(s), std::move(t), std::move(p()),
+                     std::move(q.inv()));
+
+  // if dense is not empty, then push it back
+  if (!S_D.empty()) {
+    auto &last_level = precs.back().dense_solver;
+    last_level.set_matrix(std::move(S_D));
+    last_level.factorize();
+  }
+#ifndef NDEBUG
+  else
+    psmilu_error_if(!precs.back().dense_solver.empty(), "should be empty!");
+#endif
+
+  return S;
+}
+
 }  // namespace psmilu
 
 #endif  // _PSMILU_FAC_HPP
