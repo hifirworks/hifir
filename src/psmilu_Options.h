@@ -68,7 +68,7 @@ typedef struct psmilu_Options psmilu_Options;
  * \brief get the default controls
  * \note See the values of attributes in parentheses
  */
-inline psmilu_Options psmilu_get_default_options(void) {
+static psmilu_Options psmilu_get_default_options(void) {
   return (psmilu_Options){.tau_L     = 0.01,
                           .tau_U     = 0.01,
                           .tau_d     = 10.0,
