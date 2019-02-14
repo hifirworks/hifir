@@ -28,9 +28,12 @@ TEST(FAC_U, diag) {
     std::shuffle(q().begin(), q().end(), std::mt19937_64(std::time(0)));
     p.build_inv();
     q.build_inv();
-    const auto d   = internal::extract_perm_diag(A, m, p, q);
+    const auto s   = gen_ran_vec<Array<double>>(100);
+    const auto t   = gen_ran_vec<Array<double>>(100);
+    const auto d   = internal::extract_perm_diag(s, A, t, m, p, q);
     const auto A_d = convert2dense(A);
-    for (int i = 0; i < m; ++i) EXPECT_EQ(d[i], A_d[p[i]][q[i]]);
+    for (int i = 0; i < m; ++i)
+      EXPECT_EQ(d[i], s[p[i]] * A_d[p[i]][q[i]] * t[q[i]]);
   }
   {
     using ccs_t         = CCS<double, int, true>;
@@ -43,9 +46,12 @@ TEST(FAC_U, diag) {
     std::shuffle(q().begin(), q().end(), std::mt19937_64(std::time(0)));
     p.build_inv();
     q.build_inv();
-    const auto d   = internal::extract_perm_diag(A, m, p, q);
+    const auto s   = gen_ran_vec<Array<double>>(100);
+    const auto t   = gen_ran_vec<Array<double>>(100);
+    const auto d   = internal::extract_perm_diag(s, A, t, m, p, q);
     const auto A_d = convert2dense(A);
-    for (int i = 0; i < m; ++i) EXPECT_EQ(d[i], A_d[p[i]][q[i]]);
+    for (int i = 0; i < m; ++i)
+      EXPECT_EQ(d[i], s[p[i]] * A_d[p[i]][q[i]] * t[q[i]]);
   }
 }
 
@@ -192,8 +198,7 @@ TEST(FAC_U, L_B) {
 
     const AugCCS<ccs_t> &L = static_cast<const AugCCS<ccs_t> &>(A);
 
-    const auto L_B = internal::extract_L_B(L, m, L_start);
-    for (const auto v : L_B.row_ind()) std::cout << v << std::endl;
+    const auto L_B   = internal::extract_L_B(L, m, L_start);
     const auto L_B_d = convert2dense(L_B);
     for (int i = 0; i < m; ++i)
       for (int j = 0; j < m; ++j)
