@@ -136,6 +136,7 @@ struct Prec {
 /// \tparam ValueType value data type, e.g. \a double
 /// \tparam IndexType index data type, e.g. \a int
 /// \tparam OneBased if \a false (default), using C-based index system
+/// \tparam SSSType default is LU with partial pivoting
 /// \ingroup itr
 ///
 /// We choose to use STL list because adding new node is constant time without
@@ -165,8 +166,9 @@ struct Prec {
 ///
 /// These fit into the usage for Precs. Notice that for the second way, after
 /// calling \ref Prec::move_destroy, all input arguments will be destroyed.
-template <class ValueType, class IndexType, bool OneBased = false>
-using Precs = std::list<Prec<ValueType, IndexType, OneBased>>;
+template <class ValueType, class IndexType, bool OneBased = false,
+          SmallScaleType SSSType = SMALLSCALE_LUP>
+using Precs = std::list<Prec<ValueType, IndexType, OneBased, SSSType>>;
 
 }  // namespace psmilu
 
