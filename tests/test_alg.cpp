@@ -118,9 +118,9 @@ TEST(CRS_api, test_core_c) {
       pvt               = k_ut > 100.0 || k_l > 100.0;
       if (pvt) continue;
       ut.reset_counter();
-      crout.compute_ut(s, A, t, crout, q, L, d, U, U_start, ut);
+      crout.compute_ut(s, A, t, p[crout], q, L, d, U, U_start, ut);
       l.reset_counter();
-      crout.compute_l<false>(s, Ap, t, p, crout, m, L, L_start, d, U, l);
+      crout.compute_l<false>(s, Ap, t, p, q[crout], m, L, L_start, d, U, l);
       // scale inv d
       EXPECT_FALSE(crout.scale_inv_diag(d, ut))
           << "singular at step " << crout << " for ut\n";
