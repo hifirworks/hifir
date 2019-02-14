@@ -27,11 +27,8 @@ namespace psmilu {
 namespace bench {
 namespace internal {
 
-template <class ValueType>
 class IdentityPrec {
  public:
-  using value_type = ValueType;
-
   template <class Operator>
   inline void compute(const Operator &, const void * = nullptr) {}
 
@@ -122,8 +119,7 @@ inline const char *gmres_repr_flag(const int flag) {
 /// \tparam PrecType \b right preconditioner used, default is \ref IdentityPrec
 /// \tparam ArrayType internal array type used, e.g. \a std::vector (default)
 /// \authors Qiao,
-template <class ValueType = double,
-          class PrecType  = internal::IdentityPrec<ValueType>,
+template <class ValueType = double, class PrecType = internal::IdentityPrec,
           class ArrayType = std::vector<ValueType>>
 class GMRES {
  public:
