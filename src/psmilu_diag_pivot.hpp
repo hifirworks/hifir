@@ -105,8 +105,9 @@ inline bool update_kappa_ut(const typename U_AugCrsType::size_type step,
 ///
 /// Complexity is linear, i.e.
 /// \f$\mathcal{O}(\textrm{nnz}(\boldsymbol{L}_{k,:}))\f$
-template <bool IsSymm, class L_AugCcsType, class KappaU_Type, class KappaL_Type>
-inline typename std::enable_if<!IsSymm, bool>::type update_kappa_l(
+template <bool IsSymm, class L_AugCcsType, class KappaU_Type, class KappaL_Type,
+          typename T = bool>
+inline typename std::enable_if<!IsSymm, T>::type update_kappa_l(
     const typename L_AugCcsType::size_type step, const L_AugCcsType &L,
     const KappaU_Type & /* kappa_u */, KappaL_Type &                 kappa_l) {
   static_assert(!L_AugCcsType::ROW_MAJOR, "must be column major storage");
@@ -158,8 +159,9 @@ inline typename std::enable_if<!IsSymm, bool>::type update_kappa_l(
 /// Notice that this routine is \a SFINAE-able by \a IsSymm, and this is for
 /// the \a true case, i.e. symmetric leading block. In this case, the solution
 /// vector of \f$\boldsymbol{U}^T\f$ is the same as that of \f$\boldsymbol{L}\f$
-template <bool IsSymm, class L_AugCcsType, class KappaL_Type, class KappaU_Type>
-inline typename std::enable_if<IsSymm, bool>::type update_kappa_l(
+template <bool IsSymm, class L_AugCcsType, class KappaL_Type, class KappaU_Type,
+          typename T = bool>
+inline typename std::enable_if<IsSymm, T>::type update_kappa_l(
     const typename L_AugCcsType::size_type step, const L_AugCcsType & /* L */,
     const KappaU_Type &kappa_u, KappaU_Type &kappa_l) {
   // symmetric case
