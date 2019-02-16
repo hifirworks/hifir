@@ -105,65 +105,45 @@ inline bool update_kappa_ut(const typename U_AugCrsType::size_type step,
 ///
 /// Complexity is linear, i.e.
 /// \f$\mathcal{O}(\textrm{nnz}(\boldsymbol{L}_{k,:}))\f$
-template <bool IsSymm, class L_AugCcsType, class KappaU_Type, class KappaL_Type,
-          typename T = bool>
-inline typename std::enable_if<!IsSymm, T>::type update_kappa_l(
-    const typename L_AugCcsType::size_type step, const L_AugCcsType &L,
-    const KappaU_Type & /* kappa_u */, KappaL_Type &                 kappa_l) {
-  static_assert(!L_AugCcsType::ROW_MAJOR, "must be column major storage");
-  using value_type          = typename L_AugCcsType::value_type;
-  using index_type          = typename L_AugCcsType::index_type;
-  using size_type           = typename L_AugCcsType::size_type;
-  constexpr static bool ONE = true, NEG_ONE = false;
-  if (!step) {
-    // for the first step, we set the rhs (c) to be 1 and let the solution
-    // to be 1
-    kappa_l[0] = 1;
+template <bool IsSymm, class L_AugCcsType, class KappaU_Type, class KappaL_Type>
+inline bool update_kappa_l(const typename L_AugCcsType::size_type step,
+                           const L_AugCcsType &L, const KappaU_Type &kappa_u,
+                           KappaL_Type &kappa_l) {
+  if (!IsSymm) {
+    static_assert(!L_AugCcsType::ROW_MAJOR, "must be column major storage");
+    using value_type          = typename L_AugCcsType::value_type;
+    using index_type          = typename L_AugCcsType::index_type;
+    using size_type           = typename L_AugCcsType::size_type;
+    constexpr static bool ONE = true, NEG_ONE = false;
+    if (!step) {
+      // for the first step, we set the rhs (c) to be 1 and let the solution
+      // to be 1
+      kappa_l[0] = 1;
+      return ONE;
+    }
+    // we need to loop thru all entries in row step
+    value_type sum(0);
+
+    // start augment id
+    index_type aug_id = L.start_row_id(step);
+    while (!L.is_nil(aug_id)) {
+      const index_type col_idx = L.col_idx(aug_id);
+      psmilu_assert((size_type)col_idx < kappa_l.size(),
+                    "%zd exceeds the solution size", (size_type)col_idx);
+      psmilu_assert((size_type)col_idx < step,
+                    "the matrix L should only contain the strict lower case");
+      sum += kappa_l[col_idx] * L.val_from_row_id(aug_id);
+      // advance to next augment handle
+      aug_id = L.next_row_id(aug_id);
+    }
+    const value_type k1 = 1. - sum, k2 = -1. - sum;
+    if (std::abs(k1) < std::abs(k2)) {
+      kappa_l[step] = k2;
+      return NEG_ONE;
+    }
+    kappa_l[step] = k1;
     return ONE;
   }
-  // we need to loop thru all entries in row step
-  value_type sum(0);
-
-  // start augment id
-  index_type aug_id = L.start_row_id(step);
-  while (!L.is_nil(aug_id)) {
-    const index_type col_idx = L.col_idx(aug_id);
-    psmilu_assert((size_type)col_idx < kappa_l.size(),
-                  "%zd exceeds the solution size", (size_type)col_idx);
-    psmilu_assert((size_type)col_idx < step,
-                  "the matrix L should only contain the strict lower case");
-    sum += kappa_l[col_idx] * L.val_from_row_id(aug_id);
-    // advance to next augment handle
-    aug_id = L.next_row_id(aug_id);
-  }
-  const value_type k1 = 1. - sum, k2 = -1. - sum;
-  if (std::abs(k1) < std::abs(k2)) {
-    kappa_l[step] = k2;
-    return NEG_ONE;
-  }
-  kappa_l[step] = k1;
-  return ONE;
-}
-
-/// \brief update the kappa for l at step
-/// \tparam IsSymm if \a true, then a leading symmetric block is assumed
-/// \tparam L_AugCcsType augmented ccs for L, see \ref AugCCS
-/// \tparam KappaL_Type array used to store kappa, see \ref Array
-/// \tparam KappaU_Type array type used for storing kappa u, see \ref Array
-/// \param[in] step current Crout step
-/// \param[in] kappa_u kappa for upper part estimation
-/// \param[out] kappa_l kappa vector for l
-/// \return to keep the API consistent, we return \a true here
-/// \ingroup diag
-///
-/// Notice that this routine is \a SFINAE-able by \a IsSymm, and this is for
-/// the \a true case, i.e. symmetric leading block. In this case, the solution
-/// vector of \f$\boldsymbol{U}^T\f$ is the same as that of \f$\boldsymbol{L}\f$
-template <bool IsSymm, class L_AugCcsType, class KappaL_Type, class KappaU_Type,
-          typename T = bool>
-inline typename std::enable_if<IsSymm, T>::type update_kappa_l(
-    const typename L_AugCcsType::size_type step, const L_AugCcsType & /* L */,
-    const KappaU_Type &kappa_u, KappaU_Type &kappa_l) {
   // symmetric case
   kappa_l[step] = kappa_u[step];
   return true;
