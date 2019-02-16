@@ -111,7 +111,7 @@ inline void prec_solve_udl_inv(const CcsType &U, const DiagType &d,
 ///
 /// \sa compute_prec_work_space
 template <class PrecItr, class WorkType>
-inline bool prec_solve(
+inline void prec_solve(
     PrecItr prec_itr,
     const Array<typename std::remove_const<
         typename std::iterator_traits<PrecItr>::value_type>::type::value_type>
