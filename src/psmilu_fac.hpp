@@ -477,7 +477,7 @@ inline CsType iludp_factor(LeftDiagType &s, const CsType &A, RightDiagType &t,
                 "row permutation vector size should match A\'s row size");
   psmilu_assert(A.ncols() == q.size(),
                 "column permutation vector size should match A\'s column size");
-  psmilu_assert(m0 < std::min(A.nrows(), A.ncols()),
+  psmilu_assert(m0 <= std::min(A.nrows(), A.ncols()),
                 "leading size should be smaller than size of A");
   const size_type cur_level = precs.size() + 1;
 #ifndef NDEBUG
@@ -490,8 +490,6 @@ inline CsType iludp_factor(LeftDiagType &s, const CsType &A, RightDiagType &t,
   const other_type A_counterpart(A);
   const crs_type & A_crs = cs_trait::select_crs(A, A_counterpart);
   const ccs_type & A_ccs = cs_trait::select_ccs(A, A_counterpart);
-
-  psmilu_assert(&A_crs != &A_ccs, "fatal!");
 
   // extract diagonal
   auto d = internal::extract_perm_diag(s, A_ccs, t, m0, p, q);
@@ -552,7 +550,9 @@ inline CsType iludp_factor(LeftDiagType &s, const CsType &A, RightDiagType &t,
     // inf loop
     for (;;) {
       if (pvt) {
-        while (std::abs(1. / d[m - 1]) > tau_d && m > step) --m;
+        // test m value before plugin m-1 to array accessing
+        while (m > step && std::abs(1. / d[m - 1]) > tau_d) --m;
+        std::cout << m << '\n';
         if (m == step) break;
         // defer bad column to the end for U
         U.interchange_cols(step, m - 1);
@@ -610,7 +610,7 @@ inline CsType iludp_factor(LeftDiagType &s, const CsType &A, RightDiagType &t,
                         l.inds().cbegin(), l.inds().cbegin() + l.size(),
                         l.vals());
       } else
-        L.push_back_row(step, l.inds().cbegin(), l.inds().cbegin() + l.size(),
+        L.push_back_col(step, l.inds().cbegin(), l.inds().cbegin() + l.size(),
                         l.vals());
       // update U
       step.update_U_start(U, U_start);

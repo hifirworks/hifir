@@ -67,12 +67,31 @@ class Builder {
   inline const prec_type &prec(const size_type level) const {
     psmilu_error_if(level >= levels(), "%zd exceeds the total level number %zd",
                     level, levels());
-    return *std::advance(_precs.cbegin(), level);
+    auto itr = _precs.cbegin();
+    std::advance(itr, level);
+    return *itr;
   }
 
   template <class CsType>
   inline void compute(const CsType &A, const size_type m0 = 0u,
                       const Options &opts = _def_opts) {
+    _precs.clear();
+    _compute_kernel(A, m0, opts);
+  }
+
+  inline void solve(const array_type &b, array_type &x) const {
+    psmilu_error_if(empty(), "MILU-Prec is empty!");
+    psmilu_error_if(b.size() != x.size(), "unmatched sizes");
+    if (_prec_work.empty())
+      _prec_work.resize(
+          compute_prec_work_space(_precs.cbegin(), _precs.cend()));
+    prec_solve(_precs.cbegin(), b, x, _prec_work);
+  }
+
+ protected:
+  template <class CsType>
+  inline void _compute_kernel(const CsType &A, const size_type m0,
+                              const Options &opts) {
     psmilu_error_if(A.nrows() != A.ncols(),
                     "Currently only squared systems are supported");
     size_type       m(m0);
@@ -91,25 +110,17 @@ class Builder {
     p.make_eye();
     q.make_eye();
     // use identity scaling for now
-    array_type s(A.nrows()), t(A.ncols());
+    array_type s(A.nrows(), value_type(1)), t(A.ncols(), value_type(1));
     psmilu_error_if(s.status() == DATA_UNDEF,
                     "memory allocation failed for s at level %zd.", cur_level);
     psmilu_error_if(t.status() == DATA_UNDEF,
                     "memory allocation failed for t at level %zd.", cur_level);
-    const bool   sym = cur_level == 1u && m > 0u;
+    const bool sym = cur_level == 1u && m > 0u;
+    if (!sym) m = A.nrows();
     const CsType S =
         sym ? iludp_factor<true>(s, A, t, m, N, opts, p, q, _precs)
             : iludp_factor<false>(s, A, t, m, N, opts, p, q, _precs);
-    if (_precs.back().dense_solver.empty()) this->compute(S, 0u, opts);
-  }
-
-  inline void solve(const array_type &b, array_type &x) const {
-    psmilu_error_if(empty(), "MILU-Prec is empty!");
-    psmilu_error_if(b.size() != x.size(), "unmatched sizes");
-    if (_prec_work.empty())
-      _prec_work.resize(
-          compute_prec_work_space(_precs.cbegin(), _precs.cend()));
-    prec_solve(_precs.cbegin(), b, x, _prec_work);
+    if (_precs.back().dense_solver.empty()) this->_compute_kernel(S, 0u, opts);
   }
 
  protected:
