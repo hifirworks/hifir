@@ -37,7 +37,7 @@ inline std::pair<bool, Iter> find_sorted(Iter first, Iter last,
   // WARNING! When replacing the impl, make sure the behavior aligns with
   // standard lower_bound!
   auto lower = std::lower_bound(first, last, v);
-  return std::make_pair(lower != last && *lower == v, lower);
+  return std::make_pair(lower != last && (ValueType)*lower == v, lower);
 }
 
 /// \brief rotate a subset of vector, s.t. src appears to the left most pos
