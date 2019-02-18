@@ -129,8 +129,8 @@ inline void compute_Schur_C(const LeftDiagType &s, const CrsType &A,
       // index in SC size.
       // NOTE that *itr-m is C index is *itr is C. or Fortran if *itr is F
       for (auto itr = first; itr != last; ++itr) {
-        psmilu_assert(c_idx(*itr) >= m, "%zd should point to offset of U",
-                      c_idx(*itr));
+        psmilu_assert(c_idx(*itr) >= m, "%zd should point to offset of U %zd",
+                      c_idx(*itr), m);
         buf.push_back(*itr - m, i);
       }
       aug_id = L.next_row_id(aug_id);  // advance augment handle
