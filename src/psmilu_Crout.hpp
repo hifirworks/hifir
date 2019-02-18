@@ -151,6 +151,10 @@ class Crout {
         // get the column index (C-based)
         // NOTE the column index is that of the row in U
         const index_type c_idx = L.col_idx(aug_id);
+        psmilu_assert(
+            (size_type)c_idx < _step,
+            "compute_ut column index %zd should not exceed step %zd for L",
+            (size_type)c_idx, _step);
         psmilu_assert((size_type)c_idx < d.size(),
                       "%zd exceeds the diagonal vector size", (size_type)c_idx);
         psmilu_assert((size_type)c_idx < U_start.size(),
@@ -334,28 +338,28 @@ class Crout {
   inline void update_U_start(const U_AugCrsType &U,
                              U_StartType &       U_start) const {
     static_assert(U_AugCrsType::ROW_MAJOR, "U must be AugCRS");
-    using index_type = typename U_AugCrsType::index_type;
+    using index_type                = typename U_AugCrsType::index_type;
+    constexpr static bool ONE_BASED = U_AugCrsType::ONE_BASED;
+    const auto            c_idx     = [](const size_type i) {
+      return to_c_idx<size_type, ONE_BASED>(i);
+    };
+
+    if (!_step) return;
 
     // we just added a new row to U, which is _step
     // we, then, assign the starting ID to be its start_ind
-    U_start[_step] = U.row_start()[_step];
-    // if the newly added entry is _step+1, we need to increment it
-    if (*U.col_ind_cbegin(_step) <= static_cast<index_type>(_step + 1))
-      ++U_start[_step];
-    // #ifdef PSMILU_CROUT_USE_FULL
-    //     if (_step + 1 < U_start.size())
-    // #endif
-    {
-      // get the aug handle
-      index_type aug_id = U.start_col_id(_step);
-      // loop thru current column, O(u_k)
-      while (!U.is_nil(aug_id)) {
-        // get the row index, C based
-        const index_type row = U.row_idx(aug_id);
-        if (U_start[row] < U.row_start()[row + 1]) ++U_start[row];
-        // advance augmented handle
-        aug_id = U.next_col_id(aug_id);
-      }
+    U_start[_step - 1] = U.row_start()[_step - 1] - ONE_BASED;
+    // get the aug handle
+    index_type aug_id = U.start_col_id(_step);
+    // loop thru current column, O(u_k)
+    while (!U.is_nil(aug_id)) {
+      // get the row index, C based
+      const index_type row = U.row_idx(aug_id);
+      if (U_start[row] < U.row_start()[row + 1] - ONE_BASED &&
+          c_idx(*(U.col_ind().cbegin() + U_start[row])) <= _step)
+        ++U_start[row];
+      // advance augmented handle
+      aug_id = U.next_col_id(aug_id);
     }
   }
 
@@ -374,29 +378,29 @@ class Crout {
       const L_AugCcsType &L, const size_type /* m */, L_StartType &L_start,
       bool /* no_pivot */ = false) const {
     static_assert(!L_AugCcsType::ROW_MAJOR, "L must be AugCCS");
-    using index_type = typename L_AugCcsType::index_type;
+    using index_type                = typename L_AugCcsType::index_type;
+    constexpr static bool ONE_BASED = L_AugCcsType::ONE_BASED;
+    const auto            c_idx     = [](const size_type i) {
+      return to_c_idx<size_type, ONE_BASED>(i);
+    };
+
+    if (!_step) return;
 
     // we just added a new column to L, which is _step
     // we, then, assign the starting ID should be its start_ind
-    L_start[_step] = L.col_start()[_step];
-    // if the newly added entry is _step+1, we need to increment it
-    if (*L.row_ind_cbegin(_step) <= static_cast<index_type>(_step + 1))
-      ++L_start[_step];
-    // #ifdef PSMILU_CROUT_USE_FULL
-    //     if (_step + 1 < L_start.size())
-    // #endif
-    {
-      // get the aug handle
-      index_type aug_id = L.start_row_id(_step);
-      // loop through current row, O(l_k')
-      while (!L.is_nil(aug_id)) {
-        // get the column index, C based
-        const index_type col = L.col_idx(aug_id);
-        // for each of this starting inds, advance one
-        if (L_start[col] < L.col_start()[col + 1]) ++L_start[col];
-        // advance augmented handle
-        aug_id = L.next_row_id(aug_id);
-      }
+    L_start[_step - 1] = L.col_start()[_step - 1] - ONE_BASED;
+    // get the aug handle
+    index_type aug_id = L.start_row_id(_step);
+    // loop through current row, O(l_k')
+    while (!L.is_nil(aug_id)) {
+      // get the column index, C based
+      const index_type col = L.col_idx(aug_id);
+      // for each of this starting inds, advance one
+      if (L_start[col] < L.col_start()[col + 1] - ONE_BASED &&
+          c_idx(*(L.row_ind().cbegin() + L_start[col])) <= _step)
+        ++L_start[col];
+      // advance augmented handle
+      aug_id = L.next_row_id(aug_id);
     }
   }
 
@@ -438,6 +442,8 @@ class Crout {
 
     psmilu_assert(m, "cannot have empty leading block for symmetric case!");
 
+    if (!_step) return;
+
     // NOTE that from step to step, m can only decrease!
 
     if (m >= L.nrows()) {
@@ -445,15 +451,15 @@ class Crout {
       // then the ending position is stored
       // col_start has an extra element, thus this is valid accessing
       // or maybe we can use {Array,vector}::back??
-      L_start[_step] = L.col_start()[_step + 1];
+      L_start[_step - 1] = L.col_start()[_step];
       return;
     }
     // if no pivoting previously, we just need to update the step entry
     if (no_pivot) {
       // binary search to point to start of newly added row
-      auto info = find_sorted(L.row_ind_cbegin(_step), L.row_ind_cend(_step),
-                              ori_idx(m));
-      L_start[_step] = info.second - L.row_ind().cbegin();
+      auto info          = find_sorted(L.row_ind_cbegin(_step - 1),
+                              L.row_ind_cend(_step - 1), ori_idx(m));
+      L_start[_step - 1] = info.second - L.row_ind().cbegin();
       return;
     }
 
@@ -471,9 +477,9 @@ class Crout {
     if (col_idx != _step) {
       // well, the newly added column doesn't have m row entry, thus update
       // it using binary search
-      auto info = find_sorted(L.row_ind_cbegin(_step), L.row_ind_cend(_step),
-                              ori_idx(m));
-      L_start[_step] = info.second - L.row_ind().cbegin();
+      auto info          = find_sorted(L.row_ind_cbegin(_step - 1),
+                              L.row_ind_cend(_step - 1), ori_idx(m));
+      L_start[_step - 1] = info.second - L.row_ind().cbegin();
     }
   }
 
@@ -688,6 +694,38 @@ class Crout {
  protected:
   mutable size_type _step;  ///< current step
 };
+
+template <class U_AugCrsType, class L_AugCcsType, class U_StartType,
+          class L_StartType>
+inline void fix_start_for_last_step(const U_AugCrsType &                   U,
+                                    const L_AugCcsType &                   L,
+                                    const typename L_AugCcsType::size_type m,
+                                    U_StartType &U_start,
+                                    L_StartType &L_start) {
+  using index_type                = typename U_AugCrsType::index_type;
+  using size_type                 = typename L_AugCcsType::size_type;
+  constexpr static bool ONE_BASED = U_AugCrsType::ONE_BASED;
+  const auto            c_idx     = [](const size_type i) {
+    return to_c_idx<size_type, ONE_BASED>(i);
+  };
+
+  {
+    index_type aug_id = U.start_col_id(m - 1);
+    while (!U.is_nil(aug_id)) {
+      const index_type row = U.row_idx(aug_id);
+      --U_start[row];
+      aug_id = U.next_col_id(aug_id);
+    }
+  }
+  {
+    index_type aug_id = L.start_row_id(m - 1);
+    while (!L.is_nil(aug_id)) {
+      const index_type col = L.col_idx(aug_id);
+      --L_start[col];
+      aug_id = L.next_row_id(aug_id);
+    }
+  }
+}
 }  // namespace psmilu
 
 #endif  // _PSMILU_CROUT_HPP
