@@ -25,19 +25,9 @@ using namespace psmilu;
 TEST(BUILDER, c) {
   using build_t = Builder<double, int>;
   using crs_t   = build_t::crs_type;
-  const auto A  = gen_rand_sparse<crs_t>(10, 10);
-  {
-    const auto A_d = convert2dense(A);
-    for (int i = 0; i < 10; ++i) {
-      for (int j = 0; j < 10; ++j) std::cout << A_d[i][j] << ' ';
-      std::cout << std::endl;
-    }
-  }
-  build_t builder;
-  Options opts = get_default_options();
-  opts.tau_d   = 100.0;
-  builder.compute(A, 0, opts);
-  std::cout << builder.levels() << '\n';
-  std::cout << builder.prec(builder.levels() - 1).dense_solver.mat().nrows()
-            << '\n';
+  const auto A  = gen_rand_sparse<crs_t>(100, 100);
+  build_t    builder;
+  builder.compute(A);
+  std::cout << "levels=" << builder.levels() << '\n';
+  std::cout << builder.prec(0).m << ' ' << builder.prec(0).n << '\n';
 }

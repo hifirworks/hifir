@@ -96,14 +96,17 @@ TEST(CRS_api, test_core_c) {
   // cond
   Array<double> kappa_l(N), kappa_ut(N);
 
+  int ex = 0;
+
   U.begin_assemble_rows();
   L.begin_assemble_cols();
   for (Crout crout; (int)crout < m; ++crout) {
     bool pvt = std::abs(1. / d[crout]) > 10.0;
     for (;;) {
       if (pvt) {
-        while (std::abs(1. / d[m - 1]) > 10.0 && m > (int)crout) --m;
+        while (m > (int)crout && std::abs(1. / d[m - 1]) > 10.0) --m;
         if (m == (int)crout) break;
+        ++ex;
         U.interchange_cols(crout, m - 1);
         L.interchange_rows(crout, m - 1);
         p.interchange(crout, m - 1);
@@ -117,6 +120,8 @@ TEST(CRS_api, test_core_c) {
                    k_l  = std::abs(kappa_l[crout]);
       pvt               = k_ut > 100.0 || k_l > 100.0;
       if (pvt) continue;
+      crout.update_U_start(U, U_start);
+      crout.update_L_start<false>(L, m, L_start);
       ut.reset_counter();
       crout.compute_ut(s, A, t, p[crout], q, L, d, U, U_start, ut);
       l.reset_counter();
@@ -132,34 +137,36 @@ TEST(CRS_api, test_core_c) {
                       ut.vals());
       L.push_back_col(crout, l.inds().cbegin(), l.inds().cbegin() + l.size(),
                       l.vals());
-      crout.update_U_start(U, U_start);
-      crout.update_L_start<false>(L, m, L_start);
       break;
     }
   }
   U.end_assemble_rows();
   L.end_assemble_cols();
 
+  U_start[m - 1] = U.row_start()[m - 1];
+  L_start[m - 1] = L.col_start()[m - 1];
+
+  std::cout << "Total exchanges: " << ex << std::endl;
+
   std::cout << "M=" << START_M << ", m=" << m << std::endl;
-  std::cout << "U_start=\n";
   auto itr = U.col_ind().cbegin();
   for (int i = 0; i < m; ++i) {
-    std::cout << "row " << i << ':';
+    if (itr + U_start[i] != U.col_ind_cbegin(i)) {
+      EXPECT_LT(*(itr + U_start[i] - 1), m);
+    }
     for (auto j = itr + U_start[i]; j != U.col_ind_cend(i); ++j) {
-      std::cout << *j << ' ';
       EXPECT_GE(*j, m);
     }
-    std::cout << std::endl;
   }
   std::cout << "L_start=\n";
   for (int i = 0; i < m; ++i) {
-    std::cout << "col " << i << ':';
+    if (L.row_ind().cbegin() + L_start[i] != L.row_ind_cbegin(i)) {
+      EXPECT_LT(*(L.row_ind().cbegin() + L_start[i] - 1), m);
+    }
     for (auto j = L.row_ind().cbegin() + L_start[i]; j != L.row_ind_cend(i);
          ++j) {
       EXPECT_GE(*j, m);
-      std::cout << *j << ' ';
     }
-    std::cout << std::endl;
   }
 
   crs_t Sc;

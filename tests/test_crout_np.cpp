@@ -29,7 +29,7 @@ constexpr static double eps = 1e-13;
 // simplify the process, we make the system diagonal dominant.
 
 TEST(LU, c) {
-  const int n = 5; //i_rand() + 2;
+  const int n = 5;  // i_rand() + 2;
   std::cout << "Problem size is " << n << '\n';
   auto          L = create_mat<double>(n, n);
   auto          U = create_mat<double>(n, n);
@@ -99,6 +99,11 @@ TEST(LU, c) {
   std::cout << "begin crout update\n\n";
   for (; (int)crout < n; ++crout) {
     std::cout << "enter crout step " << crout << '\n';
+    // update start positions
+    std::cout << "\tupdating U_start...\n";
+    crout.update_U_start(U2, U_start);
+    std::cout << "\tupdating L_start...\n";
+    crout.update_L_start<false>(L2, n, L_start);
     // compute l and u
     ut.reset_counter();
     std::cout << "\tcomputing u_k\'...\n";
@@ -125,11 +130,6 @@ TEST(LU, c) {
     std::cout << "\tpushing back to L...\n";
     L2.push_back_col(crout, l.inds().cbegin(), l.inds().cbegin() + l.size(),
                      l.vals());
-    // update start positions
-    std::cout << "\tupdating U_start...\n";
-    crout.update_U_start(U2, U_start);
-    std::cout << "\tupdating L_start...\n";
-    crout.update_L_start<false>(L2, n, L_start);
   }
 
   U2.end_assemble_rows();

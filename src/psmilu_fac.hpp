@@ -552,7 +552,6 @@ inline CsType iludp_factor(LeftDiagType &s, const CsType &A, RightDiagType &t,
       if (pvt) {
         // test m value before plugin m-1 to array accessing
         while (m > step && std::abs(1. / d[m - 1]) > tau_d) --m;
-        std::cout << m << '\n';
         if (m == step) break;
         // defer bad column to the end for U
         U.interchange_cols(step, m - 1);
@@ -573,6 +572,11 @@ inline CsType iludp_factor(LeftDiagType &s, const CsType &A, RightDiagType &t,
       // check pivoting
       pvt = k_ut > tau_kappa || k_l > tau_kappa;
       if (pvt) continue;
+      // update U
+      step.update_U_start(U, U_start);
+      // then update L
+      const bool no_change = m == m_prev;
+      step.update_L_start<IsSymm>(L, m, L_start, no_change);
       // compute Uk'
       ut.reset_counter();
       step.compute_ut(s, A_crs, t, p[step], q, L, d, U, U_start, ut);
@@ -612,17 +616,16 @@ inline CsType iludp_factor(LeftDiagType &s, const CsType &A, RightDiagType &t,
       } else
         L.push_back_col(step, l.inds().cbegin(), l.inds().cbegin() + l.size(),
                         l.vals());
-      // update U
-      step.update_U_start(U, U_start);
-      // then update L
-      const bool no_change = m == m_prev;
-      step.update_L_start<IsSymm>(L, m, L_start, no_change);
       break;
     }  // inf loop
   }
 
   U.end_assemble_rows();
   L.end_assemble_cols();
+
+  // finalize start positions
+  U_start[m - 1] = U.row_start()[m - 1];
+  L_start[m - 1] = L.col_start()[m - 1];
 
   // now we are done
 

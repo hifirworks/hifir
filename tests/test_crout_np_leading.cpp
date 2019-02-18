@@ -102,10 +102,10 @@ TEST(LU, c) {
   std::cout << "begin crout update on leading block " << m << "\n\n";
   for (; (int)crout < m; ++crout) {
     std::cout << "enter crout step " << crout << '\n';
-    // std::cout << "\tupdating U_start...\n";
-    // crout.update_U_start(U2, U_start);
-    // std::cout << "\tupdating L_start...\n";
-    // crout.update_L_start<false>(L2, m, L_start);
+    std::cout << "\tupdating U_start...\n";
+    crout.update_U_start(U2, U_start);
+    std::cout << "\tupdating L_start...\n";
+    crout.update_L_start<false>(L2, m, L_start);
 
     // compute l and u
     ut.reset_counter();
@@ -134,11 +134,6 @@ TEST(LU, c) {
     std::cout << "\tpushing back to L...\n";
     L2.push_back_col(crout, l.inds().cbegin(), l.inds().cbegin() + l.size(),
                      l.vals());
-
-    std::cout << "\tupdating U_start...\n";
-    crout.update_U_start(U2, U_start);
-    std::cout << "\tupdating L_start...\n";
-    crout.update_L_start<false>(L2, m, L_start);
   }
 
   U2.end_assemble_rows();
