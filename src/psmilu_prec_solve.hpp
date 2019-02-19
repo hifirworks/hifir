@@ -46,7 +46,6 @@ namespace internal {
 template <class CcsType, class DiagType, class RhsType>
 inline void prec_solve_udl_inv(const CcsType &U, const DiagType &d,
                                const CcsType &L, RhsType &y) {
-  using value_type                = typename CcsType::value_type;
   using size_type                 = typename CcsType::size_type;
   constexpr static bool ONE_BASED = CcsType::ONE_BASED;
   static_assert(!CcsType::ROW_MAJOR, "must be ccs");
@@ -65,12 +64,15 @@ inline void prec_solve_udl_inv(const CcsType &U, const DiagType &d,
   for (size_type j = 0u; j < m; ++j) {
     const auto y_j = y[j];
     auto       itr = L.row_ind_cbegin(j);
-    psmilu_assert(c_idx(*itr) > j, "must be strictly lower part!");
+#ifndef NDEBUG
+    if (itr != L.row_ind_cend(j))
+      psmilu_error_if(c_idx(*itr) <= j, "must be strictly lower part!");
+#endif
     auto v_itr = L.val_cbegin(j);
     for (auto last = L.row_ind_cend(j); itr != last; ++itr, ++v_itr) {
       const auto i = c_idx(*itr);
       psmilu_assert(i < m, "%zd exceeds system size %zd", i, m);
-      y[i] -= v_itr * y_j;
+      y[i] -= *v_itr * y_j;
     }
   }
 
@@ -81,11 +83,11 @@ inline void prec_solve_udl_inv(const CcsType &U, const DiagType &d,
   for (size_type j = m - 1; j != 0u; --j) {
     const auto y_j = y[j];
     auto       itr = rev_iterator(U.row_ind_cend(j));
-    psmilu_assert(c_idx(*itr) > j, "must be strictly upper part");
-    auto v_itr = rev_v_iterator(U.val_cbegin(j));
+    psmilu_assert(c_idx(*itr) < j, "must be strictly upper part");
+    auto v_itr = rev_v_iterator(U.val_cend(j));
     for (auto last = rev_iterator(U.row_ind_cbegin(j)); itr != last;
          ++itr, ++v_itr)
-      y[c_idx(*itr)] -= v_itr * y_j;
+      y[c_idx(*itr)] -= *v_itr * y_j;
   }
 }
 
@@ -214,9 +216,13 @@ template <class PrecItr>
 inline std::size_t compute_prec_work_space(PrecItr first, PrecItr last) {
   if (first == last) return 0u;
   const std::size_t n_first = first->n;
-  std::size_t       N(0u);
-  for (; first != last; ++first) N += std::max(first->m, first->n - first->m);
-  return std::max(n_first, N);
+  std::size_t       extra(0u);
+  for (; first != last; ++first) {
+    const std::size_t next_n     = first->n - first->m;
+    const std::size_t next_buf_n = first->m;
+    if (next_buf_n < next_n) extra += next_n - next_buf_n;
+  }
+  return n_first + extra;
 }
 
 }  // namespace psmilu
