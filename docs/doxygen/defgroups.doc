@@ -32,7 +32,7 @@
 /// \defgroup slv Preconditioner Solver
 /// \ingroup alg
 
-/// \def fac Multilevel Factorization
+/// \defgroup fac Multilevel Factorization
 /// \ingroup alg
 
 /// \defgroup itr PSMILU User Interfaces
