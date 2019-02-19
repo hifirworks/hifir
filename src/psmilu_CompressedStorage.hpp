@@ -410,7 +410,7 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   /// \brief read a matrix market file
   /// \param[in] filename matrix file name
   /// \return A CRS matrix
-  inline static CRS read_mm(const char *filename) {
+  inline static CRS from_mm(const char *filename) {
     CRS       crs;
     size_type rows, cols;
     read_matrix_market<array_type, iarray_type, OneBased, true>(
@@ -423,7 +423,7 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   /// \param[in] filename file name
   /// \param[out] m if given, the leading block size is also returned
   /// \return A CRS matrix
-  inline static CRS read_native_bin(const char *filename,
+  inline static CRS from_native_bin(const char *filename,
                                     size_type * m = nullptr) {
     CRS        crs;
     const auto b_size = crs.read_native_bin(filename);
@@ -893,7 +893,7 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   /// \brief read a matrix market file
   /// \param[in] filename matrix file name
   /// \return A CCS matrix
-  inline static CCS read_mm(const char *filename) {
+  inline static CCS from_mm(const char *filename) {
     CCS       ccs;
     size_type rows, cols;
     read_matrix_market<array_type, iarray_type, OneBased, false>(
@@ -906,7 +906,7 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   /// \param[in] filename file name
   /// \param[out] m if given, then it will store the leading symmetric size
   /// \return A CCS matrix
-  inline static CCS read_native_bin(const char *filename,
+  inline static CCS from_native_bin(const char *filename,
                                     size_type * m = nullptr) {
     CCS        ccs;
     const auto b_size = ccs.read_native_bin(filename);
