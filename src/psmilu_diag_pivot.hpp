@@ -86,6 +86,7 @@ inline bool update_kappa_ut(const typename U_AugCrsType::size_type step,
 /// \tparam KappaU_Type array type used for storing kappa u, see \ref Array
 /// \param[in] step current Crout step
 /// \param[in] L lower part at current step
+/// \param[in] kappa_u condition number for U
 /// \param[in,out] kappa_l previous solutions in and current solution out
 /// \return if \a true, then the current rhs is one; ow, it's negative one
 /// \ingroup diag

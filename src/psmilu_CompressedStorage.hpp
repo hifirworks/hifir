@@ -904,7 +904,7 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
 
   /// \brief read from a native PSMILU binary file
   /// \param[in] filename file name
-  /// \param[out] if given, then it will store the leading symmetric size
+  /// \param[out] m if given, then it will store the leading symmetric size
   /// \return A CCS matrix
   inline static CCS read_native_bin(const char *filename,
                                     size_type * m = nullptr) {
