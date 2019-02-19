@@ -1,15 +1,26 @@
 CXX = c++
 
 # Specify commonly used paths for GTEST
-GTEST_INCDIR=-I/opt/local/include
-GTEST_LIBDIR=-L/opt/local/lib
+ifeq ($(GTEST_INCDIR),)
+    GTEST_INCDIR=-I/opt/local/include
+endif
+ifeq ($(GTEST_LIBDIR),)
+    GTEST_LIBDIR=-L/opt/local/lib
+endif
 
 # Abs root
 PSMILU_ROOT=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 CXXFLAGS = \
-    $(GTEST_INCDIR) \
     -I$(PSMILU_ROOT)/src \
     -g -rdynamic -Wall -Wextra -std=c++11
-LIBS = $(GTEST_LIBDIR) -lgtest -lgtest_main -pthread
+
+ifeq ($(USE_GTEST),1)
+    CXXFLAGS := -I$(GTEST_INCDIR) $(CXXFLAGS)
+endif
+
+LIBS = -pthread
+ifeq ($(USE_GTEST),1)
+    LIBS += $(GTEST_LIBDIR) -lgtest -lgtest_main
+endif
 LDFLAGS =

@@ -2,6 +2,8 @@
 # authors:
 #		Qiao,
 
+USE_GTEST = 1
+
 include ../Makefile.in
 
 TEST_SRCS = $(shell \ls test_*.cpp)
