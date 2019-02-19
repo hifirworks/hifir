@@ -17,6 +17,7 @@
 
 #include "psmilu_Array.hpp"
 #include "psmilu_matrix_market.hpp"
+#include "psmilu_native_io.hpp"
 #include "psmilu_utils.hpp"
 
 namespace psmilu {
@@ -418,6 +419,18 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
     return crs;
   }
 
+  /// \brief read a matrix from PSMILU native binary file
+  /// \param[in] filename file name
+  /// \param[out] m if given, the leading block size is also returned
+  /// \return A CRS matrix
+  inline static CRS read_native_bin(const char *filename,
+                                    size_type * m = nullptr) {
+    CRS        crs;
+    const auto b_size = crs.read_native_bin(filename);
+    if (m) *m = b_size;
+    return crs;
+  }
+
   /// \brief default constructor
   CRS() : _base(), _ncols(0u) {}
 
@@ -706,6 +719,20 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
     !tran ? mv_nt(x, y) : mv_t(x, y);
   }
 
+  /// \brief read a native binary file
+  /// \param[in] fname file name
+  /// \return leading symmetric block size
+  inline size_type read_native_bin(const char *fname) {
+    return psmilu::read_native_bin(fname, *this);
+  }
+
+  /// \brief write a native binary file
+  /// \param[in] fname file name
+  /// \param[in] m leading block size
+  inline void write_native_bin(const char *fname, const size_type m = 0) const {
+    psmilu::write_native_bin(fname, *this, m);
+  }
+
  protected:
   size_type _ncols;     ///< number of columns
   using _base::_psize;  ///< number of rows (primary entries)
@@ -865,13 +892,25 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
 
   /// \brief read a matrix market file
   /// \param[in] filename matrix file name
-  /// \return A CRS matrix
+  /// \return A CCS matrix
   inline static CCS read_mm(const char *filename) {
     CCS       ccs;
     size_type rows, cols;
     read_matrix_market<array_type, iarray_type, OneBased, false>(
         filename, ccs.col_start(), ccs.row_ind(), ccs.vals(), rows, cols);
     ccs.resize(rows, cols);
+    return ccs;
+  }
+
+  /// \brief read from a native PSMILU binary file
+  /// \param[in] filename file name
+  /// \param[out] if given, then it will store the leading symmetric size
+  /// \return A CCS matrix
+  inline static CCS read_native_bin(const char *filename,
+                                    size_type * m = nullptr) {
+    CCS        ccs;
+    const auto b_size = ccs.read_native_bin(filename);
+    if (m) *m = b_size;
     return ccs;
   }
 
@@ -1158,6 +1197,20 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   template <class IArray, class OArray>
   inline void mv(const IArray &x, OArray &y, bool tran = false) const {
     !tran ? mv_nt(x, y) : mv_t(x, y);
+  }
+
+  /// \brief read a native PSMILU binary file
+  /// \param[in] fname file name
+  /// \return leading symmetric block size
+  inline size_type read_native_bin(const char *fname) {
+    return psmilu::read_native_bin(fname, *this);
+  }
+
+  /// \brief write to a native PSMILU binary file
+  /// \param[in] fname file name
+  /// \param[in] m leading block size
+  inline void write_native_bin(const char *fname, const size_type m = 0) const {
+    psmilu::write_native_bin(fname, *this, m);
   }
 
  protected:
