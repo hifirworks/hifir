@@ -139,8 +139,9 @@ class GMRES {
 
   scalar_type rtol = sizeof(scalar_type) == sizeof(double) ? 1e-6 : 1e-4;
   ///< relative tolerance, default is 1e6 for \a double, 1e-4 for \a float
-  int       restart = 30;    ///< restart, deafult is 30
-  size_type maxit   = 500u;  ///< max iteration, default is 500
+  int               restart = 30;    ///< restart, deafult is 30
+  size_type         maxit   = 500u;  ///< max iteration, default is 500
+  mutable prec_type M;               ///< preconditioner
 
   /// \brief default constructor
   GMRES() = default;
@@ -161,34 +162,24 @@ class GMRES {
 
   inline const array_type &resids() const { return _resids; }
 
-  template <class Operator>
-  inline void compute_M(const Operator &A, const void *M_pars = nullptr) const {
-    _M.compute(A, M_pars);
-  }
-
   template <class Operator, class VectorType>
   std::tuple<int, size_type, double> solve_with_guess(
       const Operator &A, const VectorType &b, VectorType &x0,
-      const void *M_pars = nullptr, const bool recompute_M = false,
       const bool verbose = true) const {
-    return verbose ? _solve_kernel(A, b, x0, M_pars, recompute_M,
-                                   internal::Cout, internal::Cerr)
-                   : _solve_kernel(A, b, x0, M_pars, recompute_M,
-                                   internal::Cout_dummy, internal::Cerr_dummy);
+    return verbose ? _solve_kernel(A, b, x0, internal::Cout, internal::Cerr)
+                   : _solve_kernel(A, b, x0, internal::Cout_dummy,
+                                   internal::Cerr_dummy);
   }
 
   template <class Operator, class VectorType>
   std::tuple<int, size_type, double> solve(const Operator &  A,
                                            const VectorType &b, VectorType &x,
-                                           const void *M_pars      = nullptr,
-                                           const bool  recompute_M = false,
-                                           const bool  verbose = true) const {
+                                           const bool verbose = true) const {
     std::fill(x.begin(), x.end(), value_type());
-    return solve_with_guess(A, b, x, M_pars, recompute_M, verbose);
+    return solve_with_guess(A, b, x, verbose);
   }
 
  protected:
-  mutable prec_type  _M;  ///< preconditioner
   mutable array_type _y;
   mutable array_type _R;
   mutable array_type _Q;
@@ -221,8 +212,7 @@ class GMRES {
             class CerrStreamer>
   std::tuple<int, size_type, double> _solve_kernel(
       const Operator &A, const VectorType &b, VectorType &x0,
-      const void *M_pars, const bool recompute_M, const CoutStreamer &Cout,
-      const CerrStreamer &Cerr) const {
+      const CoutStreamer &Cout, const CerrStreamer &Cerr) const {
     using internal::conj;
     const static scalar_type _stag_eps =
         std::pow(scalar_type(10), -(scalar_type)_D);
@@ -235,7 +225,7 @@ class GMRES {
         return std::make_tuple(GMRES_INVALID_PARS, iter, 0.0);
       const auto beta0 = std::sqrt(
           std::inner_product(b.cbegin(), b.cend(), b.cbegin(), value_type()));
-      if (_M.empty() || recompute_M) _M.compute(A, M_pars);
+      if (M.empty()) M.compute(A);  // default compute
       // record  time after preconditioner
       auto time_start = std::chrono::high_resolution_clock::now();
       _ensure_data_capacities(n);
@@ -267,7 +257,7 @@ class GMRES {
         for (;;) {
           const auto jn = j * n;
           std::copy(_Q.cbegin() + jn, _Q.cbegin() + jn + n, _w.begin());
-          _M.solve(_w, _v);
+          M.solve(_w, _v);
           std::copy(_v.cbegin(), _v.cend(), _Z.begin() + jn);
           A.mv(_v, _w);
           for (size_type k = 0u; k <= j; ++k) {
