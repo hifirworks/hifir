@@ -19,3 +19,5 @@ tmp
 *.so.*
 *.tmp
 src/psmilu_matching/hsl_mc64*.h
+*.psmilu
+*.bin
