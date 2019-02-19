@@ -32,7 +32,11 @@
 namespace psmilu {
 namespace internal {
 
-/// \ingroup fac
+/*!
+ * \addtogroup fac
+ * @{
+ */
+
 template <class LeftDiagType, class CcsType, class RightDiagType,
           class PermType>
 inline Array<typename CcsType::value_type> extract_perm_diag(
@@ -74,7 +78,6 @@ inline Array<typename CcsType::value_type> extract_perm_diag(
   return diag;
 }
 
-/// \ingroup fac
 template <class AugCcsType, class StartArray>
 inline typename AugCcsType::ccs_type extract_L_B(
     const AugCcsType &L, const typename AugCcsType::size_type m,
@@ -140,7 +143,6 @@ inline typename AugCcsType::ccs_type extract_L_B(
   return L_B;
 }
 
-/// \ingroup fac
 template <class AugCrsType, class StartArray>
 inline typename AugCrsType::ccs_type extract_U_B(
     const AugCrsType &U, const typename AugCrsType::size_type m,
@@ -218,7 +220,6 @@ inline typename AugCrsType::ccs_type extract_U_B(
   return U_B;
 }
 
-/// \ingroup fac
 template <class LeftDiagType, class CrsType, class RightdiagType,
           class PermType>
 inline typename CrsType::other_type extract_E(
@@ -303,7 +304,6 @@ inline typename CrsType::other_type extract_E(
   return E;
 }
 
-/// \ingroup fac
 template <class LeftDiagType, class CcsType, class RightDiagType,
           class PermType, class BufferType>
 inline CcsType extract_F(const LeftDiagType &s, const CcsType &A,
@@ -395,7 +395,6 @@ inline CcsType extract_F(const LeftDiagType &s, const CcsType &A,
 }
 
 /// \class CompressedTypeTrait
-/// \ingroup fac
 template <class CsType1, class CsType2>
 class CompressedTypeTrait {
   static_assert(CsType1::ROW_MAJOR ^ CsType2::ROW_MAJOR,
@@ -446,8 +445,13 @@ class CompressedTypeTrait {
   }
 };
 
+/*!
+ * @}
+ */ // group fac
+
 }  // namespace internal
 
+/// \brief perform incomplete LU diagonal pivoting factorization for a level
 /// \ingroup fac
 template <bool IsSymm, class LeftDiagType, class CsType, class RightDiagType,
           class PermType, class PrecsType>

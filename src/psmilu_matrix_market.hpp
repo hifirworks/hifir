@@ -26,14 +26,11 @@
 
 #include "psmilu_log.hpp"
 
-/** \addtogroup util
- * @{
- */
-
 namespace psmilu {
 namespace internal {
 /// \class GeneralLineReader
 /// \brief Read general file, i.e. ijv
+/// \ingroup util
 class GeneralLineReader {
  public:
   GeneralLineReader() = delete;
@@ -62,6 +59,7 @@ class GeneralLineReader {
 
 /// \class PatternLineReader
 /// \brief read only the patterns, i.e. ij
+/// \ingroup util
 class PatternLineReader {
  public:
   PatternLineReader() = delete;
@@ -91,6 +89,7 @@ class PatternLineReader {
 /// \tparam ValueType value type, e.g. \a double, \a float, etc
 /// \tparam IndexType index type, e.g. \a int, \a long, etc
 /// \tparam RowMajor if \a true, then CRS is assumed
+/// \ingroup util
 template <class ValueType, class IndexType, bool RowMajor>
 struct IJV {
   /// \brief constructor with ijv triplet
@@ -141,6 +140,7 @@ struct IJV {
 /// \param[out] ind_start starting positions
 /// \param[out] indices index array
 /// \param[out] vals value array
+/// \ingroup util
 template <class ValueArray, class IndexArray, bool OneBased, bool RowMajor,
           class LineReader>
 void read_mm_kernel(const std::size_t nnz, const std::size_t n,
@@ -198,6 +198,7 @@ void read_mm_kernel(const std::size_t nnz, const std::size_t n,
 /// \param[out] col number of columns
 /// \param[out] nnz total number of nonzeros
 /// \warning Only sparse general matrices are supported!
+/// \ingroup util
 inline void read_mm_header(std::ifstream &s, int &field, std::size_t &row,
                            std::size_t &col, std::size_t &nnz) {
   std::string buf;
@@ -236,6 +237,7 @@ inline void read_mm_header(std::ifstream &s, int &field, std::size_t &row,
 /// \param[out] vals value array
 /// \param[out] row number of rows
 /// \param[out] col number of columns
+/// \ingroup util
 template <class ValueArray, class IndexArray, bool OneBased, bool RowMajor>
 inline void read_matrix_market(const char *filename, IndexArray &ind_start,
                                IndexArray &indices, ValueArray &vals,
@@ -262,8 +264,6 @@ inline void read_matrix_market(const char *filename, IndexArray &ind_start,
 }
 
 }  // namespace psmilu
-
-/** @}*/  // util group
 
 #undef __BUF_SIZE__
 
