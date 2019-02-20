@@ -169,9 +169,9 @@ inline void prec_solve(
 
   // at this point, both y(1:m) and y(m+1:n) are utd.
 
-  if (prec.is_last_level())
-    prec.dense_solver.solve(y_mn);  // solve inplace!
-  else {
+  if (prec.is_last_level()) {
+    if (nm) prec.dense_solver.solve(y_mn);  // solve inplace!
+  } else {
     // if not yet reached last level, we need rebuild the new rhs and solution
     // vector. Note that the rhs values are just those in y(m+1:n), we will
     // take the leading n-m space in work to store the rhs and create a map
