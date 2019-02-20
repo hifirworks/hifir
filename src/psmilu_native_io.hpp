@@ -604,6 +604,129 @@ inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type read_native_bin(
   return m;
 }
 
+template <bool IsRowMajor, bool OneBased, class IndexArray, class ValueArray>
+inline void write_native_ascii(const char *fname, const IndexArray &ind_start,
+                               const typename IndexArray::size_type other_size,
+                               const IndexArray &                   indices,
+                               const ValueArray &                   vals,
+                               const typename IndexArray::size_type m) {
+  constexpr static char is_row    = IsRowMajor ? 'R' : 'C';
+  constexpr static char is_c      = !OneBased ? 'C' : 'F';
+  using value_type                = typename ValueArray::value_type;
+  constexpr static int  data_size = sizeof(value_type);
+  constexpr static char dtype     = std::is_floating_point<value_type>::value
+                                    ? (data_size == 8 ? 'D' : 'S')
+                                    : (data_size == 16 ? 'Z' : 'C');
+  constexpr static int prec = dtype == 'D' || dtype == 'Z' ? 16 : 8;
+
+  const static char info[4] = {is_row, is_c, dtype, '\0'};
+
+  if (!ind_start.size())
+    psmilu_error("cannot write matrix with empty ind_start");
+
+  psmilu_error_if(ind_start.front() != OneBased, "inconsistent index system");
+
+  decltype(other_size) nrows(IsRowMajor ? ind_start.size() - 1 : other_size),
+      ncols(IsRowMajor ? other_size : ind_start.size() - 1),
+      nnz(indices.size());
+
+  psmilu_error_if(vals.size() != nnz, "inconsistent nnz");
+  psmilu_error_if(nnz != decltype(nnz)(ind_start.back() - ind_start.front()),
+                  "inconsistent nnz");
+
+  std::ofstream f(fname);
+  psmilu_error_if(!f.is_open(), "cannot open file %s.", fname);
+
+  f << info << '\n';
+  f << nrows << ' ' << ncols << ' ' << nnz << ' ' << m << '\n';
+
+  for (const auto v : ind_start) f << v << '\n';
+  for (const auto v : indices) f << v << '\n';
+  f.setf(std::ios::scientific);
+  f.precision(prec);
+  for (const auto v : vals) f << v << '\n';
+
+  f.close();
+}
+
+template <class IndexArray, class ValueArray>
+inline std::tuple<bool, bool, char, std::size_t, std::size_t, std::size_t,
+                  std::size_t>
+read_native_ascii(const char *fname, IndexArray &ind_start, IndexArray &indices,
+                  ValueArray &vals) {
+  using value_type                = typename ValueArray::value_type;
+  constexpr static bool is_real   = std::is_floating_point<value_type>::value;
+  const static char     dtypes[5] = {'D', 'S', 'Z', 'C', '\0'};
+
+  std::ifstream f(fname);
+  psmilu_error_if(!f.is_open(), "cannot open file %s.", fname);
+
+  bool        is_row, is_c;
+  char        d;
+  std::size_t nrows, ncols, nnz, m;
+
+  std::string buf;
+  for (;;) {
+    buf.clear();
+    std::getline(f, buf);
+    if (!buf.size() || buf[0] == '#') continue;
+    break;
+  }
+
+  // buf should contain the information
+  if (buf.size() != 3u) psmilu_error("not a valid native psmilu ascii file");
+  if (buf[0] != 'R' && buf[0] != 'C')
+    psmilu_error(
+        "the first char should be either R or C (row or column major)");
+  if (buf[1] != 'C' && buf[1] != 'F')
+    psmilu_error(
+        "the second char should be either C or F (c index or fortran index)");
+
+  // skip comments
+  {
+    int i = 0;
+    for (; i < 4; ++i)
+      if (buf.back() == dtypes[i]) break;
+    if (i == 4) psmilu_error("unknown data type");
+  }
+
+  is_row = buf.front() == 'R';
+  is_c   = buf[1] == 'C';
+  d      = buf.back();
+
+  if (is_real) {
+    psmilu_error_if(d == 'Z' || d == 'C',
+                    "cannot load complex data to real array");
+  } else {
+    psmilu_error_if(d == 'D' || d == 'S',
+                    "cannot load real data to complex array");
+  }
+
+  // read sizes
+  f >> nrows >> ncols >> nnz >> m;
+
+#ifndef NDEBUG
+  psmilu_info("file %s has size attributes: %zd, %zd, %zd, %zd", fname, nrows,
+              ncols, nnz, m);
+#endif
+
+  const std::size_t primary_size = is_row ? nrows + 1 : ncols + 1;
+  ind_start.resize(primary_size);
+  psmilu_error_if(ind_start.status() == DATA_UNDEF, "memory allocation failed");
+  indices.resize(nnz);
+  vals.resize(nnz);
+  psmilu_error_if(indices.status() == DATA_UNDEF || vals.status() == DATA_UNDEF,
+                  "memory allocation failed");
+
+  for (std::size_t i = 0u; i < primary_size; ++i) f >> ind_start[i];
+  for (std::size_t i = 0u; i < nnz; ++i) f >> indices[i];
+  for (std::size_t i = 0u; i < nnz; ++i) f >> vals[i];
+
+  f.close();
+
+  return std::make_tuple(is_row, is_c, d, nrows, ncols, nnz, m);
+}
+
 /*!
  * @}
  */ // group util

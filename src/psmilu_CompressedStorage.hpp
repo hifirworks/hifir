@@ -733,6 +733,15 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
     psmilu::write_native_bin(fname, *this, m);
   }
 
+  /// \brief write a native ASCII file
+  /// \param[in] fname file name
+  /// \param[in] m leading block size
+  inline void write_native_ascii(const char *    fname,
+                                 const size_type m = 0) const {
+    psmilu::write_native_ascii<true, ONE_BASED>(fname, row_start(), _ncols,
+                                                col_ind(), vals(), m);
+  }
+
  protected:
   size_type _ncols;     ///< number of columns
   using _base::_psize;  ///< number of rows (primary entries)
@@ -1211,6 +1220,15 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   /// \param[in] m leading block size
   inline void write_native_bin(const char *fname, const size_type m = 0) const {
     psmilu::write_native_bin(fname, *this, m);
+  }
+
+  /// \brief write a native ASCII file
+  /// \param[in] fname file name
+  /// \param[in] m leading block size
+  inline void write_native_ascii(const char *    fname,
+                                 const size_type m = 0) const {
+    psmilu::write_native_ascii<false, ONE_BASED>(fname, col_start(), _nrows,
+                                                 row_ind(), vals(), m);
   }
 
  protected:
