@@ -111,6 +111,15 @@ struct Prec {
     q_inv = std::move(Q_inv);
   }
 
+  /// \brief check if this a last level preconditioner
+  ///
+  /// The idea is first check if the \ref dense_solver is empty or not; be aware
+  /// that there is another situation that we should treat the preconditioner
+  /// is last level---if \ref m is equal to \ref n.
+  ///
+  /// \note Currently, we test m == n, which is fine for squared systems.
+  inline bool is_last_level() const { return !dense_solver.empty() || m == n; }
+
   size_type       m;             ///< leading block size
   size_type       n;             ///< system size
   ccs_type        L_B;           ///< lower part of leading block

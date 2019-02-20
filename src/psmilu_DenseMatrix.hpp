@@ -339,8 +339,8 @@ class DenseMatrix {
   inline typename std::enable_if<Cs::ROW_MAJOR>::type copy_sparse(
       const Cs& crs) {
     constexpr static bool ONE_BASED = Cs::ONE_BASED;
-    psmilu_error_if(crs.status() == DATA_UNDEF,
-                    "input CSR data status undefined");
+    if (crs.status() == DATA_UNDEF && (crs.nrows() || crs.ncols()))
+      psmilu_warning("input CRS ia a all-zero matrix.");
     const size_type nrows(crs.nrows());
     resize(nrows, crs.ncols());
     // first step, set all values to zero
@@ -361,8 +361,8 @@ class DenseMatrix {
   inline typename std::enable_if<!Cs::ROW_MAJOR>::type copy_sparse(
       const Cs& ccs) {
     constexpr static bool ONE_BASED = Cs::ONE_BASED;
-    psmilu_error_if(ccs.status() == DATA_UNDEF,
-                    "input CCR data status undefined");
+    if (ccs.status() == DATA_UNDEF && (ccs.nrows() || ccs.ncols()))
+      psmilu_warning("input CCS ia a all-zero matrix.");
     const size_type ncols(ccs.ncols());
     resize(ccs.nrows(), ncols);
     // first step, set all values to zero

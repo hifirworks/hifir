@@ -120,7 +120,7 @@ class Builder {
     const CsType S =
         sym ? iludp_factor<true>(s, A, t, m, N, opts, p, q, _precs)
             : iludp_factor<false>(s, A, t, m, N, opts, p, q, _precs);
-    if (_precs.back().dense_solver.empty()) this->_compute_kernel(S, 0u, opts);
+    if (!_precs.back().is_last_level()) this->_compute_kernel(S, 0u, opts);
   }
 
  protected:

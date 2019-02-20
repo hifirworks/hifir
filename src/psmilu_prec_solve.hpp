@@ -169,7 +169,7 @@ inline void prec_solve(
 
   // at this point, both y(1:m) and y(m+1:n) are utd.
 
-  if (!prec.dense_solver.empty())
+  if (prec.is_last_level())
     prec.dense_solver.solve(y_mn);  // solve inplace!
   else {
     // if not yet reached last level, we need rebuild the new rhs and solution
