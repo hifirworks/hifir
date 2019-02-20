@@ -446,7 +446,7 @@ inline typename std::enable_if<CsType::ROW_MAJOR, T>::type read_native_bin(
       for (auto &v : A.row_start()) v += shift;
       for (auto &v : A.col_ind()) v += shift;
     }
-    f.close();
+    f.close();  // not needed but I'd like to have it
     psmilu_error_if(A.nnz() != nnz, "inconsistent nnz");
     return m;
   }
