@@ -692,6 +692,7 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   /// \param[out] y output array pointer
   /// \warning User's responsibility to maintain valid pointers
   inline void mv_t_low(const value_type *x, value_type *y) const {
+    if (!_psize) return;
     std::fill_n(y, ncols(), 0);
     for (size_type i = 0u; i < _psize; ++i) {
       const auto temp  = x[i];
@@ -1193,6 +1194,7 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   /// \param[out] y output array pointer
   /// \warning User's responsibilty to ensure valid pointers
   inline void mv_nt_low(const value_type *x, value_type *y) const {
+    if (!_psize) return;
     std::fill_n(y, nrows(), 0);
     for (size_type i = 0u; i < _psize; ++i) {
       const auto temp  = x[i];
