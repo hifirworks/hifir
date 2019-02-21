@@ -25,7 +25,7 @@ using namespace psmilu;
 TEST(BUILDER, c) {
   using build_t = Builder<double, int>;
   using crs_t   = build_t::crs_type;
-  const auto A  = gen_rand_sparse<crs_t>(100, 100);
+  const auto A  = crs_t::from_native_bin("../tools/symm_K_F_2d_2955.psmilu");
   build_t    builder;
   builder.compute(A);
   std::cout << "levels=" << builder.levels() << '\n';
