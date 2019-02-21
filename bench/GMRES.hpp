@@ -198,7 +198,7 @@ class GMRES {
 
   inline void _ensure_data_capacities(const size_type n) const {
     _y.resize(restart + 1);
-    _R.resize(restart * restart);
+    _R.resize(restart * (restart + 1) / 2);  // packed storage
     _Q.resize(n * restart);
     _Z.resize(_Q.size());
     _J.resize(2 * restart);
@@ -254,40 +254,41 @@ class GMRES {
           for (size_type i = 0u; i < n; ++i) _Q[i] = _v[i] * inv_beta;
         }
         size_type j(0);
+        auto      R_itr = _R.begin();
         for (;;) {
           const auto jn = j * n;
-          std::copy(_Q.cbegin() + jn, _Q.cbegin() + jn + n, _w.begin());
-          M.solve(_w, _v);
-          std::copy(_v.cbegin(), _v.cend(), _Z.begin() + jn);
-          A.mv(_v, _w);
+          std::copy(_Q.cbegin() + jn, _Q.cbegin() + jn + n, _v.begin());
+          M.solve(_v, _w);
+          std::copy(_w.cbegin(), _w.cend(), _Z.begin() + jn);
+          A.mv(_w, _v);
           for (size_type k = 0u; k <= j; ++k) {
             auto itr = _Q.cbegin() + k * n;
-            _v[k] =
-                std::inner_product(_w.cbegin(), _w.cend(), itr, value_type());
-            const auto tmp = _v[k];
-            for (size_type i = 0u; i < n; ++i) _w[i] -= tmp * itr[i];
+            _w[k] =
+                std::inner_product(_v.cbegin(), _v.cend(), itr, value_type());
+            const auto tmp = _w[k];
+            for (size_type i = 0u; i < n; ++i) _v[i] -= tmp * itr[i];
           }
-          const auto w_norm2 = std::inner_product(_w.cbegin(), _w.cend(),
-                                                  _w.cbegin(), value_type());
-          const auto w_norm  = std::sqrt(w_norm2);
+          const auto v_norm2 = std::inner_product(_v.cbegin(), _v.cend(),
+                                                  _v.cbegin(), value_type());
+          const auto v_norm  = std::sqrt(v_norm2);
           if (j + 1 < (size_type)restart) {
             auto       itr      = _Q.begin() + jn + n;
-            const auto inv_norm = 1. / w_norm;
-            for (size_type i = 0u; i < n; ++i) itr[i] = inv_norm * _w[i];
+            const auto inv_norm = 1. / v_norm;
+            for (size_type i = 0u; i < n; ++i) itr[i] = inv_norm * _v[i];
           }
           auto J1 = _J.begin(), J2 = J1 + restart;
           for (size_type colJ = 0u; colJ + 1u <= j; ++colJ) {
-            const auto tmp = _v[colJ];
-            _v[colJ]     = conj(J1[colJ]) * tmp + conj(J2[colJ]) * _v[colJ + 1];
-            _v[colJ + 1] = -J2[colJ] * tmp + J1[colJ] * _v[colJ + 1];
+            const auto tmp = _w[colJ];
+            _w[colJ]     = conj(J1[colJ]) * tmp + conj(J2[colJ]) * _w[colJ + 1];
+            _w[colJ + 1] = -J2[colJ] * tmp + J1[colJ] * _w[colJ + 1];
           }
-          const auto rho = std::sqrt(_v[j] * _v[j] + w_norm2);
-          J1[j]          = _v[j] / rho;
-          J2[j]          = w_norm / rho;
-          _y[j + 1]      = -J2[j] * _y[j];
-          _y[j]          = conj(J1[j]) * _y[j];
-          _v[j]          = rho;
-          std::copy(_v.cbegin(), _v.cbegin() + j + 1, _R.begin() + j * restart);
+          const auto rho        = std::sqrt(_w[j] * _w[j] + v_norm2);
+          J1[j]                 = _w[j] / rho;
+          J2[j]                 = v_norm / rho;
+          _y[j + 1]             = -J2[j] * _y[j];
+          _y[j]                 = conj(J1[j]) * _y[j];
+          _w[j]                 = rho;
+          R_itr                 = std::copy_n(_w.cbegin(), j + 1, R_itr);
           const auto resid_prev = resid;
           resid                 = std::abs(_y[j + 1]) / beta0;
           if (resid >= resid_prev * (1 - _stag_eps)) {
@@ -306,21 +307,21 @@ class GMRES {
             break;
           }
           ++iter;
-          ++j;
           Cout("  At iteration %zd, relative residual is %g.\n", iter, resid);
           _resids.push_back(resid);
-          if (resid < rtol || j >= (size_type)restart) break;
+          if (resid < rtol || j + 1 >= (size_type)restart) break;
+          ++j;
         }  // inf loop
         // backsolve
         if (j) {
-          auto R_itr = _R.cbegin() + j * restart;
           for (int k = j; k > -1; --k) {
-            if (_y[k] != value_type()) {
-              _y[k] /= R_itr[k];
-              const auto tmp = _y[k];
-              for (int i = k - 1; i > -1; --i) _y[i] -= tmp * R_itr[i];
+            --R_itr;
+            _y[k] /= *R_itr;
+            const auto tmp = _y[k];
+            for (int i = k - 1; i > -1; --i) {
+              --R_itr;
+              _y[i] -= tmp * *R_itr;
             }
-            R_itr -= restart;
           }
         }
         for (size_type i = 0u; i <= j; ++i) {
