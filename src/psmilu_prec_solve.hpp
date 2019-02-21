@@ -162,10 +162,13 @@ inline void prec_solve(
   auto y_mn = array_type(nm, y.data() + m, WRAP);
   // call low level API to avoid create Array wrap for y(1:m)
   // y(m+1:n) now is filled with E*y(1:m)
-  prec.E.mv_nt_low(y.data(), y_mn.data());
-  // now update y(m+1:n) by using work space that stores scaled and permutated
-  // rhs
-  for (size_type i = m; i < n; ++i) y[i] = work[i - m] - y[i];
+  if (m != 0u) {
+    prec.E.mv_nt_low(y.data(), y_mn.data());
+    // now update y(m+1:n) by using work space that stores scaled and permutated
+    // rhs
+    for (size_type i = m; i < n; ++i) y[i] = work[i - m] - y[i];
+  } else
+    for (size_type i = 0u; i < n; ++i) y[i] = work[i - m];
 
   // at this point, both y(1:m) and y(m+1:n) are utd.
 
@@ -189,9 +192,12 @@ inline void prec_solve(
 
   // compute work(1:m)=y(1:m)-F*y(m+1:n)
   // first use work(1:m) store F*y(m+1:n)
-  prec.F.mv_nt_low(y_mn.data(), &work[0]);
-  // then, do the subtraction, notice that y(1:m) is not touched
-  for (size_type i = 0u; i < m; ++i) work[i] = y[i] - work[i];
+  if (prec.F.ncols()) {
+    prec.F.mv_nt_low(y_mn.data(), &work[0]);
+    // then, do the subtraction, notice that y(1:m) is not touched
+    for (size_type i = 0u; i < m; ++i) work[i] = y[i] - work[i];
+  } else
+    for (size_type i = 0u; i < m; ++i) work[i] = y[i];
 
   // solve for work(1:m)=inv(U)*inv(B)*inv(L)*work(1:m), inplace
   internal::prec_solve_udl_inv(prec.U_B, prec.d_B, prec.L_B, work);
