@@ -694,38 +694,6 @@ class Crout {
  protected:
   mutable size_type _step;  ///< current step
 };
-
-template <class U_AugCrsType, class L_AugCcsType, class U_StartType,
-          class L_StartType>
-inline void fix_start_for_last_step(const U_AugCrsType &                   U,
-                                    const L_AugCcsType &                   L,
-                                    const typename L_AugCcsType::size_type m,
-                                    U_StartType &U_start,
-                                    L_StartType &L_start) {
-  using index_type                = typename U_AugCrsType::index_type;
-  using size_type                 = typename L_AugCcsType::size_type;
-  constexpr static bool ONE_BASED = U_AugCrsType::ONE_BASED;
-  const auto            c_idx     = [](const size_type i) {
-    return to_c_idx<size_type, ONE_BASED>(i);
-  };
-
-  {
-    index_type aug_id = U.start_col_id(m - 1);
-    while (!U.is_nil(aug_id)) {
-      const index_type row = U.row_idx(aug_id);
-      --U_start[row];
-      aug_id = U.next_col_id(aug_id);
-    }
-  }
-  {
-    index_type aug_id = L.start_row_id(m - 1);
-    while (!L.is_nil(aug_id)) {
-      const index_type col = L.col_idx(aug_id);
-      --L_start[col];
-      aug_id = L.next_row_id(aug_id);
-    }
-  }
-}
 }  // namespace psmilu
 
 #endif  // _PSMILU_CROUT_HPP
