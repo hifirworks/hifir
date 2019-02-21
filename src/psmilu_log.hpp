@@ -30,7 +30,6 @@ namespace internal {
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 // NOTE for serial version, we use a global static buffer
 static std::vector<char> msg_buf;
-#endif  // DOXYGEN_SHOULD_SKIP_THIS
 
 /// \brief estimate and allocate space for \a msg_buf
 /// \param[in] msg message without va args
@@ -41,8 +40,6 @@ inline void alloc_buf(const std::string &msg) {
   const auto n = std::max(msg_buf.size(), 2u * msg.size() + 1u);
   if (n > msg_buf.size()) msg_buf.resize(n);
 }
-
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 // Wrap everything into a single macro
 #  define _PARSE_VA(msg)                                                 \
@@ -88,6 +85,15 @@ inline void warning(const char *prefix, const char *file, const char *func,
   ss << "function " << func << ", at " << file << ':' << line
      << "\nmessage: " << internal::msg_buf.data();
   PSMILU_STDERR(ss.str().c_str());
+}
+
+/// \brief set/get warning flag
+/// \param[in] flag warning flag
+inline bool warn_flag(const int flag = -1) {
+  static bool warn = true;
+  if (flag < 0) return warn;
+  warn = flag;
+  return warn;
 }
 
 /// \brief error information streaming, dump to \ref PSMILU_STDERR
@@ -145,17 +151,23 @@ inline void error(const char *prefix, const char *file, const char *func,
 /// \brief print warning message
 /// \sa psmilu::warning
 /// \ingroup util
-#define psmilu_warning(__msgs...) \
-  ::psmilu::warning(nullptr, __PSMILU_FILE__, __PSMILU_FUNC__, __LINE__, __msgs)
+#define psmilu_warning(__msgs...)                                            \
+  do {                                                                       \
+    if (::psmilu::warn_flag())                                               \
+      ::psmilu::warning(nullptr, __PSMILU_FILE__, __PSMILU_FUNC__, __LINE__, \
+                        __msgs);                                             \
+  } while (false)
 
 /// \def psmilu_warning_if(__cond, __msgs)
 /// \brief conditionally print message, __cond will be shown as \a prefix
 /// \sa psmilu::warning
 /// \ingroup util
-#define psmilu_warning_if(__cond, __msgs...)                          \
-  if ((__cond))                                                       \
-  ::psmilu::warning("condition " #__cond " alerted", __PSMILU_FILE__, \
-                    __PSMILU_FUNC__, __LINE__, __msgs)
+#define psmilu_warning_if(__cond, __msgs...)                              \
+  do {                                                                    \
+    if (::psmilu::warn_flag() && (__cond))                                \
+      ::psmilu::warning("condition " #__cond " alerted", __PSMILU_FILE__, \
+                        __PSMILU_FUNC__, __LINE__, __msgs);               \
+  } while (false)
 
 /// \def psmilu_error(__msgs)
 /// \brief print warning message and abort
