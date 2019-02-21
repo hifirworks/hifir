@@ -139,7 +139,7 @@ inline void prec_solve(
   // preparation
   const auto &    prec = *prec_itr;
   const size_type m = prec.m, n = prec.n, nm = n - m;
-  const auto &    p = prec.p, &q_inv = prec.q;
+  const auto &    p = prec.p, &q_inv = prec.q_inv;
   const auto &    s = prec.s, &t = prec.t;
 
   {
@@ -197,7 +197,7 @@ inline void prec_solve(
   internal::prec_solve_udl_inv(prec.U_B, prec.d_B, prec.L_B, work);
 
   // we need to fill in the y(m+1:n) to work(m+1:n)
-  std::copy(y_mn.cbegin(), y_mn.cend(), &work[m]);
+  std::copy(y_mn.cbegin(), y_mn.cend(), &work[0] + m);
 
   // Now, we have work(1:n) storing the complete solution before final scaling
   // and permutation
