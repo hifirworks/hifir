@@ -202,7 +202,7 @@ class GMRES {
     _Q.resize(n * restart);
     _Z.resize(_Q.size());
     _J.resize(2 * restart);
-    _v.resize(_y.size());
+    _v.resize(n);
     _resids.reserve(maxit);
     _resids.resize(0);
     _w.resize(_v.size());
@@ -306,10 +306,10 @@ class GMRES {
             break;
           }
           ++iter;
+          ++j;
           Cout("  At iteration %zd, relative residual is %g.\n", iter, resid);
           _resids.push_back(resid);
           if (resid < rtol || j >= (size_type)restart) break;
-          ++j;
         }  // inf loop
         // backsolve
         if (j) {
