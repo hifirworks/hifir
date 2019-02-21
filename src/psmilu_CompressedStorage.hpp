@@ -431,6 +431,18 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
     return crs;
   }
 
+  /// \brief read a matrix from PSMILU native ASCII file
+  /// \param[in] filename file name
+  /// \param[out] m if given, the leading block size is also returned
+  /// \return A CRS matrix
+  inline static CRS from_native_ascii(const char *filename,
+                                      size_type * m = nullptr) {
+    CRS        crs;
+    const auto b_size = crs.read_native_ascii(filename);
+    if (m) *m = b_size;
+    return crs;
+  }
+
   /// \brief default constructor
   CRS() : _base(), _ncols(0u) {}
 
@@ -742,6 +754,35 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
                                                 col_ind(), vals(), m);
   }
 
+  /// \bried read data from an ASCII file
+  /// \param[in] fname file name
+  /// \return the leading symmetric block size
+  inline size_type read_native_ascii(const char *fname) {
+    bool        is_row, is_c;
+    char        dtype;
+    size_type   row, col, Nnz, m;
+    iarray_type i_start, is;
+    array_type  vs;
+    std::tie(is_row, is_c, dtype, row, col, Nnz, m) =
+        psmilu::read_native_ascii(fname, i_start, is, vs);
+    const int shift = ONE_BASED - !is_c;
+    if (shift) {
+      for (auto &v : i_start) v += shift;
+      for (auto &v : is) v += shift;
+    }
+    if (is_row) {
+      row_start() = std::move(i_start);
+      col_ind()   = std::move(is);
+      vals()      = std::move(vs);
+      _ncols      = col;
+      _psize      = row;
+    } else
+      *this =
+          CRS(other_type(row, col, i_start.data(), is.data(), vs.data(), true));
+
+    return m;
+  }
+
  protected:
   size_type _ncols;     ///< number of columns
   using _base::_psize;  ///< number of rows (primary entries)
@@ -919,6 +960,18 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
                                     size_type * m = nullptr) {
     CCS        ccs;
     const auto b_size = ccs.read_native_bin(filename);
+    if (m) *m = b_size;
+    return ccs;
+  }
+
+  /// \brief read from a native PSMILU ASCII file
+  /// \param[in] filename file name
+  /// \param[out] m if given, then it will store the leading symmetric size
+  /// \return A CCS matrix
+  inline static CCS from_native_ascii(const char *filename,
+                                      size_type * m = nullptr) {
+    CCS        ccs;
+    const auto b_size = ccs.read_native_ascii(filename);
     if (m) *m = b_size;
     return ccs;
   }
@@ -1229,6 +1282,35 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
                                  const size_type m = 0) const {
     psmilu::write_native_ascii<false, ONE_BASED>(fname, col_start(), _nrows,
                                                  row_ind(), vals(), m);
+  }
+
+  /// \bried read data from an ASCII file
+  /// \param[in] fname file name
+  /// \return the leading symmetric block size
+  inline size_type read_native_ascii(const char *fname) {
+    bool        is_row, is_c;
+    char        dtype;
+    size_type   row, col, Nnz, m;
+    iarray_type i_start, is;
+    array_type  vs;
+    std::tie(is_row, is_c, dtype, row, col, Nnz, m) =
+        psmilu::read_native_ascii(fname, i_start, is, vs);
+    const int shift = ONE_BASED - !is_c;
+    if (shift) {
+      for (auto &v : i_start) v += shift;
+      for (auto &v : is) v += shift;
+    }
+    if (!is_row) {
+      col_start() = std::move(i_start);
+      row_ind()   = std::move(is);
+      vals()      = std::move(vs);
+      _nrows      = row;
+      _psize      = col;
+    } else
+      *this =
+          CCS(other_type(row, col, i_start.data(), is.data(), vs.data(), true));
+
+    return m;
   }
 
  protected:
