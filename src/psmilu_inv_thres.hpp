@@ -96,7 +96,7 @@ inline typename SpVecType::size_type apply_dropping_and_sort(
   using extractor                 = internal::SpVInternalExtractor<SpVecType>;
   constexpr static bool ONE_BASED = SpVecType::ONE_BASED;
 
-  psmilu_assert(tau != TauType(), "zero threshold tau!");
+  psmilu_warning_if(tau == TauType(), "zero threshold tau");
   const size_type N1 = alpha * nnz;
   if (start_size >= N1) {
     psmilu_warning(
