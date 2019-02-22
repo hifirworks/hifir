@@ -83,7 +83,10 @@ inline void prec_solve_udl_inv(const CcsType &U, const DiagType &d,
   for (size_type j = m - 1; j != 0u; --j) {
     const auto y_j = y[j];
     auto       itr = rev_iterator(U.row_ind_cend(j));
-    psmilu_assert(c_idx(*itr) < j, "must be strictly upper part");
+#ifndef NDEBUG
+    if (itr != rev_iterator(U.row_ind_cbegin(j)))
+      psmilu_error_if(c_idx(*itr) >= j, "must be strictly upper part");
+#endif
     auto v_itr = rev_v_iterator(U.val_cend(j));
     for (auto last = rev_iterator(U.row_ind_cbegin(j)); itr != last;
          ++itr, ++v_itr)
@@ -221,6 +224,12 @@ inline void prec_solve(
 template <class PrecItr>
 inline std::size_t compute_prec_work_space(PrecItr first, PrecItr last) {
   if (first == last) return 0u;
+#if 1
+  // use a conservative strategy
+  std::size_t n(0u);
+  for (; first != last; ++first) n += first->n;
+  return n;
+#else
   const std::size_t n_first = first->n;
   std::size_t       extra(0u);
   for (; first != last; ++first) {
@@ -229,6 +238,7 @@ inline std::size_t compute_prec_work_space(PrecItr first, PrecItr last) {
     if (next_buf_n < next_n) extra += next_n - next_buf_n;
   }
   return n_first + extra;
+#endif
 }
 
 }  // namespace psmilu
