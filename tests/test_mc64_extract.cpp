@@ -72,3 +72,13 @@ TEST(MC64_EXTRACT, symm) {
     }
   }
 }
+
+TEST(MC64_EXTRACT, asymm_full) {
+  // should be shallow copy
+  using ccs_t   = CCS<double, int>;
+  const ccs_t A = gen_rand_sparse<ccs_t>(N, N);
+  const auto  B = internal::extract_leading_block4matching<false>(A, N);
+  ASSERT_TRUE(A.col_start().data() == B.col_start().data());
+  ASSERT_TRUE(A.row_ind().data() == B.row_ind().data());
+  ASSERT_TRUE(A.vals().data() == B.vals().data());
+}
