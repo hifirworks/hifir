@@ -81,10 +81,11 @@ class HSL_MC64 {
   /// \param[out] t column scaling vector
   /// \param[out] info output information
   template <bool IsSymm>
-  inline void do_matching(const ccs_type &A, const struct mc64_control &control,
-                          Array<index_type> &p, Array<index_type> &q,
-                          Array<value_type> &s, Array<value_type> &t,
-                          struct mc64_info &info) {
+  inline static void do_matching(const ccs_type &           A,
+                                 const struct mc64_control &control,
+                                 Array<index_type> &p, Array<index_type> &q,
+                                 Array<value_type> &s, Array<value_type> &t,
+                                 struct mc64_info &info) {
     constexpr static size_type int_max =
         static_cast<size_type>(std::numeric_limits<int>::max());
 
