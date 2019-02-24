@@ -29,14 +29,11 @@ extern "C" {
  * \brief the verbose level for progress report
  */
 enum {
-  PSMILU_VERBOSE_NONE  = 0,                         /*!< mute */
-  PSMILU_VERBOSE_INFO  = 1,                         /*!< general information */
-  PSMILU_VERBOSE_PRE   = PSMILU_VERBOSE_INFO << 1,  /*!< preprocessing */
-  PSMILU_VERBOSE_CROUT = PSMILU_VERBOSE_PRE << 1,   /*!< Crout update */
-  PSMILU_VERBOSE_PIVOT = PSMILU_VERBOSE_CROUT << 1, /*!< pivoting */
-  PSMILU_VERBOSE_THRES = PSMILU_VERBOSE_PIVOT << 1, /*!< inverse-based thres */
-  PSMILU_VERBOSE_SCHUR = PSMILU_VERBOSE_THRES << 1, /*!< computing Schur */
-  PSMILU_VERBOSE_MEM   = PSMILU_VERBOSE_SCHUR << 1, /*!< memory debug */
+  PSMILU_VERBOSE_NONE = 0,                        /*!< mute */
+  PSMILU_VERBOSE_INFO = 1,                        /*!< general information */
+  PSMILU_VERBOSE_PRE  = PSMILU_VERBOSE_INFO << 1, /*!< preprocessing */
+  PSMILU_VERBOSE_FAC  = PSMILU_VERBOSE_PRE << 1,  /*!< factorization update */
+  PSMILU_VERBOSE_MEM  = PSMILU_VERBOSE_FAC << 1,  /*!< memory debug */
 };
 
 /*!
@@ -91,6 +88,7 @@ static psmilu_Options psmilu_get_default_options(void) {
 
 /* C++ interface */
 #  include <string>
+#  include <unordered_map>
 
 namespace psmilu {
 
@@ -100,14 +98,11 @@ namespace psmilu {
  * \ingroup cpp
  */
 enum : int {
-  VERBOSE_NONE  = ::PSMILU_VERBOSE_NONE,
-  VERBOSE_INFO  = ::PSMILU_VERBOSE_INFO,
-  VERBOSE_PRE   = ::PSMILU_VERBOSE_PRE,
-  VERBOSE_CROUT = ::PSMILU_VERBOSE_CROUT,
-  VERBOSE_PIVOT = ::PSMILU_VERBOSE_PIVOT,
-  VERBOSE_THRES = ::PSMILU_VERBOSE_THRES,
-  VERBOSE_SCHUR = ::PSMILU_VERBOSE_SCHUR,
-  VERBOSE_MEM   = ::PSMILU_VERBOSE_MEM,
+  VERBOSE_NONE = ::PSMILU_VERBOSE_NONE, /*!< mute */
+  VERBOSE_INFO = ::PSMILU_VERBOSE_INFO, /*!< general information */
+  VERBOSE_PRE  = ::PSMILU_VERBOSE_PRE,  /*!< preprocessing */
+  VERBOSE_FAC  = ::PSMILU_VERBOSE_FAC,  /*!< factorization update */
+  VERBOSE_MEM  = ::PSMILU_VERBOSE_MEM,  /*!< memory debug */
 };
 
 /*!
@@ -148,7 +143,69 @@ inline std::string opt_repr(const Options &opt) {
          pack_int("verbose", opt.verbose);
 }
 
-}  // namespace psmilu
+#  ifndef DOXYGEN_SHOULD_SKIP_THIS
+namespace internal {
+/*
+ * build a byte map, i.e. the value is the leading byte position of the attrs
+ * in Options
+ */
+constexpr static std::size_t option_attr_pos[11] = {
+    0,
+    sizeof(double),
+    option_attr_pos[1] + sizeof(double),
+    option_attr_pos[2] + sizeof(double),
+    option_attr_pos[3] + sizeof(double),
+    option_attr_pos[4] + sizeof(int),
+    option_attr_pos[5] + sizeof(int),
+    option_attr_pos[6] + sizeof(double),
+    option_attr_pos[7] + sizeof(double),
+    option_attr_pos[8] + sizeof(double),
+    option_attr_pos[9] + sizeof(int),
+};
+
+/* data type tags, true for double, false for int */
+constexpr static bool option_dtypes[11] = {
+    true, true, true, true, false, false, true, true, true, false, false};
+
+/* using unordered map to store the string to index map */
+const static std::unordered_map<std::string, int> option_tag2pos = {
+    {"tau_L", 0},   {"tau_U", 1},   {"tau_d", 2},   {"tau_kappa", 3},
+    {"alpha_L", 4}, {"alpha_U", 5}, {"rho", 6},     {"c_d", 7},
+    {"c_h", 8},     {"N", 9},       {"verbose", 10}};
+
+} /* namespace internal */
+#  endif /* DOXYGEN_SHOULD_SKIP_THIS */
+
+/// \brief set \ref Options attribute value from key value pairs
+/// \tparam T value type, either \a double or \a int
+/// \param[in] attr attribute/member name
+/// \param[in] v value
+/// \param[out] opt output options
+/// \ingroup cpp
+///
+/// This function can be handy while initialing option parameters from string
+/// values. Notice that the keys (string values) are the same as the attribute
+/// variable names.
+template <typename T>
+inline bool set_option_attr(const std::string &attr, const T v, Options &opt) {
+  constexpr static bool failed  = true;
+  char *                opt_raw = reinterpret_cast<char *>(&opt);
+  try {
+    const int         pos     = internal::option_tag2pos.at(attr);
+    const std::size_t pos_raw = internal::option_attr_pos[pos];
+    const bool        dtype   = internal::option_dtypes[pos];
+    opt_raw += pos_raw;
+    if (dtype)
+      *reinterpret_cast<double *>(opt_raw) = v;
+    else
+      *reinterpret_cast<int *>(opt_raw) = v;
+    return !failed;
+  } catch (const std::out_of_range &) {
+    return failed;
+  }
+}
+
+} /* namespace psmilu */
 
 /*!
  * \def psmilu_verbose(__LVL, __opt)
