@@ -58,6 +58,7 @@ class HSL_MC64 {
   typedef IndexType                             index_type;  ///< index type
   typedef CCS<value_type, index_type, OneBased> ccs_type;    ///< input matrix
   typedef typename ccs_type::size_type          size_type;   ///< size
+  typedef CCS<value_type, index_type, OneBased> input_type;  ///< input matrix
 
   constexpr static bool ONE_BASED = OneBased;  ///< index flag
 
@@ -186,20 +187,21 @@ class HSL_MC64 {
 /// \tparam ValueType value type used
 /// \tparam IndexType index type used
 /// \tparam OneBased this is ignored for MC64, for API purpose
-/// \warning Regardingless OneBased, we always use Fortran index for efficiency
 template <class ValueType, class IndexType, bool OneBased = false>
-using MatchingDriver = HSL_MC64<ValueType, IndexType, true>;
+using MatchingDriver = HSL_MC64<ValueType, IndexType, OneBased>;
 
 typedef struct mc64_control matching_control_type;  ///< control parameters
 typedef struct mc64_info    matching_info_type;     ///< return info
 
 /// \brief set default control parameters
+/// \param[in] verbose verbose input from \ref Options
 /// \param[out] control control paramteres
-/// \note We explicitly assume the index is one based, which is achieved by
-///       calling \ref internal::extract_leading_block4matching
-inline void set_default_control(matching_control_type &control) {
+/// \param[in] one_based if \a false (default), assume C based index
+inline void set_default_control(const int              verbose,
+                                matching_control_type &control,
+                                const bool             one_based = false) {
   mc64_default_control(&control);
-  control.f_arrays = 1;
+  control.f_arrays = one_based;
 }
 
 /*!
@@ -217,10 +219,9 @@ namespace internal {
 /// \tparam OneBased index flag
 /// \param[in] A input matrix
 /// \param[in] m leading block size to extract
-/// \return Fortran index of \f$\boldsymbol{A}(1:m,1:m)\f$ in \ref CCS storage
 /// \ingroup pre
 ///
-/// Notice that for efficiency purpose, we return Fortran index matrix. Also,
+/// Notice that for efficiency purpose, we return CCS matrices. Also,
 /// be aware that the input only accept \ref CCS matrix, which is fine, because
 /// by the time calling this function, we should have both \ref CRS and
 /// CCS versions of the input matrix.
@@ -228,22 +229,25 @@ namespace internal {
 /// \note This function only allocate memory needed for the leading block. No
 ///       additional heap memory is needed.
 template <bool IsSymm, class ValueType, class IndexType, bool OneBased>
-inline CCS<ValueType, IndexType, true> extract_leading_block4matching(
+inline CCS<ValueType, IndexType, OneBased> extract_leading_block4matching(
     const CCS<ValueType, IndexType, OneBased> &                   A,
     const typename CCS<ValueType, IndexType, OneBased>::size_type m) {
-  using value_type                 = ValueType;
-  using index_type                 = IndexType;
-  using return_ccs                 = CCS<value_type, index_type, true>;
-  using size_type                  = typename return_ccs::size_type;
-  constexpr static bool ONE_BASED  = OneBased;
-  constexpr static bool CONV_INDEX = !ONE_BASED;
-  const auto f_idx = CONV_INDEX ? [](const size_type i) { return i + 1; }
-                                : [](const size_type i) { return i; };
+  using value_type                = ValueType;
+  using index_type                = IndexType;
+  using return_ccs                = CCS<value_type, index_type, OneBased>;
+  using size_type                 = typename return_ccs::size_type;
+  constexpr static bool ONE_BASED = OneBased;
+  const auto            ori_idx   = [](const size_type i) {
+    return to_ori_idx<size_type, ONE_BASED>(i);
+  };
 
   const size_type M = A.nrows(), N = A.ncols();
   psmilu_error_if(
-      m >= M || m >= N,
-      "leading block size should be strictly smaller than the matrix sizes");
+      m > M || m > N,
+      "leading block size should not be larger than the matrix sizes");
+
+  // shallow copy if leading block is the same as input
+  if (m == M) return A;
 
   return_ccs B(m, m);
 
@@ -254,7 +258,7 @@ inline CCS<ValueType, IndexType, true> extract_leading_block4matching(
   psmilu_error_if(col_start.status() == DATA_UNDEF, "memory allocation failed");
   auto &          row_ind = B.row_ind();
   auto &          vals    = B.vals();
-  const size_type tgt     = m + ONE_BASED;
+  const size_type tgt     = ori_idx(m);
 
   if (IsSymm) {
     // for symmetric case, we use col_start to store first position
@@ -262,11 +266,10 @@ inline CCS<ValueType, IndexType, true> extract_leading_block4matching(
     // the nnz. Then, while filling values, only one binary is needed.
 
     auto      A_v_itr1 = A.vals().cbegin();
-    size_type cur_diag = ONE_BASED;
     size_type nnz(0u);
-    for (size_type i = 0u; i < m; ++i, ++cur_diag) {
+    for (size_type i = 0u; i < m; ++i) {
       auto info1 = find_sorted(A.row_ind_cbegin(i), A.row_ind_cend(i), tgt);
-      auto info2 = find_sorted(A.row_ind_cbegin(i), info1.second, cur_diag);
+      auto info2 = find_sorted(A.row_ind_cbegin(i), info1.second, ori_idx(i));
       // only lower part
       nnz += info1.second - info2.second;
       col_start[i + 1] = info2.second - A_itr;
@@ -281,7 +284,7 @@ inline CCS<ValueType, IndexType, true> extract_leading_block4matching(
     auto itr   = row_ind.begin();
     auto v_itr = vals.begin();
 
-    col_start[0] = 1;
+    col_start[0] = ONE_BASED;
     for (size_type i = 0u; i < m; ++i) {
       auto a_itr   = A_itr + col_start[i + 1],
            last    = find_sorted(a_itr, A.row_ind_cend(i), tgt).second;
@@ -289,7 +292,7 @@ inline CCS<ValueType, IndexType, true> extract_leading_block4matching(
       // NOTE it's safe to modify col_start now
       col_start[i + 1] = col_start[i] + (last - a_itr);
       for (; a_itr != last; ++a_itr, ++itr, ++v_itr, ++A_v_itr) {
-        *itr   = f_idx(*a_itr);
+        *itr   = *a_itr;
         *v_itr = *A_v_itr;
       }
     }
@@ -314,7 +317,7 @@ inline CCS<ValueType, IndexType, true> extract_leading_block4matching(
     auto itr   = row_ind.begin();
     auto v_itr = vals.begin();
 
-    col_start[0] = 1;
+    col_start[0] = ONE_BASED;
     for (size_type i = 0u; i < m; ++i) {
       auto a_itr   = A.row_ind_cbegin(i);
       auto last    = A_itr + col_start[i + 1];
@@ -322,7 +325,7 @@ inline CCS<ValueType, IndexType, true> extract_leading_block4matching(
       // safe to modify col_start
       col_start[i + 1] = col_start[i] + (last - a_itr);
       for (; a_itr != last; ++a_itr, ++itr, ++v_itr, ++A_v_itr) {
-        *itr   = f_idx(*a_itr);
+        *itr   = *a_itr;
         *v_itr = *A_v_itr;
       }
     }
