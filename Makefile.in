@@ -2,10 +2,10 @@ CXX = c++
 
 # Specify commonly used paths for GTEST
 ifeq ($(GTEST_INCDIR),)
-    GTEST_INCDIR=-I/opt/local/include
+    GTEST_INCDIR=/opt/local/include
 endif
 ifeq ($(GTEST_LIBDIR),)
-    GTEST_LIBDIR=-L/opt/local/lib
+    GTEST_LIBDIR=/opt/local/lib
 endif
 
 # Abs root
@@ -21,6 +21,6 @@ endif
 
 LIBS = -pthread
 ifeq ($(USE_GTEST),1)
-    LIBS += $(GTEST_LIBDIR) -lgtest -lgtest_main
+    LIBS += -L$(GTEST_LIBDIR) -lgtest -lgtest_main
 endif
 LDFLAGS =
