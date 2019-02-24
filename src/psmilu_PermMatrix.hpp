@@ -74,6 +74,12 @@ class PermMatrix {
     for (size_type i = 0u; i < n; ++i) _p[i] = i;
   }
 
+  /// \brief check if identity mapping
+  inline bool is_eye() const {
+    return size() ? _p.front() == 0 && std::is_sorted(_p.cbegin(), _p.cend())
+                  : true;
+  }
+
   /// \brief get the permutation entry
   /// \param[in] i i-th permutation entry
   inline reference operator[](const size_type i) { return _p[i]; }
