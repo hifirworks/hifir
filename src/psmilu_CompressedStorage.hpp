@@ -755,7 +755,7 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
                                                 col_ind(), vals(), m);
   }
 
-  /// \bried read data from an ASCII file
+  /// \brief read data from an ASCII file
   /// \param[in] fname file name
   /// \return the leading symmetric block size
   inline size_type read_native_ascii(const char *fname) {
@@ -1286,7 +1286,7 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
                                                  row_ind(), vals(), m);
   }
 
-  /// \bried read data from an ASCII file
+  /// \brief read data from an ASCII file
   /// \param[in] fname file name
   /// \return the leading symmetric block size
   inline size_type read_native_ascii(const char *fname) {

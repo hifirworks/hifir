@@ -285,6 +285,7 @@ compute_perm_leading_block(const CcsType &                   A,
 /// \tparam PermType permutation matrix, see \ref BiPermMatrix
 /// \param[in] A input matrix in \ref CCS order
 /// \param[in] m0 leading block size
+/// \param[in] verbose message verbose flag from \ref Options
 /// \param[out] s row scaling vector
 /// \param[out] t column scaling vector
 /// \param[out] p row permutation vector
