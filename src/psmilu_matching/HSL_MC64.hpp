@@ -33,6 +33,7 @@
 
 #include "psmilu_Array.hpp"
 #include "psmilu_CompressedStorage.hpp"
+#include "psmilu_Options.h"
 #include "psmilu_log.hpp"
 #include "psmilu_utils.hpp"
 
@@ -79,18 +80,15 @@ class HSL_MC64 {
   /// \param[out] q column permutation vector
   /// \param[out] s row scaling vector
   /// \param[out] t column scaling vector
-  /// \param[out] info output information
   template <bool IsSymm>
   inline static void do_matching(const ccs_type &           A,
                                  const struct mc64_control &control,
                                  Array<index_type> &p, Array<index_type> &q,
-                                 Array<value_type> &s, Array<value_type> &t,
-                                 struct mc64_info &info) {
+                                 Array<value_type> &s, Array<value_type> &t) {
     constexpr static size_type int_max =
         static_cast<size_type>(std::numeric_limits<int>::max());
-
-    constexpr static int matrix_type = IsSymm ? 3 : 0, matching_job = 5;
-
+    // this is the job we are interested in, i.e. compute perm and scaling
+    constexpr static int  matrix_type = IsSymm ? 3 : 0, matching_job = 5;
     constexpr static bool consist_int = sizeof(index_type) == sizeof(int);
 
     static bool warned = false;
@@ -143,7 +141,7 @@ class HSL_MC64 {
       psmilu_error_if(!row, "memory allocation failed");
       std::copy(A.row_ind().cbegin(), A.row_ind().cend(), row);
     }
-
+    struct mc64_info info;
     // call matching routine here
     mc64_matching(matching_job, matrix_type, (int)m, (int)n, ptr, row,
                   A.vals().data(), &control, &info, pq.data(), st.data());
@@ -154,7 +152,11 @@ class HSL_MC64 {
         if (ptr) delete[] ptr;
         if (row) delete[] row;
       }
-      psmilu_error("MC64 matching returned negative %d flag!", info.flag);
+      psmilu_error(
+          "MC64 matching returned negative %d flag!\nIn addition, the \'more\' "
+          "attribute is of value %d. Please refer HSL_MC64 documentation "
+          "section 2.9 for error info interpretation.",
+          info.flag, info.more);
     }
 
     // compute scaling
@@ -192,7 +194,6 @@ template <class ValueType, class IndexType, bool OneBased = false>
 using MatchingDriver = HSL_MC64<ValueType, IndexType, OneBased>;
 
 typedef struct mc64_control matching_control_type;  ///< control parameters
-typedef struct mc64_info    matching_info_type;     ///< return info
 
 /// \brief set default control parameters
 /// \param[in] verbose verbose input from \ref Options
@@ -203,6 +204,17 @@ inline void set_default_control(const int              verbose,
                                 const bool             one_based = false) {
   mc64_default_control(&control);
   control.f_arrays = one_based;
+
+  if (psmilu_verbose2(NONE, verbose)) {
+    control.lp = control.wp = -1;
+    control.ldiag           = 0;
+  } else {
+    // error and warning should go to stderr in Fortran
+    control.lp = control.wp = 0;
+    // information should go to stdout in Fortran
+    control.sp = 6;
+    if (psmilu_verbose2(PRE, verbose)) control.ldiag = 3;
+  }
 }
 
 /*!
