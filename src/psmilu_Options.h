@@ -208,6 +208,16 @@ inline bool set_option_attr(const std::string &attr, const T v, Options &opt) {
 } /* namespace psmilu */
 
 /*!
+ * \def psmilu_verbose2(__LVL, __opt_tag)
+ * \brief return \a true if certain verbose level is defined
+ * \note __LVL must be upper case and align with the enumerators
+ * \note This macro is for algorithm implementation thus available only in C++
+ * \ingroup util
+ */
+#  define psmilu_verbose2(__LVL, __opt_tag) \
+    (__opt_tag & ::psmilu::VERBOSE_##__LVL)
+
+/*!
  * \def psmilu_verbose(__LVL, __opt)
  * \brief return \a true if certain verbose level is defined
  * \note __LVL must be upper case and align with the enumerators
@@ -218,8 +228,7 @@ inline bool set_option_attr(const std::string &attr, const T v, Options &opt) {
  * if (psmilu_verbose(INFO, opt)) ...;
  * \endcode
  */
-#  define psmilu_verbose(__LVL, __opt) \
-    (__opt.verbose & ::psmilu::VERBOSE_##__LVL)
+#  define psmilu_verbose(__LVL, __opt) psmilu_verbose2(__LVL, __opt.verbose)
 
 #endif /* __cplusplus */
 
