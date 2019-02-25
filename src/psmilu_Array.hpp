@@ -291,6 +291,13 @@ class Array {
   inline reference       back() { return _data[_size - _ONE]; }
   inline const_reference front() const { return *_data; }
   inline const_reference back() const { return _data[_size - _ONE]; }
+  inline void            swap(Array& rhs) {
+    std::swap(_data, rhs._data);
+    std::swap(_size, rhs._size);
+    std::swap(_cap, rhs._cap);
+    std::swap(_status, rhs._status);
+    std::swap(_counts, rhs._counts);
+  }
 
   // iterators and range loop functionality
   inline iterator       begin() { return _data; }
