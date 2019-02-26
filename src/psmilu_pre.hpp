@@ -34,6 +34,7 @@ namespace psmilu {
 /// \param[out] t column scaling vector
 /// \param[out] p row permutation
 /// \param[out] q column permutation
+/// \return The actual leading block size, no larger than \a m0
 /// \ingroup pre
 ///
 /// Notice that, in general, the preprocessing involves two steps: 1) perform
@@ -44,10 +45,9 @@ namespace psmilu {
 ///
 /// \todo Implement matching algorithm to drop the dependency on MC64.
 template <bool IsSymm, class CcsType, class ScalingArray, class PermType>
-inline void do_preprocessing(const CcsType &                   A,
-                             const typename CcsType::size_type m0,
-                             const Options &opt, ScalingArray &s,
-                             ScalingArray &t, PermType &p, PermType &q) {
+inline typename CcsType::size_type do_preprocessing(
+    const CcsType &A, const typename CcsType::size_type m0, const Options &opt,
+    ScalingArray &s, ScalingArray &t, PermType &p, PermType &q) {
   static_assert(!CcsType::ROW_MAJOR, "must be CCS");
   using index_type = typename CcsType::index_type;
   using amd        = AMD<index_type>;
@@ -127,6 +127,8 @@ inline void do_preprocessing(const CcsType &                   A,
 
   reorder_finalize_perm(p);
   reorder_finalize_perm(q);
+
+  return m;
 }
 }  // namespace psmilu
 
