@@ -111,7 +111,7 @@ class Builder {
     _compute_kernel(A, m0, opts);
     t.finish();
     if (psmilu_verbose(INFO, opts))
-      psmilu_info("multilevel precs building time (overall) is %g", t.time());
+      psmilu_info("multilevel precs building time (overall) is %gs", t.time());
     if (revert_warn) (void)warn_flag(1);
   }
 
