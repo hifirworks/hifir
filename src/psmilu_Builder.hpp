@@ -27,6 +27,7 @@ namespace psmilu {
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 namespace internal {
 const static char *intro =
+    "\n"
     "=======================================================================\n"
     "|    Pre-dominantly Symmetric Multi-level Incomplete LU (PS-MILU)     |\n"
     "|                                                                     |\n"
@@ -35,9 +36,14 @@ const static char *intro =
     "| package to utilize the pre-dominantly symmetric systems, which occ- |\n"
     "| ur quite often but were not precisely defined and appreciated.      |\n"
     "|                                                                     |\n"
-    "|   Copyright (C) The PSMILU AUTHORS                                  |\n"
-    "|   Version: %d.%d.%d                                                 |\n"
-    "|   Built on: %s                                                      |\n"
+    "-----------------------------------------------------------------------\n"
+    "\n"
+    "Package information:\n"
+    "\n"
+    "\tCopyright (C) The PSMILU AUTHORS\n"
+    "\tVersion: %d.%d.%d\n"
+    "\tBuilt on: %s, %s\n"
+    "\n"
     "=======================================================================\n";
 static bool introduced = false;
 }  // namespace internal
@@ -97,7 +103,8 @@ class Builder {
     if (psmilu_verbose(INFO, opts)) {
       if (!internal::introduced) {
         psmilu_info(internal::intro, PSMILU_GLOBAL_VERSION,
-                    PSMILU_MAJOR_VERSION, PSMILU_MINOR_VERSION, __DATE__);
+                    PSMILU_MAJOR_VERSION, PSMILU_MINOR_VERSION, __TIME__,
+                    __DATE__);
         internal::introduced = true;
       }
       psmilu_info("Options (control parameters) are:\n");
