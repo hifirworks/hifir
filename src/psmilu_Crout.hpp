@@ -628,7 +628,8 @@ class Crout {
     auto       i_itr = crs_A.col_ind_cbegin(pk);
     const auto s_pk  = s[pk];
     for (auto last = crs_A.col_ind_cend(pk); i_itr != last; ++i_itr, ++v_itr) {
-      const auto c_idx = q.inv(to_c_idx<size_type, base>(*i_itr));
+      const auto A_idx = to_c_idx<size_type, base>(*i_itr);
+      const auto c_idx = q.inv(A_idx);
       if ((size_type)c_idx > _step) {
 #ifndef NDEBUG
         const bool val_must_not_exit =
@@ -636,7 +637,7 @@ class Crout {
             ut.push_back(to_ori_idx<size_type, base>(c_idx), _step);
         psmilu_assert(val_must_not_exit,
                       "see prefix, failed on Crout step %zd for ut", _step);
-        ut.vals()[c_idx] = s_pk * *v_itr * t[c_idx];  // scale here
+        ut.vals()[c_idx] = s_pk * *v_itr * t[A_idx];  // scale here
       }
     }
   }
