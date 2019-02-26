@@ -158,7 +158,7 @@ class HSL_MC64 {
       }
       psmilu_error(
           "MC64 matching returned negative %d flag!\nIn addition, the \'more\' "
-          "attribute is of value %d. Please refer HSL_MC64 documentation "
+          "attribute is of value %d.\nPlease refer HSL_MC64 documentation "
           "section 2.9 for error info interpretation.",
           info.flag, info.more);
     }
@@ -263,9 +263,6 @@ inline CCS<ValueType, IndexType, OneBased> extract_leading_block4matching(
       m > M || m > N,
       "leading block size should not be larger than the matrix sizes");
 
-  // shallow copy if leading block is the same as input
-  if (m == M) return A;
-
   return_ccs B(m, m);
 
   // NOTE use col_start to first store the position in A
@@ -314,6 +311,9 @@ inline CCS<ValueType, IndexType, OneBased> extract_leading_block4matching(
       }
     }
   } else {
+    // shallow copy if leading block is the same as input
+    if (m == M) return A;
+
     // for asymmetric case, we use col_start to store the pass-of-end positions
     // it's worth nothing that one a single binary search is needed for
     // determining the nnz.

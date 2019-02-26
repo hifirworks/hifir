@@ -224,8 +224,8 @@ compute_perm_leading_block(const CcsType &                   A,
     if (A_crs.nnz_in_row(q_col)) {
       // for the upper part
       col_start[col + 1] +=
-          std::count_if(A_crs.col_cbegin(q_col), A_crs.col_cend(q_col) - 1,
-                        [&](decltype(q_col) i) {
+          std::count_if(A_crs.col_ind_cbegin(q_col),
+                        A_crs.col_ind_cend(q_col) - 1, [&](decltype(q_col) i) {
                           return static_cast<size_type>(p.inv(c_idx(i))) >= col;
                         });
     }
@@ -257,8 +257,8 @@ compute_perm_leading_block(const CcsType &                   A,
     }
     if (A_crs.nnz_in_row(q_col)) {
       auto A_v_itr = A_crs.val_cbegin(q_col);
-      for (auto A_itr = A_crs.col_cbegin(q_col),
-                last  = A_crs.col_cend(q_col) - 1;
+      for (auto A_itr = A_crs.col_ind_cbegin(q_col),
+                last  = A_crs.col_ind_cend(q_col) - 1;
            A_itr != last; ++A_itr, ++A_v_itr) {
         const size_type p_inv = p.inv(c_idx(*A_itr));
         if (p_inv >= col) {
