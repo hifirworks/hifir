@@ -17,10 +17,31 @@
 #include "psmilu_CompressedStorage.hpp"
 #include "psmilu_Options.h"
 #include "psmilu_Prec.hpp"
+#include "psmilu_Timer.hpp"
 #include "psmilu_fac.hpp"
 #include "psmilu_prec_solve.hpp"
+#include "psmilu_version.h"
 
 namespace psmilu {
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+namespace internal {
+const static char *intro =
+    "=======================================================================\n"
+    "|    Pre-dominantly Symmetric Multi-level Incomplete LU (PS-MILU)     |\n"
+    "|                                                                     |\n"
+    "| PSMILU is a package for computing multi-level incomplete LU factor- |\n"
+    "| ization with optimal time complexity. PSMILU is the first software  |\n"
+    "| package to utilize the pre-dominantly symmetric systems, which occ- |\n"
+    "| ur quite often but were not precisely defined and appreciated.      |\n"
+    "|                                                                     |\n"
+    "|   Copyright (C) The PSMILU AUTHORS                                  |\n"
+    "|   Version: %d.%d.%d                                                 |\n"
+    "|   Built on: %s                                                      |\n"
+    "=======================================================================\n";
+static bool introduced = false;
+}  // namespace internal
+#endif  // DOXYGEN_SHOULD_SKIP_THIS
 
 /*!
  * \addtogroup cpp
@@ -35,8 +56,6 @@ namespace psmilu {
 template <class ValueType, class IndexType, bool OneBased = false,
           SmallScaleType SSSType = SMALLSCALE_LUP>
 class Builder {
- protected:
-  const static Options _def_opts;  ///< default options
  public:
   typedef ValueType         value_type;                     ///< value type
   typedef Array<value_type> array_type;                     ///< array type
@@ -74,9 +93,26 @@ class Builder {
 
   template <class CsType>
   inline void compute(const CsType &A, const size_type m0 = 0u,
-                      const Options &opts = _def_opts) {
-    _precs.clear();
+                      const Options &opts = get_default_options()) {
+    if (psmilu_verbose(INFO, opts) && !internal::introduced) {
+      psmilu_info(internal::intro, PSMILU_GLOBAL_VERSION, PSMILU_MAJOR_VERSION,
+                  PSMILU_MINOR_VERSION, __DATE__);
+      internal::introduced = true;
+    }
+    const bool revert_warn = warn_flag();
+    if (psmilu_verbose(NONE, opts)) (void)warn_flag(0);
+    DefaultTimer t;
+    t.start();
+    if (!empty()) {
+      psmilu_warning(
+          "multilevel precs are not empty, wipe previous results first");
+      _precs.clear();
+    }
     _compute_kernel(A, m0, opts);
+    t.finish();
+    if (psmilu_verbose(INFO, opts))
+      psmilu_info("multilevel precs building time (overall) is %g", t.time());
+    if (revert_warn) (void)warn_flag(1);
   }
 
   inline void solve(const array_type &b, array_type &x) const {
@@ -127,12 +163,6 @@ class Builder {
   precs_type         _precs;      ///< multilevel preconditioners
   mutable array_type _prec_work;  ///< preconditioner work space for solving
 };
-
-// define default options
-template <class ValueType, class IndexType, bool OneBased,
-          SmallScaleType SSSType>
-const Options Builder<ValueType, IndexType, OneBased, SSSType>::_def_opts =
-    get_default_options();
 
 /// \typedef C_Builder
 /// \tparam ValueType numerical value type, e.g. \a double
