@@ -11,8 +11,10 @@
 #ifndef _PSMILU_MATCHING_DRIVER_HPP
 #define _PSMILU_MATCHING_DRIVER_HPP
 
-#if 1
+#ifndef mc64_matching
+extern "C" {
 #  include "hsl_mc64d.h"
+}
 #endif
 
 #include <type_traits>
@@ -64,13 +66,13 @@ inline typename CcsType::size_type defer_zero_diags(
     const auto q_col = q[col];
     if (IsSymm) {
       psmilu_assert(p[col] == q_col, "fatal");
-      auto itr = A.row_cbegin(q_col);
-      if (itr == A.row_cend(q_col)) return false;
+      auto itr = A.row_ind_cbegin(q_col);
+      if (itr == A.row_ind_cend(q_col)) return false;
       if (*A.val_cbegin(q_col) == ZERO) return false;
     } else {
       const auto p_diag = p[col];
-      auto       info =
-          find_sorted(A.row_cbegin(q_col), A.row_cend(q_col), ori_idx(p_diag));
+      auto info = find_sorted(A.row_ind_cbegin(q_col), A.row_ind_cend(q_col),
+                              ori_idx(p_diag));
       if (!info.first) return false;
       // test numerical value
       if (*(A.vals().cbegin() + (info.second - A.row_ind().cbegin())) == ZERO)
@@ -130,7 +132,7 @@ compute_perm_leading_block(const CcsType &                   A,
   for (size_type col = 0u; col < m; ++col) {
     const auto q_col   = q[col];
     col_start[col + 1] = std::count_if(
-        A.row_cbegin(q_col), A.row_cend(q_col), [m, &p](decltype(q_col) i) {
+        A.row_ind_cbegin(q_col), A.row_ind_cend(q_col), [&](decltype(q_col) i) {
           return static_cast<size_type>(p.inv(c_idx(i))) < m;
         });
   }
@@ -151,7 +153,7 @@ compute_perm_leading_block(const CcsType &                   A,
   for (size_type col = 0u; col < m; ++col) {
     const auto q_col   = q[col];
     auto       A_v_itr = A.val_cbegin(q_col);
-    for (auto A_itr = A.row_cbegin(q_col), last = A.row_cend(q_col);
+    for (auto A_itr = A.row_ind_cbegin(q_col), last = A.row_ind_cend(q_col);
          A_itr != last; ++A_itr, ++A_v_itr) {
       const size_type p_inv = p.inv(c_idx(*A_itr));
       if (p_inv < m) {
@@ -160,8 +162,8 @@ compute_perm_leading_block(const CcsType &                   A,
       }
     }
     // sort indices
-    std::sort(B.row_begin(col), itr);
-    for (auto i = B.row_cbegin(col), last = B.row_cend(col); i != last;
+    std::sort(B.row_ind_begin(col), itr);
+    for (auto i = B.row_ind_cbegin(col), last = B.row_ind_cend(col); i != last;
          ++i, ++v_itr)
       *v_itr = buf[*i];
   }
@@ -216,14 +218,14 @@ compute_perm_leading_block(const CcsType &                   A,
   for (size_type col = 0u; col < m; ++col) {
     const auto q_col   = q[col];
     col_start[col + 1] = std::count_if(
-        A.row_cbegin(q_col), A.row_cend(q_col), [col, &p](decltype(q_col) i) {
+        A.row_ind_cbegin(q_col), A.row_ind_cend(q_col), [&](decltype(q_col) i) {
           return static_cast<size_type>(p.inv(c_idx(i))) >= col;
         });
     if (A_crs.nnz_in_row(q_col)) {
       // for the upper part
       col_start[col + 1] +=
           std::count_if(A_crs.col_cbegin(q_col), A_crs.col_cend(q_col) - 1,
-                        [col, &p](decltype(q_col) i) {
+                        [&](decltype(q_col) i) {
                           return static_cast<size_type>(p.inv(c_idx(i))) >= col;
                         });
     }
@@ -245,7 +247,7 @@ compute_perm_leading_block(const CcsType &                   A,
   for (size_type col = 0u; col < m; ++col) {
     const auto q_col   = q[col];
     auto       A_v_itr = A.val_cbegin(q_col);
-    for (auto A_itr = A.row_cbegin(q_col), last = A.row_cend(q_col);
+    for (auto A_itr = A.row_ind_cbegin(q_col), last = A.row_ind_cend(q_col);
          A_itr != last; ++A_itr, ++A_v_itr) {
       const size_type p_inv = p.inv(c_idx(*A_itr));
       if (p_inv >= col) {
@@ -266,8 +268,8 @@ compute_perm_leading_block(const CcsType &                   A,
       }
     }
     // sort indices
-    std::sort(B.row_begin(col), itr);
-    for (auto i = B.row_cbegin(col), last = B.row_cend(col); i != last;
+    std::sort(B.row_ind_begin(col), itr);
+    for (auto i = B.row_ind_cbegin(col), last = B.row_ind_cend(col); i != last;
          ++i, ++v_itr)
       *v_itr = buf[*i];
   }
@@ -330,7 +332,7 @@ do_maching(const CcsType &A, const typename CcsType::size_type m0,
   // first extract matching
   input_type B1 = internal::extract_leading_block4matching<IsSymm>(A, m0);
   // then compute matching
-  match_driver::do_maching<IsSymm>(B1, control, p(), q(), s, t);
+  match_driver::template do_matching<IsSymm>(B1, control, p(), q(), s, t);
   // fill identity mapping and add one to scaling vectors for offsets, if any
   for (size_type i = m0; i < M; ++i) {
     p[i] = i;

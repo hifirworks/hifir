@@ -16,7 +16,11 @@
 
 // dev purpose
 #  if 1
-#    include "hsl_mc64d.h"
+#    ifndef mc64_matching
+extern "C" {
+#      include "hsl_mc64d.h"
+}
+#    endif
 #  endif
 
 #  ifndef mc64_matching
@@ -98,7 +102,7 @@ class HSL_MC64 {
     psmilu_assert(q.size() >= n, "invalid Q permutation size");
     psmilu_assert(s.size() >= m, "invalid S row scaling size");
     psmilu_assert(t.size() >= n, "invalid T column scaling size");
-    psmilu_assert(IsSymm && m == n || !IsSymm && m >= n,
+    psmilu_assert((IsSymm && m == n) || (!IsSymm && m >= n),
                   "invalid matrix shape");
 
     // check overflow, since MC aggressively use int, we must ensure it's not
