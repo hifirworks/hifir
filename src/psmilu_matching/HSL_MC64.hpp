@@ -176,11 +176,10 @@ class HSL_MC64 {
       psmilu_assert(std::equal(pq_itr, pq_itr + m, pq_itr + m),
                     "symmetric case should have identical row/column "
                     "permutation vectors!");
-    std::transform(pq_itr, pq_itr + m, p.begin(),
-                   [&](const int i) { return std::abs(i); });
+    // IMPORTANT, MC64 gives inverse mapping!
+    for (size_type i = 0u; i < m; ++i) p[std::abs(pq_itr[i])] = i;
     pq_itr += m;
-    std::transform(pq_itr, pq.cend(), q.begin(),
-                   [&](const int i) { return std::abs(i); });
+    for (size_type i = 0u; i < n; ++i) q[std::abs(pq_itr[i])] = i;
 
     if (!consist_int) {
       if (ptr) delete[] ptr;
