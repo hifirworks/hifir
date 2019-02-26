@@ -166,10 +166,9 @@ class CompressedStorage {
       _psize = _ind_start.size() ? _ind_start.size() - 1u : 0u;
       return;
     }
-    psmilu_warning("detected empty primary entries (%zd), filling zeros",
+    psmilu_warning("detected empty primary entries (%zd)",
                    _psize + 1u - _ind_start.size());
-    for (auto i = _ind_start.size() - 1ul; i < _psize; ++i)
-      _push_back_primary_empty(i);
+    _psize = _ind_start.size() - 1u;
   }
 
   /// \brief push back an empty entry
