@@ -18,6 +18,8 @@
 #include <type_traits>
 #include <vector>
 
+#include "psmilu_log.hpp"
+
 namespace psmilu {
 
 /// \brief apply binary search on a sorted array
@@ -173,6 +175,34 @@ class SpVInternalExtractor : public SpVecType {
   inline const std::vector<bool> &sparse_tags() const {
     return base::_sparse_tags;
   }
+};
+
+/// \struct StdoutStruct
+/// \brief struct wrapped around \a stdout
+/// \ingroup util
+struct StdoutStruct {
+  template <class... Args>
+  inline void operator()(const char *f, Args... args) const {
+    psmilu_info(f, args...);
+  }
+};
+
+/// \struct StderrStruct
+/// \brief struct wrapped around \a stderr
+/// \ingroup util
+struct StderrStruct {
+  template <class... Args>
+  inline void operator()(const char *f, Args... args) const {
+    psmilu_warning(f, args...);
+  }
+};
+
+/// \struct DummyStreamer
+/// \brief dummy streamer (empty functor)
+/// \ingroup util
+struct DummyStreamer {
+  template <class... Args>
+  inline void operator()(const char *, Args...) const {}
 };
 
 }  // namespace internal
