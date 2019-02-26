@@ -94,10 +94,14 @@ class Builder {
   template <class CsType>
   inline void compute(const CsType &A, const size_type m0 = 0u,
                       const Options &opts = get_default_options()) {
-    if (psmilu_verbose(INFO, opts) && !internal::introduced) {
-      psmilu_info(internal::intro, PSMILU_GLOBAL_VERSION, PSMILU_MAJOR_VERSION,
-                  PSMILU_MINOR_VERSION, __DATE__);
-      internal::introduced = true;
+    if (psmilu_verbose(INFO, opts)) {
+      if (!internal::introduced) {
+        psmilu_info(internal::intro, PSMILU_GLOBAL_VERSION,
+                    PSMILU_MAJOR_VERSION, PSMILU_MINOR_VERSION, __DATE__);
+        internal::introduced = true;
+      }
+      psmilu_info("Options (control parameters) are:\n");
+      psmilu_info(opt_repr(opts).c_str());
     }
     const bool revert_warn = warn_flag();
     if (psmilu_verbose(NONE, opts)) (void)warn_flag(0);
