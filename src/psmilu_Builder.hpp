@@ -152,21 +152,22 @@ class Builder {
       else
         N = _precs.front().n;
     }
-    // use a identity permutation vectors
-    BiPermMatrix<index_type> p(A.nrows()), q(A.ncols());
-    p.make_eye();
-    q.make_eye();
-    // use identity scaling for now
-    array_type s(A.nrows(), value_type(1)), t(A.ncols(), value_type(1));
-    psmilu_error_if(s.status() == DATA_UNDEF,
-                    "memory allocation failed for s at level %zd.", cur_level);
-    psmilu_error_if(t.status() == DATA_UNDEF,
-                    "memory allocation failed for t at level %zd.", cur_level);
+    // // use a identity permutation vectors
+    // BiPermMatrix<index_type> p(A.nrows()), q(A.ncols());
+    // p.make_eye();
+    // q.make_eye();
+    // // use identity scaling for now
+    // array_type s(A.nrows(), value_type(1)), t(A.ncols(), value_type(1));
+    // psmilu_error_if(s.status() == DATA_UNDEF,
+    //                 "memory allocation failed for s at level %zd.",
+    //                 cur_level);
+    // psmilu_error_if(t.status() == DATA_UNDEF,
+    //                 "memory allocation failed for t at level %zd.",
+    //                 cur_level);
     const bool sym = cur_level == 1u && m > 0u;
     if (!sym) m = A.nrows();
-    const CsType S =
-        sym ? iludp_factor<true>(s, A, t, m, N, opts, p, q, _precs)
-            : iludp_factor<false>(s, A, t, m, N, opts, p, q, _precs);
+    const CsType S = sym ? iludp_factor<true>(A, m, N, opts, _precs)
+                         : iludp_factor<false>(A, m, N, opts, _precs);
     if (!_precs.back().is_last_level()) this->_compute_kernel(S, 0u, opts);
   }
 

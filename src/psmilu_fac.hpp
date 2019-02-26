@@ -27,6 +27,7 @@
 #include "psmilu_diag_pivot.hpp"
 #include "psmilu_inv_thres.hpp"
 #include "psmilu_log.hpp"
+#include "psmilu_pre.hpp"
 #include "psmilu_utils.hpp"
 
 namespace psmilu {
@@ -94,7 +95,8 @@ inline typename AugCcsType::ccs_type extract_L_B(
 
 #ifndef PSMILU_UNIT_TESTING
   psmilu_assert(m == L.ncols(),
-                "column of L should have the size of leading block %zd", m);
+                "column of L(%zd) should have the size of leading block %zd",
+                L.ncols(), m);
 #endif  // PSMILU_UNIT_TESTING
   psmilu_assert(m <= L.nrows(), "invalid row size");
 
@@ -453,13 +455,10 @@ class CompressedTypeTrait {
 
 /// \brief perform incomplete LU diagonal pivoting factorization for a level
 /// \ingroup fac
-template <bool IsSymm, class LeftDiagType, class CsType, class RightDiagType,
-          class PermType, class PrecsType>
-inline CsType iludp_factor(LeftDiagType &s, const CsType &A, RightDiagType &t,
-                           const typename CsType::size_type m0,
+template <bool IsSymm, class CsType, class PrecsType>
+inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
                            const typename CsType::size_type N,
-                           const Options &opts, PermType &p, PermType &q,
-                           PrecsType &precs) {
+                           const Options &opts, PrecsType &precs) {
   typedef CsType                      input_type;
   typedef typename CsType::other_type other_type;
   using cs_trait = internal::CompressedTypeTrait<input_type, other_type>;
@@ -473,14 +472,6 @@ inline CsType iludp_factor(LeftDiagType &s, const CsType &A, RightDiagType &t,
   typedef DenseMatrix<value_type>     dense_type;
   constexpr static bool               ONE_BASED = CsType::ONE_BASED;
 
-  psmilu_assert(A.nrows() == s.size(),
-                "row scaling vector size should match the row size of A");
-  psmilu_assert(A.ncols() == t.size(),
-                "column scaling vector size should match A\'s column size");
-  psmilu_assert(A.nrows() == p.size(),
-                "row permutation vector size should match A\'s row size");
-  psmilu_assert(A.ncols() == q.size(),
-                "column permutation vector size should match A\'s column size");
   psmilu_assert(m0 <= std::min(A.nrows(), A.ncols()),
                 "leading size should be smaller than size of A");
   const size_type cur_level = precs.size() + 1;
@@ -495,11 +486,17 @@ inline CsType iludp_factor(LeftDiagType &s, const CsType &A, RightDiagType &t,
   const crs_type & A_crs = cs_trait::select_crs(A, A_counterpart);
   const ccs_type & A_ccs = cs_trait::select_ccs(A, A_counterpart);
 
+  // preprocessing
+  Array<value_type>        s, t;
+  BiPermMatrix<index_type> p, q;
+
+  size_type m = do_preprocessing<IsSymm>(A_ccs, m0, opts, s, t, p, q);
+
   // extract diagonal
-  auto d = internal::extract_perm_diag(s, A_ccs, t, m0, p, q);
+  auto d = internal::extract_perm_diag(s, A_ccs, t, m, p, q);
 
   // create U storage
-  aug_crs_type U(m0, A.ncols());
+  aug_crs_type U(m, A.ncols());
   psmilu_error_if(U.row_start().status() == DATA_UNDEF,
                   "memory allocation failed for U:row_start at level %zd.",
                   cur_level);
@@ -509,7 +506,7 @@ inline CsType iludp_factor(LeftDiagType &s, const CsType &A, RightDiagType &t,
       "memory allocation failed for U-nnz arrays at level %zd.", cur_level);
 
   // create L storage
-  aug_ccs_type L(A.nrows(), m0);
+  aug_ccs_type L(A.nrows(), m);
   psmilu_error_if(L.col_start().status() == DATA_UNDEF,
                   "memory allocation failed for L:col_start at level %zd.",
                   cur_level);
@@ -522,21 +519,18 @@ inline CsType iludp_factor(LeftDiagType &s, const CsType &A, RightDiagType &t,
   SparseVector<value_type, index_type, ONE_BASED> l(A.nrows()), ut(A.ncols());
 
   // create buffer for L and U start
-  Array<index_type> L_start(m0), U_start(m0);
+  Array<index_type> L_start(m), U_start(m);
   psmilu_error_if(
       L_start.status() == DATA_UNDEF || U_start.status() == DATA_UNDEF,
       "memory allocation failed for L_start and/or U_start at level %zd.",
       cur_level);
 
   // create storage for kappa's
-  Array<value_type> kappa_l(m0), kappa_ut(m0);
+  Array<value_type> kappa_l(m), kappa_ut(m);
   psmilu_error_if(
       kappa_l.status() == DATA_UNDEF || kappa_ut.status() == DATA_UNDEF,
       "memory allocation failed for kappa_l and/or kappa_ut at level %zd.",
       cur_level);
-
-  // initialize m
-  size_type m(m0);
 
   U.begin_assemble_rows();
   L.begin_assemble_cols();
@@ -600,6 +594,8 @@ inline CsType iludp_factor(LeftDiagType &s, const CsType &A, RightDiagType &t,
           step.scale_inv_diag(d, l);
       psmilu_assert(!l_is_nonsingular, "l is singular at level %zd step %zd",
                     cur_level, step);
+      // update diagonals b4 dropping
+      step.update_B_diag<IsSymm>(l, ut, m, d);
       // apply drop for U
       apply_dropping_and_sort(tau_U, k_ut, A_crs.nnz_in_row(p[step]), alpha_U,
                               ut);
