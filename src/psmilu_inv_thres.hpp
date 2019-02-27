@@ -99,10 +99,10 @@ inline typename SpVecType::size_type apply_dropping_and_sort(
   psmilu_warning_if(tau == TauType(), "zero threshold tau");
   const size_type N1 = alpha * nnz;
   if (start_size >= N1) {
-    psmilu_warning(
-        "inv-thres start size %zd exceeds bound (alpha*nnz) %zd, drop all "
-        "entries!",
-        start_size, N1);
+    // psmilu_warning(
+    //     "inv-thres start size %zd exceeds bound (alpha*nnz) %zd, drop all "
+    //     "entries!",
+    //     start_size, N1);
     static_cast<extractor &>(v).counts() = 0u;
     return 0u;
   }
