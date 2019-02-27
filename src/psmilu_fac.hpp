@@ -489,7 +489,6 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
   // preprocessing
   Array<value_type>        s, t;
   BiPermMatrix<index_type> p, q;
-
   size_type m = do_preprocessing<IsSymm>(A_ccs, m0, opts, s, t, p, q);
 
   // extract diagonal
@@ -599,23 +598,30 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
       // apply drop for U
       apply_dropping_and_sort(tau_U, k_ut, A_crs.nnz_in_row(p[step]), alpha_U,
                               ut);
-      // apply drop for L, for symmetric case, we will pass in the ut size
-      // so that the alg will only drop the remaining part
-      apply_dropping_and_sort(tau_L, k_l, A_ccs.nnz_in_col(q[step]), alpha_L, l,
-                              IsSymm ? ut.size() : 0u);
       // push back rows to U
       U.push_back_row(step, ut.inds().cbegin(), ut.inds().cbegin() + ut.size(),
                       ut.vals());
-      // then push back to L
       if (IsSymm) {
+        // for symmetric cases, we need first find the leading block size
         auto info = find_sorted(ut.inds().cbegin(),
                                 ut.inds().cbegin() + ut.size(), m + ONE_BASED);
+        if (!info.first && info.second != ut.inds().cbegin() + ut.size())
+          ++info.second;
+        // then apply drops for l by assuming already got the ut entries
+        // in the symmetric region
+        apply_dropping_and_sort(tau_L, k_l, A_ccs.nnz_in_col(q[step]), alpha_L,
+                                l, info.second - ut.inds().cbegin());
+        // push back symmetric entries and offsets
         L.push_back_col(step, ut.inds().cbegin(), info.second, ut.vals(),
                         l.inds().cbegin(), l.inds().cbegin() + l.size(),
                         l.vals());
-      } else
+      } else {
+        // for asymmetric cases, just do exactly the same things as ut
+        apply_dropping_and_sort(tau_L, k_l, A_ccs.nnz_in_col(q[step]), alpha_L,
+                                l);
         L.push_back_col(step, l.inds().cbegin(), l.inds().cbegin() + l.size(),
                         l.vals());
+      }
       break;
     }  // inf loop
   }
