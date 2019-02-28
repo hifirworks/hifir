@@ -97,14 +97,12 @@ inline typename SpVecType::size_type apply_dropping_and_sort(
   constexpr static bool ONE_BASED = SpVecType::ONE_BASED;
 
   psmilu_warning_if(tau == TauType(), "zero threshold tau");
-  const size_type N1 = alpha * nnz;
+  size_type N1 = alpha * nnz;
   if (start_size >= N1) {
-    // psmilu_warning(
-    //     "inv-thres start size %zd exceeds bound (alpha*nnz) %zd, drop all "
-    //     "entries!",
-    //     start_size, N1);
-    static_cast<extractor &>(v).counts() = 0u;
-    return 0u;
+    // we at least add one entry
+    N1 = start_size + 1u;
+    // static_cast<extractor &>(v).counts() = 0u;
+    // return 0u;
   }
   const size_type N = N1 - start_size;
   psmilu_assert(N != 0u, "zero number of limitation!");
