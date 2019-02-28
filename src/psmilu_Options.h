@@ -113,6 +113,23 @@ enum : int {
 typedef psmilu_Options Options;
 
 /*!
+ * \brief read control parameters from a standard input streamer
+ * \tparam InStream input streamer, i.e. with input operator
+ * \param[in,out] in_str input streamer, e.g. \a std::cin
+ * \param[out] opt control parameters
+ * \return reference to \a in_str to enable chain reaction
+ * \ingroup cpp
+ * \note Read data in sequential order with default separators
+ */
+template <class InStream>
+inline InStream &operator>>(InStream &in_str, Options &opt) {
+  in_str >> opt.tau_L >> opt.tau_U >> opt.tau_d >> opt.tau_kappa >>
+      opt.alpha_L >> opt.alpha_U >> opt.rho >> opt.c_d >> opt.c_h >> opt.N >>
+      opt.verbose;
+  return in_str;
+}
+
+/*!
  * \brief get the default configuration
  * \ingroup cpp
  */
