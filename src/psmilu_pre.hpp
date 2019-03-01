@@ -119,7 +119,7 @@ inline typename CcsType::size_type do_preprocessing(
     auto &          forward = Q(), &buf = Q.inv();
     const size_type N = forward.size();
     size_type       i(0);
-    for (; i < m; ++i) buf[i] = forward[P[i]]; //P[forward[i]];
+    for (; i < m; ++i) buf[i] = forward[P[i]];
     for (; i < N; ++i) buf[i] = forward[i];
     forward.swap(buf);
     Q.build_inv();
