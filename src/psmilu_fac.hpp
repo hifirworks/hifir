@@ -447,6 +447,19 @@ class CompressedTypeTrait {
   }
 };
 
+template <class L_AugCcsType, class L_StartType>
+inline void update_L_start_symm(const L_AugCcsType &                   L,
+                                const typename L_AugCcsType::size_type row,
+                                L_StartType &L_start) {
+  using index_type  = typename L_AugCcsType::index_type;
+  index_type aug_id = L.start_row_id(row);
+  while (!L.is_nil(aug_id)) {
+    const auto col_idx = L.col_idx(aug_id);
+    L_start[col_idx]   = L.val_pos_idx(aug_id);
+    aug_id             = L.next_row_id(aug_id);
+  }
+}
+
 /*!
  * @}
  */ // group fac
@@ -490,6 +503,14 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
   Array<value_type>        s, t;
   BiPermMatrix<index_type> p, q;
   size_type m = do_preprocessing<IsSymm>(A_ccs, m0, opts, s, t, p, q);
+
+#if 0
+  std::fill(s.begin(), s.end(), value_type(1));
+  std::fill(t.begin(), t.end(), value_type(1));
+  p.make_eye();
+  q.make_eye();
+  m = m0;
+#endif
 
   // extract diagonal
   auto d = internal::extract_perm_diag(s, A_ccs, t, m, p, q);
@@ -546,6 +567,10 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
 
     // inf loop
     for (;;) {
+      //----------------
+      // pivoting
+      //---------------
+
       if (pvt) {
         // test m value before plugin m-1 to array accessing
         while (m > step && std::abs(1. / d[m - 1]) > tau_d) --m;
@@ -560,7 +585,13 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
         // update diagonal since we maintain a permutated version of it
         std::swap(d[step], d[m - 1]);
         --m;
+        if (IsSymm) internal::update_L_start_symm(L, m, L_start);
       }
+
+      //----------------
+      // inverse thres
+      //----------------
+
       // compute kappa ut
       update_kappa_ut(step, U, kappa_ut);
       // then compute kappa for l
@@ -569,48 +600,73 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
       // check pivoting
       pvt = k_ut > tau_kappa || k_l > tau_kappa;
       if (pvt) continue;
+
+      //------------------------
+      // update start positions
+      //------------------------
+
       // update U
       step.update_U_start(U, U_start);
       // then update L
-      const bool no_change = m == m_prev;
-      step.update_L_start<IsSymm>(L, m, L_start, no_change);
+      // const bool no_change = m == m_prev;
+      step.update_L_start<IsSymm>(L, m, L_start);
+
+      //----------------------
+      // compute Crout updates
+      //----------------------
+
       // compute Uk'
-      ut.reset_counter();
       step.compute_ut(s, A_crs, t, p[step], q, L, d, U, U_start, ut);
       // compute Lk
-      l.reset_counter();
       step.compute_l<IsSymm>(s, A_ccs, t, p, q[step], m, L, L_start, d, U, l);
       // update diagonal entries
 #ifndef NDEBUG
       const bool u_is_nonsingular =
+#else
+      (void)
 #endif
           step.scale_inv_diag(d, ut);
       psmilu_assert(!u_is_nonsingular, "u is singular at level %zd step %zd",
                     cur_level, step);
 #ifndef NDEBUG
       const bool l_is_nonsingular =
+#else
+      (void)
 #endif
           step.scale_inv_diag(d, l);
       psmilu_assert(!l_is_nonsingular, "l is singular at level %zd step %zd",
                     cur_level, step);
       // update diagonals b4 dropping
       step.update_B_diag<IsSymm>(l, ut, m, d);
+
+      //---------------
+      // drop and sort
+      //---------------
+
       // apply drop for U
       apply_dropping_and_sort(tau_U, k_ut, A_crs.nnz_in_row(p[step]), alpha_U,
                               ut);
       // push back rows to U
       U.push_back_row(step, ut.inds().cbegin(), ut.inds().cbegin() + ut.size(),
                       ut.vals());
+
       if (IsSymm) {
         // for symmetric cases, we need first find the leading block size
         auto info = find_sorted(ut.inds().cbegin(),
                                 ut.inds().cbegin() + ut.size(), m + ONE_BASED);
-        if (!info.first && info.second != ut.inds().cbegin() + ut.size())
-          ++info.second;
-        // then apply drops for l by assuming already got the ut entries
-        // in the symmetric region
         apply_dropping_and_sort(tau_L, k_l, A_ccs.nnz_in_col(q[step]), alpha_L,
                                 l, info.second - ut.inds().cbegin());
+
+#ifndef NDEBUG
+        if (info.second != ut.inds().cbegin() &&
+            info.second != ut.inds().cbegin() + ut.size() && l.size())
+          psmilu_error_if(*(info.second - 1) >= *l.inds().cbegin() ||
+                              *(info.second - 1) - ONE_BASED >= m,
+                          "l contains symm part (%zd,%zd,%zd)",
+                          (size_type)(*(info.second - 1)),
+                          (size_type)*l.inds().cbegin(), m);
+#endif
+
         // push back symmetric entries and offsets
         L.push_back_col(step, ut.inds().cbegin(), info.second, ut.vals(),
                         l.inds().cbegin(), l.inds().cbegin() + l.size(),
