@@ -136,6 +136,9 @@ class Crout {
     // run time
     //------------
 
+    // clear sparse buffer
+    ut.reset_counter();
+
     // first load the A
     _load_A2ut(s, crs_A, t, pk, q, ut);
 
@@ -250,6 +253,9 @@ class Crout {
     // run time
     //------------
 
+    // clear sparse buffer
+    l.reset_counter();
+
     // first load the A
     _load_A2l<IsSymm>(s, ccs_A, t, p, qk, m, l);
     // if not the first step
@@ -279,6 +285,13 @@ class Crout {
         for (; L_i_itr != L_i_last; ++L_i_itr, ++L_v_itr) {
           // convert to c index
           const auto c_idx = to_c_idx<size_type, base>(*L_i_itr);
+#ifndef NDEBUG
+          if (IsSymm)
+            psmilu_error_if(
+                c_idx < _step,
+                "%zd step symmetric l should not contain upper part (%zd)",
+                _step, c_idx);
+#endif
           // compute this entry, if index does not exist, assign new value to
           // -L*d*u, else, -= L*d*u
           l.push_back(*L_i_itr, _step) ? l.vals()[c_idx] = -*L_v_itr * du
@@ -411,28 +424,17 @@ class Crout {
   /// \param[in] L lower part
   /// \param[in] m leading block size
   /// \param[in,out] L_start leading location array
-  /// \param[in] no_pivot if \a false (default), then assume no pivot previously
   /// \note Complexity: \f$\mathcal{O}(\textrm{nnz}(\boldsymbol{L}(k,:)))\f$
   ///
   /// This routine is \a SFINAE-able by \a IsSymm, where this is for \a true
-  /// cases. For the symmetric case, things become more interesting, because we
-  /// just need to make \a L_start pointing to leading entries where the system
-  /// just passes the symmetric block.
-  ///
-  /// Regarding the complexity, in short, this routine, at most, takes
-  ///
-  /// \f[
-  ///   \mathcal{O}(\textrm{nnz}(\boldsymbol{L}(k,:)))+
-  ///     \mathcal{O}(\log \textrm{nnz}(\boldsymbol{L}(k-1,:)))
-  /// \f]
-  ///
-  /// However, in certain cases, only the routine only costs the log part or
-  /// the linear part. And in general, the linear term should dominant the
-  /// log part, thus overall it's still bounded linearly locally.
+  /// cases. For the symmetric case, we just need to search the starting
+  /// position for the newly added column. However, of course, this is not
+  /// enough, we also need to update the entries whenever we perform the row
+  /// and column interchanages, which can't be done in this routine.
   template <bool IsSymm, class L_AugCcsType, class L_StartType>
   inline typename std::enable_if<IsSymm>::type update_L_start(
       const L_AugCcsType &L, const size_type m, L_StartType &L_start,
-      bool no_pivot = false) const {
+      bool = false) const {
     static_assert(!L_AugCcsType::ROW_MAJOR, "L must be AugCCS");
     using index_type                = typename L_AugCcsType::index_type;
     constexpr static bool ONE_BASED = L_AugCcsType::ONE_BASED;
@@ -454,33 +456,11 @@ class Crout {
       L_start[_step - 1] = L.col_start()[_step];
       return;
     }
-    // if no pivoting previously, we just need to update the step entry
-    if (no_pivot) {
-      // binary search to point to start of newly added row
-      auto info          = find_sorted(L.row_ind_cbegin(_step - 1),
-                              L.row_ind_cend(_step - 1), ori_idx(m));
-      L_start[_step - 1] = info.second - L.row_ind().cbegin();
-      return;
-    }
-
-    index_type aug_id = L.start_row_id(m);
-    // loop thru all rows
-    // NOTE that we track the col_idx (which we need anyway, thus this is not
-    // extra operations), to the end, it may allow us to skip binary search
-    size_type col_idx(-1);
-    while (!L.is_nil(aug_id)) {
-      col_idx          = L.col_idx(aug_id);
-      L_start[col_idx] = L.val_pos_idx(aug_id);
-      // advance augmented handle
-      aug_id = L.next_row_id(aug_id);
-    }
-    if (col_idx != _step) {
-      // well, the newly added column doesn't have m row entry, thus update
-      // it using binary search
-      auto info          = find_sorted(L.row_ind_cbegin(_step - 1),
-                              L.row_ind_cend(_step - 1), ori_idx(m));
-      L_start[_step - 1] = info.second - L.row_ind().cbegin();
-    }
+    // binary search to point to start of newly added row
+    auto info          = find_sorted(L.row_ind_cbegin(_step - 1),
+                            L.row_ind_cend(_step - 1), ori_idx(m));
+    L_start[_step - 1] = info.second - L.row_ind().cbegin();
+    return;
   }
 
   /// \brief update the current diagonal entry
@@ -525,11 +505,11 @@ class Crout {
       const size_type n        = ut.size();
       const auto &    l_vals   = l.vals();
       for (size_type i = 0u; i < n; ++i) {
-        const auto c_idx = ut.c_idx(i);
+        const size_type c_idx = ut.c_idx(i);
         psmilu_assert(
-            (size_type)c_idx >= _step,
+            c_idx > _step,
             "should only contain the upper part of ut, (c_idx,step)=(%zd,%zd)!",
-            (size_type)c_idx, _step);
+            c_idx, _step);
         // if the dense tags of this entry points to this step, we know l has
         // an element in this slot
         if (c_idx < m && (size_type)l_d_tags[c_idx] == _step)
@@ -540,11 +520,11 @@ class Crout {
       const size_type n      = l.size();
       const auto &    u_vals = ut.vals();
       for (size_type i = 0u; i < n; ++i) {
-        const auto c_idx = l.c_idx(i);
+        const size_type c_idx = l.c_idx(i);
         psmilu_assert(
-            (size_type)c_idx >= _step,
+            c_idx > _step,
             "should only contain the lower part of l, (c_idx,step)=(%zd,%zd)!",
-            (size_type)c_idx, _step);
+            c_idx, _step);
         // if the dense tags of this entry points to this step, we know ut has
         // an element in this slot
         if (c_idx < m && (size_type)ut_d_tags[c_idx] == _step)
@@ -588,11 +568,11 @@ class Crout {
     const size_type n = ut.size();
     // get the c index
     for (size_type i = 0u; i < n; ++i) {
-      const auto c_idx = ut.c_idx(i);
+      const size_type c_idx = ut.c_idx(i);
       psmilu_assert(
-          (size_type)c_idx >= _step,
+          c_idx > _step,
           "ut should only contain the upper part, (c_idx,step)=(%zd,%zd)!",
-          (size_type)c_idx, _step);
+          c_idx, _step);
       if (c_idx < m) d[c_idx] -= dk * ut.val(i) * ut.val(i);
     }
   }
