@@ -24,6 +24,7 @@
 #include "psmilu_PermMatrix.hpp"
 #include "psmilu_Schur.hpp"
 #include "psmilu_SparseVec.hpp"
+#include "psmilu_Timer.hpp"
 #include "psmilu_diag_pivot.hpp"
 #include "psmilu_inv_thres.hpp"
 #include "psmilu_log.hpp"
@@ -38,6 +39,28 @@ namespace internal {
  * @{
  */
 
+/// \brief extract permutated diagonal
+/// \tparam LeftDiagType left scaling vector type, see \ref Array
+/// \tparam CcsType input ccs matrix, see \ref CCS
+/// \tparam RightDiagType right scaling vector type, see \ref Array
+/// \tparam PermType permutation matrix type, see \ref BiPermMatrix
+/// \param[in] s row scaling vector
+/// \param[in] A input matrix in CCS format
+/// \param[in] t column scaling vector
+/// \param[in] m leading block size
+/// \param[in] p row permutation vector
+/// \param[in] q column permutation vector
+/// \return permutated diagonal of \a A
+///
+/// This routine, essentially, is to compute:
+///
+/// \f[
+///   \boldsymbol{D}=\left(\boldsymbol{SAT}\right)_{\boldsymbol{p}_{1:m},
+///     \boldsymbol{q}_{1:m}}
+/// \f]
+///
+/// This routine is used before \ref Crout update to extract the initial
+/// diagonal entries.
 template <class LeftDiagType, class CcsType, class RightDiagType,
           class PermType>
 inline Array<typename CcsType::value_type> extract_perm_diag(
@@ -66,7 +89,7 @@ inline Array<typename CcsType::value_type> extract_perm_diag(
     psmilu_assert((size_type)p[i] < A.nrows(),
                   "permutated index %zd exceeds the row bound",
                   (size_type)p[i]);
-
+    // using binary search
     auto info = find_sorted(A.row_ind_cbegin(q[i]), A.row_ind_cend(q[i]),
                             ori_idx(p[i]));
     if (info.first)
@@ -79,6 +102,14 @@ inline Array<typename CcsType::value_type> extract_perm_diag(
   return diag;
 }
 
+/// \brief extract the lower part of leading block
+/// \tparam AugCcsType augmented ccs storage, see \ref AugCCS
+/// \tparam StartArray starting position array, see \ref Array
+/// \param[in] L augmented L after \ref Crout update
+/// \param[in] m final leading block size
+/// \param[in] L_start final starting positions
+/// \return the exact lower part in \ref CCS storage
+/// \sa extract_U_B
 template <class AugCcsType, class StartArray>
 inline typename AugCcsType::ccs_type extract_L_B(
     const AugCcsType &L, const typename AugCcsType::size_type m,
@@ -116,8 +147,8 @@ inline typename AugCcsType::ccs_type extract_L_B(
   }
 
   if (!(col_start[m] - ONE_BASED)) {
-    psmilu_warning(
-        "exactly zero L_B, this most likely is a bug! Continue anyway...");
+    // psmilu_warning(
+    //     "exactly zero L_B, this most likely is a bug! Continue anyway...");
     return L_B;
   }
 
@@ -145,6 +176,14 @@ inline typename AugCcsType::ccs_type extract_L_B(
   return L_B;
 }
 
+/// \brief extract the upper part
+/// \tparam AugCrsType augmented crs storage, see \ref AugCRS
+/// \tparam StartArray array type for staring positions, see \ref Array
+/// \param[in] U upper part in augmented storage after \ref Crout update
+/// \param[in] m final leading block size
+/// \param[in] U_start final starting positions for \a U
+/// \return the exact upper part in \ref CCS format of \a U
+/// \sa extract_L_B
 template <class AugCrsType, class StartArray>
 inline typename AugCrsType::ccs_type extract_U_B(
     const AugCrsType &U, const typename AugCrsType::size_type m,
@@ -185,8 +224,8 @@ inline typename AugCrsType::ccs_type extract_U_B(
   for (size_type i = 0u; i < m; ++i) col_start[i + 1] += col_start[i];
 
   if (!col_start[m]) {
-    psmilu_warning(
-        "exactly zero L_B, this most likely is a bug! Continue anyway...");
+    // psmilu_warning(
+    //     "exactly zero L_B, this most likely is a bug! Continue anyway...");
     return U_B;
   }
 
@@ -222,10 +261,31 @@ inline typename AugCrsType::ccs_type extract_U_B(
   return U_B;
 }
 
-template <class LeftDiagType, class CrsType, class RightdiagType,
+/// \brief extract the \a E part
+/// \tparam LeftDiagType left scaling vector type, see \ref Array
+/// \tparam CrsType input crs matrix, see \ref CRS
+/// \tparam RightDiagType right scaling vector type, see \ref Array
+/// \tparam PermType permutation matrix type, see \ref BiPermMatrix
+/// \param[in] s row scaling vector
+/// \param[in] A input matrix in crs format
+/// \param[in] t column scaling vector
+/// \param[in] m leading block size (final)
+/// \param[in] p row permutation vector
+/// \param[in] q column permutation vector
+/// \return The \a E part in \ref CCS format
+/// \sa extract_F
+///
+/// This routine is to extract the \a E part \b after \ref Crout update.
+/// Essentially, this routine is to perform:
+///
+/// \f[
+///   \boldsymbol{E}=\left(\boldsymbol{SAT}\right)_{\boldsymbol{p}_{m+1:n},
+///     \boldsymbol{q}_{1:m}}
+/// \f]
+template <class LeftDiagType, class CrsType, class RightDiagType,
           class PermType>
 inline typename CrsType::other_type extract_E(
-    const LeftDiagType &s, const CrsType &A, const RightdiagType &t,
+    const LeftDiagType &s, const CrsType &A, const RightDiagType &t,
     const typename CrsType::size_type m, const PermType &p, const PermType &q) {
   // it's efficient to extract E from CRS
   static_assert(CrsType::ROW_MAJOR, "input A must be CRS!");
@@ -243,7 +303,7 @@ inline typename CrsType::other_type extract_E(
   const size_type N = n - m;
   ccs_type        E(N, m);
   if (!N) {
-    psmilu_warning("empty E matrix detected!");
+    // psmilu_warning("empty E matrix detected!");
     return E;
   }
 
@@ -264,8 +324,8 @@ inline typename CrsType::other_type extract_E(
   for (size_type i = 0u; i < m; ++i) col_start[i + 1] += col_start[i];
 
   if (!col_start[m]) {
-    psmilu_warning(
-        "exactly zero E, this most likely is a bug! Continue anyway...");
+    // psmilu_warning(
+    //     "exactly zero E, this most likely is a bug! Continue anyway...");
     return E;
   }
 
@@ -306,6 +366,34 @@ inline typename CrsType::other_type extract_E(
   return E;
 }
 
+/// \brief extract the \a F part
+/// \tparam LeftDiagType left scaling vector type, see \ref Array
+/// \tparam CcsType input ccs matrix, see \ref CCS
+/// \tparam RightDiagType right scaling vector type, see \ref Array
+/// \tparam PermType permutation matrix type, see \ref BiPermMatrix
+/// \tparam BufferType work space array, can be \ref Array or \a std::vector
+/// \param[in] s row scaling vector
+/// \param[in] A input matrix in CCS format
+/// \param[in] t column scaling vector
+/// \param[in] m leading block size
+/// \param[in] p row permutation vector
+/// \param[in] q column permutation vector
+/// \param buf work space
+/// \return The \a F part in ccs storage
+/// \sa extract_E
+///
+/// Note that unlike extracting the \a E part, this routine takes \ref CCS as
+/// input, and with the permutation vectors, we need a value buffer space as
+/// an intermidiate storage to store the values so that is will make sorting
+/// much easier. The buffer space is a dense array, and can be passed in from
+/// that of \a l or \a ut (if squared systems).
+///
+/// This routine, essentially, is to compute:
+///
+/// \f[
+///   \boldsymbol{F}=\left(\boldsymbol{SAT}\right)_{\boldsymbol{p}_{1:m},
+///     \boldsymbol{q}_{m+1:n}}
+/// \f]
 template <class LeftDiagType, class CcsType, class RightDiagType,
           class PermType, class BufferType>
 inline CcsType extract_F(const LeftDiagType &s, const CcsType &A,
@@ -328,7 +416,7 @@ inline CcsType extract_F(const LeftDiagType &s, const CcsType &A,
   const size_type N = n - m;
   CcsType         F(m, N);
   if (!N) {
-    psmilu_warning("empty F matrix detected!");
+    // psmilu_warning("empty F matrix detected!");
     return F;
   }
 
@@ -348,8 +436,8 @@ inline CcsType extract_F(const LeftDiagType &s, const CcsType &A,
   }
 
   if (!(col_start[N] - ONE_BASED)) {
-    psmilu_warning(
-        "exactly zero F, this most likely is a bug! Continue anyway...");
+    // psmilu_warning(
+    //     "exactly zero F, this most likely is a bug! Continue anyway...");
     return F;
   }
 
@@ -397,11 +485,20 @@ inline CcsType extract_F(const LeftDiagType &s, const CcsType &A,
 }
 
 /// \class CompressedTypeTrait
+/// \brief Core component to filter CCS and CRS types
+/// \tparam CsType1 compressed type I
+/// \tparam CsType2 compressed type II
+///
+/// Since we allow user to arbitrarily use either \ref CCS or \ref CRS as input,
+/// we need to build the counterpart and, most importantly, determine the
+/// \ref CCS and \ref CRS from the input and its counterpart. This helper trait
+/// is to accomplish this task.
 template <class CsType1, class CsType2>
 class CompressedTypeTrait {
   static_assert(CsType1::ROW_MAJOR ^ CsType2::ROW_MAJOR,
                 "cannot have same type");
   constexpr static bool _1_IS_CRS = CsType1::ROW_MAJOR;
+  ///< flag of type I is \ref CRS
 
  public:
   typedef typename std::conditional<_1_IS_CRS, CsType1, CsType2>::type crs_type;
@@ -447,6 +544,21 @@ class CompressedTypeTrait {
   }
 };
 
+/// \brief update the L start positions for symmetric cases
+/// \tparam L_AugCcsType augmented ccs type, see \ref AugCCS
+/// \tparam L_StartType starting position array type, see \ref Array
+/// \param[in] L augmented ccs for L
+/// \param[in] row row index for updating
+/// \param[out] L_start starting position of L
+///
+/// The reason we need this routine is because, for symmetric cases, we just
+/// want \a L_start pointing to the asymmetric part, i.e. m+1:n region. However,
+/// the problem is that \a m decreases whenever we interchange the rows in L.
+/// As a result, we need to update \a L_start after each row interchanges. It's
+/// worth noting that \a U_start is treated identically due to the higher
+/// priority (comparing to L).
+///
+/// The complexity is \f$\mathcal{O}(\textrm{nnz}(\boldsymbol{L}_{row,:}))\f$
 template <class L_AugCcsType, class L_StartType>
 inline void update_L_start_symm(const L_AugCcsType &                   L,
                                 const typename L_AugCcsType::size_type row,
@@ -467,7 +579,31 @@ inline void update_L_start_symm(const L_AugCcsType &                   L,
 }  // namespace internal
 
 /// \brief perform incomplete LU diagonal pivoting factorization for a level
+/// \tparam IsSymm if \a true, then assume a symmetric leading block
+/// \tparam CsType input compressed storage, either \ref CRS or \ref CCS
+/// \tparam PrecsType multilevel preconditioner type, \ref Precs and \ref Prec
+/// \param[in] A input for this level
+/// \param[in] m0 initial leading block size
+/// \param[in] N reference \b global size for determining Schur sparsity
+/// \param[in] opts control parameters
+/// \param[in,out] precs list of preconditioner, newly computed components will
+///                      be pushed back to the list.
+/// \return Schur complement for next level (if needed), in the same type as
+///         that of the input, i.e. \a CsType
 /// \ingroup fac
+///
+/// This is the core algorithm, which has been demonstrated in the paper, i.e.
+/// the algorithm 2, \b ilu_dp_factor. There are two modifications: 1) we put
+/// the preprocessing inside this routine, and 2) we embed post-processing (
+/// computing Schur complement and updating preconditioner components for the
+/// current level) as well. The reasons are, for 1), the preprocessing requires
+/// the input type to be \ref CCS, which can only be determined inside this
+/// routine (we want to keep this routine as clean as possible, we can, of
+/// course, extract the preprocessing out and make this routine takes inputs
+/// of both CCS and CRS of \a A.); for 2), it's efficient to compute the Schur
+/// complement with \a L_start and \a U_start as well as augmented \a L and \a
+/// U. Therefore, instead of sorely factorization, this routine is more or less
+/// like a level problem solver.
 template <bool IsSymm, class CsType, class PrecsType>
 inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
                            const typename CsType::size_type N,
@@ -494,15 +630,29 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
                     "symmetric must be applied to first level!");
 #endif
 
+  if (psmilu_verbose(INFO, opts))
+    psmilu_info("\nenter level %zd.\n", cur_level);
+
+  DefaultTimer timer;
+
   // build counterpart type
   const other_type A_counterpart(A);
-  const crs_type & A_crs = cs_trait::select_crs(A, A_counterpart);
-  const ccs_type & A_ccs = cs_trait::select_ccs(A, A_counterpart);
+
+  // now use our trait and its static methods to precisely determine the ccs
+  // and crs components.
+  const crs_type &A_crs = cs_trait::select_crs(A, A_counterpart);
+  const ccs_type &A_ccs = cs_trait::select_ccs(A, A_counterpart);
+
+  if (psmilu_verbose(INFO, opts)) psmilu_info("performing preprocessing...");
 
   // preprocessing
+  timer.start();
   Array<value_type>        s, t;
   BiPermMatrix<index_type> p, q;
   size_type m = do_preprocessing<IsSymm>(A_ccs, m0, opts, s, t, p, q);
+  timer.finish();  // prefile pre-processing
+
+  if (psmilu_verbose(INFO, opts)) psmilu_info("time: %gs", timer.time());
 
 #if 0
   std::fill(s.begin(), s.end(), value_type(1));
@@ -511,6 +661,10 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
   q.make_eye();
   m = m0;
 #endif
+
+  if (psmilu_verbose(INFO, opts)) psmilu_info("preparing data variables...");
+
+  timer.start();
 
   // extract diagonal
   auto d = internal::extract_perm_diag(s, A_ccs, t, m, p, q);
@@ -559,6 +713,8 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
   const auto tau_d = opts.tau_d, tau_kappa = opts.tau_kappa, tau_U = opts.tau_U,
              tau_L   = opts.tau_L;
   const auto alpha_L = opts.alpha_L, alpha_U = opts.alpha_U;
+
+  if (psmilu_verbose(INFO, opts)) psmilu_info("start Crout update...");
 
   for (Crout step; step < m; ++step) {
     // first check diagonal
@@ -689,7 +845,18 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
   U_start[m - 1] = U.row_start()[m - 1];
   L_start[m - 1] = L.col_start()[m - 1];
 
+  timer.finish();  // profile Crout update
+
   // now we are done
+  if (psmilu_verbose(INFO, opts)) {
+    psmilu_info("finish Crout update...");
+    psmilu_info("time: %gs", timer.time());
+  }
+
+  if (psmilu_verbose(INFO, opts))
+    psmilu_info("computing Schur complement (S)...");
+
+  timer.start();
 
   // compute C version of Schur complement
   crs_type S_tmp;
@@ -708,7 +875,8 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
   psmilu_assert(S_D.empty(), "fatal!");
   if (S.nnz() >= static_cast<size_type>(opts.rho * nm * nm) ||
       nm <= static_cast<size_type>(opts.c_d * cbrt_N)) {
-    S_D = dense_type::from_sparse(S);
+    bool use_h_ver = false;
+    S_D            = dense_type::from_sparse(S);
     if (m <= static_cast<size_type>(opts.c_h * cbrt_N)) {
 #ifdef PSMILU_UNIT_TESTING
       ccs_type T_E, T_F;
@@ -719,7 +887,11 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
                       T_E, T_F
 #endif
       );
+      use_h_ver = true;
     }  // H version check
+    if (psmilu_verbose(INFO, opts))
+      psmilu_info("converted Schur complement (%s) to dense for last level...",
+                  (use_h_ver ? "H" : "S"));
   }
 
   precs.emplace_back(m, A.nrows(), std::move(L_B), std::move(d), std::move(U_B),
@@ -733,11 +905,19 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
     auto &last_level = precs.back().dense_solver;
     last_level.set_matrix(std::move(S_D));
     last_level.factorize();
+    if (psmilu_verbose(INFO, opts))
+      psmilu_info("successfully factorized the dense complement...");
   }
 #ifndef NDEBUG
   else
     psmilu_error_if(!precs.back().dense_solver.empty(), "should be empty!");
 #endif
+
+  timer.finish();  // profile post-processing
+
+  if (psmilu_verbose(INFO, opts)) psmilu_info("time: %gs", timer.time());
+
+  if (psmilu_verbose(INFO, opts)) psmilu_info("\nfinish level %zd.", cur_level);
 
   return S;
 }

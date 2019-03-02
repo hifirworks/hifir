@@ -38,11 +38,11 @@ const static char *intro =
     "|                                                                     |\n"
     "-----------------------------------------------------------------------\n"
     "\n"
-    "Package information:\n"
+    " Package information:\n"
     "\n"
-    "\tCopyright (C) The PSMILU AUTHORS\n"
-    "\tVersion: %d.%d.%d\n"
-    "\tBuilt on: %s, %s\n"
+    "\t\tCopyright (C) The PSMILU AUTHORS\n"
+    "\t\tVersion: %d.%d.%d\n"
+    "\t\tBuilt on: %s, %s\n"
     "\n"
     "=======================================================================\n";
 static bool introduced = false;
@@ -59,6 +59,29 @@ static bool introduced = false;
 /// \tparam IndexType index type, e.g. \a int
 /// \tparam OneBased if \a false (default), then assume C index system
 /// \tparam SSSType default is LU with partial pivoting
+///
+/// This is top user interface (C++); it is designed as a preconditioner that
+/// can be easily plugin other codes. There are two core member functions, 1)
+/// \ref compute a multilevel ILU preconditioner and 2) \ref solve the
+/// preconditioner system. For computing preconditioner, the input can be either
+/// \ref CCS or \ref CRS, for solving, the input must be \ref Array. However,
+/// be aware that both CCS/CRS and Array can be used as external data wrappers,
+/// thus one should not worry about input data duplications.
+///
+/// The following is a simple workflow for Builder.
+///
+/// \code{.cpp}
+///   #include <PSMILU.hpp>
+///   using namespace psmilu;
+///   using builder_t = Builder<double, int>; // C index
+///   using crs_t = builder_t::crs_type;
+///   int main() {
+///     const auto A = wrap_crs<crs_t>(...); // make a data wrapper
+///     builder_t builder;
+///     builder.compute(A);
+///     builder.solve(...);
+///   }
+/// \endcode
 template <class ValueType, class IndexType, bool OneBased = false,
           SmallScaleType SSSType = SMALLSCALE_LUP>
 class Builder {
@@ -97,9 +120,19 @@ class Builder {
     return *itr;
   }
 
+  /// \brief compute the MILU preconditioner
+  /// \tparam CsType compressed storage input, either \ref CRS or \ref CCS
+  /// \param[in] A input matrix
+  /// \param[in] m0 leading block size, if it's zero (default), then the routine
+  ///               will assume an asymmetric leading block.
+  /// \param[in] opts control parameters, using the default values in the paper.
+  /// \sa solve, _compute_kernel
   template <class CsType>
   inline void compute(const CsType &A, const size_type m0 = 0u,
                       const Options &opts = get_default_options()) {
+    static_assert(!(CsType::ONE_BASED ^ ONE_BASED), "inconsistent index base");
+
+    // print introduction
     if (psmilu_verbose(INFO, opts)) {
       if (!internal::introduced) {
         psmilu_info(internal::intro, PSMILU_GLOBAL_VERSION,
@@ -112,7 +145,8 @@ class Builder {
     }
     const bool revert_warn = warn_flag();
     if (psmilu_verbose(NONE, opts)) (void)warn_flag(0);
-    DefaultTimer t;
+
+    DefaultTimer t;  // record overall time
     t.start();
     if (!empty()) {
       psmilu_warning(
@@ -122,10 +156,15 @@ class Builder {
     _compute_kernel(A, m0, opts);
     t.finish();
     if (psmilu_verbose(INFO, opts))
-      psmilu_info("multilevel precs building time (overall) is %gs", t.time());
+      psmilu_info("\nmultilevel precs building time (overall) is %gs",
+                  t.time());
     if (revert_warn) (void)warn_flag(1);
   }
 
+  /// \brief solve \f$\boldsymbol{x}=\boldsymbol{M}^{-1}\boldsymbol{b}\f$
+  /// \param[in] b right-hand side vector
+  /// \param[out] x solution vector
+  /// \sa compute
   inline void solve(const array_type &b, array_type &x) const {
     psmilu_error_if(empty(), "MILU-Prec is empty!");
     psmilu_error_if(b.size() != x.size(), "unmatched sizes");
@@ -136,38 +175,38 @@ class Builder {
   }
 
  protected:
+  /// \brief computing kernel
+  /// \tparam CsType compressed storage
+  /// \param[in] A input matrix
+  /// \param[in] m0 leading block size
+  /// \param[in] opts control parameters
+  /// \note This routine is called recursively.
+  ///
+  /// This is implementation of algorithm 1 in the paper.
   template <class CsType>
   inline void _compute_kernel(const CsType &A, const size_type m0,
                               const Options &opts) {
     psmilu_error_if(A.nrows() != A.ncols(),
                     "Currently only squared systems are supported");
-    size_type       m(m0);
-    size_type       N;
+    size_type       m(m0);  // init m
+    size_type       N;      // reference size
     const size_type cur_level = levels() + 1;
+
+    // determine the reference size
     if (opts.N >= 0)
       N = opts.N;
-    else {
-      if (cur_level == 1u)
-        N = A.nrows();
-      else
-        N = _precs.front().n;
-    }
-    // // use a identity permutation vectors
-    // BiPermMatrix<index_type> p(A.nrows()), q(A.ncols());
-    // p.make_eye();
-    // q.make_eye();
-    // // use identity scaling for now
-    // array_type s(A.nrows(), value_type(1)), t(A.ncols(), value_type(1));
-    // psmilu_error_if(s.status() == DATA_UNDEF,
-    //                 "memory allocation failed for s at level %zd.",
-    //                 cur_level);
-    // psmilu_error_if(t.status() == DATA_UNDEF,
-    //                 "memory allocation failed for t at level %zd.",
-    //                 cur_level);
+    else
+      N = cur_level == 1u ? A.nrows() : _precs.front().n;
+
+    // check symmetry
     const bool sym = cur_level == 1u && m > 0u;
-    if (!sym) m = A.nrows();
+    if (!sym) m = A.nrows();  // IMPORTANT! If asymmetric, set m = n
+
+    // instantiate IsSymm here
     const CsType S = sym ? iludp_factor<true>(A, m, N, opts, _precs)
                          : iludp_factor<false>(A, m, N, opts, _precs);
+
+    // check last level
     if (!_precs.back().is_last_level()) this->_compute_kernel(S, 0u, opts);
   }
 
