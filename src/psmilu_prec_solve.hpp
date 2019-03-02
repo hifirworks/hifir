@@ -139,74 +139,56 @@ inline void prec_solve(
 
   psmilu_assert(b.size() == y.size(), "solution and rhs sizes should match");
 
-  // preparation
+  // preparations
   const auto &    prec = *prec_itr;
   const size_type m = prec.m, n = prec.n, nm = n - m;
   const auto &    p = prec.p, &q_inv = prec.q_inv;
   const auto &    s = prec.s, &t = prec.t;
 
-  {
-    // within this local scope, we compute s(p).*b(p), where the range 1:m is
-    // stored to y(1:m), and (m+1:n) to work(1:n-m)
-    size_type i(0u);
-    for (; i < m; ++i) y[i] = s[p[i]] * b[p[i]];
-    for (; i < n; ++i) work[i - m] = s[p[i]] * b[p[i]];
+  // first compute the permutated vector (1:m), and store it to work(1:m)
+  for (size_type i = 0u; i < m; ++i) work[i] = s[p[i]] * b[p[i]];
+
+  // compute the E part only if E is not empty
+  if (nm) {
+    // solve for work(1:m)=inv(U)*inv(B)*inv(L)*work(1:m), this is done inplace
+    internal::prec_solve_udl_inv(prec.U_B, prec.d_B, prec.L_B, work);
+    // then compute y(m+1:n) = E*work(1:m)
+    prec.E.mv_nt_low(&work[0], y.data() + m);
+    // then subtract b from the y(m+1:n)
+    for (size_type i = m; i < n; ++i) y[i] = s[p[i]] * b[p[i]] - y[i];
   }
 
-  // solve for y(1:m)=inv(U)*inv(B)*inv(L)*y(1:m), this is done inplace
-  internal::prec_solve_udl_inv(prec.U_B, prec.d_B, prec.L_B, y);
-
-  // compute y(m+1:n)=(s.*b)(p(m+1:n))-E*y(1:m)
-  // Note that we need a work space to store E*y(1:m), we will use y(m+1:n)
-  // directly here. Be ware that (s.*b)(p(m+1:n)) is already computed and stored
-  // in work(1:n-m).
-
-  // create an array wrapper with size of n-m, of y(m+1:n)
-  auto y_mn = array_type(nm, y.data() + m, WRAP);
-  // call low level API to avoid create Array wrap for y(1:m)
-  // y(m+1:n) now is filled with E*y(1:m)
-  if (m != 0u) {
-    prec.E.mv_nt_low(y.data(), y_mn.data());
-    // now update y(m+1:n) by using work space that stores scaled and permutated
-    // rhs
-    for (size_type i = m; i < n; ++i) y[i] = work[i - m] - y[i];
-  } else
-    for (size_type i = 0u; i < n; ++i) y[i] = work[i - m];
-
-  // at this point, both y(1:m) and y(m+1:n) are utd.
-
   if (prec.is_last_level()) {
-    if (nm) prec.dense_solver.solve(y_mn);  // solve inplace!
+    if (nm) {
+      // create an array wrapper with size of n-m, of y(m+1:n)
+      auto y_mn = array_type(nm, y.data() + m, WRAP);
+      prec.dense_solver.solve(y_mn);  // solve inplace!
+    }
   } else {
-    // if not yet reached last level, we need rebuild the new rhs and solution
-    // vector. Note that the rhs values are just those in y(m+1:n), we will
-    // take the leading n-m space in work to store the rhs and create a map
-    // on top the data. We will, then, use the remaining data in work as the new
-    // work buffer.
-    value_type *work_next = &work[nm];
-    auto        work_b    = array_type(nm, &work[0], WRAP);
+    auto        y_mn      = array_type(nm, y.data() + m, WRAP);
+    value_type *work_next = &work[n];  // advance to next buffer region
+    auto        work_b    = array_type(nm, &work[0] + m, WRAP);
     std::copy(y_mn.cbegin(), y_mn.cend(), work_b.begin());
+    // rec call, note that y_mn should store the solution
     prec_solve(++prec_itr, work_b, y_mn, work_next);
   }
 
-  // Note that if we get here, from last_level:first_level:-1, we have
-  // both y(1:m) and y(m+1:n) are utd. Now, we will use work to stored the
-  // the solution before final scaling and permutation.
+  // copy y(m+1:n) to work(m+1:n)
+  std::copy(y.cbegin() + m, y.cend(), &work[0] + m);
 
-  // compute work(1:m)=y(1:m)-F*y(m+1:n)
-  // first use work(1:m) store F*y(m+1:n)
+  // only handle the F part if it's not empty
   if (prec.F.ncols()) {
-    prec.F.mv_nt_low(y_mn.data(), &work[0]);
-    // then, do the subtraction, notice that y(1:m) is not touched
-    for (size_type i = 0u; i < m; ++i) work[i] = y[i] - work[i];
-  } else
-    for (size_type i = 0u; i < m; ++i) work[i] = y[i];
+    // compute F*y(m+1:n) and store it to work(1:m)
+    prec.F.mv_nt_low(y.data() + m, &work[0]);
+    // subtract b(1:m) from work(1:m)
+    for (size_type i = 0u; i < m; ++i) work[i] = s[p[i]] * b[p[i]] - work[i];
+  } else if (nm) {
+    // should not happen for square systems
+    for (size_type i = 0u; i < m; ++i) work[i] = s[p[i]] * b[p[i]];
+  }
 
   // solve for work(1:m)=inv(U)*inv(B)*inv(L)*work(1:m), inplace
   internal::prec_solve_udl_inv(prec.U_B, prec.d_B, prec.L_B, work);
-
-  // we need to fill in the y(m+1:n) to work(m+1:n)
-  std::copy(y_mn.cbegin(), y_mn.cend(), &work[0] + m);
 
   // Now, we have work(1:n) storing the complete solution before final scaling
   // and permutation
@@ -224,21 +206,9 @@ inline void prec_solve(
 template <class PrecItr>
 inline std::size_t compute_prec_work_space(PrecItr first, PrecItr last) {
   if (first == last) return 0u;
-#if 1
-  // use a conservative strategy
   std::size_t n(0u);
   for (; first != last; ++first) n += first->n;
   return n;
-#else
-  const std::size_t n_first = first->n;
-  std::size_t       extra(0u);
-  for (; first != last; ++first) {
-    const std::size_t next_n     = first->n - first->m;
-    const std::size_t next_buf_n = first->m;
-    if (next_buf_n < next_n) extra += next_n - next_buf_n;
-  }
-  return n_first + extra;
-#endif
 }
 
 }  // namespace psmilu
