@@ -51,7 +51,7 @@ static bool introduced = false;
 
 /*!
  * \addtogroup cpp
- * {@
+ * @{
  */
 
 /// \class Builder
