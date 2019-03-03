@@ -20,6 +20,7 @@
 #include "psmilu_Timer.hpp"
 #include "psmilu_fac.hpp"
 #include "psmilu_prec_solve.hpp"
+#include "psmilu_utils.hpp"
 #include "psmilu_version.h"
 
 namespace psmilu {
@@ -132,6 +133,9 @@ class Builder {
                       const Options &opts = get_default_options()) {
     static_assert(!(CsType::ONE_BASED ^ ONE_BASED), "inconsistent index base");
 
+    const static internal::StdoutStruct  Crout_cout;
+    const static internal::DummyStreamer Crout_cout_dummy;
+
     // print introduction
     if (psmilu_verbose(INFO, opts)) {
       if (!internal::introduced) {
@@ -153,7 +157,10 @@ class Builder {
           "multilevel precs are not empty, wipe previous results first");
       _precs.clear();
     }
-    _compute_kernel(A, m0, opts);
+    if (psmilu_verbose(FAC, opts))
+      _compute_kernel(A, m0, opts, Crout_cout);
+    else
+      _compute_kernel(A, m0, opts, Crout_cout_dummy);
     t.finish();
     if (psmilu_verbose(INFO, opts))
       psmilu_info("\nmultilevel precs building time (overall) is %gs",
@@ -177,15 +184,18 @@ class Builder {
  protected:
   /// \brief computing kernel
   /// \tparam CsType compressed storage
+  /// \tparam CroutStreamer information streamer for Crout update
   /// \param[in] A input matrix
   /// \param[in] m0 leading block size
   /// \param[in] opts control parameters
+  /// \param[in] Crout_info information streamer, API same as \ref psmilu_info
   /// \note This routine is called recursively.
   ///
   /// This is implementation of algorithm 1 in the paper.
-  template <class CsType>
+  template <class CsType, class CroutStreamer>
   inline void _compute_kernel(const CsType &A, const size_type m0,
-                              const Options &opts) {
+                              const Options &      opts,
+                              const CroutStreamer &Crout_info) {
     psmilu_error_if(A.nrows() != A.ncols(),
                     "Currently only squared systems are supported");
     size_type       m(m0);  // init m
@@ -203,11 +213,13 @@ class Builder {
     if (!sym) m = A.nrows();  // IMPORTANT! If asymmetric, set m = n
 
     // instantiate IsSymm here
-    const CsType S = sym ? iludp_factor<true>(A, m, N, opts, _precs)
-                         : iludp_factor<false>(A, m, N, opts, _precs);
+    const CsType S =
+        sym ? iludp_factor<true>(A, m, N, opts, Crout_info, _precs)
+            : iludp_factor<false>(A, m, N, opts, Crout_info, _precs);
 
     // check last level
-    if (!_precs.back().is_last_level()) this->_compute_kernel(S, 0u, opts);
+    if (!_precs.back().is_last_level())
+      this->_compute_kernel(S, 0u, opts, Crout_info);
   }
 
  protected:

@@ -581,11 +581,13 @@ inline void update_L_start_symm(const L_AugCcsType &                   L,
 /// \brief perform incomplete LU diagonal pivoting factorization for a level
 /// \tparam IsSymm if \a true, then assume a symmetric leading block
 /// \tparam CsType input compressed storage, either \ref CRS or \ref CCS
+/// \tparam CroutStreamer information streamer for \ref Crout update
 /// \tparam PrecsType multilevel preconditioner type, \ref Precs and \ref Prec
 /// \param[in] A input for this level
 /// \param[in] m0 initial leading block size
 /// \param[in] N reference \b global size for determining Schur sparsity
 /// \param[in] opts control parameters
+/// \param[in] Crout_info information streamer, API same as \ref psmilu_info
 /// \param[in,out] precs list of preconditioner, newly computed components will
 ///                      be pushed back to the list.
 /// \return Schur complement for next level (if needed), in the same type as
@@ -604,10 +606,11 @@ inline void update_L_start_symm(const L_AugCcsType &                   L,
 /// complement with \a L_start and \a U_start as well as augmented \a L and \a
 /// U. Therefore, instead of sorely factorization, this routine is more or less
 /// like a level problem solver.
-template <bool IsSymm, class CsType, class PrecsType>
+template <bool IsSymm, class CsType, class CroutStreamer, class PrecsType>
 inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
                            const typename CsType::size_type N,
-                           const Options &opts, PrecsType &precs) {
+                           const Options &opts, const CroutStreamer &Crout_info,
+                           PrecsType &precs) {
   typedef CsType                      input_type;
   typedef typename CsType::other_type other_type;
   using cs_trait = internal::CompressedTypeTrait<input_type, other_type>;
@@ -714,12 +717,18 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
              tau_L   = opts.tau_L;
   const auto alpha_L = opts.alpha_L, alpha_U = opts.alpha_U;
 
+  size_type pivots(0);
+
   if (psmilu_verbose(INFO, opts)) psmilu_info("start Crout update...");
 
   for (Crout step; step < m; ++step) {
     // first check diagonal
     bool            pvt    = std::abs(1. / d[step]) > tau_d;
     const size_type m_prev = m;
+
+    Crout_info(" Crout step %zd, leading block size %zd", step, m_prev);
+
+    size_type local_pivots(0);
 
     // inf loop
     for (;;) {
@@ -741,6 +750,7 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
         // update diagonal since we maintain a permutated version of it
         std::swap(d[step], d[m - 1]);
         --m;
+        ++local_pivots;
         if (IsSymm) internal::update_L_start_symm(L, m, L_start);
       }
 
@@ -755,11 +765,22 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
       const auto k_ut = std::abs(kappa_ut[step]), k_l = std::abs(kappa_l[step]);
       // check pivoting
       pvt = k_ut > tau_kappa || k_l > tau_kappa;
+
+      Crout_info("  kappa_ut=%g, kappa_l=%g, pvt=%s", (double)k_ut, (double)k_l,
+                 (pvt ? "yes" : "no"));
+
       if (pvt) continue;
+
+      Crout_info("  previous/current leading block sizes %zd/%zd, pivots=%zd",
+                 m_prev, m, local_pivots);
+
+      pivots += local_pivots;  // accumulate global pivots
 
       //------------------------
       // update start positions
       //------------------------
+
+      Crout_info("  updating L_start/U_start and performing Crout update");
 
       // update U
       step.update_U_start(U, U_start);
@@ -799,12 +820,17 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
       // drop and sort
       //---------------
 
+      const size_type ori_ut_size = ut.size(), ori_l_size = l.size();
+
       // apply drop for U
       apply_dropping_and_sort(tau_U, k_ut, A_crs.nnz_in_row(p[step]), alpha_U,
                               ut);
       // push back rows to U
       U.push_back_row(step, ut.inds().cbegin(), ut.inds().cbegin() + ut.size(),
                       ut.vals());
+
+      Crout_info("  ut sizes before/after dropping %zd/%zd, drops=%zd",
+                 ori_ut_size, ut.size(), ori_ut_size - ut.size());
 
       if (IsSymm) {
         // for symmetric cases, we need first find the leading block size
@@ -823,6 +849,10 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
                           (size_type)*l.inds().cbegin(), m);
 #endif
 
+        Crout_info(
+            "  l sizes (asymm parts) before/after dropping %zd/%zd, drops=%zd",
+            ori_l_size, l.size(), ori_l_size - l.size());
+
         // push back symmetric entries and offsets
         L.push_back_col(step, ut.inds().cbegin(), info.second, ut.vals(),
                         l.inds().cbegin(), l.inds().cbegin() + l.size(),
@@ -831,11 +861,17 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
         // for asymmetric cases, just do exactly the same things as ut
         apply_dropping_and_sort(tau_L, k_l, A_ccs.nnz_in_col(q[step]), alpha_L,
                                 l);
+
+        Crout_info("  l sizes before/after dropping %zd/%zd, drops=%zd",
+                   ori_l_size, l.size(), ori_l_size - l.size());
+
         L.push_back_col(step, l.inds().cbegin(), l.inds().cbegin() + l.size(),
                         l.vals());
       }
       break;
     }  // inf loop
+
+    Crout_info(" Crout step %zd done!", step);
   }
 
   U.end_assemble_rows();
@@ -849,7 +885,7 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
 
   // now we are done
   if (psmilu_verbose(INFO, opts)) {
-    psmilu_info("finish Crout update...");
+    psmilu_info("finish Crout update, total pivots=%zd...", pivots);
     psmilu_info("time: %gs", timer.time());
   }
 
