@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <numeric>
 
 #include "psmilu_CompressedStorage.hpp"
 #include "psmilu_Options.h"
@@ -111,6 +112,18 @@ class Builder {
   /// \brief get constant reference to preconditioners
   inline const precs_type &precs() const { return _precs; }
 
+  /// \brief compute the overall nnz of the multilevel preconditioners
+  inline size_type nnz() const {
+    if (empty()) return 0u;
+    size_type n(0);
+    for (auto itr = _precs.cbegin(); itr != _precs.cend(); ++itr) {
+      n += itr->L_B.nnz() + itr->U_B.nnz() + itr->d_B.size();
+      if (!itr->dense_solver.empty())
+        n += itr->dense_solver.mat().nrows() * itr->dense_solver.mat().ncols();
+    }
+    return n;
+  }
+
   /// \brief get constant reference to a specific level
   /// \note This function takes linear time complexity
   inline const prec_type &prec(const size_type level) const {
@@ -161,10 +174,21 @@ class Builder {
       _compute_kernel(A, m0, opts, Crout_cout);
     else
       _compute_kernel(A, m0, opts, Crout_cout_dummy);
+    const size_type n1 = std::accumulate(
+                        _precs.cbegin(), _precs.cend(), size_type(0),
+                        [](const size_type i, const prec_type &p) -> size_type {
+                          const size_type s1 = i + p.m;
+                          if (p.dense_solver.empty()) return s1;
+                          return s1 + p.dense_solver.mat().nrows();
+                        }),
+                    n2(A.nrows());
+    psmilu_error_if(n1 != n2, "invalid prec/system sizes %zd/%zd", n1, n2);
     t.finish();
-    if (psmilu_verbose(INFO, opts))
+    if (psmilu_verbose(INFO, opts)) {
+      psmilu_info("\ninput nnz(A)=%zd, nnz(precs)=%zd", A.nnz(), nnz());
       psmilu_info("\nmultilevel precs building time (overall) is %gs",
                   t.time());
+    }
     if (revert_warn) (void)warn_flag(1);
   }
 
