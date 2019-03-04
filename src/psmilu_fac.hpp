@@ -890,7 +890,7 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
   }
 
   if (psmilu_verbose(INFO, opts))
-    psmilu_info("computing Schur complement (S)...");
+    psmilu_info("computing Schur complement (C)...");
 
   timer.start();
 
@@ -927,7 +927,7 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
     }  // H version check
     if (psmilu_verbose(INFO, opts))
       psmilu_info("converted Schur complement (%s) to dense for last level...",
-                  (use_h_ver ? "H" : "S"));
+                  (use_h_ver ? "H" : "C"));
   }
 
   precs.emplace_back(m, A.nrows(), std::move(L_B), std::move(d), std::move(U_B),
