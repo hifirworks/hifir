@@ -39,5 +39,6 @@ inline std::string version() { return std::to_string(PSMILU_VERSION); }
 // interfaces
 #include "psmilu_Options.h"
 #include "psmilu_Prec.hpp"
+#include "psmilu_Builder.hpp"
 
 #endif  // _PSMILU_HPP
