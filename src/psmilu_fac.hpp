@@ -717,7 +717,8 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
              tau_L   = opts.tau_L;
   const auto alpha_L = opts.alpha_L, alpha_U = opts.alpha_U;
 
-  size_type pivots(0);
+  size_type       interchanges(0);
+  const size_type m_in(m);
 
   if (psmilu_verbose(INFO, opts)) psmilu_info("start Crout update...");
 
@@ -728,7 +729,7 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
 
     Crout_info(" Crout step %zd, leading block size %zd", step, m_prev);
 
-    size_type local_pivots(0);
+    size_type local_interchanges(0);
 
     // inf loop
     for (;;) {
@@ -750,7 +751,7 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
         // update diagonal since we maintain a permutated version of it
         std::swap(d[step], d[m - 1]);
         --m;
-        ++local_pivots;
+        ++local_interchanges;
         if (IsSymm) internal::update_L_start_symm(L, m, L_start);
       }
 
@@ -771,10 +772,11 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
 
       if (pvt) continue;
 
-      Crout_info("  previous/current leading block sizes %zd/%zd, pivots=%zd",
-                 m_prev, m, local_pivots);
+      Crout_info(
+          "  previous/current leading block sizes %zd/%zd, interchanges=%zd",
+          m_prev, m, local_interchanges);
 
-      pivots += local_pivots;  // accumulate global pivots
+      interchanges += local_interchanges;  // accumulate global interchanges
 
       //------------------------
       // update start positions
@@ -885,7 +887,13 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
 
   // now we are done
   if (psmilu_verbose(INFO, opts)) {
-    psmilu_info("finish Crout update, total pivots=%zd...", pivots);
+    psmilu_info(
+        "finish Crout update...\n"
+        "\ttotal interchanges=%zd\n"
+        "\tleading block size in=%zd\n"
+        "\tleading block size out=%zd\n"
+        "\tdiff=%zd",
+        interchanges, m_in, m, m_in - m);
     psmilu_info("time: %gs", timer.time());
   }
 
@@ -899,6 +907,8 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
   compute_Schur_C(s, A_crs, t, p, q, m, A.nrows(), L, d, U, U_start, S_tmp);
   const input_type S(input_type::ROW_MAJOR ? std::move(S_tmp)
                                            : input_type(S_tmp));
+
+  if (psmilu_verbose(INFO, opts)) psmilu_info("nnz(S_C)=%zd...", S.nnz());
 
   // compute L_B and U_B
   auto L_B = internal::extract_L_B(L, m, L_start);
