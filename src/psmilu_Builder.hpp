@@ -178,6 +178,8 @@ class Builder {
       psmilu_warning(
           "multilevel precs are not empty, wipe previous results first");
       _precs.clear();
+      // also clear the previous buffer
+      _prec_work.resize(0);
     }
     if (psmilu_verbose(FAC, opts))
       _compute_kernel(A, m0, opts, Crout_cout);
