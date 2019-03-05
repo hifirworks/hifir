@@ -141,6 +141,44 @@ class CompressedStorage {
     _vals.reserve(nnz);
   }
 
+  /// \brief check the validity of a matrix
+  /// \tparam IsRow is row major, mainly for error message
+  /// \param[in] other_size size in secondary entry, column size for CRS and
+  ///                       row size for CCS
+  template <bool IsRow>
+  inline void check_validity(const size_type other_size) const {
+    static const char *pname = IsRow ? "row" : "column";
+    static const char *oname = IsRow ? "column" : "row";
+    const auto         c_idx = [](const size_type i) {
+      return to_c_idx<size_type, OneBased>(i);
+    };
+
+    if (status() != DATA_UNDEF) {
+      psmilu_error_if(_ind_start.size() != _psize + 1,
+                      "invalid %s size and %s start array length", pname,
+                      pname);
+      psmilu_error_if(_ind_start.front() != static_cast<index_type>(OneBased),
+                      "the leading entry in %s start should be %d", pname,
+                      (int)OneBased);
+      if (nnz() != _indices.size() || nnz() != _vals.size())
+        psmilu_error(
+            "inconsistent between nnz (%s_start(end)-%s_start(first),%zd) and "
+            "indices/values length %zd/%zd",
+            pname, pname, nnz(), _indices.size(), _vals.size());
+      // check each entry
+      for (size_type i = 0u; i < _psize; ++i) {
+        psmilu_error_if(!std::is_sorted(_ind_cbegin(i), _ind_cend(i)),
+                        "%s %zd (C-based) is not sorted", pname, i);
+        for (auto itr = _ind_cbegin(i), last = _ind_cend(i); itr != last;
+             ++itr) {
+          psmilu_error_if(c_idx(*itr) >= other_size,
+                          "%zd (C-based) exceeds %s bound %zd in %s %zd",
+                          c_idx(*itr), oname, other_size, pname, i);
+        }
+      }
+    }
+  }
+
  protected:
   /// \brief begin assemble rows
   /// \note PSMILU only requires pushing back operations
@@ -526,6 +564,11 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   inline void resize(const size_type nrows, const size_type ncols) {
     resize_nrows(nrows);
     resize_ncols(ncols);
+  }
+
+  /// \brief check validity
+  inline void check_validity() const {
+    _base::template check_validity<true>(_ncols);
   }
 
   /// \brief get local nnz per row
@@ -1058,6 +1101,11 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   inline void resize(const size_type nrows, const size_type ncols) {
     resize_nrows(nrows);
     resize_ncols(ncols);
+  }
+
+  /// \brief check validity
+  inline void check_validity() const {
+    _base::template check_validity<false>(_nrows);
   }
 
   /// \brief get local nnz per column

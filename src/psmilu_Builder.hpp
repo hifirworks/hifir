@@ -140,10 +140,12 @@ class Builder {
   /// \param[in] m0 leading block size, if it's zero (default), then the routine
   ///               will assume an asymmetric leading block.
   /// \param[in] opts control parameters, using the default values in the paper.
+  /// \param[in] check if \a true (default), will perform validity checking
   /// \sa solve, _compute_kernel
   template <class CsType>
   inline void compute(const CsType &A, const size_type m0 = 0u,
-                      const Options &opts = get_default_options()) {
+                      const Options &opts  = get_default_options(),
+                      const bool     check = true) {
     static_assert(!(CsType::ONE_BASED ^ ONE_BASED), "inconsistent index base");
 
     const static internal::StdoutStruct  Crout_cout;
@@ -162,6 +164,13 @@ class Builder {
     }
     const bool revert_warn = warn_flag();
     if (psmilu_verbose(NONE, opts)) (void)warn_flag(0);
+
+    // check validity of the input system
+    if (check) {
+      if (psmilu_verbose(INFO, opts))
+        psmilu_info("perform input matrix validity checking");
+      A.check_validity();
+    }
 
     DefaultTimer t;  // record overall time
     t.start();
