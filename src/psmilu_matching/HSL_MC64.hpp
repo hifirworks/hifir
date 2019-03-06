@@ -15,7 +15,7 @@
 #ifndef PSMILU_UNIT_TESTING
 
 // dev purpose
-#  if 1
+#  ifdef __PSMILU__DEV_MODE__
 #    ifndef mc64_matching
 extern "C" {
 #      include "hsl_mc64d.h"

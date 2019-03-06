@@ -11,7 +11,7 @@
 #ifndef _PSMILU_MATCHING_DRIVER_HPP
 #define _PSMILU_MATCHING_DRIVER_HPP
 
-#ifndef mc64_matching
+#ifdef __PSMILU__DEV_MODE__
 extern "C" {
 #  include "hsl_mc64d.h"
 }
