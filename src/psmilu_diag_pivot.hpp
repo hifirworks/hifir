@@ -70,8 +70,8 @@ inline bool update_kappa_ut(const typename U_AugCrsType::size_type step,
     // advance augment handle
     aug_id = U.next_col_id(aug_id);
   }
-  const value_type k1 = 1. - sum, k2 = -1. - sum;
-  if (std::abs(k1) < std::abs(k2)) {
+  const value_type k1 = std::abs(1. - sum), k2 = std::abs(-1. - sum);
+  if (k1 < k2) {
     kappa_u[step] = k2;
     return NEG_ONE;
   }
@@ -137,8 +137,8 @@ inline bool update_kappa_l(const typename L_AugCcsType::size_type step,
       // advance to next augment handle
       aug_id = L.next_row_id(aug_id);
     }
-    const value_type k1 = 1. - sum, k2 = -1. - sum;
-    if (std::abs(k1) < std::abs(k2)) {
+    const value_type k1 = std::abs(1. - sum), k2 = std::abs(-1. - sum);
+    if (k1 < k2) {
       kappa_l[step] = k2;
       return NEG_ONE;
     }
