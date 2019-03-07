@@ -57,8 +57,9 @@ int main(int argc, char *argv[]) {
       std::cout << help;
       return 0;
     }
-    kase = arg;
+    if (kase != "") kase = arg;
   }
+  // we don't allow use PWD as test root!
   if (kase == "") {
     std::cerr << "Not enough input(s), see help!\n" << help;
     return 1;
