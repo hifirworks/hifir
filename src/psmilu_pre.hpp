@@ -90,20 +90,15 @@ inline typename CcsType::size_type do_preprocessing(
   psmilu_error_if(P.status() == DATA_UNDEF, "memory allocation failed");
   const int result = amd::order(m, B.col_start().data(), B.row_ind().data(),
                                 P.data(), Control, Info);
-  if (result != AMD_OK) {
-    if (result == AMD_OK_BUT_JUMBLED)
-      psmilu_warning(
-          "the input matrix has duplicated entries or is not "
-          "sorted, this should not happen, cont anyway...");
-    else {
-      std::stringstream s;
-      amd::info(s, Info);
-      const std::string msg =
-          "AMD returned invalid flag " + std::to_string(result) +
-          ", the following message was loaded from AMD info routine:\n" +
-          s.str();
-      psmilu_error(msg.c_str());
-    }
+  if (result != AMD_OK && result != AMD_OK_BUT_JUMBLED) {
+    // NOTE that we modified AMD to utilize jumbled return to automatically
+    // compute the transpose
+    std::stringstream s;
+    amd::info(s, Info);
+    const std::string msg =
+        "AMD returned invalid flag " + std::to_string(result) +
+        ", the following message was loaded from AMD info routine:\n" + s.str();
+    psmilu_error(msg.c_str());
   }
 
   if (psmilu_verbose(PRE, opt)) {
