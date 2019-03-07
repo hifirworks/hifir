@@ -763,7 +763,7 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
       update_kappa_ut(step, U, kappa_ut);
       // then compute kappa for l
       update_kappa_l<IsSymm>(step, L, kappa_ut, kappa_l);
-      const auto k_ut = kappa_ut[step], k_l = kappa_l[step];
+      const auto k_ut = std::abs(kappa_ut[step]), k_l = std::abs(kappa_l[step]);
       // check pivoting
       pvt = k_ut > tau_kappa || k_l > tau_kappa;
 
