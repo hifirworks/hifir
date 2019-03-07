@@ -35,4 +35,26 @@ how to use the C++ interface.)
 
 Finally, `PSMILU_INCLUDE` is the root of all PSMILU C++ header files.
 
-## Compile ##
+## Compilation ##
+
+TL;DR
+
+```console
+make \
+    PSMILU_INCLUDE=/path/to/PSMILU.hpp \
+    MC64_ROOT=/path/to/hsl_mc64 \
+    LAPACKBLAS_LIB="-llapack -lblas"
+```
+
+## How to Run ##
+
+TL;DR
+
+```console
+./driver -h
+```
+
+One additional note is for parameter tuning, i.e. `Controls` structure. The program
+aggresively reads parameters from `std::cin`, thus you need to either pipe to *stdin*,
+redirect *stdin* from file, or use your keyboards. The preferred way is to redirecting;
+a [template file](./parameters.cfg) is provided.
