@@ -199,13 +199,13 @@ class CompressedStorage {
                          : _psize + 1u < _ind_start.size() ? 1 : -1;
     if (!flag) return;
     if (flag > 0) {
-      psmilu_warning("pushed more entries (%zd) than requested (%zd)",
-                     _ind_start.size() - 1u, _psize);
+      // psmilu_warning("pushed more entries (%zd) than requested (%zd)",
+      //                _ind_start.size() - 1u, _psize);
       _psize = _ind_start.size() ? _ind_start.size() - 1u : 0u;
       return;
     }
-    psmilu_warning("detected empty primary entries (%zd)",
-                   _psize + 1u - _ind_start.size());
+    // psmilu_warning("detected empty primary entries (%zd)",
+    //                _psize + 1u - _ind_start.size());
     _psize = _ind_start.size() - 1u;
   }
 
