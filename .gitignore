@@ -23,3 +23,5 @@ src/psmilu_matching/hsl_mc64*.h
 *.bin
 *.mat
 internal_tests
+bench/driver
+bench/cases
