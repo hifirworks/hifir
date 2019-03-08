@@ -10,6 +10,9 @@
 #ifndef _PSMILU_PYTHON_PSMILU4PY_HPP
 #define _PSMILU_PYTHON_PSMILU4PY_HPP
 
+#include <string>
+#include <vector>
+
 // first of all, include the common
 #include "common.hpp"
 
@@ -35,8 +38,73 @@
 
 namespace psmilu {
 
-// In order to make things easier, we directly use the raw data types, thus we
-// need to create a child class.
+// read native psmilu format
+inline void read_native_psmilu(const std::string &fn, std::size_t &nrows,
+                               std::size_t &ncols, std::size_t &m,
+                               std::vector<int> &   indptr,
+                               std::vector<int> &   indices,
+                               std::vector<double> &vals,
+                               const bool           is_crs = true,
+                               const bool           is_bin = true) {
+  Array<int>    ind_ptr, inds;
+  Array<double> values;
+  if (is_crs) {
+    using crs_type = C_DefaultBuilder::crs_type;
+    auto A         = is_bin ? crs_type::from_native_bin(fn.c_str(), &m)
+                    : crs_type::from_native_ascii(fn.c_str(), &m);
+    nrows = A.nrows();
+    ncols = A.ncols();
+    ind_ptr.swap(A.row_start());
+    inds.swap(A.col_ind());
+    values.swap(A.vals());
+  } else {
+    using ccs_type = C_DefaultBuilder::ccs_type;
+    auto A         = is_bin ? ccs_type::from_native_bin(fn.c_str(), &m)
+                    : ccs_type::from_native_ascii(fn.c_str(), &m);
+    nrows = A.nrows();
+    ncols = A.ncols();
+    ind_ptr.swap(A.col_start());
+    inds.swap(A.row_ind());
+    values.swap(A.vals());
+  }
+  // efficient for c++11
+  indptr  = std::vector<int>(ind_ptr.cbegin(), ind_ptr.cend());
+  indices = std::vector<int>(inds.cbegin(), inds.cend());
+  vals    = std::vector<double>(values.cbegin(), values.cend());
+}
+
+// write native psmilu format
+inline void write_native_psmilu(const std::string &fn, const std::size_t nrows,
+                                const std::size_t ncols, const int *indptr,
+                                const int *indices, const double *vals,
+                                const std::size_t m0, const bool is_crs = true,
+                                const bool is_bin = true) {
+  constexpr static bool WRAP = true;
+  if (is_crs) {
+    using crs_type = C_DefaultBuilder::crs_type;
+    const crs_type A(nrows, ncols, const_cast<int *>(indptr),
+                     const_cast<int *>(indices), const_cast<double *>(vals),
+                     WRAP);
+    // aggressively checking
+    A.check_validity();
+    if (is_bin)
+      A.write_native_bin(fn.c_str(), m0);
+    else
+      A.write_native_ascii(fn.c_str(), m0);
+  } else {
+    using ccs_type = C_DefaultBuilder::ccs_type;
+    const ccs_type A(nrows, ncols, const_cast<int *>(indptr),
+                     const_cast<int *>(indices), const_cast<double *>(vals),
+                     WRAP);
+    if (is_bin)
+      A.write_native_bin(fn.c_str(), m0);
+    else
+      A.write_native_ascii(fn.c_str(), m0);
+  }
+}
+
+// In order to make things easier, we directly use the raw data types, thus
+// we need to create a child class.
 class PyBuilder : public C_DefaultBuilder {
  public:
   using base      = C_DefaultBuilder;
