@@ -22,6 +22,16 @@ from libcpp.string cimport string as std_string
 cimport psmilu4py as psmilu
 
 
+__all__ = [
+    'VERBOSE_NONE',
+    'VERBOSE_INFO',
+    'VERBOSE_PRE',
+    'VERBOSE_FAC',
+    'VERBOSE_MEM',
+    'Options',
+]
+
+
 # redefine the verbose options, not a good idea but okay for now
 VERBOSE_NONE = 0
 VERBOSE_INFO = 1

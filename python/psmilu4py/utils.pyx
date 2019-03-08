@@ -15,6 +15,14 @@
 cimport psmilu4py as psmilu
 
 
+__all__ = [
+    'version',
+    'is_warning',
+    'enable_warning',
+    'disable_warning',
+]
+
+
 def version():
     """Check the backend PSMILU version
 
