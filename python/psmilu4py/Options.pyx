@@ -17,7 +17,7 @@ easy to support the C++ backend.
 .. moduleauthor:: Qiao Chen, <qiao.chen@stonybrook.edu>
 """
 
-from cython.operator cimport dereference as deref
+# from cython.operator cimport dereference as deref
 from libcpp.string cimport string as std_string
 cimport psmilu4py as psmilu
 
@@ -56,15 +56,14 @@ cdef class Options:
         pass
 
     def __cinit__(self):
-        self.opts.reset(new psmilu.Options)
-        deref(self.opts) = psmilu.get_default_options()
+        self.opts = psmilu.get_default_options()
 
     def reset(self):
         """This function will reset all options to their default values"""
-        deref(self.opts) = psmilu.get_default_options()
+        self.opts = psmilu.get_default_options()
 
     def __str__(self):
-        return psmilu.opt_repr(deref(self.opts)).decode('utf-8')
+        return psmilu.opt_repr(self.opts).decode('utf-8')
 
     def __repr__(self):
         return self.__str__()
@@ -74,7 +73,7 @@ cdef class Options:
         cdef:
             double vv = v
             std_string nm = opt_name.encode('utf-8')
-        if psmilu.set_option_attr[double](nm, vv, deref(self.opts)):
+        if psmilu.set_option_attr[double](nm, vv, self.opts):
             raise KeyError('unknown option name {}'.format(opt_name))
 
     # TODO add get item

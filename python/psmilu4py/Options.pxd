@@ -8,10 +8,9 @@
 
 # This is the Cython header for Options
 
-from libcpp.memory cimport shared_ptr
 cimport psmilu4py as psmilu
 
 
 # Python class for Options
 cdef class Options:
-    cdef shared_ptr[psmilu.Options] opts
+    cdef psmilu.Options opts
