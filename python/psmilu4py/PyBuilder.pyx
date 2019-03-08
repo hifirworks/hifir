@@ -43,6 +43,7 @@ cdef class PyBuilder:
 
     >>> from psmilu4py import *
     >>> from psmilu4py.PyBuilder import *
+    >>> from psmilu4py.io import read_native_psmilu
     >>> import numpy as np
     >>> n1, n2, rowptr, colind, vals, m = read_native_psmilu('mytest.psmilu')
     >>> builder = PyBuilder()
