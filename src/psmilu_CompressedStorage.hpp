@@ -525,9 +525,10 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
       : CRS(ccs.nrows(), ccs.ncols(), ccs.nnz(), false) {
     // NOTE that the constructor will allocate memory for each of the
     // three arrays before calling the following routine
-    internal::convert_storage<array_type, iarray_type, OneBased>(
-        ccs.col_start(), ccs.row_ind(), ccs.vals(), row_start(), col_ind(),
-        vals());
+    if (ccs.nnz())
+      internal::convert_storage<array_type, iarray_type, OneBased>(
+          ccs.col_start(), ccs.row_ind(), ccs.vals(), row_start(), col_ind(),
+          vals());
   }
 
   // default move
@@ -1062,9 +1063,10 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   /// \param[in] crs a CRS matrix
   explicit CCS(const other_type &crs)
       : CCS(crs.nrows(), crs.ncols(), crs.nnz(), false) {
-    internal::convert_storage<array_type, iarray_type, OneBased>(
-        crs.row_start(), crs.col_ind(), crs.vals(), col_start(), row_ind(),
-        vals());
+    if (crs.nnz())
+      internal::convert_storage<array_type, iarray_type, OneBased>(
+          crs.row_start(), crs.col_ind(), crs.vals(), col_start(), row_ind(),
+          vals());
   }
 
   // default move
