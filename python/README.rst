@@ -46,11 +46,17 @@ Examples
     env PSMILU_INCLUDE=/usr/local/include pip install . --user
 
     # user alternative blas, bulid in $PWD
-    env LAPACK_LIB=-lopenblas LAPACK_LIB_ROOT=/opt/OpenBLAS/lib \
+    env \
+        PSMILU_INCLUDE=$HOME/.local/include \
+        LAPACK_LIB=-lopenblas \
+        LAPACK_LIB_ROOT=/opt/OpenBLAS/lib \
         pip3 install . --user
 
-    # use mc64
-    env MC64_ROOT=$HOME/hsl_mc64-2.3.1 pip3 install . --user
+    # using mc64
+    env \
+        PSMILU_INCLUDE=./my_local/include \
+        MC64_ROOT=./my_local/mc64 \
+        pip3 install . --user
 
 Contacts
 --------
