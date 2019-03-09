@@ -9,7 +9,9 @@ from Cython.Build import cythonize
 _psmilu4py_debug = os.environ.get('PSMILU4PY_DEBUG', None)
 _psmilu4py_debug = _psmilu4py_debug is not None
 
-PSMILU_INCLUDE = os.environ.get('PSMILU_INCLUDE', '../src')
+PSMILU_INCLUDE = os.environ.get('PSMILU_INCLUDE', None)
+if PSMILU_INCLUDE is None:
+    PSMILU_INCLUDE = os.getcwd() + '../src'
 incs = ['.', PSMILU_INCLUDE]
 LAPACKBLAS_LIB = os.environ.get('LAPACKBLAS_LIB', '-llapack -lblas')
 _lapackblas_libs = LAPACKBLAS_LIB.split(' ')
