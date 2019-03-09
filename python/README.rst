@@ -1,18 +1,18 @@
 Python3 Interface for PS-MILU
 =============================
 
-Welcome to the Python3 interface of PSMILU package--- `psmilu4py`. The Python
+Welcome to the Python3 interface of PSMILU package--- *psmilu4py*. The Python
 interface is implemented with Cython, and the Cython interface is also
 available to use.
 
 Dependencies
 ------------
 
-`psmilu4py` requires `Cython` and `setuptools` during installation and
-complilation. The must-have runtime package is `numpy`. If you plan to use the
-`scipy` hooks, then you need to make sure `scipy` is available as well.
+*psmilu4py* requires *Cython* and *setuptools* during installation and
+complilation. The must-have runtime package is *numpy*. If you plan to use the
+*scipy* hooks, then you need to make sure *scipy* is available as well.
 
-Roughly speaking, `psmilu4py` enables three core components in PSMILU:
+Roughly speaking, *psmilu4py* enables three core components in PSMILU:
 
 1. building multilevel ILU preconditioner,
 2. solving preconditiner system, and
@@ -36,7 +36,7 @@ Overall, the following envrionment variables can be configured
 4. ``MC64_ROOT``, path contains the header/lib in ``include``/``lib``.
 
 It's worth noting that ``PSMILU_INCLUDE`` is also needed if you plan to use
-Cython interface of `psmilu4py` due to the need of recompilation.
+Cython interface of *psmilu4py* due to the need of recompilation.
 
 Examples
 
