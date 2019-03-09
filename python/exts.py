@@ -11,15 +11,15 @@ _psmilu4py_debug = _psmilu4py_debug is not None
 
 PSMILU_INCLUDE = os.environ.get('PSMILU_INCLUDE', None)
 if PSMILU_INCLUDE is None:
-    PSMILU_INCLUDE = os.getcwd() + '../src'
+    raise RuntimeError('you must specify PSMILU_INCLUDE (path/to/PSMILU.hpp)')
 incs = ['.', PSMILU_INCLUDE]
-LAPACKBLAS_LIB = os.environ.get('LAPACKBLAS_LIB', '-llapack -lblas')
-_lapackblas_libs = LAPACKBLAS_LIB.split(' ')
-for i in range(len(_lapackblas_libs)):
-    _l = _lapackblas_libs[i]
-    _lapackblas_libs[i] = _l[2:]
+LAPACK_LIB = os.environ.get('LAPACK_LIB', '-llapack')
+_lapack_libs = LAPACK_LIB.split(' ')
+for i in range(len(_lapack_libs)):
+    _l = _lapack_libs[i]
+    _lapack_libs[i] = _l[2:]
 libs = []
-libs += _lapackblas_libs
+libs += _lapack_libs
 MC64_ROOT = os.environ.get('MC64_ROOT', None)
 lib_dirs = []
 if MC64_ROOT is not None:
@@ -29,6 +29,12 @@ if MC64_ROOT is not None:
     macros = [('PSMILU4PY_USE_MC64', '1')]
 else:
     macros = [('PSMILU4PY_USE_MC64', '0')]
+LAPACK_LIB_ROOT = os.environ.get('LAPACK_LIB_ROOT', None)
+if LAPACK_LIB_ROOT is not None:
+    lib_dirs += [LAPACK_LIB_ROOT]
+    rpath = [LAPACK_LIB_ROOT]
+else:
+    rpath = None
 
 
 class BuildExt(build_ext):
@@ -81,7 +87,8 @@ for f in _pyx:
             include_dirs=incs,
             libraries=libs,
             library_dirs=lib_dirs,
-            define_macros=macros))
+            define_macros=macros,
+            runtime_library_dirs=rpath))
 
 _opts = {'language_level': 3, 'embedsignature': True}
 if not _psmilu4py_debug:
