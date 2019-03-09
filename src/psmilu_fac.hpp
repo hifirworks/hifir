@@ -905,8 +905,7 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
   // compute C version of Schur complement
   crs_type S_tmp;
   compute_Schur_C(s, A_crs, t, p, q, m, A.nrows(), L, d, U, U_start, S_tmp);
-  const input_type S(input_type::ROW_MAJOR ? std::move(S_tmp)
-                                           : input_type(S_tmp));
+  const input_type S(S_tmp);  // if input==crs, then wrap, ow copy
 
   if (psmilu_verbose(INFO, opts)) psmilu_info("nnz(S_C)=%zd...", S.nnz());
 
