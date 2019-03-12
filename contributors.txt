@@ -1,0 +1,8 @@
+# This list is for people who have contributed PSMILU, it follows the same
+# rule of AUTHORS file, i.e.
+
+# Names should be added to this file as:
+# Name <email address> or Organization 
+# The email address is not required for organizations.
+
+Qiao (Chiao) Chen <qiao.chen@stonybrook.edu>
