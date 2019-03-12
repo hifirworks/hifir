@@ -39,6 +39,16 @@ VERBOSE_PRE = VERBOSE_INFO << 1
 VERBOSE_FAC = VERBOSE_PRE << 1
 VERBOSE_MEM = VERBOSE_FAC << 1
 
+# determine total number of parameters
+def _get_opt_info():
+    raw_info = psmilu.opt_repr(psmilu.get_default_options()).decode('utf-8')
+    # split with newline
+    info = list(filter(None, raw_info.split('\n')))
+    return [x.split()[0].strip() for x in info]
+
+
+_OPT_LIST = _get_opt_info()
+
 
 cdef class Options:
     """Python interface of control parameters
@@ -86,4 +96,11 @@ cdef class Options:
         if psmilu.set_option_attr[double](nm, vv, self.opts):
             raise KeyError('unknown option name {}'.format(opt_name))
 
-    # TODO add get item
+    def __getitem__(self, str opt_name):
+        if opt_name not in _OPT_LIST:
+            raise KeyError('unknown option name {}'.format(opt_name))
+        cdef int idx = _OPT_LIST.index(opt_name)
+        attr = list(filter(None, self.__str__().split('\n')))[idx]
+        if psmilu.option_dtypes[idx]:
+            return float(list(filter(None, attr.split()))[1])
+        return int(list(filter(None, attr.split()))[1])

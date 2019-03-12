@@ -53,3 +53,9 @@ cdef extern from 'psmilu4py.hpp' namespace 'psmilu' nogil:
 
         # solving routine
         void solve(const size_t n, const double *b, double *x) except +
+
+
+cdef extern from 'psmilu4py.hpp' namespace 'psmilu::internal' nogil:
+    # using an internal var to determine the data types of options
+    # true for double, flase for int
+    bool option_dtypes[11]
