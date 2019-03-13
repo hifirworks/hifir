@@ -717,6 +717,25 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
     }
   }
 
+  /// \brief matrix vector for kernel MT compatibility (CRS only)
+  /// \param[in] x input array pointer
+  /// \param[in] istart index start
+  /// \param[in] len local length
+  /// \param[out] y output array (only \a [istart,istart+len) are ref-ed)
+  inline void mv_nt_low(const value_type *x, const size_type istart,
+                        const size_type len, value_type *y) const {
+    for (size_type i = istart, n = istart + len; i < n; ++i) {
+      y[i]       = 0;
+      auto v_itr = _base::val_cbegin(i);
+      auto i_itr = col_ind_cbegin(i);
+      for (auto last = col_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
+        const size_type j = to_c_idx<size_type, ONE_BASED>(*i_itr);
+        psmilu_assert(j < _ncols, "%zd exceeds column size", j);
+        y[i] += *v_itr * x[j];
+      }
+    }
+  }
+
   /// \brief matrix vector multiplication
   /// \tparam IArray input array type
   /// \tparam OArray output array type
@@ -728,6 +747,26 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
     psmilu_error_if(nrows() != y.size() || ncols() != x.size(),
                     "matrix vector multiplication unmatched sizes!");
     mv_nt_low(x.data(), y.data());
+  }
+
+  /// \brief matrix vector multiplication for MT (CRS only)
+  /// \tparam IArray input array type
+  /// \tparam OArray output array type
+  /// \param[in] x input array
+  /// \param[in] istart index start
+  /// \param[in] len local length
+  /// \param[out] y output array
+  /// \note Sizes must match
+  template <class IArray, class OArray>
+  inline void mv_nt(const IArray &x, const size_type istart,
+                    const size_type len, OArray &y) const {
+    psmilu_error_if(nrows() != y.size() || ncols() != x.size(),
+                    "matrix vector multiplication unmatched sizes!");
+    psmilu_error_if(istart >= nrows(), "%zd exceeds the row size %zd", istart,
+                    nrows());
+    psmilu_error_if(istart + len > nrows(),
+                    "out-of-bound pass-of-end range detected");
+    mv_nt_low(x.data(), istart, len, y.data());
   }
 
   /// \brief matrix transpose vector multiplication (low level API)
