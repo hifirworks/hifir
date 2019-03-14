@@ -14,5 +14,8 @@ LDFLAGS =
 driver: GMRES.hpp driver.cpp
 	$(CXX) $(CXXFLAGS) $(_INCS) driver.cpp -o $@ $(LIBS) $(LAPACKBLAS_LIB) -pthread -lgfortran -lm $(LDFLAGS)
 
+mt_scaling_analysis: GMRES.hpp GMRES_MT.hpp mt_scaling_analysis.cpp
+	$(CXX) $(CXXFLAGS) -I$(PSMILU_INCLUDE) mt_scaling_analysis.cpp -o $@ -fopenmp
+
 clean:
-	rm -f driver
+	rm -f driver mt_scaling_analysis
