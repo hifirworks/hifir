@@ -86,6 +86,8 @@ const static struct {
 
 }  // namespace internal
 
+using internal::IdentityPrec;
+
 enum {
   GMRES_UNKNOWN_ERROR     = -3,
   GMRES_INVALID_FUNC_PARS = -2,
@@ -130,7 +132,7 @@ class GMRES {
   using scalar_type = typename internal::ScalarTrait<value_type>::type;
   ///< scalar type, implicitly assume \a std::complex
 
- private:
+ protected:
   constexpr static int _D = std::numeric_limits<scalar_type>::digits10 / 2 + 1;
 
  public:
@@ -227,8 +229,8 @@ class GMRES {
           std::inner_product(b.cbegin(), b.cend(), b.cbegin(), value_type()));
       if (M.empty()) M.compute(A);  // default compute
       // record  time after preconditioner
-      auto time_start = std::chrono::high_resolution_clock::now();
       _ensure_data_capacities(n);
+      auto            time_start = std::chrono::high_resolution_clock::now();
       const size_type max_outer_iters =
           (size_type)std::ceil((scalar_type)maxit / restart);
       auto &      x    = x0;
@@ -249,10 +251,10 @@ class GMRES {
         const auto beta = std::sqrt(std::inner_product(
             _v.cbegin(), _v.cend(), _v.cbegin(), value_type()));
         _y[0]           = beta;
-        {
+        do {
           const auto inv_beta = 1. / beta;
           for (size_type i = 0u; i < n; ++i) _Q[i] = _v[i] * inv_beta;
-        }
+        } while (false);
         size_type j(0);
         auto      R_itr = _R.begin();
         for (;;) {
