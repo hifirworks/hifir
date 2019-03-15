@@ -141,13 +141,15 @@ inline std::tuple<int, std::size_t, double> gmres_mt_kernel(
     // loop begins
     for (size_t it_outer(0); it_outer < max_outer_iters; ++it_outer) {
 #  pragma omp master
-      { Cout("Enter outer iteration %zd.\n", it_outer + 1); }  // master
+      do {
+        Cout("Enter outer iteration %zd.\n", it_outer + 1);
+      } while (false);  // master
       if (it_outer) {
 #  pragma omp master
-        {
+        do {
           Cerr("\033[1;33mWARNING!\033[0m Couldn\'t solve with %d restarts.\n",
                restart);
-        }  // master
+        } while (false);  // master
         A.mv_nt(x, part.istart, part.len, v);
         FOR_PAR(i, part) v[i] = b[i] - v[i];
       } else {
@@ -162,11 +164,11 @@ inline std::tuple<int, std::size_t, double> gmres_mt_kernel(
       buf[my_id] = MT_INNER(v.cbegin(), v.cbegin(), part, Scalar(0));
 #  pragma omp barrier
 #  pragma omp master
-      {
+      do {
         const auto beta2 = buf.sum();
         const auto beta  = std::sqrt(beta2);
         _y[0]            = beta;
-      }  // master
+      } while (false);  // master
 #  pragma omp barrier
       do {
         const auto inv_beta   = 1. / _y[0];
@@ -200,7 +202,7 @@ inline std::tuple<int, std::size_t, double> gmres_mt_kernel(
           FOR_PAR(i, part) itr[i] = inv_norm * v[i];
         }
 #  pragma omp master
-        {
+        do {
           auto J1 = _J.begin(), J2 = J1 + restart;
           for (size_t colJ(0); colJ + 1u <= j; ++colJ) {
             const auto tmp = _w[colJ];
@@ -216,41 +218,42 @@ inline std::tuple<int, std::size_t, double> gmres_mt_kernel(
           R_itr          = std::copy_n(_w.cbegin(), j + 1, R_itr);
           resid_prev     = resid;
           resid          = std::abs(_y[j + 1]) / beta0;
-        }  // master
+        } while (false);  // master
 #  pragma omp barrier
         if (resid >= resid_prev * (1 - _stag_eps)) {
 #  pragma omp master
-          {
+          do {
             flag = GMRES_STAGNATED;
             Cerr(
                 "\033[1;33mWARNING!\033[0m Stagnated detected at iteration "
                 "%zd.\n",
                 iter);
-          }  // master
+          } while (false);  // master
           break;
         } else if (iter >= maxit) {
 #  pragma omp master
-          {
+          do {
             flag = GMRES_DIVERGED;
             Cerr(
                 "\033[1;33mWARNING!\033[0m Reached maxit iteration limit "
                 "%zd.\n",
                 maxit);
-          }  // master
+          } while (false);  // master
           break;
         }
 #  pragma omp master
-        {
+        do {
           ++iter;
           Cout("  At iteration %zd, relative residual is %g.\n", iter, resid);
           resids.push_back(resid);
-        }  // master
+        } while (false);  // master
+#  pragma omp barrier
         if (resid < rtol || j + 1u >= (size_t)restart) break;
         ++j;
       }  // inf loop
 // backsolve
 #  pragma omp master
-      {
+      do {
         for (int k = j; k > -1; --k) {
           --R_itr;
           _y[k] /= *R_itr;
@@ -260,7 +263,7 @@ inline std::tuple<int, std::size_t, double> gmres_mt_kernel(
             _y[i] -= tmp * *R_itr;
           }
         }
-      }  // master
+      } while (false);  // master
 #  pragma omp barrier
       for (size_t i(0); i <= j; ++i) {
         const auto tmp   = _y[i];
