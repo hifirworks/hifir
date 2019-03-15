@@ -168,17 +168,21 @@ class GMRES {
   std::tuple<int, size_type, double> solve_with_guess(
       const Operator &A, const VectorType &b, VectorType &x0,
       const bool verbose = true) const {
-    return verbose ? _solve_kernel(A, b, x0, internal::Cout, internal::Cerr)
-                   : _solve_kernel(A, b, x0, internal::Dummy_streamer,
-                                   internal::Dummy_streamer);
+    return verbose
+               ? _solve_kernel(A, b, x0, internal::Cout, internal::Cerr, true)
+               : _solve_kernel(A, b, x0, internal::Dummy_streamer,
+                               internal::Dummy_streamer, true);
   }
 
   template <class Operator, class VectorType>
   std::tuple<int, size_type, double> solve(const Operator &  A,
                                            const VectorType &b, VectorType &x,
                                            const bool verbose = true) const {
-    std::fill(x.begin(), x.end(), value_type());
-    return solve_with_guess(A, b, x, verbose);
+    // std::fill(x.begin(), x.end(), value_type());
+    return verbose
+               ? _solve_kernel(A, b, x, internal::Cout, internal::Cerr, false)
+               : _solve_kernel(A, b, x, internal::Dummy_streamer,
+                               internal::Dummy_streamer, false);
   }
 
  protected:
@@ -212,9 +216,12 @@ class GMRES {
 
   template <class Operator, class VectorType, class CoutStreamer,
             class CerrStreamer>
-  std::tuple<int, size_type, double> _solve_kernel(
-      const Operator &A, const VectorType &b, VectorType &x0,
-      const CoutStreamer &Cout, const CerrStreamer &Cerr) const {
+  std::tuple<int, size_type, double> _solve_kernel(const Operator &    A,
+                                                   const VectorType &  b,
+                                                   VectorType &        x0,
+                                                   const CoutStreamer &Cout,
+                                                   const CerrStreamer &Cerr,
+                                                   bool with_guess) const {
     using internal::conj;
     const static scalar_type _stag_eps =
         std::pow(scalar_type(10), -(scalar_type)_D);
@@ -242,8 +249,7 @@ class GMRES {
           Cerr("\033[1;33mWARNING!\033[0m Couldn\'t solve with %d restarts.\n",
                restart);
         // initial residual
-        if (it_outer > 0u || std::inner_product(x.cbegin(), x.cend(),
-                                                x.cbegin(), value_type()) > 0) {
+        if (it_outer > 0u || with_guess) {
           A.mv(x, _v);
           for (size_type i = 0u; i < n; ++i) _v[i] = b[i] - _v[i];
         } else

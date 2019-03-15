@@ -98,7 +98,7 @@ inline std::tuple<int, std::size_t, double> gmres_mt_kernel(
     const std::vector<Partition> &parts, const Operator &A, const RightPrec &M,
     const Array &b, Array &x, Array &_y, Array &_R, Array &Q, Array &Z,
     Array &_J, Array &v, Array &w, Array &w2, Array &resids, Shared_Buf &buf,
-    const CoutStreamer &Cout, const CerrStreamer &Cerr) {
+    const CoutStreamer &Cout, const CerrStreamer &Cerr, const bool with_guess) {
   using internal::conj;
   using std::size_t;
   using value_t                 = typename Array::value_type;
@@ -119,20 +119,23 @@ inline std::tuple<int, std::size_t, double> gmres_mt_kernel(
   Array &_w = w2;
 
   // shared returns
-  int    flag(GMRES_SUCCESS);
-  size_t iter(0);
-
-  // shared var for residuals
-  Scalar resid(1), resid_prev;
+  int    g_flag(GMRES_SUCCESS);
+  size_t g_iter(0);
 
   const int threads = parts.size();
+  (void)threads;
 
   auto time_start = std::chrono::high_resolution_clock::now();
 
-#  pragma omp parallel num_threads(threads)
+#  pragma omp parallel
   {
     const int   my_id = omp_get_thread_num();
     const auto &part  = parts[my_id];
+
+    // var for residuals
+    Scalar resid(1), resid_prev;
+    int    flag(GMRES_SUCCESS);
+    size_t iter(0);
 
     buf[my_id] = MT_INNER(b.cbegin(), b.cbegin(), part, Scalar(0));
 #  pragma omp barrier
@@ -140,11 +143,12 @@ inline std::tuple<int, std::size_t, double> gmres_mt_kernel(
 
     // loop begins
     for (size_t it_outer(0); it_outer < max_outer_iters; ++it_outer) {
+#  pragma omp barrier
 #  pragma omp master
       do {
         Cout("Enter outer iteration %zd.\n", it_outer + 1);
       } while (false);  // master
-      if (it_outer) {
+      if (it_outer || with_guess) {
 #  pragma omp master
         do {
           Cerr("\033[1;33mWARNING!\033[0m Couldn\'t solve with %d restarts.\n",
@@ -153,13 +157,7 @@ inline std::tuple<int, std::size_t, double> gmres_mt_kernel(
         A.mv_nt(x, part.istart, part.len, v);
         FOR_PAR(i, part) v[i] = b[i] - v[i];
       } else {
-        buf[my_id] = MT_INNER(x.cbegin(), x.cbegin(), part, Scalar(0));
-#  pragma omp barrier
-        const auto sum_x_inner = buf.sum();
-        if (sum_x_inner > 0)
-          A.mv_nt(x, part.istart, part.len, v);
-        else
-          MT_COPY(b.cbegin(), v.begin(), part);
+        MT_COPY(b.cbegin(), v.begin(), part);
       }
       buf[my_id] = MT_INNER(v.cbegin(), v.cbegin(), part, Scalar(0));
 #  pragma omp barrier
@@ -177,6 +175,7 @@ inline std::tuple<int, std::size_t, double> gmres_mt_kernel(
       size_t j(0);
       auto   R_itr = _R.begin();
       for (;;) {
+#  pragma omp barrier
         const auto jn = j * n;
         MT_COPY(Q.cbegin() + jn, v.begin(), part);
 #  pragma omp barrier
@@ -216,40 +215,40 @@ inline std::tuple<int, std::size_t, double> gmres_mt_kernel(
           _y[j]          = conj(J1[j]) * _y[j];
           _w[j]          = rho;
           R_itr          = std::copy_n(_w.cbegin(), j + 1, R_itr);
-          resid_prev     = resid;
-          resid          = std::abs(_y[j + 1]) / beta0;
         } while (false);  // master
 #  pragma omp barrier
+        resid_prev = resid;
+        resid      = std::abs(_y[j + 1]) / beta0;
         if (resid >= resid_prev * (1 - _stag_eps)) {
 #  pragma omp master
           do {
-            flag = GMRES_STAGNATED;
             Cerr(
                 "\033[1;33mWARNING!\033[0m Stagnated detected at iteration "
                 "%zd.\n",
                 iter);
           } while (false);  // master
+          flag = GMRES_STAGNATED;
           break;
         } else if (iter >= maxit) {
 #  pragma omp master
           do {
-            flag = GMRES_DIVERGED;
             Cerr(
                 "\033[1;33mWARNING!\033[0m Reached maxit iteration limit "
                 "%zd.\n",
                 maxit);
           } while (false);  // master
+          flag = GMRES_DIVERGED;
           break;
         }
+        ++iter;
 #  pragma omp master
         do {
-          ++iter;
           Cout("  At iteration %zd, relative residual is %g.\n", iter, resid);
           resids.push_back(resid);
         } while (false);  // master
-#  pragma omp barrier
         if (resid < rtol || j + 1u >= (size_t)restart) break;
         ++j;
+#  pragma omp barrier
       }  // inf loop
 // backsolve
 #  pragma omp master
@@ -273,12 +272,17 @@ inline std::tuple<int, std::size_t, double> gmres_mt_kernel(
       if (resid < rtol || flag != GMRES_SUCCESS) break;
 #  pragma omp barrier
     }
-  }  // parallel
+#  pragma omp master
+    do {
+      g_flag = flag;
+      g_iter = iter;
+    } while (false);  // master
+  }                   // parallel
 
   auto time_end = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> period = time_end - time_start;
 
-  return std::make_tuple(flag, iter, period.count());
+  return std::make_tuple(g_flag, g_iter, period.count());
 }
 
 inline int determine_num_threads() {
@@ -319,11 +323,10 @@ class GMRES_MT : public GMRES<ValueType, PrecType, ArrayType> {
       : _base(rel_tol, restart_, max_iters) {}
 
   template <class Operator, class VectorType>
-  std::tuple<int, size_type, double> solve_with_guess(const Operator &  A,
-                                                      const VectorType &b,
-                                                      VectorType &      x0,
-                                                      const bool verbose = true,
-                                                      int threads = 0) const {
+  std::tuple<int, size_type, double> solve_with_guess(
+      const Operator &A, const VectorType &b, VectorType &x0,
+      const bool verbose = true, int threads = 0,
+      const bool __guess_flag_internal = true) const {
 #ifdef _OPENMP
     bool is_mt = threads >= 0;
     if (is_mt) {
@@ -333,6 +336,7 @@ class GMRES_MT : public GMRES<ValueType, PrecType, ArrayType> {
     if (!is_mt)
 #else
     (void)threads;
+    (void)__guess_flag_internal;
 #endif
     {
       return _base::solve_with_guess(A, b, x0, verbose);
@@ -357,14 +361,17 @@ class GMRES_MT : public GMRES<ValueType, PrecType, ArrayType> {
         std::printf(" thread %d, istart %zd, len %zd.\n", i, _parts[i].istart,
                     _parts[i].len);
     }
-    return verbose ? gmres_mt_kernel<_D>(restart, maxit, rtol, _parts, A,
-                                         _base::M, b, x0, _y, _R, _Q, _Z, _J,
-                                         _v, _w, _ww, _resids, _buf,
-                                         internal::Cout, internal::Cerr)
-                   : gmres_mt_kernel<_D>(
-                         restart, maxit, rtol, _parts, A, _base::M, b, x0, _y,
-                         _R, _Q, _Z, _J, _v, _w, _ww, _resids, _buf,
-                         internal::Dummy_streamer, internal::Dummy_streamer);
+    omp_set_num_threads(threads);
+    return verbose
+               ? gmres_mt_kernel<_D>(restart, maxit, rtol, _parts, A, _base::M,
+                                     b, x0, _y, _R, _Q, _Z, _J, _v, _w, _ww,
+                                     _resids, _buf, internal::Cout,
+                                     internal::Cerr, __guess_flag_internal)
+               : gmres_mt_kernel<_D>(restart, maxit, rtol, _parts, A, _base::M,
+                                     b, x0, _y, _R, _Q, _Z, _J, _v, _w, _ww,
+                                     _resids, _buf, internal::Dummy_streamer,
+                                     internal::Dummy_streamer,
+                                     __guess_flag_internal);
 #endif
   }
 
@@ -373,8 +380,8 @@ class GMRES_MT : public GMRES<ValueType, PrecType, ArrayType> {
                                            const VectorType &b, VectorType &x,
                                            const bool verbose = true,
                                            int        threads = 0) const {
-    std::fill(x.begin(), x.end(), value_type());
-    return solve_with_guess(A, b, x, verbose, threads);
+    // std::fill(x.begin(), x.end(), value_type());
+    return solve_with_guess(A, b, x, verbose, threads, false);
   }
 
 #ifdef _OPENMP
