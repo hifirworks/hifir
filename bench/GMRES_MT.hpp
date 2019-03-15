@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <array>
 #include <cstdlib>
 
 #include "GMRES.hpp"
@@ -20,17 +21,57 @@
 namespace psmilu {
 namespace bench {
 
+namespace internal {
+
+class IdentityPrec_MT : public IdentityPrec {
+  using base = IdentityPrec;
+
+ public:
+  template <class Vector>
+  inline void solve_mt(const Vector &b, const std::size_t start,
+                       const std::size_t len, Vector &x) const {
+    std::copy_n(b.cbegin() + start, len, x.begin() + start);
+  }
+};
+
+}  // namespace internal
+
+using internal::IdentityPrec_MT;
+
+#ifdef _OPENMP
+
 typedef struct {
   std::size_t istart;
   std::size_t len;
 } Partition;
 
-#define MT_COPY(__itr_I, __itr_O, __part) \
-  std::copy_n((__itr_I) + __part.istart, __part.len, (__itr_O) + __part.istart)
-#define MT_INNER(__itr1, __itr2, __part, __v0)              \
-  std::inner_product((__itr1) + __part.istart,              \
-                     (__itr1) + __part.istart + __part.len, \
-                     (__itr2) + __part.istart, __v0)
+template <class ValueType, int CacheLine = 64>
+class SharedBuf {
+  constexpr static int N = CacheLine / sizeof(ValueType);
+
+  using _buf_t = std::array<ValueType, N>;
+  std::vector<_buf_t> _buf;
+
+ public:
+  SharedBuf() = default;
+  explicit SharedBuf(const int n) : _buf(n) {}
+  inline void             resize(const int n) { _buf.resize(n); }
+  inline ValueType &      operator[](const int i) { return _buf[i][0]; }
+  inline const ValueType &operator[](const int i) const { return _buf[i][0]; }
+  inline ValueType        sum() const {
+    ValueType v(0);
+    for (const auto &buf : _buf) v += buf[0];
+    return v;
+  }
+};
+
+#  define MT_COPY(__itr_I, __itr_O, __part)            \
+    std::copy_n((__itr_I) + __part.istart, __part.len, \
+                (__itr_O) + __part.istart)
+#  define MT_INNER(__itr1, __itr2, __part, __v0)              \
+    std::inner_product((__itr1) + __part.istart,              \
+                       (__itr1) + __part.istart + __part.len, \
+                       (__itr2) + __part.istart, __v0)
 
 inline std::vector<Partition> make_part(const std::size_t global_len,
                                         const int         parts) {
@@ -45,38 +86,19 @@ inline std::vector<Partition> make_part(const std::size_t global_len,
   return p;
 }
 
-#define FOR_PAR(__i, __part)                                              \
-  for (std::size_t __i = __part.istart, _n_ = __part.istart + __part.len; \
-       __i < _n_; ++__i)
-
-namespace internal {
-
-class IdentityPrec_MT : public IdentityPrec {
-  using base = IdentityPrec;
-
- public:
-  template <class Vector>
-  inline void solve_mt(const Vector &b, const Partition &part,
-                       Vector &x) const {
-    MT_COPY(b.cbegin(), x.begin(), part);
-  }
-};
-
-}  // namespace internal
-
-using internal::IdentityPrec_MT;
-
-#ifdef _OPENMP
+#  define FOR_PAR(__i, __part)                                              \
+    for (std::size_t __i = __part.istart, _n_ = __part.istart + __part.len; \
+         __i < _n_; ++__i)
 
 template <int Digits, class Operator, class RightPrec, class Array,
-          class Scalar, class CoutStreamer, class CerrStreamer>
+          class Scalar, class Shared_Buf, class CoutStreamer,
+          class CerrStreamer>
 inline std::tuple<int, std::size_t, double> gmres_mt_kernel(
     const int restart, const std::size_t maxit, const Scalar rtol,
     const std::vector<Partition> &parts, const Operator &A, const RightPrec &M,
-    const Array &b, Array &x, std::vector<Array> &y, std::vector<Array> &R,
-    Array &Q, Array &Z, std::vector<Array> &J, Array &v, Array &w,
-    std::vector<Array> &w2, Array &resids, Array &buf, const CoutStreamer &Cout,
-    const CerrStreamer &Cerr) {
+    const Array &b, Array &x, Array &_y, Array &_R, Array &Q, Array &Z,
+    Array &_J, Array &v, Array &w, Array &w2, Array &resids, Shared_Buf &buf,
+    const CoutStreamer &Cout, const CerrStreamer &Cerr) {
   using internal::conj;
   using std::size_t;
   using value_t                 = typename Array::value_type;
@@ -88,82 +110,50 @@ inline std::tuple<int, std::size_t, double> gmres_mt_kernel(
   if (rtol <= 0 || restart <= 0)
     return std::make_tuple(GMRES_INVALID_PARS, 0ul, 0.0);
   if (M.empty()) {
-    Cerr(true,
-         "\033[1;33mWARNING!\033[0m For MT version, the M cannot be empty!.\n");
+    Cerr("\033[1;33mWARNING!\033[0m For MT version, the M cannot be empty!.\n");
     return std::make_tuple(GMRES_INVALID_PARS, 0ul, 0.0);
   }
 
   const size_t max_outer_iters = (size_t)std::ceil((Scalar)maxit / restart);
 
-  // total threads
-  const int threads = parts.size();
-
-  // allocate global work space
-  Q.resize(n * restart);
-  Z.resize(Q.size());
-  v.resize(n);
-  w.resize(n);
-
-  // allocate local shared buffer for each threads
-  do {
-    const size_t R_size = restart * (restart + 1) / 2;
-    for (int thread = 0; thread < threads; ++thread) {
-      y[thread].resize(restart + 1);
-      R[thread].resize(R_size);
-      J[thread].resize(2 * restart);
-      w2[thread].resize(restart + 1);
-    }
-  } while (false);
-
-  // residuals
-  resids.reserve(maxit);
-  resids.resize(0);
+  Array &_w = w2;
 
   // shared returns
-  int    g_flag;
-  size_t g_iter;
+  int    flag(GMRES_SUCCESS);
+  size_t iter(0);
 
-  // const auto beta0 = std::sqrt(
-  //     std::inner_product(b.cbegin(), b.cend(), b.cbegin(), value_t()));
+  // shared var for residuals
+  Scalar resid(1), resid_prev;
+
+  const int threads = parts.size();
 
   auto time_start = std::chrono::high_resolution_clock::now();
 
 #  pragma omp parallel num_threads(threads)
   {
-    const int  my_id  = omp_get_thread_num();
-    const bool master = !my_id;
-
-    // private variables
-    size_t iter(0);
-    int    flag = GMRES_SUCCESS;
-    Array &_y   = y[my_id];
-    Array &_R   = R[my_id];
-    Array &_J   = J[my_id];
-    Array &_w   = w2[my_id];
-
-    const auto &part = parts[my_id];
+    const int   my_id = omp_get_thread_num();
+    const auto &part  = parts[my_id];
 
     buf[my_id] = MT_INNER(b.cbegin(), b.cbegin(), part, Scalar(0));
 #  pragma omp barrier
-    const auto beta0 =
-        std::sqrt(std::accumulate(buf.cbegin(), buf.cend(), Scalar()));
-
-    Scalar resid(1);
+    const auto beta0 = std::sqrt(buf.sum());
 
     // loop begins
     for (size_t it_outer(0); it_outer < max_outer_iters; ++it_outer) {
-      Cout(master, "Enter outer iteration %zd.\n", it_outer + 1);
+#  pragma omp master
+      { Cout("Enter outer iteration %zd.\n", it_outer + 1); }  // master
       if (it_outer) {
-        Cerr(master,
-             "\033[1;33mWARNING!\033[0m Couldn\'t solve with %d restarts.\n",
-             restart);
+#  pragma omp master
+        {
+          Cerr("\033[1;33mWARNING!\033[0m Couldn\'t solve with %d restarts.\n",
+               restart);
+        }  // master
         A.mv_nt(x, part.istart, part.len, v);
         FOR_PAR(i, part) v[i] = b[i] - v[i];
       } else {
         buf[my_id] = MT_INNER(x.cbegin(), x.cbegin(), part, Scalar(0));
 #  pragma omp barrier
-        const auto sum_x_inner =
-            std::accumulate(buf.cbegin(), buf.cend(), Scalar());
+        const auto sum_x_inner = buf.sum();
         if (sum_x_inner > 0)
           A.mv_nt(x, part.istart, part.len, v);
         else
@@ -171,11 +161,15 @@ inline std::tuple<int, std::size_t, double> gmres_mt_kernel(
       }
       buf[my_id] = MT_INNER(v.cbegin(), v.cbegin(), part, Scalar(0));
 #  pragma omp barrier
-      const auto beta2 = std::accumulate(buf.cbegin(), buf.cend(), Scalar());
-      const auto beta  = std::sqrt(beta2);
-      _y[0]            = beta;
+#  pragma omp master
+      {
+        const auto beta2 = buf.sum();
+        const auto beta  = std::sqrt(beta2);
+        _y[0]            = beta;
+      }  // master
+#  pragma omp barrier
       do {
-        const auto inv_beta   = 1. / beta;
+        const auto inv_beta   = 1. / _y[0];
         FOR_PAR(i, part) Q[i] = v[i] * inv_beta;
       } while (false);
       size_t j(0);
@@ -184,7 +178,7 @@ inline std::tuple<int, std::size_t, double> gmres_mt_kernel(
         const auto jn = j * n;
         MT_COPY(Q.cbegin() + jn, v.begin(), part);
 #  pragma omp barrier
-        M.solve_mt(v, part, w);
+        M.solve_mt(v, part.istart, part.len, w);
         MT_COPY(w.cbegin(), Z.begin() + jn, part);
 #  pragma omp barrier
         A.mv_nt(w, part.istart, part.len, v);
@@ -192,59 +186,71 @@ inline std::tuple<int, std::size_t, double> gmres_mt_kernel(
           auto itr   = Q.cbegin() + k * n;
           buf[my_id] = MT_INNER(v.cbegin(), itr, part, Scalar(0));
 #  pragma omp barrier
-          _w[k]          = std::accumulate(buf.cbegin(), buf.cend(), Scalar());
-          const auto tmp = _w[k];
+          const auto tmp = buf.sum();
           FOR_PAR(i, part) v[i] -= tmp * itr[i];
+#  pragma omp master
+          _w[k] = tmp;  // master
         }
         buf[my_id] = MT_INNER(v.cbegin(), v.cbegin(), part, Scalar(0));
 #  pragma omp barrier
-        const auto v_norm2 =
-                       std::accumulate(buf.cbegin(), buf.cend(), Scalar()),
-                   v_norm = std::sqrt(v_norm2);
+        const auto v_norm2 = buf.sum(), v_norm = std::sqrt(v_norm2);
         if (j + 1 < (size_t)restart) {
           auto       itr          = Q.begin() + jn + n;
           const auto inv_norm     = 1. / v_norm;
           FOR_PAR(i, part) itr[i] = inv_norm * v[i];
         }
-        auto J1 = _J.begin(), J2 = J1 + restart;
-        for (size_t colJ(0); colJ + 1u <= j; ++colJ) {
-          const auto tmp = _w[colJ];
-          _w[colJ]       = conj(J1[colJ]) * tmp + conj(J2[colJ]) * _w[colJ + 1];
-          _w[colJ + 1]   = -J2[colJ] * tmp + J1[colJ] * _w[colJ + 1];
-        }
-        const auto rho        = std::sqrt(_w[j] * _w[j] + v_norm2);
-        J1[j]                 = _w[j] / rho;
-        J2[j]                 = v_norm / rho;
-        _y[j + 1]             = -J2[j] * _y[j];
-        _y[j]                 = conj(J1[j]) * _y[j];
-        _w[j]                 = rho;
-        R_itr                 = std::copy_n(_w.cbegin(), j + 1, R_itr);
-        const auto resid_prev = resid;
-        resid                 = std::abs(_y[j + 1]) / beta0;
+#  pragma omp master
+        {
+          auto J1 = _J.begin(), J2 = J1 + restart;
+          for (size_t colJ(0); colJ + 1u <= j; ++colJ) {
+            const auto tmp = _w[colJ];
+            _w[colJ]     = conj(J1[colJ]) * tmp + conj(J2[colJ]) * _w[colJ + 1];
+            _w[colJ + 1] = -J2[colJ] * tmp + J1[colJ] * _w[colJ + 1];
+          }
+          const auto rho = std::sqrt(_w[j] * _w[j] + v_norm2);
+          J1[j]          = _w[j] / rho;
+          J2[j]          = v_norm / rho;
+          _y[j + 1]      = -J2[j] * _y[j];
+          _y[j]          = conj(J1[j]) * _y[j];
+          _w[j]          = rho;
+          R_itr          = std::copy_n(_w.cbegin(), j + 1, R_itr);
+          resid_prev     = resid;
+          resid          = std::abs(_y[j + 1]) / beta0;
+        }  // master
+#  pragma omp barrier
         if (resid >= resid_prev * (1 - _stag_eps)) {
-          flag = GMRES_STAGNATED;
-          Cerr(master,
-               "\033[1;33mWARNING!\033[0m Stagnated detected at iteration "
-               "%zd.\n",
-               iter);
+#  pragma omp master
+          {
+            flag = GMRES_STAGNATED;
+            Cerr(
+                "\033[1;33mWARNING!\033[0m Stagnated detected at iteration "
+                "%zd.\n",
+                iter);
+          }  // master
           break;
         } else if (iter >= maxit) {
-          Cerr(master,
-               "\033[1;33mWARNING!\033[0m Reached maxit iteration limit "
-               "%zd.\n",
-               maxit);
-          flag = GMRES_DIVERGED;
+#  pragma omp master
+          {
+            flag = GMRES_DIVERGED;
+            Cerr(
+                "\033[1;33mWARNING!\033[0m Reached maxit iteration limit "
+                "%zd.\n",
+                maxit);
+          }  // master
           break;
         }
-        ++iter;
-        Cout(master, "  At iteration %zd, relative residual is %g.\n", iter,
-             resid);
-        if (master) resids.push_back(resid);
+#  pragma omp master
+        {
+          ++iter;
+          Cout("  At iteration %zd, relative residual is %g.\n", iter, resid);
+          resids.push_back(resid);
+        }  // master
         if (resid < rtol || j + 1u >= (size_t)restart) break;
         ++j;
       }  // inf loop
-      // backsolve
-      if (j) {
+// backsolve
+#  pragma omp master
+      {
         for (int k = j; k > -1; --k) {
           --R_itr;
           _y[k] /= *R_itr;
@@ -254,25 +260,22 @@ inline std::tuple<int, std::size_t, double> gmres_mt_kernel(
             _y[i] -= tmp * *R_itr;
           }
         }
-      }
+      }  // master
+#  pragma omp barrier
       for (size_t i(0); i <= j; ++i) {
         const auto tmp   = _y[i];
         auto       Z_itr = Z.cbegin() + i * n;
         FOR_PAR(k, part) x[k] += tmp * Z_itr[k];
       }
-#  pragma omp barrier
       if (resid < rtol || flag != GMRES_SUCCESS) break;
-    }
-    if (master) {
-      g_flag = flag;
-      g_iter = iter;
+#  pragma omp barrier
     }
   }  // parallel
 
   auto time_end = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> period = time_end - time_start;
 
-  return std::make_tuple(g_flag, g_iter, period.count());
+  return std::make_tuple(flag, iter, period.count());
 }
 
 inline int determine_num_threads() {
@@ -282,27 +285,6 @@ inline int determine_num_threads() {
   if (env_threads) return std::atoi(env_threads);
   return omp_get_max_threads();
 }
-
-namespace internal {
-
-const static struct {
-  template <class... Args>
-  inline void operator()(const bool master, const char *f, Args... args) const {
-    if (master) std::fprintf(stdout, f, args...);
-  }
-} MT_cout;
-const static struct {
-  template <class... Args>
-  inline void operator()(const bool master, const char *f, Args... args) const {
-    if (master) std::fprintf(stderr, f, args...);
-  }
-} MT_cerr;
-const static struct {
-  template <class... Args>
-  inline void operator()(const bool, const char *, Args...) const {}
-} MT_dummy_streamer;
-
-}  // namespace internal
 
 #endif
 
@@ -360,10 +342,8 @@ class GMRES_MT : public GMRES<ValueType, PrecType, ArrayType> {
     _cached_size = cur_size;
     if (repart) {
       _parts = make_part(_cached_size, threads);
-      _yy.resize(threads);
-      _ww.resize(threads);
-      _RR.resize(threads);
-      _JJ.resize(threads);
+      _base::_ensure_data_capacities(_cached_size);
+      _ww.resize(restart + 1);
       _buf.resize(threads);
     }
     if (verbose) {
@@ -374,15 +354,14 @@ class GMRES_MT : public GMRES<ValueType, PrecType, ArrayType> {
         std::printf(" thread %d, istart %zd, len %zd.\n", i, _parts[i].istart,
                     _parts[i].len);
     }
-    return verbose
-               ? gmres_mt_kernel<_D>(restart, maxit, rtol, _parts, A, _base::M,
-                                     b, x0, _yy, _RR, _Q, _Z, _JJ, _v, _w, _ww,
-                                     _resids, _buf, internal::MT_cout,
-                                     internal::MT_cerr)
-               : gmres_mt_kernel<_D>(restart, maxit, rtol, _parts, A, _base::M,
-                                     b, x0, _yy, _RR, _Q, _Z, _JJ, _v, _w, _ww,
-                                     _resids, _buf, internal::MT_dummy_streamer,
-                                     internal::MT_dummy_streamer);
+    return verbose ? gmres_mt_kernel<_D>(restart, maxit, rtol, _parts, A,
+                                         _base::M, b, x0, _y, _R, _Q, _Z, _J,
+                                         _v, _w, _ww, _resids, _buf,
+                                         internal::Cout, internal::Cerr)
+                   : gmres_mt_kernel<_D>(
+                         restart, maxit, rtol, _parts, A, _base::M, b, x0, _y,
+                         _R, _Q, _Z, _J, _v, _w, _ww, _resids, _buf,
+                         internal::Dummy_streamer, internal::Dummy_streamer);
 #endif
   }
 
@@ -395,20 +374,21 @@ class GMRES_MT : public GMRES<ValueType, PrecType, ArrayType> {
     return solve_with_guess(A, b, x, verbose, threads);
   }
 
+#ifdef _OPENMP
  protected:
-  mutable std::vector<Partition> _parts;
-  mutable size_type              _cached_size = 0;
+  using _base::_J;
   using _base::_Q;
+  using _base::_R;
   using _base::_resids;
   using _base::_v;
   using _base::_w;
+  using _base::_y;
   using _base::_Z;
-
-  mutable std::vector<array_type> _yy;
-  mutable std::vector<array_type> _ww;
-  mutable std::vector<array_type> _RR;
-  mutable std::vector<array_type> _JJ;
-  mutable array_type              _buf;
+  mutable std::vector<Partition> _parts;
+  mutable size_type              _cached_size = 0;
+  mutable array_type             _ww;
+  mutable SharedBuf<ValueType>   _buf;
+#endif
 };
 
 }  // namespace bench

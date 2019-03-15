@@ -82,7 +82,7 @@ const static struct {
 const static struct {
   template <class... Args>
   inline void operator()(const char *, Args...) const {}
-} Cout_dummy, Cerr_dummy;
+} Dummy_streamer;
 
 }  // namespace internal
 
@@ -169,8 +169,8 @@ class GMRES {
       const Operator &A, const VectorType &b, VectorType &x0,
       const bool verbose = true) const {
     return verbose ? _solve_kernel(A, b, x0, internal::Cout, internal::Cerr)
-                   : _solve_kernel(A, b, x0, internal::Cout_dummy,
-                                   internal::Cerr_dummy);
+                   : _solve_kernel(A, b, x0, internal::Dummy_streamer,
+                                   internal::Dummy_streamer);
   }
 
   template <class Operator, class VectorType>
