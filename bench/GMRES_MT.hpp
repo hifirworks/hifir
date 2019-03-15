@@ -367,6 +367,14 @@ class GMRES_MT : public GMRES<ValueType, PrecType, ArrayType> {
       _JJ.resize(threads);
       _buf.resize(threads);
     }
+    if (verbose) {
+      std::printf(
+          "The problem has %zd unknowns which have been partitioned as:\n\n",
+          _cached_size);
+      for (int i = 0; i < threads; ++i)
+        std::printf(" thread %d, istart %zd, len %zd.\n", i, _parts[i].istart,
+                    _parts[i].len);
+    }
     return verbose
                ? gmres_mt_kernel<_D>(restart, maxit, rtol, _parts, A, _base::M,
                                      b, x0, _yy, _RR, _Q, _Z, _JJ, _v, _w, _ww,
