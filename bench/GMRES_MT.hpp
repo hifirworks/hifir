@@ -157,7 +157,6 @@ inline std::tuple<int, std::size_t, double> gmres_mt_kernel(
         Cerr(master,
              "\033[1;33mWARNING!\033[0m Couldn\'t solve with %d restarts.\n",
              restart);
-        Cout(master, "%.10g\n", *std::min_element(x.cbegin(), x.cend()));
         A.mv_nt(x, part.istart, part.len, v);
         FOR_PAR(i, part) v[i] = b[i] - v[i];
       } else {
