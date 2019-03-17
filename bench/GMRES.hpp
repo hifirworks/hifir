@@ -23,6 +23,10 @@
 #include <utility>
 #include <vector>
 
+#ifdef _OPENMP
+#  include <omp.h>
+#endif
+
 namespace psmilu {
 namespace bench {
 namespace internal {
@@ -237,7 +241,11 @@ class GMRES {
       if (M.empty()) M.compute(A);  // default compute
       // record  time after preconditioner
       _ensure_data_capacities(n);
-      auto            time_start = std::chrono::high_resolution_clock::now();
+#ifdef _OPENMP
+      const double time_start = omp_get_wtime();
+#else
+      auto time_start = std::chrono::high_resolution_clock::now();
+#endif
       const size_type max_outer_iters =
           (size_type)std::ceil((scalar_type)maxit / restart);
       auto &      x    = x0;
@@ -339,9 +347,14 @@ class GMRES {
         }
         if (resid < rtol || flag != GMRES_SUCCESS) break;
       }
-      auto time_end = std::chrono::high_resolution_clock::now();
+#ifdef _OPENMP
+      const double sec = omp_get_wtime() - time_start;
+#else
+      auto time_end   = std::chrono::high_resolution_clock::now();
       std::chrono::duration<double> period = time_end - time_start;
-      return std::make_tuple(flag, iter, period.count());
+      const double                  sec    = period.count();
+#endif
+      return std::make_tuple(flag, iter, sec);
     } catch (const std::exception &e) {
       Cerr(
           "\033[1;33mWARNING!\033[0m Unexpected termination due to exception "

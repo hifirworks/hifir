@@ -123,11 +123,10 @@ inline std::tuple<int, std::size_t, double> gmres_mt_kernel(
   size_t g_iter(0);
 
   const int threads = parts.size();
-  (void)threads;
 
-  auto time_start = std::chrono::high_resolution_clock::now();
+  const double time_start = omp_get_wtime();
 
-#  pragma omp parallel
+#  pragma omp parallel num_threads(threads) default(shared)
   {
     const int   my_id = omp_get_thread_num();
     const auto &part  = parts[my_id];
@@ -143,7 +142,6 @@ inline std::tuple<int, std::size_t, double> gmres_mt_kernel(
 
     // loop begins
     for (size_t it_outer(0); it_outer < max_outer_iters; ++it_outer) {
-#  pragma omp barrier
 #  pragma omp master
       do {
         Cout("Enter outer iteration %zd.\n", it_outer + 1);
@@ -175,7 +173,6 @@ inline std::tuple<int, std::size_t, double> gmres_mt_kernel(
       size_t j(0);
       auto   R_itr = _R.begin();
       for (;;) {
-#  pragma omp barrier
         const auto jn = j * n;
         MT_COPY(Q.cbegin() + jn, v.begin(), part);
 #  pragma omp barrier
@@ -191,6 +188,7 @@ inline std::tuple<int, std::size_t, double> gmres_mt_kernel(
           FOR_PAR(i, part) v[i] -= tmp * itr[i];
 #  pragma omp master
           _w[k] = tmp;  // master
+#  pragma omp barrier   // Gosh!
         }
         buf[my_id] = MT_INNER(v.cbegin(), v.cbegin(), part, Scalar(0));
 #  pragma omp barrier
@@ -279,10 +277,9 @@ inline std::tuple<int, std::size_t, double> gmres_mt_kernel(
     } while (false);  // master
   }                   // parallel
 
-  auto time_end = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> period = time_end - time_start;
+  const double sec = omp_get_wtime() - time_start;
 
-  return std::make_tuple(g_flag, g_iter, period.count());
+  return std::make_tuple(g_flag, g_iter, sec);
 }
 
 inline int determine_num_threads() {
@@ -361,7 +358,7 @@ class GMRES_MT : public GMRES<ValueType, PrecType, ArrayType> {
         std::printf(" thread %d, istart %zd, len %zd.\n", i, _parts[i].istart,
                     _parts[i].len);
     }
-    omp_set_num_threads(threads);
+    // omp_set_num_threads(threads);
     return verbose
                ? gmres_mt_kernel<_D>(restart, maxit, rtol, _parts, A, _base::M,
                                      b, x0, _y, _R, _Q, _Z, _J, _v, _w, _ww,
