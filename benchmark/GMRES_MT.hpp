@@ -377,7 +377,7 @@ class GMRES_MT : public GMRES<ValueType, PrecType, ArrayType> {
                                            const VectorType &b, VectorType &x,
                                            const bool verbose = true,
                                            int        threads = 0) const {
-    // std::fill(x.begin(), x.end(), value_type());
+    std::fill(x.begin(), x.end(), value_type());
     return solve_with_guess(A, b, x, verbose, threads, false);
   }
 

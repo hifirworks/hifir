@@ -182,7 +182,7 @@ class GMRES {
   std::tuple<int, size_type, double> solve(const Operator &  A,
                                            const VectorType &b, VectorType &x,
                                            const bool verbose = true) const {
-    // std::fill(x.begin(), x.end(), value_type());
+    std::fill(x.begin(), x.end(), value_type());
     return verbose
                ? _solve_kernel(A, b, x, internal::Cout, internal::Cerr, false)
                : _solve_kernel(A, b, x, internal::Dummy_streamer,
