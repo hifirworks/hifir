@@ -2,22 +2,22 @@
 # ----------------------------------------------------------------------------
 #                Copyright (C) 2019 The PSMILU AUTHORS
 # ----------------------------------------------------------------------------
-"""PSMILU `PyBuilder` and Scipy ``LinearOperator`` compatible
+"""PSMILU `PSMILU` and Scipy ``LinearOperator`` compatible
 
-.. module:: psmilu4py.scipy.builder
+.. module:: psmilu4py.scipy.prec
 .. moduleauthor:: Qiao Chen, <qiao.chen@stonybrook.edu>
 """
 
 from scipy.sparse.linalg.interface import _CustomLinearOperator
 import numpy as np
 from .utils import as_psmilu4py_data, as_sparse_matrix
-from ..PyBuilder import PyBuilder
+from ..PSMILU import PSMILU
 
-__all__ = ['ScipyBuilder']
+__all__ = ['ScipyPSMILU']
 
 
-class ScipyBuilder(PyBuilder, _CustomLinearOperator):
-    r"""MILU preconditioner builder for `scipy`
+class ScipyPSMILU(PSMILU, _CustomLinearOperator):
+    r"""MILU object for `scipy`
 
     It's worth noting that the preconditioners can be passed in as a function
     parameter for all KSP solvers in `scipy.sparse.linalg`. The keyvalue
@@ -35,7 +35,7 @@ class ScipyBuilder(PyBuilder, _CustomLinearOperator):
     Notes
     -----
     `scipy` assumes a preconditioner **explicitly** approximates the inverse,
-    while `psmilu4py` builder does this in an implicit fashion. In `scipy`,
+    while `psmilu4py` object does this in an implicit fashion. In `scipy`,
     the preconditioner is :math:`\boldsymbol{M}^{-1}` thus requiring matrix
     vector multiplication. In `psmilu4py`, we compute ``M`` itself and solve
     for :math:`\boldsymbol{x}=\boldsymbol{M}^{-1}\boldsymbol{b}`.
@@ -46,12 +46,12 @@ class ScipyBuilder(PyBuilder, _CustomLinearOperator):
         must be length 2 tuple
     """
     def __init__(self, shape):
-        PyBuilder.__init__(self)
+        PSMILU.__init__(self)
         _CustomLinearOperator.__init__(self, shape, None, dtype=np.float64)
         self._buf = None
 
-    def compute(self, A, m=0, opts=None, check=True):
-        """Compute and build the MILU preconditioner
+    def factorize(self, A, m=0, opts=None, check=True):
+        """Factorize and build the MILU preconditioner
 
         Parameters
         ----------
@@ -70,7 +70,7 @@ class ScipyBuilder(PyBuilder, _CustomLinearOperator):
         assert A.shape == self.shape, 'mismatched shape'
         nrows, ncols = A.shape
         indptr, indices, vals = as_psmilu4py_data(A)
-        PyBuilder.compute(
+        PSMILU.factorize(
             self,
             nrows,
             ncols,
@@ -95,5 +95,5 @@ class ScipyBuilder(PyBuilder, _CustomLinearOperator):
         if self._buf is None or self._buf.size < b.size:
             self._buf = np.empty(b.size)
         y = self._buf[:b.size]
-        PyBuilder.solve(self, b, y)
+        PSMILU.solve(self, b, y)
         return y

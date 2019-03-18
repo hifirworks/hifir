@@ -38,18 +38,18 @@ cdef extern from 'psmilu4py.hpp' namespace 'psmilu' nogil:
                              const size_t m0, const bool is_crs,
                              const bool is_bin) except +
 
-    cdef cppclass PyBuilder:
-        PyBuilder()
+    cdef cppclass PyPSMILU:
+        PyPSMILU()
         bool empty()
         size_t levels()
         size_t nnz()
 
         # computing routine
-        void compute(const size_t nrows, const size_t ncols,
-                     const int *indptr, const int *indices,
-                     const double *vals, const size_t m0,
-                     const Options &opts, const bool check,
-                     const bool is_crs) except +
+        void factorize(const size_t nrows, const size_t ncols,
+                       const int *indptr, const int *indices,
+                       const double *vals, const size_t m0,
+                       const Options &opts, const bool check,
+                       const bool is_crs) except +
 
         # solving routine
         void solve(const size_t n, const double *b, double *x) except +

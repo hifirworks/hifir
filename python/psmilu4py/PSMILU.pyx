@@ -6,14 +6,14 @@
 # Authors:
 #   Qiao,
 
-# This is the implementation for PyBuilder
+# This is the implementation for PSMILU
 
 """Core MILU preconditioner builder for Python
 
 This is the core module, which builds the multilevel ILU preconditiioner that
 can be used in KSP (not limited to) solvers.
 
-.. module:: psmilu4py.PyBuilder
+.. module:: psmilu4py.PSMILU
 .. moduleauthor:: Qiao Chen, <qiao.chen@stonybrook.edu>
 """
 
@@ -24,11 +24,11 @@ cimport psmilu4py as psmilu
 from .Options cimport Options
 
 
-cdef class PyBuilder:
-    """Python MILU preconditioner builder
+cdef class PSMILU:
+    """Python MILU object
 
-    The interfaces remain the same as the original builder,i.e.
-    `psmilu::C_DefaultBuilder`. However, we significantly the parameters by
+    The interfaces remain the same as the original user object, i.e.
+    `psmilu::C_Default_PSMILU`. However, we significantly the parameters by
     hiding the needs of `psmilu::CRS`, `psmilu::CCS`, and `psmilu::Array`.
     Therefore, the interface is very generic and easily adapted to any other
     Python modules without the hassle of complete object types.
@@ -42,25 +42,25 @@ cdef class PyBuilder:
     --------
 
     >>> from psmilu4py import *
-    >>> from psmilu4py.PyBuilder import *
+    >>> from psmilu4py.PSMILU import *
     >>> from psmilu4py.io import read_native_psmilu
     >>> import numpy as np
     >>> n1, n2, rowptr, colind, vals, m = read_native_psmilu('mytest.psmilu')
-    >>> builder = PyBuilder()
+    >>> prec = PSMILU()
     >>> # compute the preconditioner
-    >>> builder.compute(n1, n2, rowptr, colind, vals, m)
+    >>> prec.factorize(n1, n2, rowptr, colind, vals, m)
     >>> b = np.random.rand(n1)
     >>> x = np.empty_like(b)
-    >>> builder.solve(b, x) # solve x=inv(M)*b
+    >>> prec.solve(b, x) # solve x=inv(M)*b
     """
     def __init__(self):
         # for docstring purpose
         pass
 
     def __cinit__(self):
-        self.builder.reset(new psmilu.PyBuilder())
+        self.prec.reset(new psmilu.PyPSMILU())
 
-    def compute(self, size_t nrows, size_t ncols,
+    def factorize(self, size_t nrows, size_t ncols,
         int[::1] indptr not None,
         int[::1] indices not None,
         double[::1] vals not None,
@@ -115,7 +115,7 @@ cdef class PyBuilder:
             bool is_row = is_crs
         if opts is not None:
             my_opts.opts = my_opts.opts
-        deref(self.builder).compute(nrows, ncols, &indptr[0], &indices[0],
+        deref(self.prec).factorize(nrows, ncols, &indptr[0], &indices[0],
             &vals[0], m, my_opts.opts, ck, is_row)
 
     def solve(self, double[::1] b not None, double[::1] x not None):
@@ -138,18 +138,18 @@ cdef class PyBuilder:
         """
         cdef size_t n = len(b)
         assert n == len(x)
-        deref(self.builder).solve(n, &b[0], &x[0])
+        deref(self.prec).solve(n, &b[0], &x[0])
 
     def empty(self):
         """Check if or not the builder is empty"""
-        return deref(self.builder).empty()
+        return deref(self.prec).empty()
 
     @property
     def levels(self):
         """int: number of levels"""
-        return deref(self.builder).levels()
+        return deref(self.prec).levels()
 
     @property
     def nnz(self):
         """int: total number of nonzeros of all levels"""
-        return deref(self.builder).nnz()
+        return deref(self.prec).nnz()

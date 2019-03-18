@@ -56,7 +56,7 @@ inline void read_native_psmilu(const std::string &fn, std::size_t &nrows,
   Array<int>    ind_ptr, inds;
   Array<double> values;
   if (is_crs) {
-    using crs_type = C_DefaultBuilder::crs_type;
+    using crs_type = C_Default_PSMILU::crs_type;
     auto A         = is_bin ? crs_type::from_native_bin(fn.c_str(), &m)
                     : crs_type::from_native_ascii(fn.c_str(), &m);
     nrows = A.nrows();
@@ -65,7 +65,7 @@ inline void read_native_psmilu(const std::string &fn, std::size_t &nrows,
     inds.swap(A.col_ind());
     values.swap(A.vals());
   } else {
-    using ccs_type = C_DefaultBuilder::ccs_type;
+    using ccs_type = C_Default_PSMILU::ccs_type;
     auto A         = is_bin ? ccs_type::from_native_bin(fn.c_str(), &m)
                     : ccs_type::from_native_ascii(fn.c_str(), &m);
     nrows = A.nrows();
@@ -88,7 +88,7 @@ inline void write_native_psmilu(const std::string &fn, const std::size_t nrows,
                                 const bool is_bin = true) {
   constexpr static bool WRAP = true;
   if (is_crs) {
-    using crs_type = C_DefaultBuilder::crs_type;
+    using crs_type = C_Default_PSMILU::crs_type;
     const crs_type A(nrows, ncols, const_cast<int *>(indptr),
                      const_cast<int *>(indices), const_cast<double *>(vals),
                      WRAP);
@@ -99,7 +99,7 @@ inline void write_native_psmilu(const std::string &fn, const std::size_t nrows,
     else
       A.write_native_ascii(fn.c_str(), m0);
   } else {
-    using ccs_type = C_DefaultBuilder::ccs_type;
+    using ccs_type = C_Default_PSMILU::ccs_type;
     const ccs_type A(nrows, ncols, const_cast<int *>(indptr),
                      const_cast<int *>(indices), const_cast<double *>(vals),
                      WRAP);
@@ -112,45 +112,46 @@ inline void write_native_psmilu(const std::string &fn, const std::size_t nrows,
 
 // In order to make things easier, we directly use the raw data types, thus
 // we need to create a child class.
-class PyBuilder : public C_DefaultBuilder {
+class PyPSMILU : public C_Default_PSMILU {
  public:
-  using base      = C_DefaultBuilder;
+  using base      = C_Default_PSMILU;
   using size_type = base::size_type;
 
-  // compute crs
-  inline void compute_crs(const size_type nrows, const size_type ncols,
-                          const int *rowptr, const int *colind,
-                          const double *vals, const size_type m0,
-                          const Options &opts, const bool check) {
+  // factorize crs
+  inline void factorize_crs(const size_type nrows, const size_type ncols,
+                            const int *rowptr, const int *colind,
+                            const double *vals, const size_type m0,
+                            const Options &opts, const bool check) {
     using crs_type             = base::crs_type;
     constexpr static bool WRAP = true;
     const crs_type        A(nrows, ncols, const_cast<int *>(rowptr),
                             const_cast<int *>(colind), const_cast<double *>(vals),
                             WRAP);
-    base::compute(A, m0, opts, check);
+    base::factorize(A, m0, opts, check);
   }
 
-  // compute ccs
-  inline void compute_ccs(const size_type nrows, const size_type ncols,
-                          const int *colptr, const int *rowind,
-                          const double *vals, const size_type m0,
-                          const Options &opts, const bool check) {
+  // factorize ccs
+  inline void factorize_ccs(const size_type nrows, const size_type ncols,
+                            const int *colptr, const int *rowind,
+                            const double *vals, const size_type m0,
+                            const Options &opts, const bool check) {
     using ccs_type             = base::ccs_type;
     constexpr static bool WRAP = true;
     const ccs_type        A(nrows, ncols, const_cast<int *>(colptr),
                             const_cast<int *>(rowind), const_cast<double *>(vals),
                             WRAP);
-    base::compute(A, m0, opts, check);
+    base::factorize(A, m0, opts, check);
   }
 
-  inline void compute(const size_type nrows, const size_type ncols,
-                      const int *indptr, const int *indices, const double *vals,
-                      const size_type m0, const Options &opts, const bool check,
-                      const bool is_crs) {
+  inline void factorize(const size_type nrows, const size_type ncols,
+                        const int *indptr, const int *indices,
+                        const double *vals, const size_type m0,
+                        const Options &opts, const bool check,
+                        const bool is_crs) {
     if (is_crs)
-      compute_crs(nrows, ncols, indptr, indices, vals, m0, opts, check);
+      factorize_crs(nrows, ncols, indptr, indices, vals, m0, opts, check);
     else
-      compute_ccs(nrows, ncols, indptr, indices, vals, m0, opts, check);
+      factorize_ccs(nrows, ncols, indptr, indices, vals, m0, opts, check);
   }
 
   // overload solve

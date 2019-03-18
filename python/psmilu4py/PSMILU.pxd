@@ -6,12 +6,12 @@
 # Authors:
 #   Qiao,
 
-# This is the Cython header for PyBuilder
+# This is the Cython header for PSMILU
 
 from libcpp.memory cimport shared_ptr
 cimport psmilu4py as psmilu
 
 
-# Python class for PyBuilder
-cdef class PyBuilder:
-    cdef shared_ptr[psmilu.PyBuilder] builder
+# Python class for PyPSMILU
+cdef class PSMILU:
+    cdef shared_ptr[psmilu.PyPSMILU] prec
