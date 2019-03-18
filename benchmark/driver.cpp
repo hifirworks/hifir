@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
       std::cout << help;
       return 0;
     }
-    if (kase != "") kase = arg;
+    if (kase == "") kase = arg;
   }
   // we don't allow use PWD as test root!
   if (kase == "") {
@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
   std::cout << "doing PS analysis with leading block size " << m << '\n';
 
   solver_t solver_symm;
-  solver_symm.M.compute(A, m, opts);
+  solver_symm.M.factorize(A, m, opts);
 
   solver_symm.rtol = 1e-12;
   std::cout << "solve with 1e-12 rtol...\n\n";
@@ -156,7 +156,7 @@ int main(int argc, char *argv[]) {
 
   solver_t solver_asymm;
 
-  solver_asymm.M.compute(A, 0u, opts);
+  solver_asymm.M.factorize(A, 0u, opts);
 
   solver_asymm.rtol = 1e-12;
   std::cout << "solve with 1e-12 rtol...\n\n";

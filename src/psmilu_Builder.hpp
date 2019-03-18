@@ -134,18 +134,18 @@ class Builder {
     return *itr;
   }
 
-  /// \brief compute the MILU preconditioner
+  /// \brief factorize the MILU preconditioner
   /// \tparam CsType compressed storage input, either \ref CRS or \ref CCS
   /// \param[in] A input matrix
   /// \param[in] m0 leading block size, if it's zero (default), then the routine
   ///               will assume an asymmetric leading block.
   /// \param[in] opts control parameters, using the default values in the paper.
   /// \param[in] check if \a true (default), will perform validity checking
-  /// \sa solve, _compute_kernel
+  /// \sa solve, _factorize_kernel
   template <class CsType>
-  inline void compute(const CsType &A, const size_type m0 = 0u,
-                      const Options &opts  = get_default_options(),
-                      const bool     check = true) {
+  inline void factorize(const CsType &A, const size_type m0 = 0u,
+                        const Options &opts  = get_default_options(),
+                        const bool     check = true) {
     static_assert(!(CsType::ONE_BASED ^ ONE_BASED), "inconsistent index base");
 
     const static internal::StdoutStruct  Crout_cout;
@@ -182,9 +182,9 @@ class Builder {
       _prec_work.resize(0);
     }
     if (psmilu_verbose(FAC, opts))
-      _compute_kernel(A, m0, opts, Crout_cout);
+      _factorize_kernel(A, m0, opts, Crout_cout);
     else
-      _compute_kernel(A, m0, opts, Crout_cout_dummy);
+      _factorize_kernel(A, m0, opts, Crout_cout_dummy);
     const size_type n1 = std::accumulate(
                         _precs.cbegin(), _precs.cend(), size_type(0),
                         [](const size_type i, const prec_type &p) -> size_type {
@@ -206,7 +206,7 @@ class Builder {
   /// \brief solve \f$\boldsymbol{x}=\boldsymbol{M}^{-1}\boldsymbol{b}\f$
   /// \param[in] b right-hand side vector
   /// \param[out] x solution vector
-  /// \sa compute
+  /// \sa factorize
   inline void solve(const array_type &b, array_type &x) const {
     psmilu_error_if(empty(), "MILU-Prec is empty!");
     psmilu_error_if(b.size() != x.size(), "unmatched sizes");
@@ -217,7 +217,7 @@ class Builder {
   }
 
  protected:
-  /// \brief computing kernel
+  /// \brief factorization kernel
   /// \tparam CsType compressed storage
   /// \tparam CroutStreamer information streamer for Crout update
   /// \param[in] A input matrix
@@ -228,9 +228,9 @@ class Builder {
   ///
   /// This is implementation of algorithm 1 in the paper.
   template <class CsType, class CroutStreamer>
-  inline void _compute_kernel(const CsType &A, const size_type m0,
-                              const Options &      opts,
-                              const CroutStreamer &Crout_info) {
+  inline void _factorize_kernel(const CsType &A, const size_type m0,
+                                const Options &      opts,
+                                const CroutStreamer &Crout_info) {
     psmilu_error_if(A.nrows() != A.ncols(),
                     "Currently only squared systems are supported");
     size_type       m(m0);  // init m
@@ -254,7 +254,7 @@ class Builder {
 
     // check last level
     if (!_precs.back().is_last_level())
-      this->_compute_kernel(S, 0u, opts, Crout_info);
+      this->_factorize_kernel(S, 0u, opts, Crout_info);
   }
 
  protected:

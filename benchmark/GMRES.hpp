@@ -238,7 +238,7 @@ class GMRES {
         return std::make_tuple(GMRES_INVALID_PARS, iter, 0.0);
       const auto beta0 = std::sqrt(
           std::inner_product(b.cbegin(), b.cend(), b.cbegin(), value_type()));
-      if (M.empty()) M.compute(A);  // default compute
+      if (M.empty()) M.factorize(A);  // default compute
       // record  time after preconditioner
       _ensure_data_capacities(n);
 #ifdef _OPENMP
