@@ -17,9 +17,10 @@ extern "C" {
 
 using namespace psmilu;
 
-using crs_t    = C_DefaultBuilder::crs_type;
-using array_t  = C_DefaultBuilder::array_type;
-using solver_t = bench::GMRES<double, C_DefaultBuilder, array_t>;
+using prec_t   = C_Default_PSMILU;
+using crs_t    = prec_t::crs_type;
+using array_t  = prec_t::array_type;
+using solver_t = bench::GMRES<double, prec_t, array_t>;
 
 const static char *help =
     "\n"

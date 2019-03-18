@@ -56,7 +56,7 @@ static bool introduced = false;
  * @{
  */
 
-/// \class Builder
+/// \class PSMILU
 /// \tparam ValueType numerical value type, e.g. \a double
 /// \tparam IndexType index type, e.g. \a int
 /// \tparam OneBased if \a false (default), then assume C index system
@@ -86,7 +86,7 @@ static bool introduced = false;
 /// \endcode
 template <class ValueType, class IndexType, bool OneBased = false,
           SmallScaleType SSSType = SMALLSCALE_LUP>
-class Builder {
+class PSMILU {
  public:
   typedef ValueType         value_type;                     ///< value type
   typedef Array<value_type> array_type;                     ///< array type
@@ -262,37 +262,37 @@ class Builder {
   mutable array_type _prec_work;  ///< preconditioner work space for solving
 };
 
-/// \typedef C_Builder
+/// \typedef C_PSMILU
 /// \tparam ValueType numerical value type, e.g. \a double
 /// \tparam IndexType index type, e.g. \a int
-/// \sa F_Builder
+/// \sa F_PSMILU
 ///
 /// This is the type wrapper for C index inputs
 template <class ValueType, class IndexType>
-using C_Builder = Builder<ValueType, IndexType>;
+using C_PSMILU = PSMILU<ValueType, IndexType>;
 
-/// \typedef F_Builder
+/// \typedef F_PSMILU
 /// \tparam ValueType numerical value type, e.g. \a double
 /// \tparam IndexType index type, e.g. \a int
-/// \sa C_Builder
+/// \sa C_PSMILU
 ///
 /// This is the type wrapper for Fortran index inputs
 template <class ValueType, class IndexType>
-using F_Builder = Builder<ValueType, IndexType, true>;
+using F_PSMILU = PSMILU<ValueType, IndexType, true>;
 
-/// \typedef C_DefaultBuilder
-/// \sa F_DefaultBuilder
+/// \typedef C_Default_PSMILU
+/// \sa F_Default_PSMILU
 ///
 /// This is the type wrapper for default builder for C index, using \a int as
 /// index type and \a double as value type.
-typedef C_Builder<double, int> C_DefaultBuilder;
+typedef C_PSMILU<double, int> C_Default_PSMILU;
 
 /// \typedef F_DefaultBuilder
 /// \sa C_DefaultBuilder
 ///
 /// This is the type wrapper for default builder for Fortran index, using \a int
 /// as index type and \a double as value type.
-typedef F_Builder<double, int> F_DefaultBuilder;
+typedef F_PSMILU<double, int> F_Default_PSMILU;
 
 /*!
  * @}
