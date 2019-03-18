@@ -29,3 +29,4 @@ bench/hsl_mc64-*
 python/psmilu4py/*.cpp
 python/psmilu4py/file_dp_api.h
 python/hsl_mc64*
+.ipynb_checkpoints
