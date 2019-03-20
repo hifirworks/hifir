@@ -166,7 +166,7 @@ namespace internal {
  * build a byte map, i.e. the value is the leading byte position of the attrs
  * in Options
  */
-constexpr static std::size_t option_attr_pos[11] = {
+const static std::size_t option_attr_pos[11] = {
     0,
     sizeof(double),
     option_attr_pos[1] + sizeof(double),
@@ -181,8 +181,8 @@ constexpr static std::size_t option_attr_pos[11] = {
 };
 
 /* data type tags, true for double, false for int */
-constexpr static bool option_dtypes[11] = {
-    true, true, true, true, false, false, true, true, true, false, false};
+const static bool option_dtypes[11] = {true, true, true, true,  false, false,
+                                       true, true, true, false, false};
 
 /* using unordered map to store the string to index map */
 const static std::unordered_map<std::string, int> option_tag2pos = {
@@ -205,8 +205,8 @@ const static std::unordered_map<std::string, int> option_tag2pos = {
 /// variable names.
 template <typename T>
 inline bool set_option_attr(const std::string &attr, const T v, Options &opt) {
-  constexpr static bool failed  = true;
-  char *                opt_raw = reinterpret_cast<char *>(&opt);
+  const static bool failed  = true;
+  char *            opt_raw = reinterpret_cast<char *>(&opt);
   try {
     const int         pos     = internal::option_tag2pos.at(attr);
     const std::size_t pos_raw = internal::option_attr_pos[pos];
