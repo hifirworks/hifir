@@ -36,6 +36,7 @@ struct Prec {
   typedef Array<index_type>                     perm_type;   ///< permutation
   typedef typename ccs_type::size_type          size_type;   ///< size
   typedef typename ccs_type::array_type         array_type;  ///< array
+  using mat_type = crs_type;
 
   static constexpr bool ONE_BASED  = OneBased;  ///< c index flag
   static constexpr char EMPTY_PREC = '\0';      ///< empty prec
@@ -65,8 +66,8 @@ struct Prec {
   /// \param[in] P row permutation
   /// \param[in] Q_inv inverse column permutation
   /// \note This allows us to use emplace back in STL efficiently
-  Prec(size_type mm, size_type nn, ccs_type &&L_b, array_type &&d_b,
-       ccs_type &&U_b, ccs_type &&e, ccs_type &&f, array_type &&S,
+  Prec(size_type mm, size_type nn, mat_type &&L_b, array_type &&d_b,
+       mat_type &&U_b, mat_type &&e, mat_type &&f, array_type &&S,
        array_type &&T, perm_type &&P, perm_type &&Q_inv)
       : m(mm),
         n(nn),
@@ -97,8 +98,8 @@ struct Prec {
   /// calling this routine.
   ///
   /// \warning Everything on output is destroyed, as the routine name says.
-  inline void move_destroy(ccs_type &L_b, array_type &d_b, ccs_type &U_b,
-                           ccs_type &e, ccs_type &f, array_type &S,
+  inline void move_destroy(mat_type &L_b, array_type &d_b, mat_type &U_b,
+                           mat_type &e, mat_type &f, array_type &S,
                            array_type &T, perm_type &P, perm_type &Q_inv) {
     L_B   = std::move(L_b);
     d_B   = std::move(d_b);
@@ -122,11 +123,11 @@ struct Prec {
 
   size_type       m;             ///< leading block size
   size_type       n;             ///< system size
-  ccs_type        L_B;           ///< lower part of leading block
+  mat_type        L_B;           ///< lower part of leading block
   array_type      d_B;           ///< diagonal block of leading block
-  ccs_type        U_B;           ///< upper part of leading block
-  ccs_type        E;             ///< scaled and permutated E part
-  ccs_type        F;             ///< scaled and permutated F part
+  mat_type        U_B;           ///< upper part of leading block
+  mat_type        E;             ///< scaled and permutated E part
+  mat_type        F;             ///< scaled and permutated F part
   array_type      s;             ///< row scaling vector
   array_type      t;             ///< column scaling vector
   perm_type       p;             ///< row permutation matrix
