@@ -102,6 +102,76 @@ inline Array<typename CcsType::value_type> extract_perm_diag(
   return diag;
 }
 
+#if 0
+template <class AugCcsType, class StartArray>
+inline typename AugCcsType::crs_type extract_L_B(
+    const AugCcsType &L, const typename AugCcsType::size_type m,
+    const StartArray &L_start) {
+  static_assert(!AugCcsType::ROW_MAJOR, "L must be AugCCS!");
+  using crs_type                  = typename AugCcsType::crs_type;
+  using size_type                 = typename crs_type::size_type;
+  constexpr static bool ONE_BASED = crs_type::ONE_BASED;
+
+  psmilu_assert(m <= L.nrows(), "invalid row size");
+
+  const auto c_idx = [](const size_type i) {
+    return to_c_idx<size_type, ONE_BASED>(i);
+  };
+
+  crs_type L_B(m, m);
+  auto &   row_start = L_B.row_start();
+  row_start.resize(m + 1);
+  psmilu_error_if(row_start.status() == DATA_UNDEF, "memory allocation failed");
+  std::fill(row_start.begin(), row_start.end(), 0);
+  // row_start.front() = ONE_BASED;
+
+  auto L_i_begin = L.row_ind().cbegin();
+  for (size_type i = 0u; i < m; ++i) {
+    auto last = L_i_begin + L_start[i];
+    for (auto itr = L.row_ind_cbegin(i); itr != last; ++itr) {
+      const auto j = c_idx(*itr);
+      psmilu_assert(j < m, "%zd exceeds the L_B bound %zd", j, m);
+      ++row_start[j + 1];
+    }
+  }
+
+  // accumulate nnz
+  for (size_type i = 0; i < m; ++i) row_start[i + 1] += row_start[i];
+  const size_type nnz = row_start.back();
+  if (!nnz) {
+    if (ONE_BASED)
+      for (auto &v : row_start) ++v;
+    return L_B;
+  }
+
+  L_B.reserve(nnz);
+  auto &col_ind = L_B.col_ind();
+  auto &vals    = L_B.vals();
+  psmilu_error_if(col_ind.status() == DATA_UNDEF || vals.status() == DATA_UNDEF,
+                  "memory allocation failed");
+
+  col_ind.resize(nnz);
+  vals.resize(nnz);
+
+  for (size_type i = 0; i < m; ++i) {
+    auto last    = L_i_begin + L_start[i];
+    auto L_v_itr = L.val_cbegin(i);
+    for (auto itr = L.row_ind_cbegin(i); itr != last; ++itr, ++L_v_itr) {
+      const auto j          = c_idx(*itr);
+      col_ind[row_start[j]] = i + ONE_BASED;
+      vals[row_start[j]]    = *L_v_itr;
+      ++row_start[j];
+    }
+  }
+
+  if (ONE_BASED)
+    for (auto &v : row_start) ++v;
+
+  return L_B;
+}
+
+#else
+
 /// \brief extract the lower part of leading block
 /// \tparam AugCcsType augmented ccs storage, see \ref AugCCS
 /// \tparam StartArray starting position array, see \ref Array
@@ -118,17 +188,17 @@ inline typename AugCcsType::ccs_type extract_L_B(
   using ccs_type                  = typename AugCcsType::ccs_type;
   using size_type                 = typename ccs_type::size_type;
   constexpr static bool ONE_BASED = ccs_type::ONE_BASED;
-#ifndef NDEBUG
-  const auto c_idx = [](const size_type i) {
+#  ifndef NDEBUG
+  const auto            c_idx     = [](const size_type i) {
     return to_c_idx<size_type, ONE_BASED>(i);
   };
-#endif
+#  endif
 
-#ifndef PSMILU_UNIT_TESTING
+#  ifndef PSMILU_UNIT_TESTING
   psmilu_assert(m == L.ncols(),
                 "column of L(%zd) should have the size of leading block %zd",
                 L.ncols(), m);
-#endif  // PSMILU_UNIT_TESTING
+#  endif  // PSMILU_UNIT_TESTING
   psmilu_assert(m <= L.nrows(), "invalid row size");
 
   ccs_type L_B(m, m);
@@ -176,6 +246,65 @@ inline typename AugCcsType::ccs_type extract_L_B(
   return L_B;
 }
 
+#endif
+
+#if 0
+template <class AugCrsType, class StartArray>
+inline typename AugCrsType::crs_type extract_U_B(
+    const AugCrsType &U, const typename AugCrsType::size_type m,
+    const StartArray &U_start) {
+  static_assert(AugCrsType::ROW_MAJOR, "U must be AugCRS!");
+  using crs_type                  = typename AugCrsType::crs_type;
+  using size_type                 = typename crs_type::size_type;
+  using index_type                = typename crs_type::index_type;
+  constexpr static bool ONE_BASED = crs_type::ONE_BASED;
+  const auto            c_idx     = [](const size_type i) {
+    return to_c_idx<size_type, ONE_BASED>(i);
+  };
+
+  psmilu_assert(m <= U.ncols(), "invalid col size");
+
+  crs_type U_B(m, m);
+  auto &   row_start = U_B.row_start();
+  row_start.resize(m + 1);
+  psmilu_error_if(row_start.status() == DATA_UNDEF, "memory allocation failed");
+  row_start.front() = ONE_BASED;
+
+  auto U_i_begin = U.col_ind().cbegin();
+  for (size_type i = 0u; i < m; ++i) {
+    auto last        = U_i_begin + U_start[i];
+    row_start[i + 1] = row_start[i] + (last - U.col_ind_cbegin(i));
+  }
+
+  const size_type nnz = row_start[m] - ONE_BASED;
+
+  if (!nnz) return U_B;
+
+  U_B.reserve(nnz);
+  auto &col_ind = U_B.col_ind();
+  auto &vals    = U_B.vals();
+  psmilu_error_if(col_ind.status() == DATA_UNDEF || vals.status() == DATA_UNDEF,
+                  "memory allocation failed");
+
+  col_ind.resize(nnz);
+  vals.resize(nnz);
+
+  auto itr   = col_ind.begin();
+  auto v_itr = vals.begin();
+
+  auto U_v_begin = U.vals().cbegin();
+
+  for (size_type i = 0u; i < m; ++i) {
+    itr   = std::copy(U.col_ind_cbegin(i), U_i_begin + U_start[i], itr);
+    v_itr = std::copy(U.val_cbegin(i), U_v_begin + U_start[i], v_itr);
+  }
+
+  psmilu_assert(itr == col_ind.end(), "fatal!");
+  return U_B;
+}
+
+#else
+
 /// \brief extract the upper part
 /// \tparam AugCrsType augmented crs storage, see \ref AugCRS
 /// \tparam StartArray array type for staring positions, see \ref Array
@@ -197,10 +326,10 @@ inline typename AugCrsType::ccs_type extract_U_B(
     return to_c_idx<size_type, ONE_BASED>(i);
   };
 
-#ifndef PSMILU_UNIT_TESTING
+#  ifndef PSMILU_UNIT_TESTING
   psmilu_assert(m == U.nrows(),
                 "row size of U should have the size of leading block %zd", m);
-#endif  // PSMILU_UNIT_TESTING
+#  endif  // PSMILU_UNIT_TESTING
   psmilu_assert(m <= U.ncols(), "invalid col size");
 
   ccs_type U_B(m, m);
@@ -260,6 +389,8 @@ inline typename AugCrsType::ccs_type extract_U_B(
 
   return U_B;
 }
+
+#endif
 
 /// \brief extract the \a E part
 /// \tparam LeftDiagType left scaling vector type, see \ref Array
@@ -939,11 +1070,27 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
                   (use_h_ver ? "H" : "C"));
   }
 
-  precs.emplace_back(m, A.nrows(), std::move(L_B), std::move(d), std::move(U_B),
-                     internal::extract_E(s, A_crs, t, m, p, q),
-                     internal::extract_F(s, A_ccs, t, m, p, q, ut.vals()),
-                     std::move(s), std::move(t), std::move(p()),
-                     std::move(q.inv()));
+  // NOTE that L_B/U_B are CCS, we need CRS, we can save computation with
+  // symmetric case
+  crs_type L_B2, U_B2;
+  if (IsSymm) {
+    L_B2.resize(m, m);
+    U_B2.resize(m, m);
+    L_B2.row_start() = std::move(U_B.col_start());
+    U_B2.row_start() = std::move(L_B.col_start());
+    L_B2.col_ind()   = std::move(U_B.row_ind());
+    U_B2.col_ind()   = std::move(L_B.row_ind());
+    L_B2.vals()      = std::move(U_B.vals());
+    U_B2.vals()      = std::move(L_B.vals());
+  } else {
+    L_B2 = crs_type(L_B);
+    U_B2 = crs_type(U_B);
+  }
+  precs.emplace_back(
+      m, A.nrows(), std::move(L_B2), std::move(d), std::move(U_B2),
+      crs_type(internal::extract_E(s, A_crs, t, m, p, q)),
+      crs_type(internal::extract_F(s, A_ccs, t, m, p, q, ut.vals())),
+      std::move(s), std::move(t), std::move(p()), std::move(q.inv()));
 
   // if dense is not empty, then push it back
   if (!S_D.empty()) {

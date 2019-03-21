@@ -24,6 +24,75 @@
 namespace psmilu {
 namespace internal {
 
+#if 1
+/// \brief triangular solving kernel in \a psmilu_solve algorithm
+/// \tparam CrsType crs storage for input U and L, see \ref CRS
+/// \tparam DiagType diagonal vector type, see \ref Array
+/// \tparam RhsType rhs and solution type, generial array interface
+/// \param[in] U strictly upper part
+/// \param[in] d diagonal vector
+/// \param[in] L strictly lower part
+/// \param[in,out] y input rhs and solution upon output
+/// \ingroup slv
+///
+/// This routine is to solve:
+///
+/// \f[
+///   \boldsymbol{y}&=\boldsymbol{U}^{-1}\boldsymbol{D}^{-1}\boldsymbol{L}^{-1}
+///     \boldsymbol{y}
+/// \f]
+///
+/// The overall complexity is linear assuming the local nnz are bounded by a
+/// constant.
+// The CRS version
+template <class CrsType, class DiagType, class RhsType>
+inline void prec_solve_udl_inv(const CrsType &U, const DiagType &d,
+                               const CrsType &L, RhsType &y) {
+  using size_type                 = typename CrsType::size_type;
+  using value_type                = typename CrsType::value_type;
+  constexpr static bool ONE_BASED = CrsType::ONE_BASED;
+  static_assert(CrsType::ROW_MAJOR, "must be crs");
+
+  const auto c_idx = [](const size_type i) {
+    return to_c_idx<size_type, ONE_BASED>(i);
+  };
+
+  const size_type m = U.nrows();
+  psmilu_assert(U.ncols() == m, "U must be squared");
+  psmilu_assert(L.nrows() == L.ncols(), "L must be squared");
+  psmilu_assert(d.size() >= m, "diagonal must be no smaller than system size");
+
+  // y=inv(L)*y
+  for (size_type j = 1u; j < m; ++j) {
+    auto       itr   = L.col_ind_cbegin(j);
+    auto       v_itr = L.val_cbegin(j);
+    value_type tmp(0);
+    for (auto last = L.col_ind_cend(j); itr != last; ++itr, ++v_itr) {
+      const auto i = c_idx(*itr);
+      tmp += *v_itr * y[i];
+    }
+    y[j] -= tmp;
+  }
+
+  // y=inv(D)*y
+  for (size_type i = 0u; i < m; ++i) y[i] /= d[i];
+
+  // y = inv(U)*y
+  for (size_type j = m - 1; j != 0u; --j) {
+    const size_type j1    = j - 1;
+    auto            itr   = U.col_ind_cbegin(j1);
+    auto            v_itr = U.val_cbegin(j1);
+    value_type      tmp(0);
+    for (auto last = U.col_ind_cend(j1); itr != last; ++itr, ++v_itr) {
+      const auto i = c_idx(*itr);
+      tmp += *v_itr * y[i];
+    }
+    y[j1] -= tmp;
+  }
+}
+
+#else
+
 /// \brief triangular solving kernel in \a psmilu_solve algorithm
 /// \tparam CcsType ccs storage for input U and L, see \ref CCS
 /// \tparam DiagType diagonal vector type, see \ref Array
@@ -64,10 +133,10 @@ inline void prec_solve_udl_inv(const CcsType &U, const DiagType &d,
   for (size_type j = 0u; j < m; ++j) {
     const auto y_j = y[j];
     auto       itr = L.row_ind_cbegin(j);
-#ifndef NDEBUG
+#  ifndef NDEBUG
     if (itr != L.row_ind_cend(j))
       psmilu_error_if(c_idx(*itr) <= j, "must be strictly lower part!");
-#endif
+#  endif
     auto v_itr = L.val_cbegin(j);
     for (auto last = L.row_ind_cend(j); itr != last; ++itr, ++v_itr) {
       const auto i = c_idx(*itr);
@@ -83,16 +152,18 @@ inline void prec_solve_udl_inv(const CcsType &U, const DiagType &d,
   for (size_type j = m - 1; j != 0u; --j) {
     const auto y_j = y[j];
     auto       itr = rev_iterator(U.row_ind_cend(j));
-#ifndef NDEBUG
+#  ifndef NDEBUG
     if (itr != rev_iterator(U.row_ind_cbegin(j)))
       psmilu_error_if(c_idx(*itr) >= j, "must be strictly upper part");
-#endif
+#  endif
     auto v_itr = rev_v_iterator(U.val_cend(j));
     for (auto last = rev_iterator(U.row_ind_cbegin(j)); itr != last;
          ++itr, ++v_itr)
       y[c_idx(*itr)] -= *v_itr * y_j;
   }
 }
+
+#endif
 
 }  // namespace internal
 
