@@ -42,3 +42,5 @@
 
 /// \defgroup c C User Interface
 /// \ingroup itr
+
+/// \defgroup mt Multi-threading
