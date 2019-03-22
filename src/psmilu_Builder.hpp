@@ -24,6 +24,11 @@
 #include "psmilu_utils.hpp"
 #include "psmilu_version.h"
 
+#ifdef _OPENMP
+#  include <omp.h>
+#  include "psmilu_MT/PrecPart.hpp"
+#endif
+
 namespace psmilu {
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -99,6 +104,19 @@ class PSMILU {
   ///< multilevel preconditioner type
   typedef typename precs_type::value_type prec_type;  ///< single level prec
   typedef typename prec_type::size_type   size_type;  ///< size type
+#ifdef _OPENMP
+  typedef PrecParts<index_type> prec_parts_type;  ///< partition for MT
+  typedef typename prec_parts_type::value_type prec_part_type;
+#else
+  typedef void prec_parts_type;
+  typedef void prec_part_type;
+#endif  // _OPENMP
+
+  constexpr static bool IS_OMP = !std::is_same<prec_parts_type, void>::value;
+  ///< check if built with OpenMP
+
+  /// \brief runtime checking for OpenMP
+  inline constexpr bool is_omp() const { return IS_OMP; }
 
   /// \brief check empty or not
   inline bool empty() const { return _precs.empty(); }
@@ -216,6 +234,51 @@ class PSMILU {
     prec_solve(_precs.cbegin(), b, x, _prec_work);
   }
 
+  /// \brief decompose preconditioners for MT
+  /// \param[in] threads number of threads
+  /// \sa solve_mt
+  inline void decompose_mt(const int threads) {
+#ifdef _OPENMP
+    psmilu_error_if(empty(), "MILU-Prec is empty!");
+    psmilu_error_if(threads <= 0, "invalid thread");
+    // ONLY for first level
+    _prec_parts.emplace_back(prec_part_type(_precs.front(), threads));
+    _prec_work.resize(compute_prec_work_space(_precs.cbegin(), _precs.cend()));
+#else
+    (void)threads;
+#endif  // _OPENMP
+  }
+
+  /// \brief solve \f$\boldsymbol{x}=\boldsymbol{M}^{-1}\boldsymbol{b}\f$
+  /// \param[in] b right-hand side vector
+  /// \param[in] thread my id
+  /// \param[out] x solution vector
+  /// \sa solve, decompose_mt
+  inline void solve_mt(const array_type &b, const int thread, const int threads,
+                       array_type &x) const {
+#ifndef _OPENMP
+    (void)thread;
+    (void)threads;
+    solve(b, x);
+    return;
+#else
+    psmilu_error_if(empty(), "MILU-Prec is empty!");
+    psmilu_error_if(b.size() != x.size(), "unmatched sizes");
+    psmilu_error_if(_prec_parts.empty(),
+                    "no partition, did you call decompose_mt?");
+    psmilu_assert(_prec_parts.front().threads() == threads,
+                  "inconsistent threads");
+    if (threads == 1)
+      solve(b, x);
+    else {
+      psmilu_error_if(_prec_parts.empty(),
+                      "work space is empty, call decompose_mt first");
+      mt::prec_solve(_precs.cbegin(), _prec_parts.cbegin(), thread, b, x,
+                     _prec_work);
+    }
+#endif  // _OPENMP
+  }
+
  protected:
   /// \brief factorization kernel
   /// \tparam CsType compressed storage
@@ -260,6 +323,9 @@ class PSMILU {
  protected:
   precs_type         _precs;      ///< multilevel preconditioners
   mutable array_type _prec_work;  ///< preconditioner work space for solving
+#ifdef _OPENMP
+  prec_parts_type _prec_parts;  ///< multilevel partitions
+#endif                          // _OPENMP
 };
 
 /// \typedef C_PSMILU

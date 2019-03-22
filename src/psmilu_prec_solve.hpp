@@ -284,4 +284,111 @@ inline std::size_t compute_prec_work_space(PrecItr first, PrecItr last) {
 
 }  // namespace psmilu
 
+#ifdef _OPENMP
+
+#  include "psmilu_MT/tri_slv.hpp"
+
+namespace psmilu {
+namespace mt {
+
+template <class PrecItr, class PrecPartItr, class WorkType>
+inline void prec_solve(
+    PrecItr prec_itr, PrecPartItr prec_part_itr, const int thread,
+    const Array<typename std::remove_const<
+        typename std::iterator_traits<PrecItr>::value_type>::type::value_type>
+        &b,
+    Array<typename std::remove_const<
+        typename std::iterator_traits<PrecItr>::value_type>::type::value_type>
+        &     y,
+    WorkType &work) {
+  using prec_type = typename std::remove_const<
+      typename std::iterator_traits<PrecItr>::value_type>::type;
+  using prec_part_type = typename std::remove_const<
+      typename std::iterator_traits<PrecPartItr>::value_type>::type;
+  using value_type           = typename prec_type::value_type;
+  using size_type            = typename prec_type::size_type;
+  using array_type           = Array<value_type>;
+  constexpr static bool WRAP = true;
+
+  static_assert(
+      std::is_same<typename std::remove_reference<decltype(work[0])>::type,
+                   value_type>::value,
+      "value type must be same for buffer and input data");
+
+  psmilu_assert(b.size() == y.size(), "solution and rhs sizes should match");
+
+  const auto &    prec      = *prec_itr;
+  const auto &    prec_part = *prec_part_itr;
+  const size_type m = prec.m, n = prec.n, nm = n - m;
+  const auto &    p = prec.p, &q_inv = prec.q_inv;
+  const auto &    s = prec.s, &t = prec.t;
+  const auto &    n_parts  = prec_part.n_parts;
+  const auto &    m_parts  = prec_part.m_parts;
+  const auto &    nm_parts = prec_part.nm_parts;
+
+  psmilu_assert(thread < prec_part.threads(), "invalid thread ID %d", thread);
+
+  const auto &n_part  = n_parts[thread];
+  const auto &m_part  = m_parts[thread];
+  const auto &nm_part = nm_parts[thread];
+
+  // first compute permutated vector
+  PSMILU_FOR_PAR(i, m_part, 0) work[i] = s[p[i]] * b[p[i]];
+
+  if (nm) {
+#  pragma omp barrier
+    solve_UDL(prec.U_B, prec.d_B, prec.L_B, prec_part.U_B_ls, prec_part.L_B_ls,
+              m_parts, thread, work);
+#  pragma omp barrier
+    prec.E.mv_nt_low(&work[0], nm_part.istart, nm_part.len, y.data() + m);
+#  pragma omp barrier
+    PSMILU_FOR_PAR(i, nm_part, m) y[i] = s[p[i]] * b[p[i]] - y[i];
+  }
+#  pragma omp barrier
+
+  if (prec.is_last_level()) {
+#  pragma omp master
+    do {
+      if (nm) {
+        // create an array wrapper with size of n-m, of y(m+1:n)
+        auto y_mn = array_type(nm, y.data() + m, WRAP);
+        prec.dense_solver.solve(y_mn);  // solve inplace!
+      }
+    } while (false);  // master
+  } else {
+// NOTE, currently, we only solve for first level with MT, rest are
+// serial
+#  pragma omp master
+    do {
+      auto        y_mn      = array_type(nm, y.data() + m, WRAP);
+      value_type *work_next = &work[n];  // advance to next buffer region
+      auto        work_b    = array_type(nm, &work[0] + m, WRAP);
+      std::copy(y_mn.cbegin(), y_mn.cend(), work_b.begin());
+      // rec call, note that y_mn should store the solution
+      ::psmilu::prec_solve(++prec_itr, work_b, y_mn, work_next);
+    } while (false);  // master
+  }
+
+#  pragma omp barrier
+
+  PSMILU_FOR_PAR(i, nm_part, m) y[i] = work[i];
+
+  if (prec.F.ncols()) {
+#  pragma omp barrier
+    prec.F.mv_nt_low(y.data() + m, m_part.istart, m_part.len, &work[0]);
+    PSMILU_FOR_PAR(i, m_part, 0) work[i] = s[p[i]] * b[p[i]] - work[i];
+  }
+
+#  pragma omp barrier
+  solve_UDL(prec.U_B, prec.d_B, prec.L_B, prec_part.U_B_ls, prec_part.L_B_ls,
+            m_parts, thread, work);
+#  pragma omp barrier
+  PSMILU_FOR_PAR(i, n_part, 0) y[i] = t[i] * work[q_inv[i]];
+}
+
+}  // namespace mt
+}  // namespace psmilu
+
+#endif
+
 #endif  // _PSMILU_PRECSOLVE_HPP
