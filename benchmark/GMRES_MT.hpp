@@ -176,7 +176,12 @@ inline std::tuple<int, std::size_t, double> gmres_mt_kernel(
         const auto jn = j * n;
         MT_COPY(Q.cbegin() + jn, v.begin(), part);
 #  pragma omp barrier
+#  ifndef _PSMILU_HPP
         M.solve_mt(v, part.istart, part.len, w);
+#  else
+        M.solve_mt(v, my_id, threads, w);
+#    pragma omp barrier
+#  endif
         MT_COPY(w.cbegin(), Z.begin() + jn, part);
 #  pragma omp barrier
         A.mv_nt(w, part.istart, part.len, v);
