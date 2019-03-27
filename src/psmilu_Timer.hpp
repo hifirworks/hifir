@@ -14,6 +14,10 @@
 
 #include <chrono>
 
+#ifdef _OPENMP
+#  include <omp.h>
+#endif
+
 namespace psmilu {
 
 /// \enum ClockType
@@ -104,11 +108,23 @@ class Timer {
 
   /// \brief start timer
   /// \sa finish
-  inline void start() { _start = clock_type::now(); }
+  inline void start() {
+#ifndef _OPENMP
+    _start = clock_type::now();
+#else
+    _start = omp_get_wtime();
+#endif
+  }
 
   /// \brief finish timer
   /// \sa start
-  inline void finish() { _end = clock_type::now(); }
+  inline void finish() {
+#ifndef _OPENMP
+    _end = clock_type::now();
+#else
+    _end   = omp_get_wtime();
+#endif
+  }
 
   /// \brief get time report
   /// \tparam _RepType representation type
@@ -116,9 +132,13 @@ class Timer {
   /// \return a time period representation in RepType and Unit
   template <class _RepType, ClockUnit Unit = TIMER_SECONDS>
   inline _RepType time() const {
+#ifndef _OPENMP
     using unit_t = typename internal::ClockUnitTrait<Unit>::unit_type;
     std::chrono::duration<RepType, unit_t> period = _end - _start;
     return period.count();
+#else
+    return static_cast<_RepType>(_end - _start);
+#endif
   }
 
   /// \brief get time report in seconds
@@ -126,22 +146,42 @@ class Timer {
 
   /// \brief get time report in milliseconds
   inline default_rep_type time_milli() const {
+#ifndef _OPENMP
     return time<default_rep_type, TIMER_MILLISECONDS>();
+#else
+    constexpr static default_rep_type prefix = default_rep_type(1e3);
+    return time<default_rep_type, TIMER_MILLISECONDS>() * prefix;
+#endif
   }
 
   /// \brief get time report in microseconds
   inline default_rep_type time_micro() const {
+#ifndef _OPENMP
     return time<default_rep_type, TIMER_MICROSECONDS>();
+#else
+    constexpr static default_rep_type prefix = default_rep_type(1e6);
+    return time<default_rep_type, TIMER_MICROSECONDS>() * prefix;
+#endif
   }
 
   /// \brief get time report in nanoseconds
   inline default_rep_type time_nano() const {
+#ifndef _OPENMP
     return time<default_rep_type, TIMER_NANOSECONDS>();
+#else
+    constexpr static default_rep_type prefix = default_rep_type(1e9);
+    return time<default_rep_type, TIMER_NANOSECONDS>() * prefix;
+#endif
   }
 
  private:
+#ifdef _OPENMP
+  double _start;
+  double _end;
+#else
   time_point _start;  ///< start point
   time_point _end;    ///< end point
+#endif
 };
 
 /// \typedef DefaultTimer
