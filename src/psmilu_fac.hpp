@@ -898,7 +898,7 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
   }
 
   if (psmilu_verbose(INFO, opts))
-    psmilu_info("computing Schur complement (C)...");
+    psmilu_info("computing Schur complement (C) and assembling Prec...");
 
   timer.start();
 
@@ -907,11 +907,13 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
   compute_Schur_C(s, A_crs, t, p, q, m, A.nrows(), L, d, U, U_start, S_tmp);
   const input_type S(S_tmp);  // if input==crs, then wrap, ow copy
 
-  if (psmilu_verbose(INFO, opts)) psmilu_info("nnz(S_C)=%zd...", S.nnz());
-
   // compute L_B and U_B
   auto L_B = internal::extract_L_B(L, m, L_start);
   auto U_B = internal::extract_U_B(U, m, U_start);
+
+  if (psmilu_verbose(INFO, opts))
+    psmilu_info("nnz(S_C)=%zd, nnz(L_B)=%zd, nnz(U_B)=%zd...", S.nnz(),
+                L_B.nnz(), U_B.nnz());
 
   // test H version
   const size_type nm     = A.nrows() - m;
