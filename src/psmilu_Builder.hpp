@@ -27,6 +27,8 @@
 #ifdef _OPENMP
 #  include <omp.h>
 #  include "psmilu_MT/PrecPart.hpp"
+#  include "psmilu_MT/fac.hpp"
+#  include "psmilu_MT/fac2.hpp"
 #endif
 
 namespace psmilu {
@@ -221,6 +223,86 @@ class PSMILU {
     if (revert_warn) (void)warn_flag(1);
   }
 
+  /// \brief factorize the MILU preconditioner for MT setting
+  /// \tparam CsType compressed storage input, either \ref CRS or \ref CCS
+  /// \param[in] A input matrix
+  /// \param[in] threads number of threads
+  /// \param[in] m0 leading block size, if it's zero (default), then the routine
+  ///               will assume an asymmetric leading block.
+  /// \param[in] opts control parameters, using the default values in the paper.
+  /// \param[in] check if \a true (default), will perform validity checking
+  /// \sa solve, _factorize_kernel_mt
+  template <class CsType>
+  inline void factorize_mt(const CsType &A, const int threads,
+                           const size_type m0    = 0u,
+                           const Options & opts  = get_default_options(),
+                           const bool      check = true) {
+#ifndef _OPENMP
+    (void)threads;
+    factorize(A, m0, opts, check);
+#else
+    if (threads <= 1) {
+      factorize(A, m0, opts, check);
+      return;
+    }
+
+    const static internal::StdoutStruct  Crout_cout;
+    const static internal::DummyStreamer Crout_cout_dummy;
+
+    // print introduction
+    if (psmilu_verbose(INFO, opts)) {
+      if (!internal::introduced) {
+        psmilu_info(internal::intro, PSMILU_GLOBAL_VERSION,
+                    PSMILU_MAJOR_VERSION, PSMILU_MINOR_VERSION, __TIME__,
+                    __DATE__);
+        internal::introduced = true;
+      }
+      psmilu_info("Options (control parameters) are:\n");
+      psmilu_info(opt_repr(opts).c_str());
+      psmilu_info("Using %d threads (OpenMP)...", threads);
+    }
+    const bool revert_warn = warn_flag();
+    if (psmilu_verbose(NONE, opts)) (void)warn_flag(0);
+
+    // check validity of the input system
+    if (check) {
+      if (psmilu_verbose(INFO, opts))
+        psmilu_info("perform input matrix validity checking");
+      A.check_validity();
+    }
+
+    DefaultTimer t;  // record overall time
+    t.start();
+    if (!empty()) {
+      psmilu_warning(
+          "multilevel precs are not empty, wipe previous results first");
+      _precs.clear();
+      // also clear the previous buffer
+      _prec_work.resize(0);
+    }
+    if (psmilu_verbose(FAC, opts))
+      _factorize_kernel_mt(A, threads, m0, opts, Crout_cout);
+    else
+      _factorize_kernel_mt(A, threads, m0, opts, Crout_cout_dummy);
+    const size_type n1 = std::accumulate(
+                        _precs.cbegin(), _precs.cend(), size_type(0),
+                        [](const size_type i, const prec_type &p) -> size_type {
+                          const size_type s1 = i + p.m;
+                          if (p.dense_solver.empty()) return s1;
+                          return s1 + p.dense_solver.mat().nrows();
+                        }),
+                    n2(A.nrows());
+    psmilu_error_if(n1 != n2, "invalid prec/system sizes %zd/%zd", n1, n2);
+    t.finish();
+    if (psmilu_verbose(INFO, opts)) {
+      psmilu_info("\ninput nnz(A)=%zd, nnz(precs)=%zd", A.nnz(), nnz());
+      psmilu_info("\nmultilevel precs building time (overall) is %gs",
+                  t.time());
+    }
+    if (revert_warn) (void)warn_flag(1);
+#endif
+  }
+
   /// \brief solve \f$\boldsymbol{x}=\boldsymbol{M}^{-1}\boldsymbol{b}\f$
   /// \param[in] b right-hand side vector
   /// \param[out] x solution vector
@@ -318,6 +400,66 @@ class PSMILU {
     // check last level
     if (!_precs.back().is_last_level())
       this->_factorize_kernel(S, 0u, opts, Crout_info);
+  }
+
+  /// \brief factorization kernel MT
+  /// \tparam CsType compressed storage
+  /// \tparam CroutStreamer information streamer for Crout update
+  /// \param[in] A input matrix
+  /// \param[in] threads number of threads
+  /// \param[in] m0 leading block size
+  /// \param[in] opts control parameters
+  /// \param[in] Crout_info information streamer, API same as \ref psmilu_info
+  /// \note This routine is called recursively.
+  ///
+  /// This is implementation of algorithm 1 in the paper.
+  template <class CsType, class CroutStreamer>
+  inline void _factorize_kernel_mt(const CsType &A, const int threads,
+                                   const size_type m0, const Options &opts,
+                                   const CroutStreamer &Crout_info) {
+#ifndef _OPENMP
+    (void)threads;
+    _factorize_kernel(A, m0, opts, Crout_info);
+#else
+    psmilu_error_if(A.nrows() != A.ncols(),
+                    "Currently only squared systems are supported");
+    size_type       m(m0);  // init m
+    size_type       N;      // reference size
+    const size_type cur_level = levels() + 1;
+
+    // determine the reference size
+    if (opts.N >= 0)
+      N = opts.N;
+    else
+      N = cur_level == 1u ? A.nrows() : _precs.front().n;
+
+    // check symmetry
+    const bool sym = cur_level == 1u && m > 0u;
+    if (!sym) m = A.nrows();  // IMPORTANT! If asymmetric, set m = n
+
+    if (threads > 3) {
+      // instantiate IsSymm here
+      const CsType S = sym ? mt::iludp_factor<true>(A, m, N, threads, opts,
+                                                    Crout_info, _precs)
+                           : mt::iludp_factor<false>(A, m, N, threads, opts,
+                                                     Crout_info, _precs);
+
+      // check last level
+      // NOTE only MT the first level for now
+      if (!_precs.back().is_last_level())
+        this->_factorize_kernel(S, 0u, opts, Crout_info);
+    } else {
+      // instantiate IsSymm here
+      const CsType S =
+          sym ? mt::iludp_factor2<true>(A, m, N, opts, Crout_info, _precs)
+              : mt::iludp_factor2<false>(A, m, N, opts, Crout_info, _precs);
+
+      // check last level
+      // NOTE only MT the first level for now
+      if (!_precs.back().is_last_level())
+        this->_factorize_kernel(S, 0u, opts, Crout_info);
+    }
+#endif
   }
 
  protected:
