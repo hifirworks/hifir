@@ -215,7 +215,7 @@ class GraphPart {
   template <class CsType, typename T = size_type>
   inline typename std::enable_if<CsType::ROW_MAJOR, T>::type create_parts(
       const CsType &A, const int nparts) {
-    psmilu_error_if(nparts < 2, "minimum partition requirement is 2");
+    psmilu_error_if(nparts < 1, "minimum partition requirement is 1");
     const auto &    indptr = A.row_start(), &indices = A.col_ind();
     const size_type ncuts = internal::call_metis<CsType::ONE_BASED>(
         indptr, indices, nparts, _part_start, _P());
@@ -229,7 +229,7 @@ class GraphPart {
   template <class CsType, typename T = size_type>
   inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type create_parts(
       const CsType &A, const int nparts) {
-    psmilu_error_if(nparts < 2, "minimum partition requirement is 2");
+    psmilu_error_if(nparts < 1, "minimum partition requirement is 1");
     const auto &    indptr = A.col_start(), &indices = A.row_ind();
     const size_type ncuts = internal::call_metis<CsType::ONE_BASED>(
         indptr, indices, nparts, _part_start, _P());
