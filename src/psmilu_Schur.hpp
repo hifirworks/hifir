@@ -489,7 +489,7 @@ inline void compute_Schur_H_T_E(const L_AugCcsType &L_E,
       const size_type p_inv = p.inv(j);
       if (p_inv < m) {
         v.push_back(ori_idx(p_inv), tag);
-        vals[j] = s[j] * *v_itr * t_q;  // assign value her
+        vals[p_inv] = s[j] * *v_itr * t_q;  // assign value her
         if (min_idx > p_inv) min_idx = p_inv;
       }
     }
