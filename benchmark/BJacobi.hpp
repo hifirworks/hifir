@@ -110,7 +110,7 @@ class BJacobiBase {
 #endif  // PSMILU_BJACOBI_REPORT_RES
         // compute inv(D)*res
           _D.solve(x, _r);
-          for (size_type i(0); i < n; ++i) x[i] = _r[i] + _xk[i];
+          // for (size_type i(0); i < n; ++i) x[i] = _r[i] + _xk[i];
           _this()._post_process(iters, x);
           const auto err =
               std::sqrt(std::inner_product(_r.cbegin(), _r.cend(), _r.cbegin(),
@@ -172,10 +172,15 @@ class BJacobi : public internal::BJacobiBase<BJacobi<BlockDiag>, BlockDiag> {
       : _base(D, max_it, tol) {}
 
  protected:
+  using _base::_r;
+  using _base::_xk;
   template <class Operator>
   inline void _prepare(const Operator &, const array_type &,
                        array_type &) const {}
-  inline void _post_process(const size_type, array_type &) const {}
+  inline void _post_process(const size_type, array_type &x) const {
+    const size_type n = x.size();
+    for (size_type i(0); i < n; ++i) x[i] = _r[i] + _xk[i];
+  }
 };
 
 // with Chebyshev polynomial acceleration
@@ -193,9 +198,9 @@ class CBJacobi : public internal::BJacobiBase<CBJacobi<BlockDiag>, BlockDiag> {
 
   CBJacobi() = delete;
   explicit CBJacobi(const block_diag_type &D, const value_type lambda1 = 0.9,
-                    const value_type lambda2 = 0.1, const size_type max_it = 0u,
+                    const value_type lambda2 = -0.9, const size_type max_it = 0u,
                     const scalar_type tol = 0)
-      : _base(D, max_it, tol), _rho(1), _xkk() {
+      : _base(D, max_it, tol), _rho(2), _xkk() {
     _compute_coeffs(lambda1, lambda2);
   }
 
@@ -203,7 +208,6 @@ class CBJacobi : public internal::BJacobiBase<CBJacobi<BlockDiag>, BlockDiag> {
   mutable value_type _rho;
   mutable array_type _xkk;
   value_type         _gamma;
-  value_type         _alpha;
   value_type         _sigma2;
   using _base::_r;
   using _base::_xk;
@@ -211,7 +215,6 @@ class CBJacobi : public internal::BJacobiBase<CBJacobi<BlockDiag>, BlockDiag> {
  protected:
   inline void _compute_coeffs(const value_type l1, const value_type l2) {
     _gamma  = 2. / (2. - l1 - l2);
-    _alpha  = 1. - _gamma;
     _sigma2 = 0.5 * _gamma * (l1 - l2);
     _sigma2 = _sigma2 * _sigma2;
   }
@@ -223,13 +226,10 @@ class CBJacobi : public internal::BJacobiBase<CBJacobi<BlockDiag>, BlockDiag> {
 
   inline void _post_process(const size_type iter, array_type &x) const {
     const size_type n = x.size();
-    if (_gamma != value_type(1))
-      for (size_type i(0); i < n; ++i) x[i] = _gamma * x[i] + _alpha * _xk[i];
+    for (size_type i(0); i < n; ++i) x[i] = _xk[i] + _gamma * _r[i];
     if (iter) {
-      if (iter == 1u)
-        _rho = 1. / (1. - 0.5 * _sigma2);
-      else
-        _rho = 1. / (1. - 0.25 * _sigma2 * _rho);
+      // NOTE _rho is initialized as 2, thus it valids for iter==1
+      _rho            = 1. / (1. - 0.25 * _sigma2 * _rho);
       const auto beta = 1. - _rho;
       for (size_type i(0); i < n; ++i) x[i] = _rho * x[i] + beta * _xkk[i];
     }
