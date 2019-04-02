@@ -226,6 +226,8 @@ class GraphBlockJacobiPSMILU
 
   GraphBlockJacobiPSMILU() : _base(), _G(), _solve_buf() {}
 
+  inline const GraphPart<IndexType> &G() const { return _G; }
+
  protected:
   template <class CsType>
   inline void _partition(const CsType &A, const int parts) {
