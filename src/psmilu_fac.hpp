@@ -755,6 +755,9 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
   typedef DenseMatrix<value_type>     dense_type;
   constexpr static bool               ONE_BASED = CsType::ONE_BASED;
 
+  // TODO put this into control parameters or function arg
+  constexpr static bool check_zero_diag = true;
+
   psmilu_assert(m0 <= std::min(A.nrows(), A.ncols()),
                 "leading size should be smaller than size of A");
   const size_type cur_level = precs.size() + 1;
@@ -777,24 +780,21 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
   const crs_type &A_crs = cs_trait::select_crs(A, A_counterpart);
   const ccs_type &A_ccs = cs_trait::select_ccs(A, A_counterpart);
 
-  if (psmilu_verbose(INFO, opts)) psmilu_info("performing preprocessing...");
+  if (psmilu_verbose(INFO, opts))
+    psmilu_info("performing preprocessing with leading block size %zd...", m0);
 
   // preprocessing
   timer.start();
   Array<value_type>        s, t;
   BiPermMatrix<index_type> p, q;
-  size_type m = do_preprocessing<IsSymm>(A_ccs, m0, opts, s, t, p, q);
+  size_type                m =
+      do_preprocessing<IsSymm>(A_ccs, m0, opts, s, t, p, q, check_zero_diag);
   timer.finish();  // prefile pre-processing
 
-  if (psmilu_verbose(INFO, opts)) psmilu_info("time: %gs", timer.time());
-
-#if 0
-  std::fill(s.begin(), s.end(), value_type(1));
-  std::fill(t.begin(), t.end(), value_type(1));
-  p.make_eye();
-  q.make_eye();
-  m = m0;
-#endif
+  if (psmilu_verbose(INFO, opts)) {
+    psmilu_info("preprocessing done with leading block size %zd...", m);
+    psmilu_info("time: %gs", timer.time());
+  }
 
   if (psmilu_verbose(INFO, opts)) psmilu_info("preparing data variables...");
 
