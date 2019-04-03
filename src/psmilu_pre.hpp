@@ -34,6 +34,7 @@ namespace psmilu {
 /// \param[out] t column scaling vector
 /// \param[out] p row permutation
 /// \param[out] q column permutation
+/// \param[in] hdl_zero_diag if \a false (default), assume not saddle point
 /// \return The actual leading block size, no larger than \a m0
 /// \ingroup pre
 ///
@@ -47,19 +48,17 @@ namespace psmilu {
 template <bool IsSymm, class CcsType, class ScalingArray, class PermType>
 inline typename CcsType::size_type do_preprocessing(
     const CcsType &A, const typename CcsType::size_type m0, const Options &opt,
-    ScalingArray &s, ScalingArray &t, PermType &p, PermType &q) {
+    ScalingArray &s, ScalingArray &t, PermType &p, PermType &q,
+    const bool hdl_zero_diag = false) {
   static_assert(!CcsType::ROW_MAJOR, "must be CCS");
   using index_type = typename CcsType::index_type;
   using amd        = AMD<index_type>;
   using size_type  = typename CcsType::size_type;
 
-  // TODO we shall put this in Options?
-  constexpr static bool let_us_ignore_zero_entries_for_now = false;
-
   if (psmilu_verbose(PRE, opt)) psmilu_info("performing matching step");
 
-  const auto match_res = do_maching<IsSymm>(A, m0, opt.verbose, s, t, p, q,
-                                            let_us_ignore_zero_entries_for_now);
+  const auto match_res =
+      do_maching<IsSymm>(A, m0, opt.verbose, s, t, p, q, hdl_zero_diag);
 
   const auto &    B = match_res.first;
   const size_type m = match_res.second;
