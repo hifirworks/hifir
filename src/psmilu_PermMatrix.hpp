@@ -184,6 +184,14 @@ class BiPermMatrix : public PermMatrix<IndexType> {
     std::swap(_p_inv[_p[i]], _p_inv[_p[j]]);
   }
 
+  /// \brief swap two inverse entries
+  /// \param[in] i i-th entry
+  /// \param[in] j j-th entry
+  inline void interchange_inv(const size_type i, const size_type j) {
+    std::swap(_p_inv[i], _p_inv[j]);
+    std::swap(_p[_p_inv[i]], _p[_p_inv[j]]);
+  }
+
   /// \brief get the underlaying data
   inline iarray_type &inv() { return _p_inv; }
 
