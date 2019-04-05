@@ -324,6 +324,62 @@ class CompressedStorage {
     return _ind_cbegin(i) + _nnz(i);
   }
 
+  /// \brief split against secondary size
+  /// \tparam IsSecond if \a true, then extract the second part
+  /// \param[in] m size split against to
+  /// \param[out] indptr index start array
+  /// \param[out] indices index value array
+  /// \param[out] vals values
+  template <bool IsSecond>
+  inline void _split(const size_type m, iarray_type &indptr,
+                     iarray_type &indices, array_type &vals) const {
+    if (!_ind_start.size()) return;
+    indptr.resize(_ind_start.size());
+    psmilu_error_if(indptr.status() == DATA_UNDEF, "memory allocation failed");
+    const size_type n         = _ind_start.size() - 1;
+    auto            ind_first = _indices.cbegin();
+    size_type       nnz(0);
+    for (size_type i(0); i < n; ++i) {
+      // store the position first
+      auto find_itr =
+          find_sorted(_ind_cbegin(i), _ind_cend(i), m + OneBased).second;
+      nnz += IsSecond ? _ind_cend(i) - find_itr : find_itr - _ind_cbegin(i);
+      indptr[i + 1] = find_itr - ind_first;
+    }
+    // if we have an empty matrix
+    if (!nnz) {
+      std::fill(indptr.begin(), indptr.end(), OneBased);
+      return;
+    }
+    indices.resize(nnz);
+    psmilu_error_if(indices.status() == DATA_UNDEF, "memory allocation failed");
+    vals.resize(nnz);
+    psmilu_error_if(vals.status() == DATA_UNDEF, "memory allocation failed");
+
+    auto i_itr = indices.begin();
+    auto v_itr = vals.begin();
+
+    auto val_first = _vals.cbegin();
+
+    // now set the indptr front
+    indptr.front() = OneBased;
+
+    for (size_type i = 0; i < n; ++i) {
+      auto split_ind_itr = indptr[i + 1] + ind_first;
+      auto split_val_itr = indptr[i + 1] + val_first;
+      auto bak_itr       = i_itr;
+      if (IsSecond) {
+        i_itr = std::copy(split_ind_itr, _ind_cend(i), i_itr);
+        for (auto itr = bak_itr; itr != i_itr; ++itr) *itr -= m;
+        v_itr = std::copy(split_val_itr, val_cend(i), v_itr);
+      } else {
+        i_itr = std::copy(_ind_cbegin(i), split_ind_itr, i_itr);
+        v_itr = std::copy(val_cbegin(i), split_val_itr, v_itr);
+      }
+      indptr[i + 1] = indptr[i] + (i_itr - bak_itr);
+    }
+  }
+
  protected:
   iarray_type _ind_start;  ///< index pointer array, size of n+1
   iarray_type _indices;    ///< index array, size of nnz
@@ -866,6 +922,27 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
     return m;
   }
 
+  /// \brief split the matrix against column
+  /// \tparam IsSecond if \a true, then the second half is returned
+  /// \param[in] m column size
+  ///
+  /// If \a IsSecond is \a true, then the result matrix is \a A[:,m:]; otherwise
+  /// the result matrix is \a A[:,0:m]
+  template <bool IsSecond>
+  inline CRS split(const size_type m) const {
+    psmilu_error_if(m > _ncols, "invalid split threshold");
+    CRS B;
+    B.resize(_psize, IsSecond ? _ncols - m : m);
+    _base::template _split<IsSecond>(m, B.row_start(), B.col_ind(), B.vals());
+    return B;
+  }
+
+  /// \brief split the matrix against column
+  /// \param[in] m column size
+  inline std::pair<CRS, CRS> split(const size_type m) const {
+    return std::make_pair(split<false>(m), split<true>(m));
+  }
+
  protected:
   size_type _ncols;     ///< number of columns
   using _base::_psize;  ///< number of rows (primary entries)
@@ -1401,6 +1478,24 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
           CCS(other_type(row, col, i_start.data(), is.data(), vs.data(), true));
 
     return m;
+  }
+
+  /// \brief split against row
+  /// \tparam IsSecond if \a true, then the offset part is returned
+  /// \param[in] m splitted row size
+  template <bool IsSecond>
+  inline CCS split(const size_type m) const {
+    psmilu_error_if(m > _nrows, "invalid row size");
+    CCS B;
+    B.resize(IsSecond ? _nrows - m : m, _psize);
+    _base::template _split<IsSecond>(m, B.col_start(), B.row_ind(), B.vals());
+    return B;
+  }
+
+  /// \brief split against row
+  /// \param[in] m splitted row size
+  inline std::pair<CCS, CCS> split(const size_type m) const {
+    return std::make_pair(split<false>(m), split<true>(m));
   }
 
  protected:
