@@ -180,6 +180,7 @@ inline typename AugCcsType::crs_type extract_L_B(
 /// \param[in] L_start final starting positions
 /// \return the exact lower part in \ref CCS storage
 /// \sa extract_U_B
+/// \deprecated got member function split instead
 template <class AugCcsType, class StartArray>
 inline typename AugCcsType::ccs_type extract_L_B(
     const AugCcsType &L, const typename AugCcsType::size_type m,
@@ -313,6 +314,7 @@ inline typename AugCrsType::crs_type extract_U_B(
 /// \param[in] U_start final starting positions for \a U
 /// \return the exact upper part in \ref CCS format of \a U
 /// \sa extract_L_B
+/// \deprecated got member function split instead
 template <class AugCrsType, class StartArray>
 inline typename AugCrsType::ccs_type extract_U_B(
     const AugCrsType &U, const typename AugCrsType::size_type m,
@@ -1039,8 +1041,10 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
   const input_type S(S_tmp);  // if input==crs, then wrap, ow copy
 
   // compute L_B and U_B
-  auto L_B = internal::extract_L_B(L, m, L_start);
-  auto U_B = internal::extract_U_B(U, m, U_start);
+  // auto L_B = internal::extract_L_B(L, m, L_start);
+  // auto U_B = internal::extract_U_B(U, m, U_start);
+  auto L_B = L.template split<false>(m, L_start);
+  auto U_B = U.template split_ccs<false>(m, U_start);
 
   if (psmilu_verbose(INFO, opts))
     psmilu_info("nnz(S_C)=%zd, nnz(L_B)=%zd, nnz(U_B)=%zd...", S.nnz(),
