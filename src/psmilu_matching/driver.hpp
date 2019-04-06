@@ -356,6 +356,7 @@ do_maching(const CcsType &A, const typename CcsType::size_type m0,
   // then determine zero diags
   const size_type m =
       !hdl_zero_diags ? m0 : internal::defer_zero_diags<IsSymm>(B1, m0, p, q);
+#ifndef PSMILU_DISABLE_REORDERING
   const bool is_eye_perm = p.is_eye() && q.is_eye();
   if (!is_eye_perm) {
     p.build_inv();
@@ -386,6 +387,7 @@ do_maching(const CcsType &A, const typename CcsType::size_type m0,
       B.vals() = B1.vals();
     }
   }
+#endif  // PSMILU_DISABLE_REORDERING
   return std::make_pair(B, m);
 }
 }  // namespace psmilu

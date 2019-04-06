@@ -60,8 +60,9 @@ inline typename CcsType::size_type do_preprocessing(
   const auto match_res =
       do_maching<IsSymm>(A, m0, opt.verbose, s, t, p, q, hdl_zero_diag);
 
-  const auto &    B = match_res.first;
   const size_type m = match_res.second;
+#ifndef PSMILU_DISABLE_REORDERING
+  const auto &B = match_res.first;
 
   psmilu_assert(B.nrows() == m, "the leading block size should be size(B)");
 
@@ -73,9 +74,9 @@ inline typename CcsType::size_type do_preprocessing(
   double Control[PSMILU_AMD_CONTROL], Info[AMD_INFO];
   amd::defaults(Control);
 
-#ifdef NDEBUG
+#  ifdef NDEBUG
   Control[PSMILU_AMD_CHECKING] = 0;
-#endif
+#  endif
 
   Control[PSMILU_AMD_SYMM_FLAG] = !IsSymm;
 
@@ -121,6 +122,10 @@ inline typename CcsType::size_type do_preprocessing(
 
   reorder_finalize_perm(p);
   reorder_finalize_perm(q);
+#else
+  p.build_inv();
+  q.build_inv();
+#endif  // PSMILU_DISABLE_REORDERING
 
   return m;
 }
