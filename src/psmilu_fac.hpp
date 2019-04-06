@@ -789,8 +789,22 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
   timer.start();
   Array<value_type>        s, t;
   BiPermMatrix<index_type> p, q;
-  size_type                m =
+#ifndef PSMILU_DISABLE_PRE
+  size_type m =
       do_preprocessing<IsSymm>(A_ccs, m0, opts, s, t, p, q, check_zero_diag);
+#else
+  s.resize(m0);
+  psmilu_error_if(s.status() == DATA_UNDEF, "memory allocation failed");
+  t.resize(m0);
+  psmilu_error_if(t.status() == DATA_UNDEF, "memory allocation failed");
+  p.resize(m0);
+  q.resize(m0);
+  std::fill(s.begin(), s.end(), value_type(1));
+  std::fill(t.begin(), t.end(), value_type(1));
+  p.make_eye();
+  q.make_eye();
+  size_type m(m0);
+#endif             // PSMILU_DISABLE_PRE
   timer.finish();  // prefile pre-processing
 
   if (psmilu_verbose(INFO, opts)) {
