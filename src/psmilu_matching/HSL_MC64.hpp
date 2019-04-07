@@ -88,11 +88,12 @@ class HSL_MC64 {
   inline static void do_matching(const ccs_type &           A,
                                  const struct mc64_control &control,
                                  Array<index_type> &p, Array<index_type> &q,
-                                 Array<value_type> &s, Array<value_type> &t) {
+                                 Array<value_type> &s, Array<value_type> &t,
+                                 const int matching_job = 5) {
     constexpr static size_type int_max =
         static_cast<size_type>(std::numeric_limits<int>::max());
     // this is the job we are interested in, i.e. compute perm and scaling
-    constexpr static int  matrix_type = IsSymm ? 3 : 0, matching_job = 5;
+    constexpr static int  matrix_type = IsSymm ? 3 : 0;
     constexpr static bool consist_int = sizeof(index_type) == sizeof(int);
 
     static bool warned = false;
@@ -122,9 +123,11 @@ class HSL_MC64 {
 
     Array<int> pq(m + n);
     if (pq.status() == DATA_UNDEF) psmilu_error("memory allocation failed");
-    Array<value_type> st(m + n);
-    if (st.status() == DATA_UNDEF) psmilu_error("memory allocation failed");
-
+    Array<value_type> st;
+    if (matching_job == 5) {
+      st.resize(m + n);
+      if (st.status() == DATA_UNDEF) psmilu_error("memory allocation failed");
+    }
     int *ptr(nullptr), *row(nullptr);
 
     if (consist_int) {
@@ -161,15 +164,23 @@ class HSL_MC64 {
           "attribute is of value %d.\nPlease refer HSL_MC64 documentation "
           "section 2.9 for error info interpretation.",
           info.flag, info.more);
+    } else if (info.flag == 1) {
+      psmilu_warning("MC64 the input matrix is structurally singular!");
+    } else if (info.flag == 2) {
+      psmilu_warning("MC64 the result scaling may cause overflow issue!");
     }
 
     // compute scaling
-    for (size_type i = 0u; i < m; ++i) s[i] = std::exp(st[i]);
-    if (IsSymm)
-      std::copy(s.cbegin(), s.cend(), t.begin());
-    else
-      for (size_type i = 0u; i < n; ++i) t[i] = std::exp(st[i + m]);
-
+    if (matching_job == 5) {
+      for (size_type i = 0u; i < m; ++i) s[i] = std::exp(st[i]);
+      if (IsSymm)
+        std::copy(s.cbegin(), s.cend(), t.begin());
+      else
+        for (size_type i = 0u; i < n; ++i) t[i] = std::exp(st[i + m]);
+    } else {
+      for (size_type i(0); i < m; ++i) s[i] = value_type(1);
+      for (size_type i(0); i < n; ++i) t[i] = value_type(1);
+    }
     // copy permutation
     auto pq_itr = pq.cbegin();
     if (IsSymm)
