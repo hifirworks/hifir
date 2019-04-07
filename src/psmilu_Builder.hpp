@@ -116,11 +116,8 @@ class PSMILU {
   inline size_type nnz() const {
     if (empty()) return 0u;
     size_type n(0);
-    for (auto itr = _precs.cbegin(); itr != _precs.cend(); ++itr) {
-      n += itr->L_B.nnz() + itr->U_B.nnz() + itr->d_B.size();
-      if (!itr->dense_solver.empty())
-        n += itr->dense_solver.mat().nrows() * itr->dense_solver.mat().ncols();
-    }
+    for (auto itr = _precs.cbegin(); itr != _precs.cend(); ++itr)
+      n += itr->L_B.nnz() + itr->U_B.nnz() + itr->m;
     return n;
   }
 
@@ -196,7 +193,9 @@ class PSMILU {
     psmilu_error_if(n1 != n2, "invalid prec/system sizes %zd/%zd", n1, n2);
     t.finish();
     if (psmilu_verbose(INFO, opts)) {
-      psmilu_info("\ninput nnz(A)=%zd, nnz(precs)=%zd", A.nnz(), nnz());
+      const size_type Nnz = nnz();
+      psmilu_info("\ninput nnz(A)=%zd, nnz(precs)=%zd, ratio=%g", A.nnz(), Nnz,
+                  (double)Nnz / A.nnz());
       psmilu_info("\nmultilevel precs building time (overall) is %gs",
                   t.time());
     }
