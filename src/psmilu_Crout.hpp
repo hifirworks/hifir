@@ -153,26 +153,37 @@ class Crout {
       while (!L.is_nil(aug_id)) {
         // get the column index (C-based)
         // NOTE the column index is that of the row in U
-        const index_type c_idx = L.col_idx(aug_id);
+        const index_type col_idx = L.col_idx(aug_id);
         psmilu_assert(
-            (size_type)c_idx < _step,
+            (size_type)col_idx < _step,
             "compute_ut column index %zd should not exceed step %zd for L",
-            (size_type)c_idx, _step);
-        psmilu_assert((size_type)c_idx < d.size(),
-                      "%zd exceeds the diagonal vector size", (size_type)c_idx);
-        psmilu_assert((size_type)c_idx < U_start.size(),
-                      "%zd exceeds the U_start size", (size_type)c_idx);
+            (size_type)col_idx, _step);
+        psmilu_assert((size_type)col_idx < d.size(),
+                      "%zd exceeds the diagonal vector size",
+                      (size_type)col_idx);
+        psmilu_assert((size_type)col_idx < U_start.size(),
+                      "%zd exceeds the U_start size", (size_type)col_idx);
         // NOTE once we drop val-pos impl, change this accordingly (L_start)
         // compute L*D
-        const auto ld = L.val_from_row_id(aug_id) * d[c_idx];
+        const auto ld = L.val_from_row_id(aug_id) * d[col_idx];
         // get the starting position from U_start
-        auto U_v_itr  = U_v_first + U_start[c_idx];
-        auto U_i_itr  = U_i_first + U_start[c_idx],
-             U_i_last = U.col_ind_cend(c_idx);
+        auto U_v_itr  = U_v_first + U_start[col_idx];
+        auto U_i_itr  = U_i_first + U_start[col_idx],
+             U_i_last = U.col_ind_cend(col_idx);
+#ifndef NDEBUG
+        if (U_i_itr != U.col_ind_cbegin(col_idx)) {
+          const auto prev_idx = to_c_idx<size_type, base>(*(U_i_itr - 1));
+          psmilu_error_if(prev_idx > _step, "U_start error!");
+        }
+#endif
         // for this local range
         for (; U_i_itr != U_i_last; ++U_i_itr, ++U_v_itr) {
           // convert to c index
           const auto c_idx = to_c_idx<size_type, base>(*U_i_itr);
+          psmilu_assert(
+              c_idx > _step,
+              "U index %zd in computing ut should greater than step %zd", c_idx,
+              _step);
           ut.push_back(*U_i_itr, _step) ? ut.vals()[c_idx] = -ld * *U_v_itr
                                         : ut.vals()[c_idx] -= ld * *U_v_itr;
         }
@@ -269,6 +280,10 @@ class Crout {
         // get the row index (C-based)
         // NOTE the row index is that of the column in L
         const index_type r_idx = U.row_idx(aug_id);
+        psmilu_assert(
+            (size_type)r_idx < _step,
+            "compute_ut row index %zd should not exceed step %zd for U",
+            (size_type)r_idx, _step);
         psmilu_assert((size_type)r_idx < d.size(),
                       "%zd exceeds the diagonal vector size", (size_type)r_idx);
         psmilu_assert((size_type)r_idx < L_start.size(),
@@ -281,6 +296,12 @@ class Crout {
         auto L_v_itr  = L_v_first + L_start[r_idx];
         auto L_i_itr  = L_i_first + L_start[r_idx],
              L_i_last = L.row_ind_cend(r_idx);
+#ifndef NDEBUG
+        if (L_i_itr != L.row_ind_cbegin(r_idx)) {
+          const auto prev_idx = to_c_idx<size_type, base>(*(L_i_itr - 1));
+          psmilu_error_if(prev_idx > _step, "L_start error!");
+        }
+#endif
         // for this local range
         for (; L_i_itr != L_i_last; ++L_i_itr, ++L_v_itr) {
           // convert to c index
@@ -292,6 +313,10 @@ class Crout {
                 "%zd step symmetric l should not contain upper part (%zd)",
                 _step, c_idx);
 #endif
+          psmilu_assert(
+              c_idx > _step,
+              "L index %zd in computing l should greater than step %zd", c_idx,
+              _step);
           // compute this entry, if index does not exist, assign new value to
           // -L*d*u, else, -= L*d*u
           l.push_back(*L_i_itr, _step) ? l.vals()[c_idx] = -*L_v_itr * du
