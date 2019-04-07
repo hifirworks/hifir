@@ -15,6 +15,10 @@
 #include <cmath>
 #include <type_traits>
 #include <utility>
+#ifdef PSMILU_SAVE_FIRST_LEVEL_PERM_A
+#  include <ctime>
+#  include <random>
+#endif  // PSMILU_SAVE_FIRST_LEVEL_PERM_A
 
 #include "psmilu_Array.hpp"
 #include "psmilu_AugmentedStorage.hpp"
@@ -811,6 +815,25 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
     psmilu_info("preprocessing done with leading block size %zd...", m);
     psmilu_info("time: %gs", timer.time());
   }
+
+#ifdef PSMILU_SAVE_FIRST_LEVEL_PERM_A
+  if (cur_level == 1u) {
+    std::mt19937                       eng(std::time(0));
+    std::uniform_int_distribution<int> d(1000, 1000000);
+    const std::string fname  = "Perm_A_" + std::to_string(d(eng)) + ".psmilu";
+    auto              A_perm = A_crs.compute_perm(p(), q.inv(), m);
+    Array<value_type> s2(m), t2(m);
+    for (size_type i = 0; i < m; ++i) {
+      s2[i] = s[p[i]];
+      t2[i] = t[q[i]];
+    }
+    A_perm.scale_diag_left(s2);
+    A_perm.scale_diag_right(t2);
+    psmilu_info("\nsaving first level permutated matrix to file %s\n",
+                fname.c_str());
+    A_perm.write_native_bin(fname.c_str(), IsSymm ? m : size_type(0));
+  }
+#endif
 
   if (psmilu_verbose(INFO, opts)) psmilu_info("preparing data variables...");
 
