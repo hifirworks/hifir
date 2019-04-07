@@ -499,6 +499,71 @@ class CompressedStorage {
     _split_dual<IsSecond>(m, n, buf.data(), indptr, indices, vals);
   }
 
+  /// \brief construct permutated matrix
+  /// \param[in] p perm to origin mapping
+  /// \param[in] qt origin to perm mapping
+  template <bool DoValue, bool OnlyLeading>
+  inline void _compute_perm(const iarray_type &p, const iarray_type &qt,
+                            const size_type leading, iarray_type &indptr,
+                            iarray_type &indices, array_type &vals) const {
+    const size_type m(p.size()), n(qt.size());
+    psmilu_error_if(m != _psize, "permutation out of bound");
+    array_type buf;
+    const auto c_idx = [](const size_type i) {
+      return to_c_idx<size_type, OneBased>(i);
+    };
+    const size_type psize = OnlyLeading ? leading : m;
+    if (DoValue) {
+      buf.resize(OnlyLeading ? leading : n);
+      psmilu_error_if(buf.status() == DATA_UNDEF, "memory allocation failed");
+    }
+    indptr.resize(psize + 1);
+    psmilu_error_if(indptr.status() == DATA_UNDEF, "memory allocation failed");
+    // compute an upper bound of nnz, efficiently
+    size_type nnz(0);
+    for (size_type i(0); i < psize; ++i) nnz += _nnz(p[i]);
+    if (!nnz) {
+      std::fill(indptr.begin(), indptr.end(), OneBased);
+      return;
+    }
+    indptr.front() = OneBased;
+    indices.resize(nnz);
+    psmilu_error_if(indices.status() == DATA_UNDEF, "memory allocation failed");
+    if (DoValue) {
+      vals.resize(nnz);
+      psmilu_error_if(vals.status() == DATA_UNDEF, "memory allocation failed");
+    }
+    auto i_itr = indices.begin();
+    auto v_itr = vals.begin();
+    for (size_type i(0); i < psize; ++i) {
+      auto last    = _ind_cend(p[i]);
+      auto V_itr   = val_cbegin(p[i]);
+      auto itr_bak = i_itr;
+      for (auto itr = _ind_cbegin(p[i]); itr != last; ++itr, V_itr += DoValue) {
+        if (!OnlyLeading) {
+          *i_itr++ = qt[c_idx(*itr)];
+          if (DoValue) buf[qt[c_idx(*itr)]] = *V_itr;
+        } else {
+          const size_type inv_idx = qt[c_idx(*itr)];
+          if (inv_idx < psize) {
+            *i_itr++ = inv_idx;
+            if (DoValue) buf[inv_idx] = *V_itr;
+          }
+        }
+      }
+      // sort
+      indptr[i + 1] = indptr[i] + (i_itr - itr_bak);
+      std::sort(itr_bak, i_itr);
+      if (DoValue)
+        for (auto itr = itr_bak; itr != i_itr; ++itr, ++v_itr)
+          *v_itr = buf[*itr];
+    }
+    indices.resize(i_itr - indices.begin());
+    if (DoValue) vals.resize(v_itr - vals.begin());
+    if (OneBased)
+      std::for_each(indices.begin(), indices.end(), [](index_type &i) { ++i; });
+  }
+
  protected:
   iarray_type _ind_start;  ///< index pointer array, size of n+1
   iarray_type _indices;    ///< index array, size of nnz
@@ -1132,6 +1197,41 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
                           split_ccs<true>(m, start));
   }
 
+  /// \brief compute permutation CRS
+  /// \param[in] p row permutation, from perm to origin
+  /// \param[in] qt column permutation, from origin to perm
+  /// \param[in] leading if > 0, then extract leading block
+  /// \param[in] struct_only if \a false (default), then also compute values
+  inline CRS compute_perm(const iarray_type &p, const iarray_type &qt,
+                          const size_type leading     = 0,
+                          const bool      struct_only = false) const {
+    psmilu_error_if(qt.size() != ncols(),
+                    "invalid column permutation vector length");
+    const bool do_all =
+        leading == 0u || (leading == _psize && leading == _ncols);
+    CRS A;
+    if (do_all) {
+      A.resize(_psize, _ncols);
+      if (!struct_only)
+        _base::template _compute_perm<true, false>(
+            p, qt, leading, A.row_start(), A.col_ind(), A.vals());
+      else
+        _base::template _compute_perm<false, false>(
+            p, qt, leading, A.row_start(), A.col_ind(), A.vals());
+    } else {
+      psmilu_error_if(leading > std::min(_psize, _ncols),
+                      "invalid leading block size");
+      A.resize(leading, leading);
+      if (!struct_only)
+        _base::template _compute_perm<true, true>(p, qt, leading, A.row_start(),
+                                                  A.col_ind(), A.vals());
+      else
+        _base::template _compute_perm<false, true>(
+            p, qt, leading, A.row_start(), A.col_ind(), A.vals());
+    }
+    return A;
+  }
+
  protected:
   size_type _ncols;     ///< number of columns
   using _base::_psize;  ///< number of rows (primary entries)
@@ -1752,6 +1852,41 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
       const size_type m, const iarray_type &start) const {
     return std::make_pair(split_crs<false>(m, start),
                           split_crs<true>(m, start));
+  }
+
+  /// \brief compute permutation CCS
+  /// \param[in] pt row permutation, from origin to perm
+  /// \param[in] q column permutation, from perm to origin
+  /// \param[in] leading if > 0, then extract leading block
+  /// \param[in] struct_only if \a false (default), then also compute values
+  inline CCS compute_perm(const iarray_type &pt, const iarray_type &q,
+                          const size_type leading     = 0,
+                          const bool      struct_only = false) const {
+    psmilu_error_if(pt.size() != nrows(),
+                    "invalid row permutation vector length");
+    const bool do_all =
+        leading == 0u || (leading == _psize && leading == _nrows);
+    CCS A;
+    if (do_all) {
+      A.resize(_nrows, _psize);
+      if (!struct_only)
+        _base::template _compute_perm<true, false>(
+            q, pt, leading, A.col_start(), A.row_ind(), A.vals());
+      else
+        _base::template _compute_perm<false, false>(
+            q, pt, leading, A.col_start(), A.row_ind(), A.vals());
+    } else {
+      psmilu_error_if(leading > std::min(_psize, _nrows),
+                      "invalid leading block size");
+      A.resize(leading, leading);
+      if (!struct_only)
+        _base::template _compute_perm<true, true>(q, pt, leading, A.col_start(),
+                                                  A.row_ind(), A.vals());
+      else
+        _base::template _compute_perm<false, true>(
+            q, pt, leading, A.col_start(), A.row_ind(), A.vals());
+    }
+    return A;
   }
 
  protected:
