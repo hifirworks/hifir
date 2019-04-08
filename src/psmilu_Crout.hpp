@@ -184,8 +184,10 @@ class Crout {
               c_idx > _step,
               "U index %zd in computing ut should greater than step %zd", c_idx,
               _step);
-          ut.push_back(*U_i_itr, _step) ? ut.vals()[c_idx] = -ld * *U_v_itr
-                                        : ut.vals()[c_idx] -= ld * *U_v_itr;
+          if (ut.push_back(*U_i_itr, _step))
+            ut.vals()[c_idx] = -ld * *U_v_itr;
+          else
+            ut.vals()[c_idx] -= ld * *U_v_itr;
         }
         // advance augmented handle
         aug_id = L.next_row_id(aug_id);
@@ -280,10 +282,11 @@ class Crout {
         // get the row index (C-based)
         // NOTE the row index is that of the column in L
         const index_type r_idx = U.row_idx(aug_id);
-        psmilu_assert(
-            (size_type)r_idx < _step,
-            "compute_ut row index %zd should not exceed step %zd for U",
-            (size_type)r_idx, _step);
+        if (!IsSymm)
+          psmilu_assert(
+              (size_type)r_idx < _step,
+              "compute_ut row index %zd should not exceed step %zd for U",
+              (size_type)r_idx, _step);
         psmilu_assert((size_type)r_idx < d.size(),
                       "%zd exceeds the diagonal vector size", (size_type)r_idx);
         psmilu_assert((size_type)r_idx < L_start.size(),
@@ -319,8 +322,10 @@ class Crout {
               _step);
           // compute this entry, if index does not exist, assign new value to
           // -L*d*u, else, -= L*d*u
-          l.push_back(*L_i_itr, _step) ? l.vals()[c_idx] = -*L_v_itr * du
-                                       : l.vals()[c_idx] -= *L_v_itr * du;
+          if (l.push_back(*L_i_itr, _step))
+            l.vals()[c_idx] = -du * *L_v_itr;
+          else
+            l.vals()[c_idx] -= *L_v_itr * du;
         }
         // advance augmented handle
         aug_id = U.next_col_id(aug_id);
@@ -523,8 +528,10 @@ class Crout {
     //    2) create a caster class
     using extractor = internal::SpVInternalExtractor<SpVecType>;
 
+    // assume l is not scaled by the diagonal
+
     // get the current diagonal entry
-    const auto dk = d[_step];
+    // const auto dk = d[_step];
     if (ut.size() <= l.size()) {
       const auto &    l_d_tags = static_cast<const extractor &>(l).dense_tags();
       const size_type n        = ut.size();
@@ -538,7 +545,8 @@ class Crout {
         // if the dense tags of this entry points to this step, we know l has
         // an element in this slot
         if (c_idx < m && (size_type)l_d_tags[c_idx] == _step)
-          d[c_idx] -= dk * ut.val(i) * l_vals[c_idx];
+          // d[c_idx] -= dk * ut.val(i) * l_vals[c_idx];
+          d[c_idx] -= ut.val(i) * l_vals[c_idx];
       }
     } else {
       const auto &ut_d_tags  = static_cast<const extractor &>(ut).dense_tags();
@@ -553,7 +561,8 @@ class Crout {
         // if the dense tags of this entry points to this step, we know ut has
         // an element in this slot
         if (c_idx < m && (size_type)ut_d_tags[c_idx] == _step)
-          d[c_idx] -= dk * u_vals[c_idx] * l.val(i);
+          // d[c_idx] -= dk * u_vals[c_idx] * l.val(i);
+          d[c_idx] -= u_vals[c_idx] * l.val(i);
       }
     }
   }
@@ -633,9 +642,9 @@ class Crout {
     auto       i_itr = crs_A.col_ind_cbegin(pk);
     const auto s_pk  = s[pk];
     for (auto last = crs_A.col_ind_cend(pk); i_itr != last; ++i_itr, ++v_itr) {
-      const auto A_idx = to_c_idx<size_type, base>(*i_itr);
-      const auto c_idx = q.inv(A_idx);
-      if ((size_type)c_idx > _step) {
+      const auto      A_idx = to_c_idx<size_type, base>(*i_itr);
+      const size_type c_idx = q.inv(A_idx);
+      if (c_idx > _step) {
 #ifndef NDEBUG
         const bool val_must_not_exit =
 #endif
@@ -682,10 +691,10 @@ class Crout {
     auto       i_itr = ccs_A.row_ind_cbegin(qk);
     const auto t_qk  = t[qk];
     for (auto last = ccs_A.row_ind_cend(qk); i_itr != last; ++i_itr, ++v_itr) {
-      const auto A_idx = to_c_idx<size_type, base>(*i_itr);
-      const auto c_idx = p.inv(A_idx);
+      const auto      A_idx = to_c_idx<size_type, base>(*i_itr);
+      const size_type c_idx = p.inv(A_idx);
       // push to the sparse vector only if its in range _step+1:n
-      if ((size_type)c_idx > thres) {
+      if (c_idx > thres) {
 #ifndef NDEBUG
         const bool val_must_not_exit =
 #endif
