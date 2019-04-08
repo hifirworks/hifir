@@ -835,12 +835,57 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
   }
 #endif
 
+#ifndef NDEBUG
+  for (size_type i(0); i < m; ++i) {
+    psmilu_error_if((size_type)p[p.inv()[i]] != i,
+                    "P permutation failed at entry %zd", i);
+    psmilu_error_if((size_type)q[q.inv()[i]] != i,
+                    "Q permutation failed at entry %zd", i);
+  }
+  do {
+    std::vector<bool> tags(m, false);
+    for (size_type i = 0; i < m; ++i) tags[p[i]] = true;
+    psmilu_error_if(std::any_of(tags.cbegin(), tags.cend(),
+                                [](const bool f) { return !f; }),
+                    "inconsistent P permutation");
+    std::fill(tags.begin(), tags.end(), false);
+    for (size_type i = 0; i < m; ++i) tags[q[i]] = true;
+    psmilu_error_if(std::any_of(tags.cbegin(), tags.cend(),
+                                [](const bool f) { return !f; }),
+                    "inconsistent Q permutation");
+  } while (false);
+#endif
+
   if (psmilu_verbose(INFO, opts)) psmilu_info("preparing data variables...");
 
   timer.start();
 
   // extract diagonal
   auto d = internal::extract_perm_diag(s, A_ccs, t, m, p, q);
+
+#ifndef NDEBUG
+#  define _GET_MAX_MIN_MINABS(__v, __m)                                 \
+    const auto max_##__v =                                              \
+        *std::max_element(__v.cbegin(), __v.cbegin() + __m),            \
+               min_##__v =                                              \
+                   *std::min_element(__v.cbegin(), __v.cbegin() + __m), \
+               min_abs_##__v = std::abs(*std::min_element(              \
+                   __v.cbegin(), __v.cbegin() + __m,                    \
+                   [](const value_type a, const value_type b) {         \
+                     return std::abs(a) < std::abs(b);                  \
+                   }))
+#  define _SHOW_MAX_MIN_MINABS(__v)                                         \
+    psmilu_info("\t" #__v " max=%g, min=%g, min_abs=%g", (double)max_##__v, \
+                (double)min_##__v, (double)min_abs_##__v)
+  if (psmilu_verbose(INFO, opts)) {
+    _GET_MAX_MIN_MINABS(d, m);
+    _SHOW_MAX_MIN_MINABS(d);
+    _GET_MAX_MIN_MINABS(s, m);
+    _SHOW_MAX_MIN_MINABS(s);
+    _GET_MAX_MIN_MINABS(t, m);
+    _SHOW_MAX_MIN_MINABS(t);
+  }
+#endif
 
   // create U storage
   aug_crs_type U(m, A.ncols());
@@ -887,6 +932,10 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
              tau_L   = opts.tau_L;
   const auto alpha_L = opts.alpha_L, alpha_U = opts.alpha_U;
 
+  const auto is_bad_diag = [=](const value_type a) -> bool {
+    return std::abs(1. / a) > tau_d || std::abs(a) > tau_d;
+  };
+
   size_type       interchanges(0);
   const size_type m_in(m);
 
@@ -894,7 +943,8 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
 
   for (Crout step; step < m; ++step) {
     // first check diagonal
-    bool            pvt    = std::abs(1. / d[step]) > tau_d;
+    // bool            pvt    = std::abs(1. / d[step]) > tau_d;
+    bool            pvt    = is_bad_diag(d[step]);
     const size_type m_prev = m;
 
     Crout_info(" Crout step %zd, leading block size %zd", step, m_prev);
@@ -909,18 +959,19 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
 
       if (pvt) {
         // test m value before plugin m-1 to array accessing
-        while (m > step && std::abs(1. / d[m - 1]) > tau_d) --m;
+        // while (m > step && std::abs(1. / d[m - 1]) > tau_d) --m;
+        while (m > step && is_bad_diag(d[m - 1])) --m;
         if (m == step) break;
-        // defer bad column to the end for U
-        U.interchange_cols(step, m - 1);
-        // defer bad row to the end for L
-        L.interchange_rows(step, m - 1);
-        // udpate p and q; be aware that the inverse mappings are also updated
-        p.interchange(step, m - 1);
-        q.interchange(step, m - 1);
-        // update diagonal since we maintain a permutated version of it
-        std::swap(d[step], d[m - 1]);
         --m;
+        // defer bad column to the end for U
+        U.interchange_cols(step, m);
+        // defer bad row to the end for L
+        L.interchange_rows(step, m);
+        // udpate p and q; be aware that the inverse mappings are also updated
+        p.interchange(step, m);
+        q.interchange(step, m);
+        // update diagonal since we maintain a permutated version of it
+        std::swap(d[step], d[m]);
         ++local_interchanges;
         if (IsSymm) internal::update_L_start_symm(L, m, L_start);
       }
@@ -968,6 +1019,7 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
       step.compute_ut(s, A_crs, t, p[step], q, L, d, U, U_start, ut);
       // compute Lk
       step.compute_l<IsSymm>(s, A_ccs, t, p, q[step], m, L, L_start, d, U, l);
+
       // update diagonal entries
 #ifndef NDEBUG
       const bool u_is_nonsingular =
@@ -977,6 +1029,10 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
           step.scale_inv_diag(d, ut);
       psmilu_assert(!u_is_nonsingular, "u is singular at level %zd step %zd",
                     cur_level, step);
+
+      // update diagonals b4 dropping
+      step.update_B_diag<IsSymm>(l, ut, m, d);
+
 #ifndef NDEBUG
       const bool l_is_nonsingular =
 #else
@@ -985,8 +1041,6 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
           step.scale_inv_diag(d, l);
       psmilu_assert(!l_is_nonsingular, "l is singular at level %zd step %zd",
                     cur_level, step);
-      // update diagonals b4 dropping
-      step.update_B_diag<IsSymm>(l, ut, m, d);
 
       //---------------
       // drop and sort
@@ -997,6 +1051,7 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
       // apply drop for U
       apply_dropping_and_sort(tau_U, k_ut, A_crs.nnz_in_row(p[step]), alpha_U,
                               ut);
+      // ut.sort_indices();
       // push back rows to U
       U.push_back_row(step, ut.inds().cbegin(), ut.inds().cbegin() + ut.size(),
                       ut.vals());
@@ -1033,6 +1088,7 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
         // for asymmetric cases, just do exactly the same things as ut
         apply_dropping_and_sort(tau_L, k_l, A_ccs.nnz_in_col(q[step]), alpha_L,
                                 l);
+        // l.sort_indices();
 
         Crout_info("  l sizes before/after dropping %zd/%zd, drops=%zd",
                    ori_l_size, l.size(), ori_l_size - l.size());
@@ -1064,6 +1120,10 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
         "\tleading block size out=%zd\n"
         "\tdiff=%zd",
         interchanges, m_in, m, m_in - m);
+#ifndef NDEBUG
+    _GET_MAX_MIN_MINABS(d, m);
+    _SHOW_MAX_MIN_MINABS(d);
+#endif
     psmilu_info("time: %gs", timer.time());
   }
 
@@ -1158,5 +1218,12 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
 }
 
 }  // namespace psmilu
+
+#ifdef _GET_MAX_MIN_MINABS
+#  undef _GET_MAX_MIN_MINABS
+#endif
+#ifdef _SHOW_MAX_MIN_MINABS
+#  undef _SHOW_MAX_MIN_MINABS
+#endif
 
 #endif  // _PSMILU_FAC_HPP
