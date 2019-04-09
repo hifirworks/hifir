@@ -1144,8 +1144,9 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
   auto U_B = U.template split_ccs<false>(m, U_start);
 
   if (psmilu_verbose(INFO, opts))
-    psmilu_info("nnz(S_C)=%zd, nnz(L_B)=%zd, nnz(U_B)=%zd...", S.nnz(),
-                L_B.nnz(), U_B.nnz());
+    psmilu_info(
+        "nnz(S_C)=%zd, nnz(L)=%zd, nnz(L_B)=%zd, nnz(U)=%zd, nnz(U_B)=%zd...",
+        S.nnz(), L.nnz(), L_B.nnz(), U.nnz(), U_B.nnz());
 
   // test H version
   const size_type nm     = A.nrows() - m;
