@@ -796,6 +796,7 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
 #ifndef PSMILU_DISABLE_PRE
   size_type m =
       do_preprocessing<IsSymm>(A_ccs, m0, opts, s, t, p, q, check_zero_diag);
+  m = defer_dense_tail(A_crs, A_ccs, p, q, m);
 #else
   s.resize(m0);
   psmilu_error_if(s.status() == DATA_UNDEF, "memory allocation failed");
@@ -833,27 +834,6 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
                 fname.c_str());
     A_perm.write_native_bin(fname.c_str(), IsSymm ? m : size_type(0));
   }
-#endif
-
-#ifndef NDEBUG
-  for (size_type i(0); i < m; ++i) {
-    psmilu_error_if((size_type)p[p.inv()[i]] != i,
-                    "P permutation failed at entry %zd", i);
-    psmilu_error_if((size_type)q[q.inv()[i]] != i,
-                    "Q permutation failed at entry %zd", i);
-  }
-  do {
-    std::vector<bool> tags(m, false);
-    for (size_type i = 0; i < m; ++i) tags[p[i]] = true;
-    psmilu_error_if(std::any_of(tags.cbegin(), tags.cend(),
-                                [](const bool f) { return !f; }),
-                    "inconsistent P permutation");
-    std::fill(tags.begin(), tags.end(), false);
-    for (size_type i = 0; i < m; ++i) tags[q[i]] = true;
-    psmilu_error_if(std::any_of(tags.cbegin(), tags.cend(),
-                                [](const bool f) { return !f; }),
-                    "inconsistent Q permutation");
-  } while (false);
 #endif
 
   if (psmilu_verbose(INFO, opts)) psmilu_info("preparing data variables...");
@@ -943,7 +923,6 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
 
   for (Crout step; step < m; ++step) {
     // first check diagonal
-    // bool            pvt    = std::abs(1. / d[step]) > tau_d;
     bool            pvt    = is_bad_diag(d[step]);
     const size_type m_prev = m;
 
@@ -957,10 +936,37 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
       // pivoting
       //---------------
 
+      // compute kappa ut
+      update_kappa_ut(step, U, kappa_ut);
+      // then compute kappa for l
+      update_kappa_l<IsSymm>(step, L, kappa_ut, kappa_l);
+      // check pivoting
+      if (!pvt)
+        pvt = std::abs(kappa_ut[step]) > tau_kappa ||
+              std::abs(kappa_l[step]) > tau_kappa;
+
       if (pvt) {
         // test m value before plugin m-1 to array accessing
         // while (m > step && std::abs(1. / d[m - 1]) > tau_d) --m;
-        while (m > step && is_bad_diag(d[m - 1])) --m;
+        while (m > step) {
+          pvt = is_bad_diag(d[m - 1]);
+          if (pvt) {
+            --m;
+            continue;
+          }
+          // compute kappa ut
+          update_kappa_ut(step, U, kappa_ut, m - 1);
+          // then compute kappa for l
+          update_kappa_l<IsSymm>(step, L, kappa_ut, kappa_l, m - 1);
+          // check pivoting
+          pvt = std::abs(kappa_ut[step]) > tau_kappa ||
+                std::abs(kappa_l[step]) > tau_kappa;
+          if (pvt) {
+            --m;
+            continue;
+          }
+          break;
+        }
         if (m == step) break;
         --m;
         // defer bad column to the end for U
@@ -980,18 +986,13 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
       // inverse thres
       //----------------
 
-      // compute kappa ut
-      update_kappa_ut(step, U, kappa_ut);
-      // then compute kappa for l
-      update_kappa_l<IsSymm>(step, L, kappa_ut, kappa_l);
       const auto k_ut = std::abs(kappa_ut[step]), k_l = std::abs(kappa_l[step]);
+
       // check pivoting
-      pvt = k_ut > tau_kappa || k_l > tau_kappa;
+      psmilu_assert(!(k_ut > tau_kappa || k_l > tau_kappa),
+                    "should not happen!");
 
-      Crout_info("  kappa_ut=%g, kappa_l=%g, pvt=%s", (double)k_ut, (double)k_l,
-                 (pvt ? "yes" : "no"));
-
-      if (pvt) continue;
+      Crout_info("  kappa_ut=%g, kappa_l=%g", (double)k_ut, (double)k_l);
 
       Crout_info(
           "  previous/current leading block sizes %zd/%zd, interchanges=%zd",
