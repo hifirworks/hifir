@@ -75,9 +75,9 @@ inline typename CcsType::size_type do_preprocessing(
   double Control[PSMILU_AMD_CONTROL], Info[AMD_INFO];
   amd::defaults(Control);
 
-#  ifdef NDEBUG
-  Control[PSMILU_AMD_CHECKING] = 0;
-#  endif
+  // #  ifdef NDEBUG
+  //   Control[PSMILU_AMD_CHECKING] = 0;
+  // #  endif
 
   Control[PSMILU_AMD_SYMM_FLAG] = !IsSymm;
 
