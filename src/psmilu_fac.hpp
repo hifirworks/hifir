@@ -931,174 +931,172 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
     size_type local_interchanges(0);
 
     // inf loop
-    for (;;) {
-      //----------------
-      // pivoting
-      //---------------
+    // for (;;) {
+    //----------------
+    // pivoting
+    //---------------
 
-      // compute kappa ut
-      update_kappa_ut(step, U, kappa_ut);
-      // then compute kappa for l
-      update_kappa_l<IsSymm>(step, L, kappa_ut, kappa_l);
-      // check pivoting
-      if (!pvt)
+    // compute kappa ut
+    update_kappa_ut(step, U, kappa_ut);
+    // then compute kappa for l
+    update_kappa_l<IsSymm>(step, L, kappa_ut, kappa_l);
+    // check pivoting
+    if (!pvt)
+      pvt = std::abs(kappa_ut[step]) > tau_kappa ||
+            std::abs(kappa_l[step]) > tau_kappa;
+
+    if (pvt) {
+      // test m value before plugin m-1 to array accessing
+      while (m > step) {
+        pvt = is_bad_diag(d[m - 1]);
+        if (pvt) {
+          --m;
+          continue;
+        }
+        // compute kappa ut
+        update_kappa_ut(step, U, kappa_ut, m - 1);
+        // then compute kappa for l
+        update_kappa_l<IsSymm>(step, L, kappa_ut, kappa_l, m - 1);
+        // check pivoting
         pvt = std::abs(kappa_ut[step]) > tau_kappa ||
               std::abs(kappa_l[step]) > tau_kappa;
-
-      if (pvt) {
-        // test m value before plugin m-1 to array accessing
-        // while (m > step && std::abs(1. / d[m - 1]) > tau_d) --m;
-        while (m > step) {
-          pvt = is_bad_diag(d[m - 1]);
-          if (pvt) {
-            --m;
-            continue;
-          }
-          // compute kappa ut
-          update_kappa_ut(step, U, kappa_ut, m - 1);
-          // then compute kappa for l
-          update_kappa_l<IsSymm>(step, L, kappa_ut, kappa_l, m - 1);
-          // check pivoting
-          pvt = std::abs(kappa_ut[step]) > tau_kappa ||
-                std::abs(kappa_l[step]) > tau_kappa;
-          if (pvt) {
-            --m;
-            continue;
-          }
-          break;
+        if (pvt) {
+          --m;
+          continue;
         }
-        if (m == step) break;
-        --m;
-        // defer bad column to the end for U
-        U.interchange_cols(step, m);
-        // defer bad row to the end for L
-        L.interchange_rows(step, m);
-        // udpate p and q; be aware that the inverse mappings are also updated
-        p.interchange(step, m);
-        q.interchange(step, m);
-        // update diagonal since we maintain a permutated version of it
-        std::swap(d[step], d[m]);
-        ++local_interchanges;
-        if (IsSymm) internal::update_L_start_symm(L, m, L_start);
+        break;
       }
+      if (m == step) break;
+      --m;
+      // defer bad column to the end for U
+      U.interchange_cols(step, m);
+      // defer bad row to the end for L
+      L.interchange_rows(step, m);
+      // udpate p and q; be aware that the inverse mappings are also updated
+      p.interchange(step, m);
+      q.interchange(step, m);
+      // update diagonal since we maintain a permutated version of it
+      std::swap(d[step], d[m]);
+      ++local_interchanges;
+      if (IsSymm) internal::update_L_start_symm(L, m, L_start);
+    }
 
-      //----------------
-      // inverse thres
-      //----------------
+    //----------------
+    // inverse thres
+    //----------------
 
-      const auto k_ut = std::abs(kappa_ut[step]), k_l = std::abs(kappa_l[step]);
+    const auto k_ut = std::abs(kappa_ut[step]), k_l = std::abs(kappa_l[step]);
 
-      // check pivoting
-      psmilu_assert(!(k_ut > tau_kappa || k_l > tau_kappa),
-                    "should not happen!");
+    // check pivoting
+    psmilu_assert(!(k_ut > tau_kappa || k_l > tau_kappa), "should not happen!");
 
-      Crout_info("  kappa_ut=%g, kappa_l=%g", (double)k_ut, (double)k_l);
+    Crout_info("  kappa_ut=%g, kappa_l=%g", (double)k_ut, (double)k_l);
+
+    Crout_info(
+        "  previous/current leading block sizes %zd/%zd, interchanges=%zd",
+        m_prev, m, local_interchanges);
+
+    interchanges += local_interchanges;  // accumulate global interchanges
+
+    //------------------------
+    // update start positions
+    //------------------------
+
+    Crout_info("  updating L_start/U_start and performing Crout update");
+
+    // update U
+    step.update_U_start(U, U_start);
+    // then update L
+    // const bool no_change = m == m_prev;
+    step.update_L_start<IsSymm>(L, m, L_start);
+
+    //----------------------
+    // compute Crout updates
+    //----------------------
+
+    // compute Uk'
+    step.compute_ut(s, A_crs, t, p[step], q, L, d, U, U_start, ut);
+    // compute Lk
+    step.compute_l<IsSymm>(s, A_ccs, t, p, q[step], m, L, L_start, d, U, l);
+
+    // update diagonal entries
+#ifndef NDEBUG
+    const bool u_is_nonsingular =
+#else
+    (void)
+#endif
+        step.scale_inv_diag(d, ut);
+    psmilu_assert(!u_is_nonsingular, "u is singular at level %zd step %zd",
+                  cur_level, step);
+
+    // update diagonals b4 dropping
+    step.update_B_diag<IsSymm>(l, ut, m, d);
+
+#ifndef NDEBUG
+    const bool l_is_nonsingular =
+#else
+    (void)
+#endif
+        step.scale_inv_diag(d, l);
+    psmilu_assert(!l_is_nonsingular, "l is singular at level %zd step %zd",
+                  cur_level, step);
+
+    //---------------
+    // drop and sort
+    //---------------
+
+    const size_type ori_ut_size = ut.size(), ori_l_size = l.size();
+
+    // apply drop for U
+    apply_dropping_and_sort(tau_U, k_ut, A_crs.nnz_in_row(p[step]), alpha_U,
+                            ut);
+    // ut.sort_indices();
+    // push back rows to U
+    U.push_back_row(step, ut.inds().cbegin(), ut.inds().cbegin() + ut.size(),
+                    ut.vals());
+
+    Crout_info("  ut sizes before/after dropping %zd/%zd, drops=%zd",
+               ori_ut_size, ut.size(), ori_ut_size - ut.size());
+
+    if (IsSymm) {
+      // for symmetric cases, we need first find the leading block size
+      auto info = find_sorted(ut.inds().cbegin(),
+                              ut.inds().cbegin() + ut.size(), m + ONE_BASED);
+      apply_dropping_and_sort(tau_L, k_l, A_ccs.nnz_in_col(q[step]), alpha_L, l,
+                              info.second - ut.inds().cbegin());
+
+#ifndef NDEBUG
+      if (info.second != ut.inds().cbegin() &&
+          info.second != ut.inds().cbegin() + ut.size() && l.size())
+        psmilu_error_if(*(info.second - 1) >= *l.inds().cbegin() ||
+                            *(info.second - 1) - ONE_BASED >= m,
+                        "l contains symm part (%zd,%zd,%zd)",
+                        (size_type)(*(info.second - 1)),
+                        (size_type)*l.inds().cbegin(), m);
+#endif
 
       Crout_info(
-          "  previous/current leading block sizes %zd/%zd, interchanges=%zd",
-          m_prev, m, local_interchanges);
+          "  l sizes (asymm parts) before/after dropping %zd/%zd, drops=%zd",
+          ori_l_size, l.size(), ori_l_size - l.size());
 
-      interchanges += local_interchanges;  // accumulate global interchanges
+      // push back symmetric entries and offsets
+      L.push_back_col(step, ut.inds().cbegin(), info.second, ut.vals(),
+                      l.inds().cbegin(), l.inds().cbegin() + l.size(),
+                      l.vals());
+    } else {
+      // for asymmetric cases, just do exactly the same things as ut
+      apply_dropping_and_sort(tau_L, k_l, A_ccs.nnz_in_col(q[step]), alpha_L,
+                              l);
+      // l.sort_indices();
 
-      //------------------------
-      // update start positions
-      //------------------------
+      Crout_info("  l sizes before/after dropping %zd/%zd, drops=%zd",
+                 ori_l_size, l.size(), ori_l_size - l.size());
 
-      Crout_info("  updating L_start/U_start and performing Crout update");
-
-      // update U
-      step.update_U_start(U, U_start);
-      // then update L
-      // const bool no_change = m == m_prev;
-      step.update_L_start<IsSymm>(L, m, L_start);
-
-      //----------------------
-      // compute Crout updates
-      //----------------------
-
-      // compute Uk'
-      step.compute_ut(s, A_crs, t, p[step], q, L, d, U, U_start, ut);
-      // compute Lk
-      step.compute_l<IsSymm>(s, A_ccs, t, p, q[step], m, L, L_start, d, U, l);
-
-      // update diagonal entries
-#ifndef NDEBUG
-      const bool u_is_nonsingular =
-#else
-      (void)
-#endif
-          step.scale_inv_diag(d, ut);
-      psmilu_assert(!u_is_nonsingular, "u is singular at level %zd step %zd",
-                    cur_level, step);
-
-      // update diagonals b4 dropping
-      step.update_B_diag<IsSymm>(l, ut, m, d);
-
-#ifndef NDEBUG
-      const bool l_is_nonsingular =
-#else
-      (void)
-#endif
-          step.scale_inv_diag(d, l);
-      psmilu_assert(!l_is_nonsingular, "l is singular at level %zd step %zd",
-                    cur_level, step);
-
-      //---------------
-      // drop and sort
-      //---------------
-
-      const size_type ori_ut_size = ut.size(), ori_l_size = l.size();
-
-      // apply drop for U
-      apply_dropping_and_sort(tau_U, k_ut, A_crs.nnz_in_row(p[step]), alpha_U,
-                              ut);
-      // ut.sort_indices();
-      // push back rows to U
-      U.push_back_row(step, ut.inds().cbegin(), ut.inds().cbegin() + ut.size(),
-                      ut.vals());
-
-      Crout_info("  ut sizes before/after dropping %zd/%zd, drops=%zd",
-                 ori_ut_size, ut.size(), ori_ut_size - ut.size());
-
-      if (IsSymm) {
-        // for symmetric cases, we need first find the leading block size
-        auto info = find_sorted(ut.inds().cbegin(),
-                                ut.inds().cbegin() + ut.size(), m + ONE_BASED);
-        apply_dropping_and_sort(tau_L, k_l, A_ccs.nnz_in_col(q[step]), alpha_L,
-                                l, info.second - ut.inds().cbegin());
-
-#ifndef NDEBUG
-        if (info.second != ut.inds().cbegin() &&
-            info.second != ut.inds().cbegin() + ut.size() && l.size())
-          psmilu_error_if(*(info.second - 1) >= *l.inds().cbegin() ||
-                              *(info.second - 1) - ONE_BASED >= m,
-                          "l contains symm part (%zd,%zd,%zd)",
-                          (size_type)(*(info.second - 1)),
-                          (size_type)*l.inds().cbegin(), m);
-#endif
-
-        Crout_info(
-            "  l sizes (asymm parts) before/after dropping %zd/%zd, drops=%zd",
-            ori_l_size, l.size(), ori_l_size - l.size());
-
-        // push back symmetric entries and offsets
-        L.push_back_col(step, ut.inds().cbegin(), info.second, ut.vals(),
-                        l.inds().cbegin(), l.inds().cbegin() + l.size(),
-                        l.vals());
-      } else {
-        // for asymmetric cases, just do exactly the same things as ut
-        apply_dropping_and_sort(tau_L, k_l, A_ccs.nnz_in_col(q[step]), alpha_L,
-                                l);
-        // l.sort_indices();
-
-        Crout_info("  l sizes before/after dropping %zd/%zd, drops=%zd",
-                   ori_l_size, l.size(), ori_l_size - l.size());
-
-        L.push_back_col(step, l.inds().cbegin(), l.inds().cbegin() + l.size(),
-                        l.vals());
-      }
-      break;
-    }  // inf loop
+      L.push_back_col(step, l.inds().cbegin(), l.inds().cbegin() + l.size(),
+                      l.vals());
+    }
+    //   break;
+    // }  // inf loop
 
     Crout_info(" Crout step %zd done!", step);
   }
