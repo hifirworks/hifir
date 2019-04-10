@@ -11,6 +11,7 @@
 #ifndef _PSMILU_PRE_HPP
 #define _PSMILU_PRE_HPP
 
+#include <cmath>
 #include <sstream>
 #include <string>
 
@@ -129,6 +130,47 @@ inline typename CcsType::size_type do_preprocessing(
 
   return m;
 }
+
+/// \brief defer dense row and column
+/// \tparam CrsType crs matrix, see \ref CRS
+/// \tparam CcsType ccs matrix, see \ref CCS
+/// \tparam PermType permutation array, see \ref BiPermMatrix
+/// \param[in] A_crs crs input
+/// \param[in] A_ccs ccs input
+/// \param[in] p row permutation
+/// \param[in] q column permutation
+/// \param[in] m0 leading block size
+/// \param[in] N reference system size
+/// \return m remaining sparse leading block
+template <class CrsType, class CcsType, class PermType>
+inline typename CrsType::size_type defer_dense_tail(
+    const CrsType &A_crs, const CcsType &A_ccs, const PermType &p,
+    const PermType &q, const typename CrsType::size_type m0,
+    const typename CrsType::size_type N = 0u) {
+  using size_type = typename CrsType::size_type;
+
+  const size_type n = A_crs.nrows();
+  psmilu_error_if(m0 > n, "invalid leading block size %zd", m0);
+  psmilu_error_if(m0 > A_crs.ncols(), "invalid leading block size %zd", m0);
+
+  // TODO should we use cbrt(n) or cbrt(m0)?
+  const size_type dense_thres =
+      N ? static_cast<size_type>(std::ceil(std::sqrt((double)N)))
+        : static_cast<size_type>(std::ceil(std::sqrt((double)A_crs.nnz())));
+
+  const auto is_dense = [&, dense_thres](const size_type j) -> bool {
+    return A_crs.nnz_in_row(p[j]) > dense_thres ||
+           A_ccs.nnz_in_col(q[j]) > dense_thres;
+  };
+
+  size_type m(m0);
+
+  for (size_type i(m0); i > 0u; --i)
+    if (is_dense(i - 1)) --m;
+
+  return m;
+}
+
 }  // namespace psmilu
 
 #endif  // _PSMILU_PRE_HPP
