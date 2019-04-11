@@ -11,6 +11,7 @@
 #ifndef _PSMILU_CROUT_HPP
 #define _PSMILU_CROUT_HPP
 
+#include <algorithm>
 #include <cstddef>
 #include <type_traits>
 
@@ -708,6 +709,113 @@ class Crout {
 
  protected:
   mutable size_type _step;  ///< current step
+};
+
+class Crout2 : public Crout {
+ public:
+  /// \brief default constructor
+  Crout2() = default;
+
+  Crout2(const Crout2 &) = default;
+  Crout2 &operator=(const Crout2 &) = default;
+
+  using size_type = Crout::size_type;
+
+  /// \brief load a row of A to ut buffer
+  /// \tparam LeftDiagType diagonal matrix from left-hand side, see \ref Array
+  /// \tparam CrsType crs matrix of input A, see \ref CRS
+  /// \tparam RightDiagType diagonal matrix from right-hand side
+  /// \tparam PermType permutation vector type, see \ref BiPermMatrix
+  /// \tparam SpVecType sparse vector type, see \ref SparseVector
+  /// \param[in] s row scaling vector
+  /// \param[in] crs_A input matrix in CRS scheme
+  /// \param[in] t column scaling vector
+  /// \param[in] pk permutated row index
+  /// \param[in] q column permutation matrix
+  /// \param[out] ut output sparse vector of row of A
+  template <class LeftDiagType, class CrsType, class RightDiagType,
+            class PermType, class SpVecType>
+  inline void fetch_A_row(const LeftDiagType &s, const CrsType &crs_A,
+                          const RightDiagType &t, const size_type pk,
+                          const PermType &q, SpVecType &ut) const {
+    ut.reset_counter();  // reset counter
+    _load_A2ut(s, crs_A, t, pk, q, ut);
+  }
+
+  /// \brief load column of A to l buffer
+  /// \tparam IsSymm if \a true, then only load the offset
+  /// \tparam LeftDiagType diagonal matrix from left-hand side
+  /// \tparam CcsType ccs matrix of input A, see \ref CCS
+  /// \tparam RightDiagType diagonal matrix from right-hand side
+  /// \tparam PermType permutation vector type, see \ref BiPermMatrix
+  /// \tparam SpVecType sparse vector type, see \ref SparseVector
+  /// \param[in] s row scaling vector
+  /// \param[in] ccs_A input matrix in CCS scheme
+  /// \param[in] t column scaling vector
+  /// \param[in] p row permutation matrix
+  /// \param[in] qk permuted column index
+  /// \param[in] m leading size
+  /// \param[out] l output sparse vector of column vector for A
+  template <bool IsSymm, class LeftDiagType, class CcsType, class RightDiagType,
+            class PermType, class SpVecType>
+  inline void fetch_A_col(const LeftDiagType &s, const CcsType &ccs_A,
+                          const RightDiagType &t, const PermType &p,
+                          const size_type qk, const size_type m,
+                          SpVecType &l) const {
+    l.reset_counter();
+    if (!IsSymm) _load_A2l<false>(s, ccs_A, t, p, qk, m, l);
+  }
+
+  template <bool IsSymm, class SpVecType1, class DiagType, class PvtCand>
+  inline void find_pvt_entries(const SpVecType1 &u, const SpVecType1 &l,
+                               const typename SpVecType1::size_type m,
+                               const DiagType &d, const std::vector<bool> &pvt,
+                               const double tau_d, PvtCand &entries) const {
+    using extractor = internal::SpVInternalExtractor<SpVecType1>;
+    entries.reset_counter();
+    const auto &u_vals = u.vals();
+    if (!IsSymm) {
+      const auto &l_vals = l.vals();
+      if (u.size() > l.size()) {
+        const auto &    d_tags = static_cast<const extractor &>(u).dense_tags();
+        const size_type n      = l.size();
+        for (size_type i(0); i < n; ++i) {
+          const size_type c_idx = l.c_idx(i);
+          psmilu_assert(c_idx > _step,
+                        "should only contain the lower part of l, "
+                        "(c_idx,step)=(%zd,%zd)!",
+                        c_idx, _step);
+          if (c_idx < m && (size_type)d_tags[c_idx] == _step && !pvt[c_idx])
+            if (std::abs(1. / d[c_idx]) <= tau_d) entries.push_back(c_idx);
+        }
+      } else {
+        const auto &    d_tags = static_cast<const extractor &>(l).dense_tags();
+        const size_type n      = u.size();
+        for (size_type i(0); i < n; ++i) {
+          const size_type c_idx = u.c_idx(i);
+          psmilu_assert(c_idx > _step,
+                        "should only contain the upper part of ut, "
+                        "(c_idx,step)=(%zd,%zd)!",
+                        c_idx, _step);
+          if (c_idx < m && (size_type)d_tags[c_idx] == _step && !pvt[c_idx])
+            if (std::abs(1. / d[c_idx]) <= tau_d) entries.push_back(c_idx);
+        }
+      }
+    } else {
+      // symmetric case
+      const size_type n = u.size();
+      for (size_type i(0); i < n; ++i) {
+        const size_type c_idx = l.c_idx(i);
+        psmilu_assert(c_idx > _step,
+                      "should only contain the lower part of l, "
+                      "(c_idx,step)=(%zd,%zd)!",
+                      c_idx, _step);
+        if (c_idx < m && !pvt[c_idx])
+          if (std::abs(1. / d[c_idx]) <= tau_d) entries.push_back(c_idx);
+      }
+    }
+    if (entries.size()) entries.sort_indices();
+  }
 };
 }  // namespace psmilu
 
