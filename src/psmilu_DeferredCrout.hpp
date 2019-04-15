@@ -1,0 +1,463 @@
+//@HEADER
+//----------------------------------------------------------------------------
+//                Copyright (C) 2019 The PSMILU AUTHORS
+//----------------------------------------------------------------------------
+//@HEADER
+
+/// \file psmilu_DeferredCrout.hpp
+/// \brief Implementation of modified \a Crout update in deferred fashion
+/// \authors Qiao,
+
+#ifndef _PSMILU_DEFERRED_CROUT_HPP
+#define _PSMILU_DEFERRED_CROUT_HPP
+
+#include "psmilu_Crout.hpp"
+
+namespace psmilu {
+
+/// \class DeferredCrout
+/// \brief Crout update in deferred fashion
+/// \ingroup crout
+class DeferredCrout : public Crout {
+ public:
+  using size_type = Crout::size_type;  ///< size type
+
+  /// \brief default constructor
+  DeferredCrout() : Crout(), _defers(0) {}
+
+  // default copy and assign
+  DeferredCrout(const DeferredCrout &) = default;
+  DeferredCrout &operator=(const DeferredCrout &) = default;
+
+  /// \brief get the current defers
+  inline size_type defers() const { return _defers; }
+
+  /// \brief get the deferred step
+  inline size_type deferred_step() const { return _defers + _step; }
+
+  /// \brief increment the defer counter
+  inline void increment_defer_counter() { ++_defers; }
+
+  template <class ScaleArray, class CrsType, class PermType, class U_CrsType,
+            class U_StartType, class DiagType, class GapArray,
+            class L_AugCcsType, class SpVecType>
+  void compute_ut(const ScaleArray &s, const CrsType &crs_A,
+                  const ScaleArray &t, const PermType &p, const PermType &q,
+                  const L_AugCcsType &L, const DiagType &d,
+                  const GapArray &gaps, const U_CrsType &U,
+                  const U_StartType &U_start, SpVecType &ut) const {
+    // compilation checking
+    static_assert(CrsType::ROW_MAJOR, "input A must be CRS for loading ut");
+    static_assert(!(CrsType::ONE_BASED ^ L_AugCcsType::ONE_BASED),
+                  "ionconsistent one-based");
+    static_assert(!(CrsType::ONE_BASED ^ U_CrsType::ONE_BASED),
+                  "ionconsistent one-based");
+    using index_type           = typename L_AugCcsType::index_type;
+    constexpr static bool base = CrsType::ONE_BASED;
+
+    // reset sparse buffer
+    ut.reset_counter();
+
+    // first load the A row
+    _load_A2ut(s, crs_A, t, p, q, ut);
+
+    // if not first step
+    if (_step) {
+      // get the leading value and index iterators for U
+      auto U_v_first = U.vals().cbegin();
+      auto U_i_first = U.col_ind().cbegin();
+      // get the starting row ID with deferring
+      index_type aug_id = L.start_row_id(deferred_step());
+      while (!L.is_nil(aug_id)) {
+        // get the column index
+        const size_type col_idx = L.col_idx(aug_id);
+        psmilu_assert(
+            col_idx < _step,
+            "compute_ut column index %zd should not exceed step %zd for L",
+            col_idx, _step);
+        psmilu_assert(col_idx < U_start.size(), "%zd exceeds the U_start size",
+                      col_idx);
+        // compute L*d
+        const auto ld = L.val_from_row_id(aug_id) * d[col_idx + gaps[col_idx]];
+        // get the starting position from U_start
+        auto U_v_itr = U_v_first + U_start[col_idx];
+        auto U_i_itr = U_i_first + U_start[col_idx];
+#ifndef NDEBUG
+        if (U_i_itr != U.col_ind_cbegin(col_idx)) {
+          const auto prev_idx = to_c_idx<size_type, base>(*(U_i_itr - 1));
+          psmilu_error_if(prev_idx > deferred_step(), "U_start error!");
+        }
+#endif
+        // for loop to go thru all entries in U
+        for (auto U_i_last = U.col_ind_cend(col_idx); U_i_itr != U_i_last;
+             ++U_i_itr, ++U_v_itr) {
+          // convert to c index
+          const auto c_idx = to_c_idx<size_type, base>(*U_i_itr);
+          psmilu_assert(c_idx > deferred_step(),
+                        "U index %zd in computing ut should greater than step "
+                        "%zd(defers:%zd)",
+                        c_idx, _step, _defers);
+          if (ut.push_back(*U_i_itr, _step))
+            ut.vals()[c_idx] = -ld * *U_v_itr;
+          else
+            ut.vals()[c_idx] -= ld * *U_v_itr;
+        }
+        // advance augmented handle
+        aug_id = L.next_row_id(aug_id);
+      }  // while
+    }
+  }
+
+  template <bool IsSymm, class ScaleArray, class CcsType, class PermType,
+            class L_CcsType, class L_StartType, class DiagType, class GapArray,
+            class U_AugCrsType, class SpVecType>
+  void compute_l(const ScaleArray &s, const CcsType &ccs_A, const ScaleArray &t,
+                 const PermType &p, const PermType &q, const size_type m,
+                 const L_CcsType &L, const L_StartType &L_start,
+                 const DiagType &d, const GapArray &gaps, const U_AugCrsType &U,
+                 SpVecType &l) const {
+    // compilation checking
+    static_assert(!CcsType::ROW_MAJOR, "input A must be CCS for loading l");
+    static_assert(!(CcsType::ONE_BASED ^ L_CcsType::ONE_BASED),
+                  "ionconsistent one-based");
+    static_assert(!(CcsType::ONE_BASED ^ U_AugCrsType::ONE_BASED),
+                  "ionconsistent one-based");
+    using index_type           = typename U_AugCrsType::index_type;
+    constexpr static bool base = CcsType::ONE_BASED;
+
+    // clear sparse counter
+    l.reset_counter();
+
+    // load A column
+    _load_A2l<IsSymm>(s, ccs_A, t, p, q, m, l);
+
+    // if not first step
+    if (_step) {
+      // get the leading value and index iterators for L
+      auto L_v_first = L.vals().cbegin();
+      auto L_i_first = L.row_ind().cbegin();
+      // get the deferred column handle
+      index_type aug_id = U.start_col_id(deferred_step());
+      while (!U.is_nil(aug_id)) {
+        // get the row index
+        const size_type r_idx = U.row_idx(aug_id);
+        if (!IsSymm)
+          psmilu_assert(
+              r_idx < _step,
+              "compute_ut row index %zd should not exceed step %zd for U",
+              r_idx, _step);
+        psmilu_assert(r_idx < L_start.size(), "%zd exceeds the L_start size",
+                      r_idx);
+        // compute d*U, NOTE that we use compressed index for diagonal entries
+        const auto du = d[r_idx + gaps[r_idx]] * U.val_from_col_id(aug_id);
+        // get the starting position from L_start
+        auto L_v_itr = L_v_first + L_start[r_idx];
+        auto L_i_itr = L_i_first + L_start[r_idx];
+#ifndef NDEBUG
+        if (L_i_itr != L.row_ind_cbegin(r_idx)) {
+          const auto prev_idx = to_c_idx<size_type, base>(*(L_i_itr - 1));
+          psmilu_error_if(prev_idx > deferred_step(), "L_start error!");
+        }
+#endif
+        for (auto L_i_last = L.row_ind_cend(r_idx); L_i_itr != L_i_last;
+             ++L_i_itr, ++L_v_itr) {
+          // convert to c index
+          const auto c_idx = to_c_idx<size_type, base>(*L_i_itr);
+          psmilu_assert(c_idx > deferred_step(),
+                        "L index %zd in computing l should greater than step "
+                        "%zd(defers:%zd)",
+                        c_idx, _step, _defers);
+          // compute this entry, if index does not exist, assign new value to
+          // -L*d*u, else, -= L*d*u
+          if (l.push_back(*L_i_itr, _step))
+            l.vals()[c_idx] = -du * *L_v_itr;
+          else
+            l.vals()[c_idx] -= *L_v_itr * du;
+        }
+        // advance augmented handle
+        aug_id = U.next_col_id(aug_id);
+      }  // while
+    }
+  }
+
+  template <class DiagType, class SpVecType>
+  inline bool scale_inv_diag(const DiagType &d, SpVecType &v) const {
+    using value_t                     = typename DiagType::value_type;
+    constexpr static value_t zero     = Const<value_t>::ZERO;
+    constexpr static value_t safe_min = Const<value_t>::MIN;
+    constexpr static bool    okay     = false;
+
+    const value_t dk = d[deferred_step()];
+    // first, if exactly zero, return fail
+    if (dk == zero) return !okay;
+
+    const size_type n    = v.size();
+    auto &          vals = v.vals();
+
+    if (std::abs(dk) > safe_min) {
+      // take the inverse, do multiply
+      const value_t dk_inv = Const<value_t>::ONE / dk;
+      for (size_type i = 0u; i < n; ++i) vals[v.c_idx(i)] *= dk_inv;
+    } else
+      for (size_type i = 0u; i < n; ++i) vals[v.c_idx(i)] /= dk;
+
+    return okay;
+  }
+
+  template <class U_AugCrsType, class U_StartType>
+  inline void update_U_start(const U_AugCrsType &U,
+                             U_StartType &       U_start) const {
+    static_assert(U_AugCrsType::ROW_MAJOR, "U must be AugCRS");
+    using index_type                = typename U_AugCrsType::index_type;
+    constexpr static bool ONE_BASED = U_AugCrsType::ONE_BASED;
+    const auto            c_idx     = [](const size_type i) {
+      return to_c_idx<size_type, ONE_BASED>(i);
+    };
+
+    if (_step) return;
+
+    U_start[_step - 1] = U.row_start()[_step - 1] - ONE_BASED;
+    // get the aug handle wrt defers
+    index_type aug_id = U.start_col_id(deferred_step());
+    // go through all non zeros entries
+    while (!U.is_nil(aug_id)) {
+      const index_type row = U.row_idx(aug_id);
+      if (U_start[row] < U.row_start()[row + 1] - ONE_BASED &&
+          c_idx(*(U.col_ind().cbegin() + U_start[row])) <= deferred_step())
+        ++U_start[row];
+      // advance augmented handle
+      aug_id = U.next_col_id(aug_id);
+    }
+  }
+
+  template <bool IsSymm, class L_AugCcsType, class L_StartType>
+  inline typename std::enable_if<!IsSymm>::type update_L_start(
+      const L_AugCcsType &L, const size_type /* m */,
+      L_StartType &       L_start) const {
+    static_assert(!L_AugCcsType::ROW_MAJOR, "L must be AugCCS");
+    using index_type                = typename L_AugCcsType::index_type;
+    constexpr static bool ONE_BASED = L_AugCcsType::ONE_BASED;
+    const auto            c_idx     = [](const size_type i) {
+      return to_c_idx<size_type, ONE_BASED>(i);
+    };
+
+    if (!_step) return;
+
+    L_start[_step - 1] = L.col_start()[_step - 1] - ONE_BASED;
+    // get aug handle wrp the defer step
+    index_type aug_id = L.start_row_id(deferred_step());
+    // go thru all entries
+    while (!L.is_nil(aug_id)) {
+      // get column index
+      const index_type col = L.col_idx(aug_id);
+      // for each of this starting inds, advance one
+      if (L_start[col] < L.col_start()[col + 1] - ONE_BASED &&
+          c_idx(*(L.row_ind().cbegin() + L_start[col])) <= deferred_step())
+        ++L_start[col];
+      // advance augmented handle
+      aug_id = L.next_row_id(aug_id);
+    }
+  }
+
+  template <bool IsSymm, class L_AugCcsType, class L_StartType>
+  inline typename std::enable_if<IsSymm>::type update_L_start(
+      const L_AugCcsType &L, const size_type m, L_StartType &L_start) const {
+    using index_type                = typename L_AugCcsType::index_type;
+    constexpr static bool ONE_BASED = L_AugCcsType::ONE_BASED;
+    const auto            ori_idx   = [](const size_type i) {
+      return to_ori_idx<size_type, ONE_BASED>(i);
+    };
+
+    psmilu_assert(m, "cannot have empty leading block for symmetric case!");
+
+    if (!_step) return;
+
+    if (m >= L.nrows() && !_defers) {
+      // if we have leading block that indicates fully symmetric system
+      // then the ending position is stored
+      // col_start has an extra element, thus this is valid accessing
+      // or maybe we can use {Array,vector}::back??
+      L_start[_step - 1] = L.col_start()[_step] - ONE_BASED;
+      return;
+    }
+    // binary search to point to start of newly added row
+    auto info          = find_sorted(L.row_ind_cbegin(_step - 1),
+                            L.row_ind_cend(_step - 1), ori_idx(m));
+    L_start[_step - 1] = info.second - L.row_ind().cbegin();
+  }
+
+  template <bool IsSymm, class SpVecType, class DiagType>
+  inline typename std::enable_if<!IsSymm>::type update_B_diag(
+      const SpVecType &l, const SpVecType &ut, const size_type m,
+      DiagType &d) const {
+    // NOTE that we need the internal dense tag from sparse vector
+    // thus, we can either:
+    //    1) make this function a friend of SparseVec, or
+    //    2) create a caster class
+    using extractor = internal::SpVInternalExtractor<SpVecType>;
+
+    // assume l is not scaled by the diagonal
+
+    // get the current diagonal entry
+    // const auto dk = d[_step];
+    if (ut.size() <= l.size()) {
+      const auto &    l_d_tags = static_cast<const extractor &>(l).dense_tags();
+      const size_type n        = ut.size();
+      const auto &    l_vals   = l.vals();
+      for (size_type i = 0u; i < n; ++i) {
+        const size_type c_idx = ut.c_idx(i);
+        psmilu_assert(c_idx > deferred_step(),
+                      "should only contain the upper part of ut, "
+                      "(c_idx,step(defer))=(%zd,%zd(%zd))!",
+                      c_idx, _step, _defers);
+        // if the dense tags of this entry points to this step, we know l has
+        // an element in this slot
+        if (c_idx < m && (size_type)l_d_tags[c_idx] == _step)
+          d[c_idx] -= ut.val(i) * l_vals[c_idx];
+      }
+    } else {
+      const auto &ut_d_tags  = static_cast<const extractor &>(ut).dense_tags();
+      const size_type n      = l.size();
+      const auto &    u_vals = ut.vals();
+      for (size_type i = 0u; i < n; ++i) {
+        const size_type c_idx = l.c_idx(i);
+        psmilu_assert(c_idx > deferred_step(),
+                      "should only contain the lower part of l, "
+                      "(c_idx,step(defer))=(%zd,%zd(%zd))!",
+                      c_idx, _step, _defers);
+        // if the dense tags of this entry points to this step, we know ut has
+        // an element in this slot
+        if (c_idx < m && (size_type)ut_d_tags[c_idx] == _step)
+          d[c_idx] -= u_vals[c_idx] * l.val(i);
+      }
+    }
+  }
+
+  template <bool IsSymm, class SpVecType, class DiagType>
+  inline typename std::enable_if<IsSymm>::type update_B_diag(
+      const SpVecType & /* l */, const SpVecType &ut, const size_type m,
+      DiagType &d) const {
+    psmilu_assert(m, "fatal, symmetric block cannot be empty!");
+    // get the current diagonal entry
+    const auto dk = d[deferred_step()];
+    // we only need to deal with ut
+    const size_type n = ut.size();
+    for (size_type i(0); i < n; ++i) {
+      const size_type c_idx = ut.c_idx(i);
+      psmilu_assert(c_idx > deferred_step(),
+                    "ut should only contain the upper part, "
+                    "(c_idx,step(defer))=(%zd,%zd(%zd))!",
+                    c_idx, _step, _defers);
+      if (c_idx < m) d[c_idx] -= dk * ut.val(i) * ut.val(i);
+    }
+  }
+
+ protected:
+  /// \brief load a row of A to ut buffer
+  /// \tparam ScaleArray scaling from left/right-hand sides, see \ref Array
+  /// \tparam CrsType crs matrix of input A, see \ref CRS
+  /// \tparam PermType permutation vector type, see \ref BiPermMatrix
+  /// \tparam SpVecType sparse vector type, see \ref SparseVector
+  /// \param[in] s row scaling vector
+  /// \param[in] crs_A input matrix in CRS scheme
+  /// \param[in] t column scaling vector
+  /// \param[in] p row permutation matrix
+  /// \param[in] q column permutation matrix
+  /// \param[out] ut output sparse vector of row vector for A
+  /// \sa _load_A2l
+  template <class ScaleArray, class CrsType, class PermType, class SpVecType>
+  inline void _load_A2ut(const ScaleArray &s, const CrsType &crs_A,
+                         const ScaleArray &t, const PermType &p,
+                         const PermType &q, SpVecType &ut) const {
+    // compilation consistency checking
+    static_assert(!(CrsType::ONE_BASED ^ SpVecType::ONE_BASED),
+                  "inconsistent one-based in ccs and sparse vector");
+    constexpr static bool base = CrsType::ONE_BASED;
+
+    // ut should be empty
+    psmilu_assert(ut.empty(), "ut should be empty while loading A");
+    const size_type ncols_m1    = crs_A.ncols() - 1;
+    const size_type defer_thres = deferred_step();
+    // pk is c index
+    const auto pk    = p[defer_thres];
+    auto       v_itr = crs_A.val_cbegin(pk);
+    auto       i_itr = crs_A.col_ind_cbegin(pk);
+    const auto s_pk  = s[pk];
+    for (auto last = crs_A.col_ind_cend(pk); i_itr != last; ++i_itr, ++v_itr) {
+      const auto      A_idx = to_c_idx<size_type, base>(*i_itr);
+      const size_type c_idx = q.inv(A_idx);
+      if (c_idx > _step) {
+        // get the gapped index
+        const size_type gap_idx =
+            c_idx > defer_thres ? c_idx : c_idx - _step + ncols_m1;
+#ifndef NDEBUG
+        const bool val_must_not_exit =
+#endif
+            ut.push_back(to_ori_idx<size_type, base>(gap_idx), _step);
+        psmilu_assert(val_must_not_exit,
+                      "see prefix, failed on Crout step %zd for ut", _step);
+        ut.vals()[gap_idx] = s_pk * *v_itr * t[A_idx];  // scale here
+      }
+    }
+  }
+
+  /// \brief load a column of A to l buffer
+  /// \tparam IsSymm if \a true, then only load the offset
+  /// \tparam ScaleArray scaling from left/right-hand sides, see \ref Array
+  /// \tparam CcsType ccs matrix of input A, see \ref CCS
+  /// \tparam PermType permutation vector type, see \ref BiPermMatrix
+  /// \tparam SpVecType sparse vector type, see \ref SparseVector
+  /// \param[in] s row scaling vector
+  /// \param[in] ccs_A input matrix in CCS scheme
+  /// \param[in] t column scaling vector
+  /// \param[in] p row permutation matrix
+  /// \param[in] q permuted column index
+  /// \param[in] m leading size
+  /// \param[out] l output sparse vector of column vector for A
+  /// \sa _load_A2ut
+  template <bool IsSymm, class ScaleArray, class CcsType, class PermType,
+            class SpVecType>
+  inline void _load_A2l(const ScaleArray &s, const CcsType &ccs_A,
+                        const ScaleArray &t, const PermType &p,
+                        const PermType &q, const size_type m, SpVecType &l) {
+    // compilation consistency checking
+    static_assert(!(CcsType::ONE_BASED ^ SpVecType::ONE_BASED),
+                  "inconsistent one-based in ccs and sparse vector");
+    constexpr static bool base = CcsType::ONE_BASED;
+
+    // runtime
+    psmilu_assert(l.empty(), "l should be empty while loading A");
+    const size_type defer_thres = deferred_step();
+    const size_type nrows_m1    = ccs_A.nrows() - 1;
+    // qk is c index
+    const auto qk    = q[defer_thres];
+    auto       v_itr = ccs_A.val_cbegin(qk);
+    auto       i_itr = ccs_A.row_ind_cbegin(qk);
+    const auto t_qk  = t[qk];
+    for (auto last = ccs_A.row_ind_cend(qk); i_itr != last; ++i_itr, ++v_itr) {
+      const auto      A_idx = to_c_idx<size_type, base>(*i_itr);
+      const size_type c_idx = p.inv(A_idx);
+      // push to the sparse vector only if its in range _step+1:n
+      if (c_idx > _step) {
+        // compute gap index
+        size_type gap_idx =
+            c_idx > defer_thres ? c_idx : c_idx - _step + nrows_m1;
+        if (IsSymm)
+          if (gap_idx < m) continue;
+#ifndef NDEBUG
+        const bool val_must_not_exit =
+#endif
+            l.push_back(to_ori_idx<size_type, base>(gap_idx), _step);
+        psmilu_assert(val_must_not_exit,
+                      "see prefix, failed on Crout step %zd for l", _step);
+        l.vals()[gap_idx] = s[A_idx] * *v_itr * t_qk;  // scale here
+      }
+    }
+  }
+
+ protected:
+  size_type _defers;  ///< deferring counter
+};
+}  // namespace psmilu
+
+#endif  // _PSMILU_DEFERRED_CROUT_HPP
