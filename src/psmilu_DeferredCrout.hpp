@@ -38,13 +38,13 @@ class DeferredCrout : public Crout {
   /// \brief increment the defer counter
   inline void increment_defer_counter() { ++_defers; }
 
-  template <class ScaleArray, class CrsType, class PermType, class U_CrsType,
-            class U_StartType, class DiagType, class GapArray,
+  template <class ScaleArray, class CrsType, class PermType, class Ori2Def,
+            class U_CrsType, class U_StartType, class DiagType, class GapArray,
             class L_AugCcsType, class SpVecType>
   void compute_ut(const ScaleArray &s, const CrsType &crs_A,
                   const ScaleArray &t, const PermType &p, const PermType &q,
-                  const L_AugCcsType &L, const DiagType &d,
-                  const GapArray &gaps, const U_CrsType &U,
+                  const Ori2Def &ori2def, const L_AugCcsType &L,
+                  const DiagType &d, const GapArray &gaps, const U_CrsType &U,
                   const U_StartType &U_start, SpVecType &ut) const {
     // compilation checking
     static_assert(CrsType::ROW_MAJOR, "input A must be CRS for loading ut");
@@ -59,7 +59,7 @@ class DeferredCrout : public Crout {
     ut.reset_counter();
 
     // first load the A row
-    _load_A2ut(s, crs_A, t, p, q, ut);
+    _load_A2ut(s, crs_A, t, p, q, ori2def, ut);
 
     // if not first step
     if (_step) {
@@ -109,12 +109,13 @@ class DeferredCrout : public Crout {
   }
 
   template <bool IsSymm, class ScaleArray, class CcsType, class PermType,
-            class L_CcsType, class L_StartType, class DiagType, class GapArray,
-            class U_AugCrsType, class SpVecType>
+            class Ori2Def, class L_CcsType, class L_StartType, class DiagType,
+            class GapArray, class U_AugCrsType, class SpVecType>
   void compute_l(const ScaleArray &s, const CcsType &ccs_A, const ScaleArray &t,
                  const PermType &p, const PermType &q, const size_type m,
-                 const L_CcsType &L, const L_StartType &L_start,
-                 const DiagType &d, const GapArray &gaps, const U_AugCrsType &U,
+                 const Ori2Def &ori2def, const L_CcsType &L,
+                 const L_StartType &L_start, const DiagType &d,
+                 const GapArray &gaps, const U_AugCrsType &U,
                  SpVecType &l) const {
     // compilation checking
     static_assert(!CcsType::ROW_MAJOR, "input A must be CCS for loading l");
@@ -129,7 +130,7 @@ class DeferredCrout : public Crout {
     l.reset_counter();
 
     // load A column
-    _load_A2l<IsSymm>(s, ccs_A, t, p, q, m, l);
+    _load_A2l<IsSymm>(s, ccs_A, t, p, q, m, ori2def, l);
 
     // if not first step
     if (_step) {
@@ -357,18 +358,22 @@ class DeferredCrout : public Crout {
   /// \tparam ScaleArray scaling from left/right-hand sides, see \ref Array
   /// \tparam CrsType crs matrix of input A, see \ref CRS
   /// \tparam PermType permutation vector type, see \ref BiPermMatrix
+  /// \tparam Ori2Def original to deferred mapping type
   /// \tparam SpVecType sparse vector type, see \ref SparseVector
   /// \param[in] s row scaling vector
   /// \param[in] crs_A input matrix in CRS scheme
   /// \param[in] t column scaling vector
   /// \param[in] p row permutation matrix
   /// \param[in] q column permutation matrix
+  /// \param[in] ori2def original to deferred system
   /// \param[out] ut output sparse vector of row vector for A
   /// \sa _load_A2l
-  template <class ScaleArray, class CrsType, class PermType, class SpVecType>
+  template <class ScaleArray, class CrsType, class PermType, class Ori2Def,
+            class SpVecType>
   inline void _load_A2ut(const ScaleArray &s, const CrsType &crs_A,
                          const ScaleArray &t, const PermType &p,
-                         const PermType &q, SpVecType &ut) const {
+                         const PermType &q, const Ori2Def &ori2def,
+                         SpVecType &ut) const {
     // compilation consistency checking
     static_assert(!(CrsType::ONE_BASED ^ SpVecType::ONE_BASED),
                   "inconsistent one-based in ccs and sparse vector");
@@ -376,7 +381,6 @@ class DeferredCrout : public Crout {
 
     // ut should be empty
     psmilu_assert(ut.empty(), "ut should be empty while loading A");
-    const size_type ncols_m1    = crs_A.ncols() - 1;
     const size_type defer_thres = deferred_step();
     // pk is c index
     const auto pk    = p[defer_thres];
@@ -385,18 +389,16 @@ class DeferredCrout : public Crout {
     const auto s_pk  = s[pk];
     for (auto last = crs_A.col_ind_cend(pk); i_itr != last; ++i_itr, ++v_itr) {
       const auto      A_idx = to_c_idx<size_type, base>(*i_itr);
-      const size_type c_idx = q.inv(A_idx);
-      if (c_idx > _step) {
+      const size_type c_idx = ori2def[q.inv(A_idx)];
+      if (c_idx > defer_thres) {
         // get the gapped index
-        const size_type gap_idx =
-            c_idx > defer_thres ? c_idx : c_idx - _step + ncols_m1;
 #ifndef NDEBUG
         const bool val_must_not_exit =
 #endif
-            ut.push_back(to_ori_idx<size_type, base>(gap_idx), _step);
+            ut.push_back(to_ori_idx<size_type, base>(c_idx), _step);
         psmilu_assert(val_must_not_exit,
                       "see prefix, failed on Crout step %zd for ut", _step);
-        ut.vals()[gap_idx] = s_pk * *v_itr * t[A_idx];  // scale here
+        ut.vals()[c_idx] = s_pk * *v_itr * t[A_idx];  // scale here
       }
     }
   }
@@ -406,6 +408,7 @@ class DeferredCrout : public Crout {
   /// \tparam ScaleArray scaling from left/right-hand sides, see \ref Array
   /// \tparam CcsType ccs matrix of input A, see \ref CCS
   /// \tparam PermType permutation vector type, see \ref BiPermMatrix
+  /// \tparam Ori2Def original to deferred mapping type
   /// \tparam SpVecType sparse vector type, see \ref SparseVector
   /// \param[in] s row scaling vector
   /// \param[in] ccs_A input matrix in CCS scheme
@@ -413,13 +416,15 @@ class DeferredCrout : public Crout {
   /// \param[in] p row permutation matrix
   /// \param[in] q permuted column index
   /// \param[in] m leading size
+  /// \param[in] ori2def original to deferred system
   /// \param[out] l output sparse vector of column vector for A
   /// \sa _load_A2ut
   template <bool IsSymm, class ScaleArray, class CcsType, class PermType,
-            class SpVecType>
+            class Ori2Def, class SpVecType>
   inline void _load_A2l(const ScaleArray &s, const CcsType &ccs_A,
                         const ScaleArray &t, const PermType &p,
-                        const PermType &q, const size_type m, SpVecType &l) {
+                        const PermType &q, const size_type m,
+                        const Ori2Def &ori2def, SpVecType &l) {
     // compilation consistency checking
     static_assert(!(CcsType::ONE_BASED ^ SpVecType::ONE_BASED),
                   "inconsistent one-based in ccs and sparse vector");
@@ -428,7 +433,7 @@ class DeferredCrout : public Crout {
     // runtime
     psmilu_assert(l.empty(), "l should be empty while loading A");
     const size_type defer_thres = deferred_step();
-    const size_type nrows_m1    = ccs_A.nrows() - 1;
+    const size_type thres       = IsSymm ? m - 1 : defer_thres;
     // qk is c index
     const auto qk    = q[defer_thres];
     auto       v_itr = ccs_A.val_cbegin(qk);
@@ -436,21 +441,16 @@ class DeferredCrout : public Crout {
     const auto t_qk  = t[qk];
     for (auto last = ccs_A.row_ind_cend(qk); i_itr != last; ++i_itr, ++v_itr) {
       const auto      A_idx = to_c_idx<size_type, base>(*i_itr);
-      const size_type c_idx = p.inv(A_idx);
+      const size_type c_idx = ori2def[p.inv(A_idx)];
       // push to the sparse vector only if its in range _step+1:n
-      if (c_idx > _step) {
-        // compute gap index
-        size_type gap_idx =
-            c_idx > defer_thres ? c_idx : c_idx - _step + nrows_m1;
-        if (IsSymm)
-          if (gap_idx < m) continue;
+      if (c_idx > thres) {
 #ifndef NDEBUG
         const bool val_must_not_exit =
 #endif
-            l.push_back(to_ori_idx<size_type, base>(gap_idx), _step);
+            l.push_back(to_ori_idx<size_type, base>(c_idx), _step);
         psmilu_assert(val_must_not_exit,
                       "see prefix, failed on Crout step %zd for l", _step);
-        l.vals()[gap_idx] = s[A_idx] * *v_itr * t_qk;  // scale here
+        l.vals()[c_idx] = s[A_idx] * *v_itr * t_qk;  // scale here
       }
     }
   }
