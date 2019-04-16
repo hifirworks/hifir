@@ -149,7 +149,7 @@ class DeferredCrout : public Crout {
               r_idx, _step);
         psmilu_assert(r_idx < L_start.size(), "%zd exceeds the L_start size",
                       r_idx);
-        // compute d*U, NOTE that we use compressed index for diagonal entries
+        // compute d*U
         const auto du = d[r_idx + gaps[r_idx]] * U.val_from_col_id(aug_id);
         // get the starting position from L_start
         auto L_v_itr = L_v_first + L_start[r_idx];
@@ -215,7 +215,7 @@ class DeferredCrout : public Crout {
       return to_c_idx<size_type, ONE_BASED>(i);
     };
 
-    if (_step) return;
+    if (!_step) return;
 
     U_start[_step - 1] = U.row_start()[_step - 1] - ONE_BASED;
     // get the aug handle wrt defers
@@ -424,7 +424,7 @@ class DeferredCrout : public Crout {
   inline void _load_A2l(const ScaleArray &s, const CcsType &ccs_A,
                         const ScaleArray &t, const PermType &p,
                         const PermType &q, const size_type m,
-                        const Ori2Def &ori2def, SpVecType &l) {
+                        const Ori2Def &ori2def, SpVecType &l) const {
     // compilation consistency checking
     static_assert(!(CcsType::ONE_BASED ^ SpVecType::ONE_BASED),
                   "inconsistent one-based in ccs and sparse vector");

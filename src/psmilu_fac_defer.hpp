@@ -33,9 +33,13 @@ inline void compress_deferred_indices(
                   "memory allocation failed");
 
   size_type comp_idx(ONE_BASED);
-
-  for (size_type i(0); i < m; ++i)
-    defer2comp[i + gaps[i] + ONE_BASED] = comp_idx++;
+  size_type i(0);
+  for (; i < m; ++i) defer2comp[i + gaps[i] + ONE_BASED] = comp_idx++;
+  // potential offsets!
+  while (i + total_defers < n) {
+    defer2comp[i + total_defers + ONE_BASED] = comp_idx++;
+    ++i;
+  }
   for (size_type offset(n + ONE_BASED),
        offset_comp(n - total_defers + ONE_BASED);
        offset < defer2comp.size(); ++offset, ++offset_comp)
@@ -55,6 +59,27 @@ inline void compress_deferred_indices(
       *itr = defer2comp[*itr];
     }
   }
+}
+
+template <class IndexArray, class PermType>
+inline void compress_deferred_perm(
+    const typename IndexArray::size_type total_defers, const IndexArray &P,
+    PermType &p) {
+  using size_type                  = typename IndexArray::size_type;
+  using index_type                 = typename IndexArray::value_type;
+  constexpr static index_type Null = (index_type)-1;
+
+  const size_type n = p.size(), N = n + total_defers;
+  size_type       i(0), j(0);
+
+  for (size_type i(0); i < N; ++i) {
+    if (P[i] == Null) continue;
+    p[j++] = P[i];
+  }
+
+  psmilu_assert(j == n, "fatal");
+
+  p.build_inv();
 }
 
 }  // namespace internal
@@ -243,6 +268,14 @@ inline CsType iludp_factor_defer(const CsType &                   A,
 
   const size_type m2(m), n(A.nrows());
 
+  // deferred permutations
+  Array<index_type> P(n * 2), Q(n * 2);
+  psmilu_error_if(P.status() == DATA_UNDEF || Q.status() == DATA_UNDEF,
+                  "memory allocation failed for P and/or Q at level %zd",
+                  cur_level);
+  std::copy_n(p().cbegin(), n, P.begin());
+  std::copy_n(q().cbegin(), n, Q.begin());
+
   // from L/U index to deferred fac mapping
   Array<index_type> ori2def(n);
   psmilu_error_if(ori2def.status() == DATA_UNDEF,
@@ -254,10 +287,11 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   DeferredCrout step;
   for (; step < m; ++step) {
     // first check diagonal
-    bool            pvt    = is_bad_diag(d[step.deferred_step()]);
-    const size_type m_prev = m, defers_prev = step.defers();
+    bool            pvt         = is_bad_diag(d[step.deferred_step()]);
+    const size_type m_prev      = m;
+    const size_type defers_prev = step.defers();
 
-    Crout_info(" Crout step %zd, leading block size %zd", step, m_prev);
+    Crout_info(" Crout step %zd, leading block size %zd", step, m);
 
     // compute kappa for u wrp deferred index
     update_kappa_ut(step, U, kappa_ut, step.deferred_step());
@@ -271,15 +305,22 @@ inline CsType iludp_factor_defer(const CsType &                   A,
 
     if (pvt) {
       while (m > step) {
+        --m;
         U.defer_col(step.deferred_step(), n + step.defers());
         L.defer_row(step.deferred_step(), n + step.defers());
         ori2def[step.deferred_step()] = n + step.defers();
+        P[n + step.defers()]          = p[step.deferred_step()];
+        Q[n + step.defers()]          = q[step.deferred_step()];
+        P[step.deferred_step()] = Q[step.deferred_step()] = -1;
+
         step.increment_defer_counter();  // increment defers here
-        pvt = is_bad_diag(d[step.deferred_step()]);
-        if (pvt) {
-          --m;
-          continue;
+        if (step.deferred_step() >= m2) {
+          m = step;
+          break;
         }
+        pvt = is_bad_diag(d[step.deferred_step()]);
+        if (pvt) continue;
+
         // compute kappa for u wrp deferred index
         update_kappa_ut(step, U, kappa_ut, step.deferred_step());
         // then compute kappa for l
@@ -287,10 +328,7 @@ inline CsType iludp_factor_defer(const CsType &                   A,
                                step.deferred_step());
         pvt = std::abs(kappa_ut[step]) > tau_kappa ||
               std::abs(kappa_l[step]) > tau_kappa;
-        if (pvt) {
-          --m;
-          continue;
-        }
+        if (pvt) continue;
         break;
       }                      // while
       if (m == step) break;  // break for
@@ -309,8 +347,9 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     Crout_info("  kappa_ut=%g, kappa_l=%g", (double)k_ut, (double)k_l);
 
     Crout_info(
-        "  previous/current leading block sizes %zd/%zd, local defers=%zd",
-        m_prev, m, step.defers() - defers_prev);
+        "  previous/current leading block sizes %zd/%zd, local/total "
+        "defers=%zd/%zd",
+        m_prev, m, step.defers() - defers_prev, step.defers());
 
     //------------------------
     // update start positions
@@ -330,7 +369,7 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     // compute Uk'
     step.compute_ut(s, A_crs, t, p, q, ori2def, L, d, gaps, U, U_start, ut);
     // compute Lk
-    step.compute_l<IsSymm>(s, A_ccs, t, p, q, m, ori2def, L, L_start, d, gaps,
+    step.compute_l<IsSymm>(s, A_ccs, t, p, q, m2, ori2def, L, L_start, d, gaps,
                            U, l);
 
     // update diagonal entries for u first
@@ -376,8 +415,9 @@ inline CsType iludp_factor_defer(const CsType &                   A,
       // for symmetric cases, we need first find the leading block size
       auto info = find_sorted(ut.inds().cbegin(),
                               ut.inds().cbegin() + ut.size(), m2 + ONE_BASED);
-      apply_dropping_and_sort(tau_L, k_l, A_ccs.nnz_in_col(q[step]), alpha_L, l,
-                              info.second - ut.inds().cbegin());
+      apply_dropping_and_sort(tau_L, k_l,
+                              A_ccs.nnz_in_col(q[step.deferred_step()]),
+                              alpha_L, l, info.second - ut.inds().cbegin());
 
 #ifndef NDEBUG
       if (info.second != ut.inds().cbegin() &&
@@ -416,8 +456,11 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   U.end_assemble_rows();
   L.end_assemble_cols();
 
-  // post processing for compressing L and U
-  internal::compress_deferred_indices(gaps, n, m, U, L);
+  // post processing for compressing L, U, p, and q
+  internal::compress_deferred_indices(gaps, n, m, step.defers(), U, L);
+  internal::compress_deferred_perm(step.defers(), P, p);
+  internal::compress_deferred_perm(step.defers(), Q, q);
+
   L.resize_nrows(n);
   U.resize_ncols(n);
   // compress diagonal
