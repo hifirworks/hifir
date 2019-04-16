@@ -19,15 +19,16 @@ namespace psmilu {
 namespace internal {
 
 template <class GapArray, class U_AugCrsType, class L_AugCcsType>
-inline void compress_deferred_indices(const GapArray &                   gaps,
-                                      const typename GapArray::size_type n,
-                                      const typename GapArray::size_type m,
-                                      U_AugCrsType &U, L_AugCcsType &L) {
+inline void compress_deferred_indices(
+    const GapArray &gaps, const typename GapArray::size_type n,
+    const typename GapArray::size_type m,
+    const typename GapArray::size_type total_defers, U_AugCrsType &U,
+    L_AugCcsType &L) {
   using index_type                = typename U_AugCrsType::index_type;
   using size_type                 = typename GapArray::size_type;
   constexpr static bool ONE_BASED = U_AugCrsType::ONE_BASED;
 
-  Array<index_type> defer2comp(n + gaps[m] + ONE_BASED, -1);
+  Array<index_type> defer2comp(n + total_defers + ONE_BASED, -1);
   psmilu_error_if(defer2comp.status() == DATA_UNDEF,
                   "memory allocation failed");
 
@@ -35,8 +36,9 @@ inline void compress_deferred_indices(const GapArray &                   gaps,
 
   for (size_type i(0); i < m; ++i)
     defer2comp[i + gaps[i] + ONE_BASED] = comp_idx++;
-  for (size_type offset(n + ONE_BASED), offset_comp(n - gaps[m] + ONE_BASED);
-       offset < defer2comp.size(); ++offset, offset_comp)
+  for (size_type offset(n + ONE_BASED),
+       offset_comp(n - total_defers + ONE_BASED);
+       offset < defer2comp.size(); ++offset, ++offset_comp)
     defer2comp[offset] = offset_comp;
 
   for (size_type i(0); i < m; ++i) {
@@ -222,7 +224,7 @@ inline CsType iludp_factor_defer(const CsType &                   A,
       cur_level);
 
   // defers
-  Array<index_type> gaps(m + 1);
+  Array<index_type> gaps(m);
   psmilu_error_if(gaps.status() == DATA_UNDEF,
                   "memory allocation failed for gaps at level %zd", cur_level);
 
@@ -241,10 +243,16 @@ inline CsType iludp_factor_defer(const CsType &                   A,
 
   const size_type m2(m), n(A.nrows());
 
+  // from L/U index to deferred fac mapping
+  Array<index_type> ori2def(n);
+  psmilu_error_if(ori2def.status() == DATA_UNDEF,
+                  "memory allocation failed for ori2def at level %zd",
+                  cur_level);
+  for (size_type i(0); i < n; ++i) ori2def[i] = i;
+
   if (psmilu_verbose(INFO, opts)) psmilu_info("start Crout update...");
   DeferredCrout step;
   for (; step < m; ++step) {
-    gaps[step] = step.defers();
     // first check diagonal
     bool            pvt    = is_bad_diag(d[step.deferred_step()]);
     const size_type m_prev = m, defers_prev = step.defers();
@@ -256,15 +264,16 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     // then compute kappa for l
     update_kappa_l<IsSymm>(step, L, kappa_ut, kappa_l, step.deferred_step());
 
-    // check pivoting
+    // check condition number if diagonal doesn't satisfy
     if (!pvt)
       pvt = std::abs(kappa_ut[step]) > tau_kappa ||
             std::abs(kappa_l[step]) > tau_kappa;
 
     if (pvt) {
       while (m > step) {
-        U.defer_col(step, n + step.defers());
-        L.defer_row(step, n + step.defers());
+        U.defer_col(step.deferred_step(), n + step.defers());
+        L.defer_row(step.deferred_step(), n + step.defers());
+        ori2def[step.deferred_step()] = n + step.defers();
         step.increment_defer_counter();  // increment defers here
         pvt = is_bad_diag(d[step.deferred_step()]);
         if (pvt) {
@@ -283,8 +292,8 @@ inline CsType iludp_factor_defer(const CsType &                   A,
           continue;
         }
         break;
-      }
-      if (m == step) break;
+      }                      // while
+      if (m == step) break;  // break for
       if (IsSymm) internal::update_L_start_symm(L, m2, L_start);
     }
 
@@ -319,9 +328,10 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     //----------------------
 
     // compute Uk'
-    step.compute_ut(s, A_crs, t, p, q, L, d, gaps, U, U_start, ut);
+    step.compute_ut(s, A_crs, t, p, q, ori2def, L, d, gaps, U, U_start, ut);
     // compute Lk
-    step.compute_l<IsSymm>(s, A_ccs, t, p, q, m, L, L_start, d, gaps, U, l);
+    step.compute_l<IsSymm>(s, A_ccs, t, p, q, m, ori2def, L, L_start, d, gaps,
+                           U, l);
 
     // update diagonal entries for u first
 #ifndef NDEBUG
@@ -399,7 +409,7 @@ inline CsType iludp_factor_defer(const CsType &                   A,
       L.push_back_col(step, l.inds().cbegin(), l.inds().cbegin() + l.size(),
                       l.vals());
     }
-
+    gaps[step] = step.defers();
     Crout_info(" Crout step %zd done!", step);
   }
 
@@ -407,15 +417,121 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   L.end_assemble_cols();
 
   // post processing for compressing L and U
-  gaps[m] = step.defers();
-
   internal::compress_deferred_indices(gaps, n, m, U, L);
+  L.resize_nrows(n);
+  U.resize_ncols(n);
+  // compress diagonal
+  for (size_type i(0); i < m; ++i) d[i] = d[i + gaps[i]];
 
   // finalize start positions
   U_start[m - 1] = U.row_start()[m - 1];
   L_start[m - 1] = L.col_start()[m - 1];
 
   timer.finish();  // profile Crout update
+
+  // now we are done
+  if (psmilu_verbose(INFO, opts)) {
+    psmilu_info(
+        "finish Crout update...\n"
+        "\ttotal defers=%zd\n"
+        "\tleading block size in=%zd\n"
+        "\tleading block size out=%zd\n"
+        "\tdiff=%zd",
+        step.defers(), m2, m, m2 - m);
+#ifndef NDEBUG
+    _GET_MAX_MIN_MINABS(d, m);
+    _SHOW_MAX_MIN_MINABS(d);
+#endif
+    psmilu_info("time: %gs", timer.time());
+  }
+
+  if (psmilu_verbose(INFO, opts))
+    psmilu_info("computing Schur complement (C) and assembling Prec...");
+
+  timer.start();
+
+  // compute C version of Schur complement
+  crs_type S_tmp;
+  compute_Schur_C(s, A_crs, t, p, q, m, A.nrows(), L, d, U, U_start, S_tmp);
+  const input_type S(S_tmp);  // if input==crs, then wrap, ow copy
+
+  // compute L_B and U_B
+  auto L_B = L.template split<false>(m, L_start);
+  auto U_B = U.template split_ccs<false>(m, U_start);
+
+  if (psmilu_verbose(INFO, opts))
+    psmilu_info(
+        "nnz(S_C)=%zd, nnz(L)=%zd, nnz(L_B)=%zd, nnz(U)=%zd, nnz(U_B)=%zd...",
+        S.nnz(), L.nnz(), L_B.nnz(), U.nnz(), U_B.nnz());
+
+  // test H version
+  const size_type nm     = A.nrows() - m;
+  const auto      cbrt_N = std::cbrt(N);
+  dense_type      S_D;
+  psmilu_assert(S_D.empty(), "fatal!");
+  if (S.nnz() >= static_cast<size_type>(opts.rho * nm * nm) ||
+      nm <= static_cast<size_type>(opts.c_d * cbrt_N)) {
+    bool use_h_ver = false;
+    S_D            = dense_type::from_sparse(S);
+    if (m <= static_cast<size_type>(opts.c_h * cbrt_N)) {
+#ifdef PSMILU_UNIT_TESTING
+      ccs_type T_E, T_F;
+#endif
+      compute_Schur_H(L, L_start, L_B, s, A_ccs, t, p, q, d, U_B, U, S_D
+#ifdef PSMILU_UNIT_TESTING
+                      ,
+                      T_E, T_F
+#endif
+      );
+      use_h_ver = true;
+    }  // H version check
+    if (psmilu_verbose(INFO, opts))
+      psmilu_info("converted Schur complement (%s) to dense for last level...",
+                  (use_h_ver ? "H" : "C"));
+  }
+
+  // NOTE that L_B/U_B are CCS, we need CRS, we can save computation with
+  // symmetric case
+  crs_type L_B2, U_B2;
+  if (IsSymm) {
+    L_B2.resize(m, m);
+    U_B2.resize(m, m);
+    L_B2.row_start() = std::move(U_B.col_start());
+    U_B2.row_start() = std::move(L_B.col_start());
+    L_B2.col_ind()   = std::move(U_B.row_ind());
+    U_B2.col_ind()   = std::move(L_B.row_ind());
+    L_B2.vals()      = std::move(U_B.vals());
+    U_B2.vals()      = std::move(L_B.vals());
+  } else {
+    L_B2 = crs_type(L_B);
+    U_B2 = crs_type(U_B);
+  }
+  precs.emplace_back(
+      m, A.nrows(), std::move(L_B2), std::move(d), std::move(U_B2),
+      crs_type(internal::extract_E(s, A_crs, t, m, p, q)),
+      crs_type(internal::extract_F(s, A_ccs, t, m, p, q, ut.vals())),
+      std::move(s), std::move(t), std::move(p()), std::move(q.inv()));
+
+  // if dense is not empty, then push it back
+  if (!S_D.empty()) {
+    auto &last_level = precs.back().dense_solver;
+    last_level.set_matrix(std::move(S_D));
+    last_level.factorize();
+    if (psmilu_verbose(INFO, opts))
+      psmilu_info("successfully factorized the dense complement...");
+  }
+#ifndef NDEBUG
+  else
+    psmilu_error_if(!precs.back().dense_solver.empty(), "should be empty!");
+#endif
+
+  timer.finish();  // profile post-processing
+
+  if (psmilu_verbose(INFO, opts)) psmilu_info("time: %gs", timer.time());
+
+  if (psmilu_verbose(INFO, opts)) psmilu_info("\nfinish level %zd.", cur_level);
+
+  return S;
 }
 
 }  // namespace psmilu
