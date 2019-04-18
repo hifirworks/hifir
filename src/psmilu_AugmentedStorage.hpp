@@ -983,7 +983,7 @@ class AugCCS : public CcsType,
     _base::template _push_back_nodes<Iter, ONE_BASED>(col, first, last);
   }
 
-  /// \brief push back a clumn with two lists of row indices
+  /// \brief push back a column with two lists of row indices
   /// \tparam Iter1 iterator type
   /// \tparam ValueArray1 dense value array
   /// \tparam Iter2 iterator type
