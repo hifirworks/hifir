@@ -287,13 +287,14 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     if (pvt) {
       while (m > step) {
         --m;
-        U.defer_col(step.deferred_step(), n + step.defers());
-        L.defer_row(step.deferred_step(), n + step.defers());
-        ori2def[step.deferred_step()] = n + step.defers();
-        P[n + step.defers()]          = p[step.deferred_step()];
-        Q[n + step.defers()]          = q[step.deferred_step()];
+        const auto tail_pos = n + step.defers();
+        U.defer_col(step.deferred_step(), tail_pos);
+        L.defer_row(step.deferred_step(), tail_pos);
+        ori2def[step.deferred_step()] = tail_pos;
+        P[tail_pos]                   = p[step.deferred_step()];
+        Q[tail_pos]                   = q[step.deferred_step()];
         P[step.deferred_step()] = Q[step.deferred_step()] = -1;
-        d2[n + step.defers()] = d[step.deferred_step()];
+        d2[tail_pos] = d[step.deferred_step()];
 
         step.increment_defer_counter();  // increment defers here
         if (step.deferred_step() >= m2) {
