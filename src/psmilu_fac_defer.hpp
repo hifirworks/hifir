@@ -429,6 +429,14 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   for (; step < n; ++step) {
     step.assign_gap_array(P, p);
     step.assign_gap_array(Q, q);
+    // NOTE important to compress the start/end in augmented DS
+    // the tails were updated while deferring and the leading
+    // block is compressed while updating L and U starts
+    // thus, we only need to compress the offsets
+    step.compress_array(U.col_start());
+    step.compress_array(U.col_end());
+    step.compress_array(L.row_start());
+    step.compress_array(L.row_end());
   }
   // rebuild the inverse mappings
   p.build_inv();
