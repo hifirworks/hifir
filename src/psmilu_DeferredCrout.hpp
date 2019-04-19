@@ -181,38 +181,14 @@ class DeferredCrout : public Crout {
     }
   }
 
-  template <class DiagType>
-  inline void compress_diag(DiagType &d) const {
-    d[_step] = d[deferred_step()];
+  template <class ArrayType>
+  inline void compress_array(ArrayType &v) const {
+    v[_step] = v[deferred_step()];
   }
 
-  template <class DiagType>
-  inline void compress_diag(DiagType &d, const DiagType &d2) const {
-    d[_step] = d2[deferred_step()];
-  }
-
-  template <class DiagType, class SpVecType>
-  inline bool scale_inv_diag(const DiagType &d, SpVecType &v) const {
-    using value_t                     = typename DiagType::value_type;
-    constexpr static value_t zero     = Const<value_t>::ZERO;
-    constexpr static value_t safe_min = Const<value_t>::MIN;
-    constexpr static bool    okay     = false;
-
-    const value_t dk = d[_step];
-    // first, if exactly zero, return fail
-    if (dk == zero) return !okay;
-
-    const size_type n    = v.size();
-    auto &          vals = v.vals();
-
-    if (std::abs(dk) > safe_min) {
-      // take the inverse, do multiply
-      const value_t dk_inv = Const<value_t>::ONE / dk;
-      for (size_type i = 0u; i < n; ++i) vals[v.c_idx(i)] *= dk_inv;
-    } else
-      for (size_type i = 0u; i < n; ++i) vals[v.c_idx(i)] /= dk;
-
-    return okay;
+  template <class ArrayIn, class ArrayOut>
+  inline void assign_gap_array(const ArrayIn &r, ArrayOut &l) const {
+    l[_step] = r[deferred_step()];
   }
 
   template <class U_AugCrsType, class U_StartType>
@@ -278,52 +254,6 @@ class DeferredCrout : public Crout {
       _update_L_start<IsSymm>(L, m, L_start, comp_index);
       L.row_start()[_step] = L.row_start()[deferred_step()];
       L.row_end()[_step]   = L.row_end()[deferred_step()];
-    }
-  }
-
-  template <class SpVecType, class DiagType>
-  inline void update_B_diag(const SpVecType &l, const SpVecType &ut,
-                            DiagType &d) const {
-    // NOTE that we need the internal dense tag from sparse vector
-    // thus, we can either:
-    //    1) make this function a friend of SparseVec, or
-    //    2) create a caster class
-    using extractor = internal::SpVInternalExtractor<SpVecType>;
-
-    // assume l is not scaled by the diagonal
-
-    // get the current diagonal entry
-    // const auto dk = d[_step];
-    if (ut.size() <= l.size()) {
-      const auto &    l_d_tags = static_cast<const extractor &>(l).dense_tags();
-      const size_type n        = ut.size();
-      const auto &    l_vals   = l.vals();
-      for (size_type i = 0u; i < n; ++i) {
-        const size_type c_idx = ut.c_idx(i);
-        psmilu_assert(c_idx > deferred_step(),
-                      "should only contain the upper part of ut, "
-                      "(c_idx,step(defer))=(%zd,%zd(%zd))!",
-                      c_idx, _step, _defers);
-        // if the dense tags of this entry points to this step, we know l has
-        // an element in this slot
-        if ((size_type)l_d_tags[c_idx] == _step)
-          d[c_idx] -= ut.val(i) * l_vals[c_idx];
-      }
-    } else {
-      const auto &ut_d_tags  = static_cast<const extractor &>(ut).dense_tags();
-      const size_type n      = l.size();
-      const auto &    u_vals = ut.vals();
-      for (size_type i = 0u; i < n; ++i) {
-        const size_type c_idx = l.c_idx(i);
-        psmilu_assert(c_idx > deferred_step(),
-                      "should only contain the lower part of l, "
-                      "(c_idx,step(defer))=(%zd,%zd(%zd))!",
-                      c_idx, _step, _defers);
-        // if the dense tags of this entry points to this step, we know ut has
-        // an element in this slot
-        if ((size_type)ut_d_tags[c_idx] == _step)
-          d[c_idx] -= u_vals[c_idx] * l.val(i);
-      }
     }
   }
 

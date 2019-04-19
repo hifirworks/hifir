@@ -18,27 +18,6 @@
 namespace psmilu {
 namespace internal {
 
-template <class IndexArray, class PermType>
-inline void compress_deferred_perm(
-    const typename IndexArray::size_type total_defers, const IndexArray &P,
-    PermType &p) {
-  using size_type                  = typename IndexArray::size_type;
-  using index_type                 = typename IndexArray::value_type;
-  constexpr static index_type Null = (index_type)-1;
-
-  const size_type n = p.size(), N = n + total_defers;
-  size_type       j(0);
-
-  for (size_type i(0); i < N; ++i) {
-    if (P[i] == Null) continue;
-    p[j++] = P[i];
-  }
-
-  psmilu_assert(j == n, "fatal");
-
-  p.build_inv();
-}
-
 template <class L_AugType, class U_AugType, class PosArray>
 inline void compress_tails(U_AugType &U, L_AugType &L, const PosArray &U_start,
                            const PosArray &                   L_start,
@@ -259,10 +238,10 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   psmilu_error_if(ori2def.status() == DATA_UNDEF,
                   "memory allocation failed for ori2def at level %zd",
                   cur_level);
-  for (size_type i(0); i < n; ++i) ori2def[i] = i;
+  for (size_type i(0); i < n; ++i) ori2def[i] = i;  // build identity
 
-  Array<value_type> d2(n * 2);
-  for (size_type i = 0; i < m2; ++i) d2[i] = d[i];
+  // Array<value_type> d2(n * 2);
+  // for (size_type i = 0; i < m2; ++i) d2[i] = d[i];
 
   if (psmilu_verbose(INFO, opts)) psmilu_info("start Crout update...");
   DeferredCrout step;
@@ -293,10 +272,12 @@ inline CsType iludp_factor_defer(const CsType &                   A,
         ori2def[step.deferred_step()] = tail_pos;
         P[tail_pos]                   = p[step.deferred_step()];
         Q[tail_pos]                   = q[step.deferred_step()];
+        // mark as empty entries
         P[step.deferred_step()] = Q[step.deferred_step()] = -1;
-        d2[tail_pos] = d[step.deferred_step()];
+        // d2[tail_pos] = d[step.deferred_step()];
 
         step.increment_defer_counter();  // increment defers here
+        // handle the last step
         if (step.deferred_step() >= m2) {
           m = step;
           break;
@@ -341,7 +322,11 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     Crout_info("  updating L_start/U_start and performing Crout update");
 
     // compress diagonal
-    step.compress_diag(d, d2);
+    step.compress_array(d);
+
+    // compress permutation vectors
+    step.compress_array(p);
+    step.compress_array(q);
 
     // update U
     step.update_U_start_and_compress_U(U, U_start);
@@ -353,11 +338,10 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     //----------------------
 
     // compute Uk'
-    step.compute_ut(s, A_crs, t, p[step.deferred_step()], q, ori2def, L, d, U,
-                    U_start, ut);
+    step.compute_ut(s, A_crs, t, p[step], q, ori2def, L, d, U, U_start, ut);
     // compute Lk
-    step.compute_l<IsSymm>(s, A_ccs, t, p, q[step.deferred_step()], m2, ori2def,
-                           L, L_start, d, U, l);
+    step.compute_l<IsSymm>(s, A_ccs, t, p, q[step], m2, ori2def, L, L_start, d,
+                           U, l);
 
     // update diagonal entries for u first
 #ifndef NDEBUG
@@ -371,7 +355,7 @@ inline CsType iludp_factor_defer(const CsType &                   A,
 
     // update diagonals b4 dropping
     step.update_B_diag<IsSymm>(l, ut, m2, d);
-    step.update_B_diag(l, ut, d2);
+    // step.update_B_diag<IsSymm>(l, ut, n * 2, d2);
 
 #ifndef NDEBUG
     const bool l_is_nonsingular =
@@ -389,9 +373,9 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     const size_type ori_ut_size = ut.size(), ori_l_size = l.size();
 
     // apply drop for U
-    // apply_dropping_and_sort(
-    //     tau_U, k_ut, A_crs.nnz_in_row(p[step.deferred_step()]), alpha_U, ut);
-    ut.sort_indices();
+    apply_dropping_and_sort(tau_U, k_ut, A_crs.nnz_in_row(p[step]), alpha_U,
+                            ut);
+    // ut.sort_indices();
 
     // push back rows to U
     U.push_back_row(step, ut.inds().cbegin(), ut.inds().cbegin() + ut.size(),
@@ -404,9 +388,8 @@ inline CsType iludp_factor_defer(const CsType &                   A,
       // for symmetric cases, we need first find the leading block size
       auto info = find_sorted(ut.inds().cbegin(),
                               ut.inds().cbegin() + ut.size(), m2 + ONE_BASED);
-      apply_dropping_and_sort(tau_L, k_l,
-                              A_ccs.nnz_in_col(q[step.deferred_step()]),
-                              alpha_L, l, info.second - ut.inds().cbegin());
+      apply_dropping_and_sort(tau_L, k_l, A_ccs.nnz_in_col(q[step]), alpha_L, l,
+                              info.second - ut.inds().cbegin());
 
 #ifndef NDEBUG
       if (info.second != ut.inds().cbegin() &&
@@ -428,9 +411,9 @@ inline CsType iludp_factor_defer(const CsType &                   A,
                       l.vals());
     } else {
       // for asymmetric cases, just do exactly the same things as ut
-      // apply_dropping_and_sort(
-      //     tau_L, k_l, A_ccs.nnz_in_col(q[step.deferred_step()]), alpha_L, l);
-      l.sort_indices();
+      apply_dropping_and_sort(tau_L, k_l, A_ccs.nnz_in_col(q[step]), alpha_L,
+                              l);
+      // l.sort_indices();
 
       Crout_info("  l sizes before/after dropping %zd/%zd, drops=%zd",
                  ori_l_size, l.size(), ori_l_size - l.size());
@@ -442,86 +425,14 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     Crout_info(" Crout step %zd done!", step);
   }
 
-  for (; step < m2; ++step) {
-    // first check diagonal
-
-    Crout_info(" Crout step %zd, leading block size %zd", step, m);
-
-    //------------------------
-    // update start positions
-    //------------------------
-
-    Crout_info("  updating L_start/U_start and performing Crout update");
-
-    step.compress_diag(d, d2);
-
-    // update U
-    step.update_U_start_and_compress_U(U, U_start);
-    // then update L
-    step.update_L_start_and_compress_L<IsSymm>(L, m2, L_start);
-
-    //----------------------
-    // compute Crout updates
-    //----------------------
-
-    // compute Uk'
-    step.compute_ut(s, A_crs, t, P[step.deferred_step()], q, ori2def, L, d, U,
-                    U_start, ut);
-    // compute Lk
-    step.compute_l<IsSymm>(s, A_ccs, t, p, Q[step.deferred_step()], m2, ori2def,
-                           L, L_start, d, U, l);
-
-    // update diagonal entries for u first
-#ifndef NDEBUG
-    const bool u_is_nonsingular =
-#else
-    (void)
-#endif
-        step.scale_inv_diag(d, ut);
-    psmilu_assert(!u_is_nonsingular, "u is singular at level %zd step %zd",
-                  cur_level, step);
-
-    // update diagonals b4 dropping
-    step.update_B_diag<IsSymm>(l, ut, m2, d2);
-
-#ifndef NDEBUG
-    const bool l_is_nonsingular =
-#else
-    (void)
-#endif
-        step.scale_inv_diag(d, l);
-    psmilu_assert(!l_is_nonsingular, "l is singular at level %zd step %zd",
-                  cur_level, step);
-
-    //---------------
-    // drop and sort
-    //---------------
-
-    const size_type ori_ut_size = ut.size(), ori_l_size = l.size();
-
-    // apply drop for U
-    ut.sort_indices();
-
-    // push back rows to U
-    U.push_back_row(step, ut.inds().cbegin(), ut.inds().cbegin() + ut.size(),
-                    ut.vals());
-
-    Crout_info("  ut sizes before/after dropping %zd/%zd, drops=%zd",
-               ori_ut_size, ut.size(), ori_ut_size - ut.size());
-
-    // for asymmetric cases, just do exactly the same things as ut
-    l.sort_indices();
-
-    Crout_info("  l sizes before/after dropping %zd/%zd, drops=%zd", ori_l_size,
-               l.size(), ori_l_size - l.size());
-
-    L.push_back_col(step, l.inds().cbegin(), l.inds().cbegin() + l.size(),
-                    l.vals());
-
-    Crout_info(" Crout step %zd done!", step);
+  // compress permutation vectors
+  for (; step < n; ++step) {
+    step.assign_gap_array(P, p);
+    step.assign_gap_array(Q, q);
   }
-
-  m = m2;
+  // rebuild the inverse mappings
+  p.build_inv();
+  q.build_inv();
 
   U.end_assemble_rows();
   L.end_assemble_cols();
@@ -532,10 +443,6 @@ inline CsType iludp_factor_defer(const CsType &                   A,
 
   // compress tails
   internal::compress_tails(U, L, U_start, L_start, m, step.defers());
-
-  // post processing for compressing p, and q
-  internal::compress_deferred_perm(step.defers(), P, p);
-  internal::compress_deferred_perm(step.defers(), Q, q);
 
   timer.finish();  // profile Crout update
 
