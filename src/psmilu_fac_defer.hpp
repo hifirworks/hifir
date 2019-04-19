@@ -18,68 +18,30 @@
 namespace psmilu {
 namespace internal {
 
-template <class GapArray, class U_AugCrsType, class L_AugCcsType>
-inline void compress_deferred_indices(
-    const GapArray &gaps, const typename GapArray::size_type n,
-    const typename GapArray::size_type m,
-    const typename GapArray::size_type total_defers, U_AugCrsType &U,
-    L_AugCcsType &L) {
-  using index_type                = typename U_AugCrsType::index_type;
-  using size_type                 = typename GapArray::size_type;
-  constexpr static bool ONE_BASED = U_AugCrsType::ONE_BASED;
+template <class L_AugType, class U_AugType, class PosArray>
+inline void compress_tails(U_AugType &U, L_AugType &L, const PosArray &U_start,
+                           const PosArray &                   L_start,
+                           const typename PosArray::size_type m,
+                           const typename PosArray::size_type dfrs) {
+  using size_type  = typename PosArray::size_type;
+  using index_type = typename L_AugType::index_type;
 
-  Array<index_type> defer2comp(n + total_defers + ONE_BASED, -1);
-  psmilu_error_if(defer2comp.status() == DATA_UNDEF,
-                  "memory allocation failed");
-
-  size_type comp_idx(ONE_BASED);
-  size_type i(0);
-  for (; i < m; ++i) defer2comp[i + gaps[i] + ONE_BASED] = comp_idx++;
-  // potential offsets!
-  while (i + total_defers < n) {
-    defer2comp[i + total_defers + ONE_BASED] = comp_idx++;
-    ++i;
-  }
-  for (size_type offset(n + ONE_BASED),
-       offset_comp(n - total_defers + ONE_BASED);
-       offset < defer2comp.size(); ++offset, ++offset_comp)
-    defer2comp[offset] = offset_comp;
-
-  for (size_type i(0); i < m; ++i) {
-    for (auto itr = U.col_ind_begin(i), last = U.col_ind_end(i); itr != last;
-         ++itr) {
-      psmilu_assert(defer2comp[*itr] != (index_type)-1,
-                    "fatal for deferred to compressed mapping");
-      *itr = defer2comp[*itr];
-    }
-    for (auto itr = L.row_ind_begin(i), last = L.row_ind_end(i); itr != last;
-         ++itr) {
-      psmilu_assert(defer2comp[*itr] != (index_type)-1,
-                    "fatal for deferred to compressed mapping");
-      *itr = defer2comp[*itr];
+  if (dfrs) {
+    const auto comp_index = [=](index_type &j) { j -= dfrs; };
+    auto       U_first = U.col_ind().begin(), L_first = L.row_ind().begin();
+    for (size_type i(0); i < m; ++i) {
+      std::for_each(U_first + U_start[i], U.col_ind_end(i), comp_index);
+      std::for_each(L_first + L_start[i], L.row_ind_end(i), comp_index);
     }
   }
-}
 
-template <class IndexArray, class PermType>
-inline void compress_deferred_perm(
-    const typename IndexArray::size_type total_defers, const IndexArray &P,
-    PermType &p) {
-  using size_type                  = typename IndexArray::size_type;
-  using index_type                 = typename IndexArray::value_type;
-  constexpr static index_type Null = (index_type)-1;
+  L.resize_nrows(L.nrows() / 2);
+  U.resize_ncols(U.ncols() / 2);
 
-  const size_type n = p.size(), N = n + total_defers;
-  size_type       i(0), j(0);
-
-  for (size_type i(0); i < N; ++i) {
-    if (P[i] == Null) continue;
-    p[j++] = P[i];
-  }
-
-  psmilu_assert(j == n, "fatal");
-
-  p.build_inv();
+#ifndef NDEBUG
+  L.check_validity();
+  U.check_validity();
+#endif
 }
 
 }  // namespace internal
@@ -141,7 +103,7 @@ inline CsType iludp_factor_defer(const CsType &                   A,
 #ifndef PSMILU_DISABLE_PRE
   size_type m =
       do_preprocessing<IsSymm>(A_ccs, m0, opts, s, t, p, q, check_zero_diag);
-  m = defer_dense_tail(A_crs, A_ccs, p, q, m);
+  // m = defer_dense_tail(A_crs, A_ccs, p, q, m);
 #else
   s.resize(m0);
   psmilu_error_if(s.status() == DATA_UNDEF, "memory allocation failed");
@@ -248,11 +210,6 @@ inline CsType iludp_factor_defer(const CsType &                   A,
       "memory allocation failed for kappa_l and/or kappa_ut at level %zd.",
       cur_level);
 
-  // defers
-  Array<index_type> gaps(m);
-  psmilu_error_if(gaps.status() == DATA_UNDEF,
-                  "memory allocation failed for gaps at level %zd", cur_level);
-
   U.begin_assemble_rows();
   L.begin_assemble_cols();
 
@@ -281,7 +238,10 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   psmilu_error_if(ori2def.status() == DATA_UNDEF,
                   "memory allocation failed for ori2def at level %zd",
                   cur_level);
-  for (size_type i(0); i < n; ++i) ori2def[i] = i;
+  for (size_type i(0); i < n; ++i) ori2def[i] = i;  // build identity
+
+  // Array<value_type> d2(n * 2);
+  // for (size_type i = 0; i < m2; ++i) d2[i] = d[i];
 
   if (psmilu_verbose(INFO, opts)) psmilu_info("start Crout update...");
   DeferredCrout step;
@@ -306,14 +266,18 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     if (pvt) {
       while (m > step) {
         --m;
-        U.defer_col(step.deferred_step(), n + step.defers());
-        L.defer_row(step.deferred_step(), n + step.defers());
-        ori2def[step.deferred_step()] = n + step.defers();
-        P[n + step.defers()]          = p[step.deferred_step()];
-        Q[n + step.defers()]          = q[step.deferred_step()];
+        const auto tail_pos = n + step.defers();
+        U.defer_col(step.deferred_step(), tail_pos);
+        L.defer_row(step.deferred_step(), tail_pos);
+        ori2def[step.deferred_step()] = tail_pos;
+        P[tail_pos]                   = p[step.deferred_step()];
+        Q[tail_pos]                   = q[step.deferred_step()];
+        // mark as empty entries
         P[step.deferred_step()] = Q[step.deferred_step()] = -1;
+        // d2[tail_pos] = d[step.deferred_step()];
 
         step.increment_defer_counter();  // increment defers here
+        // handle the last step
         if (step.deferred_step() >= m2) {
           m = step;
           break;
@@ -332,7 +296,7 @@ inline CsType iludp_factor_defer(const CsType &                   A,
         break;
       }                      // while
       if (m == step) break;  // break for
-      if (IsSymm) internal::update_L_start_symm(L, m2, L_start);
+      // if (IsSymm) internal::update_L_start_symm(L, m2, L_start);
     }
 
     //----------------
@@ -357,19 +321,26 @@ inline CsType iludp_factor_defer(const CsType &                   A,
 
     Crout_info("  updating L_start/U_start and performing Crout update");
 
+    // compress diagonal
+    step.compress_array(d);
+
+    // compress permutation vectors
+    step.compress_array(p);
+    step.compress_array(q);
+
     // update U
-    step.update_U_start(U, U_start);
+    step.update_U_start_and_compress_U(U, U_start);
     // then update L
-    step.update_L_start<IsSymm>(L, m2, L_start);
+    step.update_L_start_and_compress_L<IsSymm>(L, m2, L_start);
 
     //----------------------
     // compute Crout updates
     //----------------------
 
     // compute Uk'
-    step.compute_ut(s, A_crs, t, p, q, ori2def, L, d, gaps, U, U_start, ut);
+    step.compute_ut(s, A_crs, t, p[step], q, ori2def, L, d, U, U_start, ut);
     // compute Lk
-    step.compute_l<IsSymm>(s, A_ccs, t, p, q, m2, ori2def, L, L_start, d, gaps,
+    step.compute_l<IsSymm>(s, A_ccs, t, p, q[step], m2, ori2def, L, L_start, d,
                            U, l);
 
     // update diagonal entries for u first
@@ -384,6 +355,7 @@ inline CsType iludp_factor_defer(const CsType &                   A,
 
     // update diagonals b4 dropping
     step.update_B_diag<IsSymm>(l, ut, m2, d);
+    // step.update_B_diag<IsSymm>(l, ut, n * 2, d2);
 
 #ifndef NDEBUG
     const bool l_is_nonsingular =
@@ -401,8 +373,9 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     const size_type ori_ut_size = ut.size(), ori_l_size = l.size();
 
     // apply drop for U
-    apply_dropping_and_sort(
-        tau_U, k_ut, A_crs.nnz_in_row(p[step.deferred_step()]), alpha_U, ut);
+    apply_dropping_and_sort(tau_U, k_ut, A_crs.nnz_in_row(p[step]), alpha_U,
+                            ut);
+    // ut.sort_indices();
 
     // push back rows to U
     U.push_back_row(step, ut.inds().cbegin(), ut.inds().cbegin() + ut.size(),
@@ -415,9 +388,8 @@ inline CsType iludp_factor_defer(const CsType &                   A,
       // for symmetric cases, we need first find the leading block size
       auto info = find_sorted(ut.inds().cbegin(),
                               ut.inds().cbegin() + ut.size(), m2 + ONE_BASED);
-      apply_dropping_and_sort(tau_L, k_l,
-                              A_ccs.nnz_in_col(q[step.deferred_step()]),
-                              alpha_L, l, info.second - ut.inds().cbegin());
+      apply_dropping_and_sort(tau_L, k_l, A_ccs.nnz_in_col(q[step]), alpha_L, l,
+                              info.second - ut.inds().cbegin());
 
 #ifndef NDEBUG
       if (info.second != ut.inds().cbegin() &&
@@ -439,8 +411,8 @@ inline CsType iludp_factor_defer(const CsType &                   A,
                       l.vals());
     } else {
       // for asymmetric cases, just do exactly the same things as ut
-      apply_dropping_and_sort(
-          tau_L, k_l, A_ccs.nnz_in_col(q[step.deferred_step()]), alpha_L, l);
+      apply_dropping_and_sort(tau_L, k_l, A_ccs.nnz_in_col(q[step]), alpha_L,
+                              l);
       // l.sort_indices();
 
       Crout_info("  l sizes before/after dropping %zd/%zd, drops=%zd",
@@ -449,26 +421,36 @@ inline CsType iludp_factor_defer(const CsType &                   A,
       L.push_back_col(step, l.inds().cbegin(), l.inds().cbegin() + l.size(),
                       l.vals());
     }
-    gaps[step] = step.defers();
+
     Crout_info(" Crout step %zd done!", step);
   }
+
+  // compress permutation vectors
+  for (; step < n; ++step) {
+    step.assign_gap_array(P, p);
+    step.assign_gap_array(Q, q);
+    // NOTE important to compress the start/end in augmented DS
+    // the tails were updated while deferring and the leading
+    // block is compressed while updating L and U starts
+    // thus, we only need to compress the offsets
+    step.compress_array(U.col_start());
+    step.compress_array(U.col_end());
+    step.compress_array(L.row_start());
+    step.compress_array(L.row_end());
+  }
+  // rebuild the inverse mappings
+  p.build_inv();
+  q.build_inv();
 
   U.end_assemble_rows();
   L.end_assemble_cols();
 
-  // post processing for compressing L, U, p, and q
-  internal::compress_deferred_indices(gaps, n, m, step.defers(), U, L);
-  internal::compress_deferred_perm(step.defers(), P, p);
-  internal::compress_deferred_perm(step.defers(), Q, q);
-
-  L.resize_nrows(n);
-  U.resize_ncols(n);
-  // compress diagonal
-  for (size_type i(0); i < m; ++i) d[i] = d[i + gaps[i]];
-
   // finalize start positions
   U_start[m - 1] = U.row_start()[m - 1];
   L_start[m - 1] = L.col_start()[m - 1];
+
+  // compress tails
+  internal::compress_tails(U, L, U_start, L_start, m, step.defers());
 
   timer.finish();  // profile Crout update
 
