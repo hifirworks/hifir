@@ -44,6 +44,20 @@ inline void compress_tails(U_AugType &U, L_AugType &L, const PosArray &U_start,
 #endif
 }
 
+template <class L_AugCcsType, class PosArray>
+inline void search_back_start_symm(const L_AugCcsType &               L,
+                                   const typename PosArray::size_type back_step,
+                                   const typename PosArray::size_type m,
+                                   PosArray &                         L_start) {
+  using index_type  = typename L_AugCcsType::index_type;
+  index_type aug_id = L.start_row_id(back_step);
+  while (!L.is_nil(aug_id)) {
+    const auto col_idx = L.col_idx(aug_id);
+    --L_start[col_idx];
+    aug_id = L.next_row_id(aug_id);
+  }
+}
+
 }  // namespace internal
 
 template <bool IsSymm, class CsType, class CroutStreamer, class PrecsType>
@@ -282,6 +296,7 @@ inline CsType iludp_factor_defer(const CsType &                   A,
         const auto tail_pos = n + step.defers();
         U.defer_col(step.deferred_step(), tail_pos);
         L.defer_row(step.deferred_step(), tail_pos);
+        if (IsSymm) internal::search_back_start_symm(L, tail_pos, m2, L_start);
         ori2def[step.deferred_step()] = tail_pos;
         P[tail_pos]                   = p[step.deferred_step()];
         Q[tail_pos]                   = q[step.deferred_step()];
@@ -309,7 +324,6 @@ inline CsType iludp_factor_defer(const CsType &                   A,
         break;
       }                      // while
       if (m == step) break;  // break for
-      // if (IsSymm) internal::update_L_start_symm(L, m2, L_start);
     }
 
     //----------------
