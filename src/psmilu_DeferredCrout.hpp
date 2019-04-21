@@ -217,11 +217,10 @@ class DeferredCrout : public Crout {
 
     if (!_defers)
       _update_U_start(U, U_start, comp_index_dummy);
-    else {
+    else
       _update_U_start(U, U_start, comp_index);
-      U.col_start()[_step] = U.col_start()[deferred_step()];
-      U.col_end()[_step]   = U.col_end()[deferred_step()];
-    }
+    U.col_start()[_step] = U.col_start()[deferred_step()];
+    U.col_end()[_step]   = U.col_end()[deferred_step()];
   }
 
   template <bool IsSymm, class L_AugCcsType, class L_StartType>
@@ -248,13 +247,12 @@ class DeferredCrout : public Crout {
 #endif
                                          ) {};
 
-    if (IsSymm || !_defers)
+    if (!_defers)
       _update_L_start<IsSymm>(L, m, L_start, comp_index_dummy);
-    else {
+    else
       _update_L_start<IsSymm>(L, m, L_start, comp_index);
-      L.row_start()[_step] = L.row_start()[deferred_step()];
-      L.row_end()[_step]   = L.row_end()[deferred_step()];
-    }
+    L.row_start()[_step] = L.row_start()[deferred_step()];
+    L.row_end()[_step]   = L.row_end()[deferred_step()];
   }
 
   template <bool IsSymm, class SpVecType, class DiagType>
@@ -495,7 +493,7 @@ class DeferredCrout : public Crout {
             class CompIndexKernel>
   inline typename std::enable_if<IsSymm>::type _update_L_start(
       L_AugCcsType &L, const size_type m, L_StartType &L_start,
-      const CompIndexKernel & /* comp_index */) const {
+      const CompIndexKernel &comp_index) const {
     using index_type                = typename L_AugCcsType::index_type;
     constexpr static bool ONE_BASED = L_AugCcsType::ONE_BASED;
     const auto            ori_idx   = [](const size_type i) {
@@ -506,18 +504,60 @@ class DeferredCrout : public Crout {
 
     if (!_step) return;
 
-    if (m >= L.nrows() && !_defers) {
-      // if we have leading block that indicates fully symmetric system
-      // then the ending position is stored
-      // col_start has an extra element, thus this is valid accessing
-      // or maybe we can use {Array,vector}::back??
-      L_start[_step - 1] = L.col_start()[_step] - ONE_BASED;
-      return;
+    const auto c_idx = [](const size_type i) {
+      return to_c_idx<size_type, ONE_BASED>(i);
+    };
+
+    do {
+      // binary search to point to start of newly added row
+      auto info          = find_sorted(L.row_ind_cbegin(_step - 1),
+                              L.row_ind_cend(_step - 1), ori_idx(m));
+      L_start[_step - 1] = info.second - L.row_ind().cbegin();
+    } while (false);
+
+    // compress indices
+    // get aug handle wrp the defer step
+    index_type aug_id = L.start_row_id(deferred_step());
+    // go thru all entries
+    while (!L.is_nil(aug_id)) {
+      // // get column index
+      // const index_type col = L.col_idx(aug_id);
+      // // for deferred fashion, it's possible that we need to go back to find
+      // // the starting positions
+      // // The following is to ensure amortized constant
+      // bool       go_back = false;
+      // const auto last    = L.col_start()[col + 1] - ONE_BASED;
+      // if (L_start[col] == last ||
+      //     c_idx(*(L.row_ind().cbegin() + L_start[col])) > m)
+      //   go_back = true;
+      // if (!go_back) {
+      //   while (c_idx(*(L.row_ind().cbegin() + L_start[col])) < m &&
+      //          L_start[col] != last)
+      //     ++L_start[col];
+      // } else {
+      //   index_type pos   = L_start[col];
+      //   const auto first = L.col_start()[col];
+      //   if (first != last) {
+      //     if (pos == last) --pos;
+      //     if (c_idx(*(L.row_ind().cbegin() + pos)) > m) {
+      //       size_type idx;
+      //       while ((idx = c_idx(*(L.row_ind().cbegin() + pos))) > m &&
+      //              pos != first)
+      //         --pos;
+      //       if (idx < m) ++pos;
+      //       L_start[col] = pos;
+      //     }
+      //   }
+      // }
+      comp_index(*(L.row_ind().begin() + L.val_pos_idx(aug_id)), _defers
+#ifndef NDEBUG
+                 ,
+                 _step
+#endif
+      );
+      // advance augmented handle
+      aug_id = L.next_row_id(aug_id);
     }
-    // binary search to point to start of newly added row
-    auto info          = find_sorted(L.row_ind_cbegin(_step - 1),
-                            L.row_ind_cend(_step - 1), ori_idx(m));
-    L_start[_step - 1] = info.second - L.row_ind().cbegin();
   }
 
  protected:
