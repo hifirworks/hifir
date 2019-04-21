@@ -179,18 +179,28 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   psmilu_error_if(U.row_start().status() == DATA_UNDEF,
                   "memory allocation failed for U:row_start at level %zd.",
                   cur_level);
-  U.reserve(A.nnz() * opts.alpha_U);
-  psmilu_error_if(
-      U.col_ind().status() == DATA_UNDEF || U.vals().status() == DATA_UNDEF,
-      "memory allocation failed for U-nnz arrays at level %zd.", cur_level);
+  do {
+    const size_type rsv_fac =
+        PSMILU_RESERVE_FAC <= 0 ? opts.alpha_U : PSMILU_RESERVE_FAC;
+    U.reserve(A.nnz() * rsv_fac);
+    psmilu_error_if(
+        U.col_ind().status() == DATA_UNDEF || U.vals().status() == DATA_UNDEF,
+        "memory allocation failed for U-nnz arrays at level %zd.", cur_level);
+  } while (false);
+
+  // create L storage with deferred
   aug_ccs_type L(A.nrows() * 2, m);
   psmilu_error_if(L.col_start().status() == DATA_UNDEF,
                   "memory allocation failed for L:col_start at level %zd.",
                   cur_level);
-  L.reserve(A.nnz() * opts.alpha_L);
-  psmilu_error_if(
-      L.row_ind().status() == DATA_UNDEF || L.vals().status() == DATA_UNDEF,
-      "memory allocation failed for L-nnz arrays at level %zd.", cur_level);
+  do {
+    const size_type rsv_fac =
+        PSMILU_RESERVE_FAC <= 0 ? opts.alpha_L : PSMILU_RESERVE_FAC;
+    L.reserve(A.nnz() * rsv_fac);
+    psmilu_error_if(
+        L.row_ind().status() == DATA_UNDEF || L.vals().status() == DATA_UNDEF,
+        "memory allocation failed for L-nnz arrays at level %zd.", cur_level);
+  } while (false);
 
   // create l and ut buffer
   SparseVector<value_type, index_type, ONE_BASED> l(A.nrows() * 2),
@@ -214,9 +224,12 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   L.begin_assemble_cols();
 
   // localize parameters
-  const auto tau_d = opts.tau_d, tau_kappa = opts.tau_kappa, tau_U = opts.tau_U,
-             tau_L   = opts.tau_L;
-  const auto alpha_L = opts.alpha_L, alpha_U = opts.alpha_U;
+  // const auto tau_d = opts.tau_d, tau_kappa = opts.tau_kappa, tau_U =
+  // opts.tau_U,
+  //            tau_L   = opts.tau_L;
+  // const auto alpha_L = opts.alpha_L, alpha_U = opts.alpha_U;
+  DETERMINE_LEVEL_PARS(tau_d, tau_kappa, tau_U, tau_L, alpha_L, alpha_U, opts,
+                       cur_level);
 
   // Removing bounding the large diagonal values
   const auto is_bad_diag = [=](const value_type a) -> bool {
@@ -446,9 +459,10 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   L.end_assemble_cols();
 
   // finalize start positions
-  U_start[m - 1] = U.row_start()[m - 1];
-  L_start[m - 1] = L.col_start()[m - 1];
-
+  if (m) {
+    U_start[m - 1] = U.row_start()[m - 1];
+    L_start[m - 1] = L.col_start()[m - 1];
+  }
   // compress tails
   internal::compress_tails(U, L, U_start, L_start, m, step.defers());
 
@@ -495,10 +509,10 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   dense_type      S_D;
   psmilu_assert(S_D.empty(), "fatal!");
   if (S.nnz() >= static_cast<size_type>(opts.rho * nm * nm) ||
-      nm <= static_cast<size_type>(opts.c_d * cbrt_N)) {
+      nm <= static_cast<size_type>(opts.c_d * cbrt_N) || !m) {
     bool use_h_ver = false;
     S_D            = dense_type::from_sparse(S);
-    if (m <= static_cast<size_type>(opts.c_h * cbrt_N)) {
+    if (m <= static_cast<size_type>(opts.c_h * cbrt_N) && m) {
 #ifdef PSMILU_UNIT_TESTING
       ccs_type T_E, T_F;
 #endif
