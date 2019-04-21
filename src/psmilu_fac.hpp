@@ -796,7 +796,7 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
 #ifndef PSMILU_DISABLE_PRE
   size_type m =
       do_preprocessing<IsSymm>(A_ccs, m0, opts, s, t, p, q, check_zero_diag);
-  m = defer_dense_tail(A_crs, A_ccs, p, q, m);
+  // m = defer_dense_tail(A_crs, A_ccs, p, q, m);
 #else
   s.resize(m0);
   psmilu_error_if(s.status() == DATA_UNDEF, "memory allocation failed");

@@ -117,8 +117,14 @@ class PSMILU {
   inline size_type nnz() const {
     if (empty()) return 0u;
     size_type n(0);
-    for (auto itr = _precs.cbegin(); itr != _precs.cend(); ++itr)
+    for (auto itr = _precs.cbegin(); itr != _precs.cend(); ++itr) {
       n += itr->L_B.nnz() + itr->U_B.nnz() + itr->m;
+      // added dense (if we have) storage
+      if (itr->is_last_level()) {
+        const auto nm = itr->n - itr->m;
+        n += nm * nm;
+      }
+    }
     return n;
   }
 
