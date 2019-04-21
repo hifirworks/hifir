@@ -513,7 +513,7 @@ class AugCRS : public CrsType,
         // first of all, find the k-col value based on OneBased
         const index_type k_col = to_ori_idx<index_type, ONE_BASED>(k);
         // O(log n)
-        // NOTE we use lower-bound option, thus, given the following example
+        // NOTE we use lower-bound operation, thus, given the following example
         //  [1 4 8]
         // if we want to find 0, then index 0 is returned
         // if we want to find 2, then index 1 is returned
@@ -592,6 +592,35 @@ class AugCRS : public CrsType,
     }
     // finally, swap the head and tail link list
     _base::_interchange_ik_head_tail(i, k);
+  }
+
+  /// \brief defer a column to the end
+  /// \param[in] from which column to defer
+  /// \param[in] to the current pass-of-end column index
+  /// \warning the parameter \a to must be current pass-of-last column
+  inline void defer_col(const size_type from, const size_type to) {
+    psmilu_assert(from < ncols(), "%zd exceeds max ncols", from);
+    psmilu_assert(to < ncols(), "%zd exceeds max ncols", to);
+    psmilu_assert(from < to, "from (%zd) should strictly less than to (%zd)",
+                  from, to);
+    psmilu_assert(is_nil(start_col_id(to)), "destination must be empty!");
+    index_type col_id = start_col_id(from);
+    while (!is_nil(col_id)) {
+      const auto row = row_idx(col_id);
+      const auto vp  = val_pos_idx(col_id);
+      auto       itr = col_ind().begin() + vp;
+      psmilu_assert(itr != crs_type::col_ind_end(row), "fatal");
+      // assign "defer" column index
+      *itr              = to + ONE_BASED;
+      const size_type n = crs_type::col_ind_end(row) - itr;
+      rotate_left(n, vp, col_ind());
+      rotate_left(n, vp, vals());
+      _base::_rotate_val_pos_left(n, vp);
+      col_id = next_col_id(col_id);
+    }
+    // NOTE that the start/end should not been visited, thus we can directly
+    // reuse the routine "swap"
+    _base::_interchange_ik_head_tail(from, to);
   }
 
   // utilities
@@ -895,6 +924,35 @@ class AugCCS : public CcsType,
     _base::_interchange_ik_head_tail(i, k);
   }
 
+  /// \brief defer a row to the end
+  /// \param[in] from which row to defer
+  /// \param[in] to the current pass-of-end row index
+  /// \warning the parameter \a to must be current pass-of-last row
+  inline void defer_row(const size_type from, const size_type to) {
+    psmilu_assert(from < nrows(), "%zd exceeds max nrows", from);
+    psmilu_assert(to < nrows(), "%zd exceeds max nrows", to);
+    psmilu_assert(from < to, "from (%zd) should strictly less than to (%zd)",
+                  from, to);
+    psmilu_assert(is_nil(start_row_id(to)), "destination must be empty!");
+    index_type row_id = start_row_id(from);
+    while (!is_nil(row_id)) {
+      const auto col = col_idx(row_id);
+      const auto vp  = val_pos_idx(row_id);
+      auto       itr = row_ind().begin() + vp;
+      psmilu_assert(itr != ccs_type::row_ind_end(col), "fatal");
+      // assign "defer" column index
+      *itr              = to + ONE_BASED;
+      const size_type n = ccs_type::row_ind_end(col) - itr;
+      rotate_left(n, vp, row_ind());
+      rotate_left(n, vp, vals());
+      _base::_rotate_val_pos_left(n, vp);
+      row_id = next_row_id(row_id);
+    }
+    // NOTE that the start/end should not been visited, thus we can directly
+    // reuse the routine "swap"
+    _base::_interchange_ik_head_tail(from, to);
+  }
+
   // utilities
   inline iarray_type &      col_ind() { return _base::_node_inds; }
   inline const iarray_type &col_ind() const { return _base::_node_inds; }
@@ -925,7 +983,7 @@ class AugCCS : public CcsType,
     _base::template _push_back_nodes<Iter, ONE_BASED>(col, first, last);
   }
 
-  /// \brief push back a clumn with two lists of row indices
+  /// \brief push back a column with two lists of row indices
   /// \tparam Iter1 iterator type
   /// \tparam ValueArray1 dense value array
   /// \tparam Iter2 iterator type

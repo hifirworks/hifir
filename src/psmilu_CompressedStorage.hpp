@@ -167,8 +167,11 @@ class CompressedStorage {
             pname, pname, nnz(), _indices.size(), _vals.size());
       // check each entry
       for (size_type i = 0u; i < _psize; ++i) {
-        psmilu_error_if(!std::is_sorted(_ind_cbegin(i), _ind_cend(i)),
-                        "%s %zd (C-based) is not sorted", pname, i);
+        psmilu_error_if(
+            !std::is_sorted(
+                _ind_cbegin(i), _ind_cend(i),
+                [](const index_type l, const index_type r) { return l <= r; }),
+            "%s %zd (C-based) is not sorted", pname, i);
         for (auto itr = _ind_cbegin(i), last = _ind_cend(i); itr != last;
              ++itr) {
           psmilu_error_if(c_idx(*itr) >= other_size,

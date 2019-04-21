@@ -484,7 +484,7 @@ class Crout {
       // then the ending position is stored
       // col_start has an extra element, thus this is valid accessing
       // or maybe we can use {Array,vector}::back??
-      L_start[_step - 1] = L.col_start()[_step];
+      L_start[_step - 1] = L.col_start()[_step] - ONE_BASED;
       return;
     }
     // binary search to point to start of newly added row

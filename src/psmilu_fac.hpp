@@ -43,6 +43,29 @@ namespace internal {
  * @{
  */
 
+/// \def PSMILU_RESERVE_FAC
+/// \brief preserved factor of memory for \ref AugCRS and \ref AugCCS.
+///
+/// Set this to <=0 will use \f$\alpha\f$, but memory allocation will become
+/// problem for large systems. The default value is 5, i.e. 5 times of nnz of
+/// the current level input system.
+#ifndef PSMILU_RESERVE_FAC
+#  define PSMILU_RESERVE_FAC 5
+#endif
+
+/// \def DETERMINE_LEVEL_PARS
+/// \brief adaptively determine the parameters from level to level
+#define DETERMINE_LEVEL_PARS(__tau_d, __tau_kappa, __tau_U, __tau_L,         \
+                             __alpha_L, __alpha_U, __opts, __lvl)            \
+  const int    _fac    = std::min(1 << (__lvl - 1), 8);                      \
+  const double _fac2   = 1. / std::min(1e3, std::pow(10.0, __lvl - 1));      \
+  const auto   __tau_d = std::max(2.0, std::pow(__opts.tau_d, 1. / _fac)),   \
+             __tau_kappa =                                                   \
+                 std::max(2.0, std::pow(__opts.tau_kappa, 1. / _fac)),       \
+             __tau_U = __opts.tau_U * _fac2, __tau_L = __opts.tau_L * _fac2; \
+  const auto __alpha_L = __opts.alpha_L * _fac,                              \
+             __alpha_U = __opts.alpha_U * _fac
+
 /// \brief extract permutated diagonal
 /// \tparam LeftDiagType left scaling vector type, see \ref Array
 /// \tparam CcsType input ccs matrix, see \ref CCS
@@ -796,7 +819,7 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
 #ifndef PSMILU_DISABLE_PRE
   size_type m =
       do_preprocessing<IsSymm>(A_ccs, m0, opts, s, t, p, q, check_zero_diag);
-  m = defer_dense_tail(A_crs, A_ccs, p, q, m);
+  // m = defer_dense_tail(A_crs, A_ccs, p, q, m);
 #else
   s.resize(m0);
   psmilu_error_if(s.status() == DATA_UNDEF, "memory allocation failed");
@@ -872,20 +895,28 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
   psmilu_error_if(U.row_start().status() == DATA_UNDEF,
                   "memory allocation failed for U:row_start at level %zd.",
                   cur_level);
-  U.reserve(A.nnz() * opts.alpha_U);
-  psmilu_error_if(
-      U.col_ind().status() == DATA_UNDEF || U.vals().status() == DATA_UNDEF,
-      "memory allocation failed for U-nnz arrays at level %zd.", cur_level);
+  do {
+    const size_type rsv_fac =
+        PSMILU_RESERVE_FAC <= 0 ? opts.alpha_U : PSMILU_RESERVE_FAC;
+    U.reserve(A.nnz() * rsv_fac);
+    psmilu_error_if(
+        U.col_ind().status() == DATA_UNDEF || U.vals().status() == DATA_UNDEF,
+        "memory allocation failed for U-nnz arrays at level %zd.", cur_level);
+  } while (false);
 
   // create L storage
   aug_ccs_type L(A.nrows(), m);
   psmilu_error_if(L.col_start().status() == DATA_UNDEF,
                   "memory allocation failed for L:col_start at level %zd.",
                   cur_level);
-  L.reserve(A.nnz() * opts.alpha_L);
-  psmilu_error_if(
-      L.row_ind().status() == DATA_UNDEF || L.vals().status() == DATA_UNDEF,
-      "memory allocation failed for L-nnz arrays at level %zd.", cur_level);
+  do {
+    const size_type rsv_fac =
+        PSMILU_RESERVE_FAC <= 0 ? opts.alpha_L : PSMILU_RESERVE_FAC;
+    L.reserve(A.nnz() * rsv_fac);
+    psmilu_error_if(
+        L.row_ind().status() == DATA_UNDEF || L.vals().status() == DATA_UNDEF,
+        "memory allocation failed for L-nnz arrays at level %zd.", cur_level);
+  } while (false);
 
   // create l and ut buffer
   SparseVector<value_type, index_type, ONE_BASED> l(A.nrows()), ut(A.ncols());
@@ -908,9 +939,12 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
   L.begin_assemble_cols();
 
   // localize parameters
-  const auto tau_d = opts.tau_d, tau_kappa = opts.tau_kappa, tau_U = opts.tau_U,
-             tau_L   = opts.tau_L;
-  const auto alpha_L = opts.alpha_L, alpha_U = opts.alpha_U;
+  // const auto tau_d = opts.tau_d, tau_kappa = opts.tau_kappa, tau_U =
+  // opts.tau_U,
+  //            tau_L   = opts.tau_L;
+  // const auto alpha_L = opts.alpha_L, alpha_U = opts.alpha_U;
+  DETERMINE_LEVEL_PARS(tau_d, tau_kappa, tau_U, tau_L, alpha_L, alpha_U, opts,
+                       cur_level);
 
   // Removing bounding the large diagonal values
   const auto is_bad_diag = [=](const value_type a) -> bool {
@@ -1106,9 +1140,10 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
   L.end_assemble_cols();
 
   // finalize start positions
-  U_start[m - 1] = U.row_start()[m - 1];
-  L_start[m - 1] = L.col_start()[m - 1];
-
+  if (m) {
+    U_start[m - 1] = U.row_start()[m - 1];
+    L_start[m - 1] = L.col_start()[m - 1];
+  }
   timer.finish();  // profile Crout update
 
   // now we are done
@@ -1154,10 +1189,10 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
   dense_type      S_D;
   psmilu_assert(S_D.empty(), "fatal!");
   if (S.nnz() >= static_cast<size_type>(opts.rho * nm * nm) ||
-      nm <= static_cast<size_type>(opts.c_d * cbrt_N)) {
+      nm <= static_cast<size_type>(opts.c_d * cbrt_N) || !m) {
     bool use_h_ver = false;
     S_D            = dense_type::from_sparse(S);
-    if (m <= static_cast<size_type>(opts.c_h * cbrt_N)) {
+    if (m <= static_cast<size_type>(opts.c_h * cbrt_N) && m) {
 #ifdef PSMILU_UNIT_TESTING
       ccs_type T_E, T_F;
 #endif
@@ -1218,6 +1253,7 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
   return S;
 }
 
+/// \deprecated
 template <bool IsSymm, class CsType, class CroutStreamer, class PrecsType>
 inline CsType iludp_factor2(const CsType &                   A,
                             const typename CsType::size_type m0,
@@ -1348,20 +1384,28 @@ inline CsType iludp_factor2(const CsType &                   A,
   psmilu_error_if(U.row_start().status() == DATA_UNDEF,
                   "memory allocation failed for U:row_start at level %zd.",
                   cur_level);
-  U.reserve(A.nnz() * opts.alpha_U);
-  psmilu_error_if(
-      U.col_ind().status() == DATA_UNDEF || U.vals().status() == DATA_UNDEF,
-      "memory allocation failed for U-nnz arrays at level %zd.", cur_level);
+  do {
+    const size_type rsv_fac =
+        PSMILU_RESERVE_FAC <= 0 ? opts.alpha_U : PSMILU_RESERVE_FAC;
+    U.reserve(A.nnz() * rsv_fac);
+    psmilu_error_if(
+        U.col_ind().status() == DATA_UNDEF || U.vals().status() == DATA_UNDEF,
+        "memory allocation failed for U-nnz arrays at level %zd.", cur_level);
+  } while (false);
 
   // create L storage
   aug_ccs_type L(A.nrows(), m);
   psmilu_error_if(L.col_start().status() == DATA_UNDEF,
                   "memory allocation failed for L:col_start at level %zd.",
                   cur_level);
-  L.reserve(A.nnz() * opts.alpha_L);
-  psmilu_error_if(
-      L.row_ind().status() == DATA_UNDEF || L.vals().status() == DATA_UNDEF,
-      "memory allocation failed for L-nnz arrays at level %zd.", cur_level);
+  do {
+    const size_type rsv_fac =
+        PSMILU_RESERVE_FAC <= 0 ? opts.alpha_L : PSMILU_RESERVE_FAC;
+    L.reserve(A.nnz() * rsv_fac);
+    psmilu_error_if(
+        L.row_ind().status() == DATA_UNDEF || L.vals().status() == DATA_UNDEF,
+        "memory allocation failed for L-nnz arrays at level %zd.", cur_level);
+  } while (false);
 
   // create l and ut buffer
   SparseVector<value_type, index_type, ONE_BASED> l(A.nrows()), ut(A.ncols()),
@@ -1389,9 +1433,12 @@ inline CsType iludp_factor2(const CsType &                   A,
   L.begin_assemble_cols();
 
   // localize parameters
-  const auto tau_d = opts.tau_d, tau_kappa = opts.tau_kappa, tau_U = opts.tau_U,
-             tau_L   = opts.tau_L;
-  const auto alpha_L = opts.alpha_L, alpha_U = opts.alpha_U;
+  // const auto tau_d = opts.tau_d, tau_kappa = opts.tau_kappa, tau_U =
+  // opts.tau_U,
+  //            tau_L   = opts.tau_L;
+  // const auto alpha_L = opts.alpha_L, alpha_U = opts.alpha_U;
+  DETERMINE_LEVEL_PARS(tau_d, tau_kappa, tau_U, tau_L, alpha_L, alpha_U, opts,
+                       cur_level);
 
   // Removing bounding the large diagonal values
   const auto is_bad_diag = [=](const value_type a) -> bool {
@@ -1612,9 +1659,10 @@ inline CsType iludp_factor2(const CsType &                   A,
   L.end_assemble_cols();
 
   // finalize start positions
-  U_start[m - 1] = U.row_start()[m - 1];
-  L_start[m - 1] = L.col_start()[m - 1];
-
+  if (m) {
+    U_start[m - 1] = U.row_start()[m - 1];
+    L_start[m - 1] = L.col_start()[m - 1];
+  }
   timer.finish();  // profile Crout update
 
   // now we are done
@@ -1660,10 +1708,10 @@ inline CsType iludp_factor2(const CsType &                   A,
   dense_type      S_D;
   psmilu_assert(S_D.empty(), "fatal!");
   if (S.nnz() >= static_cast<size_type>(opts.rho * nm * nm) ||
-      nm <= static_cast<size_type>(opts.c_d * cbrt_N)) {
+      nm <= static_cast<size_type>(opts.c_d * cbrt_N) || !m) {
     bool use_h_ver = false;
     S_D            = dense_type::from_sparse(S);
-    if (m <= static_cast<size_type>(opts.c_h * cbrt_N)) {
+    if (m <= static_cast<size_type>(opts.c_h * cbrt_N) && m) {
 #ifdef PSMILU_UNIT_TESTING
       ccs_type T_E, T_F;
 #endif
