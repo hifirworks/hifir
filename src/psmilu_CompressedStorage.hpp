@@ -167,8 +167,11 @@ class CompressedStorage {
             pname, pname, nnz(), _indices.size(), _vals.size());
       // check each entry
       for (size_type i = 0u; i < _psize; ++i) {
-        psmilu_error_if(!std::is_sorted(_ind_cbegin(i), _ind_cend(i)),
-                        "%s %zd (C-based) is not sorted", pname, i);
+        psmilu_error_if(
+            !std::is_sorted(
+                _ind_cbegin(i), _ind_cend(i),
+                [](const index_type l, const index_type r) { return l <= r; }),
+            "%s %zd (C-based) is not sorted", pname, i);
         for (auto itr = _ind_cbegin(i), last = _ind_cend(i); itr != last;
              ++itr) {
           psmilu_error_if(c_idx(*itr) >= other_size,
@@ -322,6 +325,246 @@ class CompressedStorage {
   }
   inline const_i_iterator _ind_cend(const size_type i) const {
     return _ind_cbegin(i) + _nnz(i);
+  }
+
+  /// \brief split against secondary size
+  /// \tparam IsSecond if \a true, then extract the second part
+  /// \param[in] m size split against to
+  /// \param[in] start position start array
+  /// \param[out] indptr index start array
+  /// \param[out] indices index value array
+  /// \param[out] vals values
+  template <bool IsSecond>
+  inline void _split(const size_type m, const index_type *start,
+                     iarray_type &indptr, iarray_type &indices,
+                     array_type &vals) const {
+    if (!_ind_start.size()) return;
+    indptr.resize(_ind_start.size());
+    psmilu_error_if(indptr.status() == DATA_UNDEF, "memory allocation failed");
+    auto      ind_first = _indices.cbegin();
+    size_type nnz(0);
+    for (size_type i(0); i < _psize; ++i) {
+      auto itr = ind_first + start[i];
+      nnz += IsSecond ? _ind_cend(i) - itr : itr - _ind_cbegin(i);
+    }
+    // if we have an empty matrix
+    if (!nnz) {
+      std::fill(indptr.begin(), indptr.end(), OneBased);
+      return;
+    }
+    indices.resize(nnz);
+    psmilu_error_if(indices.status() == DATA_UNDEF, "memory allocation failed");
+    vals.resize(nnz);
+    psmilu_error_if(vals.status() == DATA_UNDEF, "memory allocation failed");
+
+    auto i_itr = indices.begin();
+    auto v_itr = vals.begin();
+
+    auto val_first = _vals.cbegin();
+
+    // now set the indptr front
+    indptr.front() = OneBased;
+
+    for (size_type i = 0; i < _psize; ++i) {
+      auto split_ind_itr = start[i] + ind_first;
+      auto split_val_itr = start[i] + val_first;
+      auto bak_itr       = i_itr;
+      if (IsSecond) {
+        i_itr = std::copy(split_ind_itr, _ind_cend(i), i_itr);
+        for (auto itr = bak_itr; itr != i_itr; ++itr) *itr -= m;
+        v_itr = std::copy(split_val_itr, val_cend(i), v_itr);
+      } else {
+        i_itr = std::copy(_ind_cbegin(i), split_ind_itr, i_itr);
+        v_itr = std::copy(val_cbegin(i), split_val_itr, v_itr);
+      }
+      indptr[i + 1] = indptr[i] + (i_itr - bak_itr);
+    }
+  }
+
+  /// \brief split against secondary size
+  /// \tparam IsSecond if \a true, then extract the second part
+  /// \param[in] m size split against to
+  /// \param[out] indptr index start array
+  /// \param[out] indices index value array
+  /// \param[out] vals values
+  template <bool IsSecond>
+  inline void _split(const size_type m, iarray_type &indptr,
+                     iarray_type &indices, array_type &vals) const {
+    if (!_ind_start.size()) return;
+    indptr.resize(_ind_start.size());
+    psmilu_error_if(indptr.status() == DATA_UNDEF, "memory allocation failed");
+    // const size_type n         = _ind_start.size() - 1;
+    auto ind_first = _indices.cbegin();
+    // size_type nnz(0);
+    for (size_type i(0); i < _psize; ++i) {
+      // store the position first
+      auto find_itr =
+          find_sorted(_ind_cbegin(i), _ind_cend(i), m + OneBased).second;
+      // nnz += IsSecond ? _ind_cend(i) - find_itr : find_itr - _ind_cbegin(i);
+      indptr[i + 1] = find_itr - ind_first;
+    }
+    _split<IsSecond>(m, indptr.data() + 1, indptr, indices, vals);
+  }
+
+  /// \brief split and store to the counterpart type
+  /// \tparam IsSecond if \a true, then extract the second part
+  /// \param[in] m size split against to
+  /// \param[in] n overall size of the secondary direction
+  /// \param[in] start position start array
+  /// \param[out] indptr index start array
+  /// \param[out] indices index value array
+  /// \param[out] vals values
+  template <bool IsSecond>
+  inline void _split_dual(const size_type m, const size_type n,
+                          const index_type *start, iarray_type &indptr,
+                          iarray_type &indices, array_type &vals) const {
+    if (!_ind_start.size()) return;
+    indptr.resize((IsSecond ? n - m : m) + 1);
+    psmilu_error_if(indptr.status() == DATA_UNDEF, "memory allocation failed");
+    // initialize as zeros
+    std::fill(indptr.begin(), indptr.end(), index_type(0));
+    auto ind_first = _indices.cbegin();
+    for (size_type i(0); i < _psize; ++i) {
+      // store the position first
+      auto find_itr = ind_first + start[i];
+      if (IsSecond) {
+        auto Itr = _ind_cend(i);
+        for (auto itr = find_itr; itr != Itr; ++itr)
+          ++indptr[*itr - m + !OneBased];
+      } else
+        for (auto itr = _ind_cbegin(i); itr != find_itr; ++itr)
+          ++indptr[*itr + !OneBased];
+    }
+    const size_type N2 = indptr.size() - 1;
+    for (size_type i(0); i < N2; ++i) indptr[i + 1] += indptr[i];
+
+    if (!indptr[N2]) {
+      std::fill(indptr.begin(), indptr.end(), OneBased);
+      return;
+    }
+
+    indices.resize(indptr[N2]);
+    psmilu_error_if(indices.status() == DATA_UNDEF, "memory allocation failed");
+    vals.resize(indptr[N2]);
+    psmilu_error_if(vals.status() == DATA_UNDEF, "memory allocation failed");
+
+    auto val_first = _vals.cbegin();
+
+    for (size_type i = 0; i < _psize; ++i) {
+      auto split_ind_itr = start[i] + ind_first;
+      if (IsSecond) {
+        auto v_itr = start[i] + val_first;
+        auto Itr   = _ind_cend(i);
+        for (auto itr = split_ind_itr; itr != Itr; ++itr, ++v_itr) {
+          const auto idx       = *itr - m - OneBased;
+          indices[indptr[idx]] = i + OneBased;
+          vals[indptr[idx]]    = *v_itr;
+          ++indptr[idx];
+        }
+      } else {
+        auto v_itr = val_cbegin(i);
+        for (auto itr = _ind_cbegin(i); itr != split_ind_itr; ++itr, ++v_itr) {
+          const auto idx       = *itr - OneBased;
+          indices[indptr[idx]] = i + OneBased;
+          vals[indptr[idx]]    = *v_itr;
+          ++indptr[idx];
+        }
+      }
+    }
+
+    psmilu_assert(indptr[N2] == indptr[N2 - 1], "fatal");
+
+    index_type tmp(0);
+    for (size_type i(0); i < N2; ++i) std::swap(indptr[i], tmp);
+
+    if (OneBased)
+      std::for_each(indptr.begin(), indptr.end(), [](index_type &i) { ++i; });
+  }
+
+  /// \brief split and store to the counterpart type
+  /// \tparam IsSecond if \a true, then extract the second part
+  /// \param[in] m size split against to
+  /// \param[in] n overall size of the secondary direction
+  /// \param[out] indptr index start array
+  /// \param[out] indices index value array
+  /// \param[out] vals values
+  template <bool IsSecond>
+  inline void _split_dual(const size_type m, const size_type n,
+                          iarray_type &indptr, iarray_type &indices,
+                          array_type &vals) const {
+    if (!_ind_start.size()) return;
+    iarray_type buf(_psize);
+    auto        ind_first = _indices.cbegin();
+    psmilu_error_if(buf.status() == DATA_UNDEF, "memory allocation failed");
+    for (size_type i = 0; i < _psize; ++i)
+      buf[i] = find_sorted(_ind_cbegin(i), _ind_cend(i), m + OneBased).second -
+               ind_first;
+    _split_dual<IsSecond>(m, n, buf.data(), indptr, indices, vals);
+  }
+
+  /// \brief construct permutated matrix
+  /// \param[in] p perm to origin mapping
+  /// \param[in] qt origin to perm mapping
+  template <bool DoValue, bool OnlyLeading>
+  inline void _compute_perm(const iarray_type &p, const iarray_type &qt,
+                            const size_type leading, iarray_type &indptr,
+                            iarray_type &indices, array_type &vals) const {
+    const size_type m(p.size()), n(qt.size());
+    psmilu_error_if(m != _psize, "permutation out of bound");
+    array_type buf;
+    const auto c_idx = [](const size_type i) {
+      return to_c_idx<size_type, OneBased>(i);
+    };
+    const size_type psize = OnlyLeading ? leading : m;
+    if (DoValue) {
+      buf.resize(OnlyLeading ? leading : n);
+      psmilu_error_if(buf.status() == DATA_UNDEF, "memory allocation failed");
+    }
+    indptr.resize(psize + 1);
+    psmilu_error_if(indptr.status() == DATA_UNDEF, "memory allocation failed");
+    // compute an upper bound of nnz, efficiently
+    size_type nnz(0);
+    for (size_type i(0); i < psize; ++i) nnz += _nnz(p[i]);
+    if (!nnz) {
+      std::fill(indptr.begin(), indptr.end(), OneBased);
+      return;
+    }
+    indptr.front() = OneBased;
+    indices.resize(nnz);
+    psmilu_error_if(indices.status() == DATA_UNDEF, "memory allocation failed");
+    if (DoValue) {
+      vals.resize(nnz);
+      psmilu_error_if(vals.status() == DATA_UNDEF, "memory allocation failed");
+    }
+    auto i_itr = indices.begin();
+    auto v_itr = vals.begin();
+    for (size_type i(0); i < psize; ++i) {
+      auto last    = _ind_cend(p[i]);
+      auto V_itr   = val_cbegin(p[i]);
+      auto itr_bak = i_itr;
+      for (auto itr = _ind_cbegin(p[i]); itr != last; ++itr, V_itr += DoValue) {
+        if (!OnlyLeading) {
+          *i_itr++ = qt[c_idx(*itr)];
+          if (DoValue) buf[qt[c_idx(*itr)]] = *V_itr;
+        } else {
+          const size_type inv_idx = qt[c_idx(*itr)];
+          if (inv_idx < psize) {
+            *i_itr++ = inv_idx;
+            if (DoValue) buf[inv_idx] = *V_itr;
+          }
+        }
+      }
+      // sort
+      indptr[i + 1] = indptr[i] + (i_itr - itr_bak);
+      std::sort(itr_bak, i_itr);
+      if (DoValue)
+        for (auto itr = itr_bak; itr != i_itr; ++itr, ++v_itr)
+          *v_itr = buf[*itr];
+    }
+    indices.resize(i_itr - indices.begin());
+    if (DoValue) vals.resize(v_itr - vals.begin());
+    if (OneBased)
+      std::for_each(indices.begin(), indices.end(), [](index_type &i) { ++i; });
   }
 
  protected:
@@ -866,6 +1109,132 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
     return m;
   }
 
+  /// \brief split the matrix against column
+  /// \tparam IsSecond if \a true, then the second half is returned
+  /// \param[in] m column size
+  ///
+  /// If \a IsSecond is \a true, then the result matrix is \a A[:,m:]; otherwise
+  /// the result matrix is \a A[:,0:m]
+  template <bool IsSecond>
+  inline CRS split(const size_type m) const {
+    psmilu_error_if(m > _ncols, "invalid split threshold");
+    CRS B;
+    B.resize(_psize, IsSecond ? _ncols - m : m);
+    _base::template _split<IsSecond>(m, B.row_start(), B.col_ind(), B.vals());
+    return B;
+  }
+
+  /// \brief split the matrix against column
+  /// \tparam IsSecond if \a true, then the second half is returned
+  /// \param[in] m column size
+  /// \param[in] start starting position array, at least size of nrows()
+  ///
+  /// If \a IsSecond is \a true, then the result matrix is \a A[:,m:]; otherwise
+  /// the result matrix is \a A[:,0:m]
+  template <bool IsSecond>
+  inline CRS split(const size_type m, const iarray_type &start) const {
+    psmilu_error_if(m > _ncols, "invalid split threshold");
+    psmilu_error_if(start.size() < _psize, "invalid starting position size");
+    CRS B;
+    B.resize(_psize, IsSecond ? _ncols - m : m);
+    _base::template _split<IsSecond>(m, start.data(), B.row_start(),
+                                     B.col_ind(), B.vals());
+    return B;
+  }
+
+  /// \brief split the matrix against column
+  /// \param[in] m column size
+  inline std::pair<CRS, CRS> split(const size_type m) const {
+    return std::make_pair(split<false>(m), split<true>(m));
+  }
+
+  /// \brief split the matrix against column
+  /// \param[in] m column size
+  /// \param[in] start starting position array, at least size of \a m
+  inline std::pair<CRS, CRS> split(const size_type    m,
+                                   const iarray_type &start) const {
+    return std::make_pair(split<false>(m, start), split<true>(m, start));
+  }
+
+  /// \brief split and store to \ref CCS
+  /// \tparam IsSecond if \a true, then the second half is returned
+  /// \param[in] m column size
+  template <bool IsSecond>
+  inline other_type split_ccs(const size_type m) const {
+    psmilu_error_if(m > _ncols, "invalid split threshold");
+    other_type B;
+    B.resize(_psize, IsSecond ? _ncols - m : m);
+    _base::template _split_dual<IsSecond>(m, _ncols, B.col_start(), B.row_ind(),
+                                          B.vals());
+    return B;
+  }
+
+  /// \brief split and store to \ref CCS
+  /// \tparam IsSecond if \a true, then the second half is returned
+  /// \param[in] m column size
+  /// \param[in] start starting position array, at least size of nrows()
+  template <bool IsSecond>
+  inline other_type split_ccs(const size_type    m,
+                              const iarray_type &start) const {
+    psmilu_error_if(m > _ncols, "invalid split threshold");
+    psmilu_error_if(start.size() < _psize, "invalid starting position size");
+    other_type B;
+    B.resize(_psize, IsSecond ? _ncols - m : m);
+    _base::template _split_dual<IsSecond>(m, _ncols, start.data(),
+                                          B.col_start(), B.row_ind(), B.vals());
+    return B;
+  }
+
+  /// \brief split the matrix against column and store to \ref CCS
+  /// \param[in] m column size
+  inline std::pair<other_type, other_type> split_ccs(const size_type m) const {
+    return std::make_pair(split_ccs<false>(m), split_ccs<true>(m));
+  }
+
+  /// \brief split the matrix against column and store to \ref CCS
+  /// \param[in] m column size
+  /// \param[in] start starting position array, at least size of nrows()
+  inline std::pair<other_type, other_type> split_ccs(
+      const size_type m, const iarray_type &start) const {
+    return std::make_pair(split_ccs<false>(m, start),
+                          split_ccs<true>(m, start));
+  }
+
+  /// \brief compute permutation CRS
+  /// \param[in] p row permutation, from perm to origin
+  /// \param[in] qt column permutation, from origin to perm
+  /// \param[in] leading if > 0, then extract leading block
+  /// \param[in] struct_only if \a false (default), then also compute values
+  inline CRS compute_perm(const iarray_type &p, const iarray_type &qt,
+                          const size_type leading     = 0,
+                          const bool      struct_only = false) const {
+    psmilu_error_if(qt.size() != ncols(),
+                    "invalid column permutation vector length");
+    const bool do_all =
+        leading == 0u || (leading == _psize && leading == _ncols);
+    CRS A;
+    if (do_all) {
+      A.resize(_psize, _ncols);
+      if (!struct_only)
+        _base::template _compute_perm<true, false>(
+            p, qt, leading, A.row_start(), A.col_ind(), A.vals());
+      else
+        _base::template _compute_perm<false, false>(
+            p, qt, leading, A.row_start(), A.col_ind(), A.vals());
+    } else {
+      psmilu_error_if(leading > std::min(_psize, _ncols),
+                      "invalid leading block size");
+      A.resize(leading, leading);
+      if (!struct_only)
+        _base::template _compute_perm<true, true>(p, qt, leading, A.row_start(),
+                                                  A.col_ind(), A.vals());
+      else
+        _base::template _compute_perm<false, true>(
+            p, qt, leading, A.row_start(), A.col_ind(), A.vals());
+    }
+    return A;
+  }
+
  protected:
   size_type _ncols;     ///< number of columns
   using _base::_psize;  ///< number of rows (primary entries)
@@ -1401,6 +1770,126 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
           CCS(other_type(row, col, i_start.data(), is.data(), vs.data(), true));
 
     return m;
+  }
+
+  /// \brief split against row
+  /// \tparam IsSecond if \a true, then the offset part is returned
+  /// \param[in] m splitted row size
+  template <bool IsSecond>
+  inline CCS split(const size_type m) const {
+    psmilu_error_if(m > _nrows, "invalid row size");
+    CCS B;
+    B.resize(IsSecond ? _nrows - m : m, _psize);
+    _base::template _split<IsSecond>(m, B.col_start(), B.row_ind(), B.vals());
+    return B;
+  }
+
+  /// \brief split against row
+  /// \tparam IsSecond if \a true, then the offset part is returned
+  /// \param[in] m splitted row size
+  /// \param[in] start starting position array
+  template <bool IsSecond>
+  inline CCS split(const size_type m, const iarray_type &start) const {
+    psmilu_error_if(m > _nrows, "invalid row size");
+    psmilu_error_if(start.size() < _psize, "invalid starting position array");
+    CCS B;
+    B.resize(IsSecond ? _nrows - m : m, _psize);
+    _base::template _split<IsSecond>(m, start.data(), B.col_start(),
+                                     B.row_ind(), B.vals());
+    return B;
+  }
+
+  /// \brief split against row
+  /// \param[in] m splitted row size
+  inline std::pair<CCS, CCS> split(const size_type m) const {
+    return std::make_pair(split<false>(m), split<true>(m));
+  }
+
+  /// \brief split against row
+  /// \param[in] m splitted row size
+  /// \param[in] start starting position array
+  inline std::pair<CCS, CCS> split(const size_type    m,
+                                   const iarray_type &start) const {
+    return std::make_pair(split<false>(m, start), split<true>(m, start));
+  }
+
+  /// \brief split against row and store in \ref CRS
+  /// \tparam IsSecond if \a true, then the offset part is returned
+  /// \param[in] m splitted row size
+  template <bool IsSecond>
+  inline other_type split_crs(const size_type m) const {
+    psmilu_error_if(m > _nrows, "invalid row size");
+    other_type B;
+    B.resize(IsSecond ? _nrows - m : m, _psize);
+    _base::template _split_dual<IsSecond>(m, _nrows, B.row_start(), B.col_ind(),
+                                          B.vals());
+    return B;
+  }
+
+  /// \brief split against row and store in \ref CRS
+  /// \tparam IsSecond if \a true, then the offset part is returned
+  /// \param[in] m splitted row size
+  /// \param[in] start starting position array
+  template <bool IsSecond>
+  inline other_type split_crs(const size_type    m,
+                              const iarray_type &start) const {
+    psmilu_error_if(m > _nrows, "invalid row size");
+    psmilu_error_if(start.size() < _psize, "invalid starting position array");
+    other_type B;
+    B.resize(IsSecond ? _nrows - m : m, _psize);
+    _base::template _split_dual<IsSecond>(m, _nrows, start.data(),
+                                          B.row_start(), B.col_ind(), B.vals());
+    return B;
+  }
+
+  /// \brief split against row and store in \ref CRS
+  /// \param[in] m splitted row size
+  inline std::pair<other_type, other_type> split_crs(const size_type m) const {
+    return std::make_pair(split_crs<false>(m), split_crs<true>(m));
+  }
+
+  /// \brief split against row and store in \ref CRS
+  /// \param[in] m splitted row size
+  /// \param[in] start starting position array
+  inline std::pair<other_type, other_type> split_crs(
+      const size_type m, const iarray_type &start) const {
+    return std::make_pair(split_crs<false>(m, start),
+                          split_crs<true>(m, start));
+  }
+
+  /// \brief compute permutation CCS
+  /// \param[in] pt row permutation, from origin to perm
+  /// \param[in] q column permutation, from perm to origin
+  /// \param[in] leading if > 0, then extract leading block
+  /// \param[in] struct_only if \a false (default), then also compute values
+  inline CCS compute_perm(const iarray_type &pt, const iarray_type &q,
+                          const size_type leading     = 0,
+                          const bool      struct_only = false) const {
+    psmilu_error_if(pt.size() != nrows(),
+                    "invalid row permutation vector length");
+    const bool do_all =
+        leading == 0u || (leading == _psize && leading == _nrows);
+    CCS A;
+    if (do_all) {
+      A.resize(_nrows, _psize);
+      if (!struct_only)
+        _base::template _compute_perm<true, false>(
+            q, pt, leading, A.col_start(), A.row_ind(), A.vals());
+      else
+        _base::template _compute_perm<false, false>(
+            q, pt, leading, A.col_start(), A.row_ind(), A.vals());
+    } else {
+      psmilu_error_if(leading > std::min(_psize, _nrows),
+                      "invalid leading block size");
+      A.resize(leading, leading);
+      if (!struct_only)
+        _base::template _compute_perm<true, true>(q, pt, leading, A.col_start(),
+                                                  A.row_ind(), A.vals());
+      else
+        _base::template _compute_perm<false, true>(
+            q, pt, leading, A.col_start(), A.row_ind(), A.vals());
+    }
+    return A;
   }
 
  protected:

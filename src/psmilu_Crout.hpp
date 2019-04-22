@@ -11,6 +11,7 @@
 #ifndef _PSMILU_CROUT_HPP
 #define _PSMILU_CROUT_HPP
 
+#include <algorithm>
 #include <cstddef>
 #include <type_traits>
 
@@ -153,28 +154,41 @@ class Crout {
       while (!L.is_nil(aug_id)) {
         // get the column index (C-based)
         // NOTE the column index is that of the row in U
-        const index_type c_idx = L.col_idx(aug_id);
+        const index_type col_idx = L.col_idx(aug_id);
         psmilu_assert(
-            (size_type)c_idx < _step,
+            (size_type)col_idx < _step,
             "compute_ut column index %zd should not exceed step %zd for L",
-            (size_type)c_idx, _step);
-        psmilu_assert((size_type)c_idx < d.size(),
-                      "%zd exceeds the diagonal vector size", (size_type)c_idx);
-        psmilu_assert((size_type)c_idx < U_start.size(),
-                      "%zd exceeds the U_start size", (size_type)c_idx);
+            (size_type)col_idx, _step);
+        psmilu_assert((size_type)col_idx < d.size(),
+                      "%zd exceeds the diagonal vector size",
+                      (size_type)col_idx);
+        psmilu_assert((size_type)col_idx < U_start.size(),
+                      "%zd exceeds the U_start size", (size_type)col_idx);
         // NOTE once we drop val-pos impl, change this accordingly (L_start)
         // compute L*D
-        const auto ld = L.val_from_row_id(aug_id) * d[c_idx];
+        const auto ld = L.val_from_row_id(aug_id) * d[col_idx];
         // get the starting position from U_start
-        auto U_v_itr  = U_v_first + U_start[c_idx];
-        auto U_i_itr  = U_i_first + U_start[c_idx],
-             U_i_last = U.col_ind_cend(c_idx);
+        auto U_v_itr  = U_v_first + U_start[col_idx];
+        auto U_i_itr  = U_i_first + U_start[col_idx],
+             U_i_last = U.col_ind_cend(col_idx);
+#ifndef NDEBUG
+        if (U_i_itr != U.col_ind_cbegin(col_idx)) {
+          const auto prev_idx = to_c_idx<size_type, base>(*(U_i_itr - 1));
+          psmilu_error_if(prev_idx > _step, "U_start error!");
+        }
+#endif
         // for this local range
         for (; U_i_itr != U_i_last; ++U_i_itr, ++U_v_itr) {
           // convert to c index
           const auto c_idx = to_c_idx<size_type, base>(*U_i_itr);
-          ut.push_back(*U_i_itr, _step) ? ut.vals()[c_idx] = -ld * *U_v_itr
-                                        : ut.vals()[c_idx] -= ld * *U_v_itr;
+          psmilu_assert(
+              c_idx > _step,
+              "U index %zd in computing ut should greater than step %zd", c_idx,
+              _step);
+          if (ut.push_back(*U_i_itr, _step))
+            ut.vals()[c_idx] = -ld * *U_v_itr;
+          else
+            ut.vals()[c_idx] -= ld * *U_v_itr;
         }
         // advance augmented handle
         aug_id = L.next_row_id(aug_id);
@@ -269,6 +283,11 @@ class Crout {
         // get the row index (C-based)
         // NOTE the row index is that of the column in L
         const index_type r_idx = U.row_idx(aug_id);
+        if (!IsSymm)
+          psmilu_assert(
+              (size_type)r_idx < _step,
+              "compute_ut row index %zd should not exceed step %zd for U",
+              (size_type)r_idx, _step);
         psmilu_assert((size_type)r_idx < d.size(),
                       "%zd exceeds the diagonal vector size", (size_type)r_idx);
         psmilu_assert((size_type)r_idx < L_start.size(),
@@ -281,6 +300,12 @@ class Crout {
         auto L_v_itr  = L_v_first + L_start[r_idx];
         auto L_i_itr  = L_i_first + L_start[r_idx],
              L_i_last = L.row_ind_cend(r_idx);
+#ifndef NDEBUG
+        if (L_i_itr != L.row_ind_cbegin(r_idx)) {
+          const auto prev_idx = to_c_idx<size_type, base>(*(L_i_itr - 1));
+          psmilu_error_if(prev_idx > _step, "L_start error!");
+        }
+#endif
         // for this local range
         for (; L_i_itr != L_i_last; ++L_i_itr, ++L_v_itr) {
           // convert to c index
@@ -292,10 +317,16 @@ class Crout {
                 "%zd step symmetric l should not contain upper part (%zd)",
                 _step, c_idx);
 #endif
+          psmilu_assert(
+              c_idx > _step,
+              "L index %zd in computing l should greater than step %zd", c_idx,
+              _step);
           // compute this entry, if index does not exist, assign new value to
           // -L*d*u, else, -= L*d*u
-          l.push_back(*L_i_itr, _step) ? l.vals()[c_idx] = -*L_v_itr * du
-                                       : l.vals()[c_idx] -= *L_v_itr * du;
+          if (l.push_back(*L_i_itr, _step))
+            l.vals()[c_idx] = -du * *L_v_itr;
+          else
+            l.vals()[c_idx] -= *L_v_itr * du;
         }
         // advance augmented handle
         aug_id = U.next_col_id(aug_id);
@@ -453,7 +484,7 @@ class Crout {
       // then the ending position is stored
       // col_start has an extra element, thus this is valid accessing
       // or maybe we can use {Array,vector}::back??
-      L_start[_step - 1] = L.col_start()[_step];
+      L_start[_step - 1] = L.col_start()[_step] - ONE_BASED;
       return;
     }
     // binary search to point to start of newly added row
@@ -498,8 +529,10 @@ class Crout {
     //    2) create a caster class
     using extractor = internal::SpVInternalExtractor<SpVecType>;
 
+    // assume l is not scaled by the diagonal
+
     // get the current diagonal entry
-    const auto dk = d[_step];
+    // const auto dk = d[_step];
     if (ut.size() <= l.size()) {
       const auto &    l_d_tags = static_cast<const extractor &>(l).dense_tags();
       const size_type n        = ut.size();
@@ -513,7 +546,8 @@ class Crout {
         // if the dense tags of this entry points to this step, we know l has
         // an element in this slot
         if (c_idx < m && (size_type)l_d_tags[c_idx] == _step)
-          d[c_idx] -= dk * ut.val(i) * l_vals[c_idx];
+          // d[c_idx] -= dk * ut.val(i) * l_vals[c_idx];
+          d[c_idx] -= ut.val(i) * l_vals[c_idx];
       }
     } else {
       const auto &ut_d_tags  = static_cast<const extractor &>(ut).dense_tags();
@@ -528,7 +562,8 @@ class Crout {
         // if the dense tags of this entry points to this step, we know ut has
         // an element in this slot
         if (c_idx < m && (size_type)ut_d_tags[c_idx] == _step)
-          d[c_idx] -= dk * u_vals[c_idx] * l.val(i);
+          // d[c_idx] -= dk * u_vals[c_idx] * l.val(i);
+          d[c_idx] -= u_vals[c_idx] * l.val(i);
       }
     }
   }
@@ -608,9 +643,9 @@ class Crout {
     auto       i_itr = crs_A.col_ind_cbegin(pk);
     const auto s_pk  = s[pk];
     for (auto last = crs_A.col_ind_cend(pk); i_itr != last; ++i_itr, ++v_itr) {
-      const auto A_idx = to_c_idx<size_type, base>(*i_itr);
-      const auto c_idx = q.inv(A_idx);
-      if ((size_type)c_idx > _step) {
+      const auto      A_idx = to_c_idx<size_type, base>(*i_itr);
+      const size_type c_idx = q.inv(A_idx);
+      if (c_idx > _step) {
 #ifndef NDEBUG
         const bool val_must_not_exit =
 #endif
@@ -657,10 +692,10 @@ class Crout {
     auto       i_itr = ccs_A.row_ind_cbegin(qk);
     const auto t_qk  = t[qk];
     for (auto last = ccs_A.row_ind_cend(qk); i_itr != last; ++i_itr, ++v_itr) {
-      const auto A_idx = to_c_idx<size_type, base>(*i_itr);
-      const auto c_idx = p.inv(A_idx);
+      const auto      A_idx = to_c_idx<size_type, base>(*i_itr);
+      const size_type c_idx = p.inv(A_idx);
       // push to the sparse vector only if its in range _step+1:n
-      if ((size_type)c_idx > thres) {
+      if (c_idx > thres) {
 #ifndef NDEBUG
         const bool val_must_not_exit =
 #endif
@@ -674,6 +709,113 @@ class Crout {
 
  protected:
   mutable size_type _step;  ///< current step
+};
+
+class Crout2 : public Crout {
+ public:
+  /// \brief default constructor
+  Crout2() = default;
+
+  Crout2(const Crout2 &) = default;
+  Crout2 &operator=(const Crout2 &) = default;
+
+  using size_type = Crout::size_type;
+
+  /// \brief load a row of A to ut buffer
+  /// \tparam LeftDiagType diagonal matrix from left-hand side, see \ref Array
+  /// \tparam CrsType crs matrix of input A, see \ref CRS
+  /// \tparam RightDiagType diagonal matrix from right-hand side
+  /// \tparam PermType permutation vector type, see \ref BiPermMatrix
+  /// \tparam SpVecType sparse vector type, see \ref SparseVector
+  /// \param[in] s row scaling vector
+  /// \param[in] crs_A input matrix in CRS scheme
+  /// \param[in] t column scaling vector
+  /// \param[in] pk permutated row index
+  /// \param[in] q column permutation matrix
+  /// \param[out] ut output sparse vector of row of A
+  template <class LeftDiagType, class CrsType, class RightDiagType,
+            class PermType, class SpVecType>
+  inline void fetch_A_row(const LeftDiagType &s, const CrsType &crs_A,
+                          const RightDiagType &t, const size_type pk,
+                          const PermType &q, SpVecType &ut) const {
+    ut.reset_counter();  // reset counter
+    _load_A2ut(s, crs_A, t, pk, q, ut);
+  }
+
+  /// \brief load column of A to l buffer
+  /// \tparam IsSymm if \a true, then only load the offset
+  /// \tparam LeftDiagType diagonal matrix from left-hand side
+  /// \tparam CcsType ccs matrix of input A, see \ref CCS
+  /// \tparam RightDiagType diagonal matrix from right-hand side
+  /// \tparam PermType permutation vector type, see \ref BiPermMatrix
+  /// \tparam SpVecType sparse vector type, see \ref SparseVector
+  /// \param[in] s row scaling vector
+  /// \param[in] ccs_A input matrix in CCS scheme
+  /// \param[in] t column scaling vector
+  /// \param[in] p row permutation matrix
+  /// \param[in] qk permuted column index
+  /// \param[in] m leading size
+  /// \param[out] l output sparse vector of column vector for A
+  template <bool IsSymm, class LeftDiagType, class CcsType, class RightDiagType,
+            class PermType, class SpVecType>
+  inline void fetch_A_col(const LeftDiagType &s, const CcsType &ccs_A,
+                          const RightDiagType &t, const PermType &p,
+                          const size_type qk, const size_type m,
+                          SpVecType &l) const {
+    l.reset_counter();
+    if (!IsSymm) _load_A2l<false>(s, ccs_A, t, p, qk, m, l);
+  }
+
+  template <bool IsSymm, class SpVecType1, class DiagType, class PvtCand>
+  inline void find_pvt_entries(const SpVecType1 &u, const SpVecType1 &l,
+                               const typename SpVecType1::size_type m,
+                               const DiagType &d, const std::vector<bool> &pvt,
+                               const double tau_d, PvtCand &entries) const {
+    using extractor = internal::SpVInternalExtractor<SpVecType1>;
+    entries.reset_counter();
+    const auto &u_vals = u.vals();
+    if (!IsSymm) {
+      const auto &l_vals = l.vals();
+      if (u.size() > l.size()) {
+        const auto &    d_tags = static_cast<const extractor &>(u).dense_tags();
+        const size_type n      = l.size();
+        for (size_type i(0); i < n; ++i) {
+          const size_type c_idx = l.c_idx(i);
+          psmilu_assert(c_idx > _step,
+                        "should only contain the lower part of l, "
+                        "(c_idx,step)=(%zd,%zd)!",
+                        c_idx, _step);
+          if (c_idx < m && (size_type)d_tags[c_idx] == _step && !pvt[c_idx])
+            if (std::abs(1. / d[c_idx]) <= tau_d) entries.push_back(c_idx);
+        }
+      } else {
+        const auto &    d_tags = static_cast<const extractor &>(l).dense_tags();
+        const size_type n      = u.size();
+        for (size_type i(0); i < n; ++i) {
+          const size_type c_idx = u.c_idx(i);
+          psmilu_assert(c_idx > _step,
+                        "should only contain the upper part of ut, "
+                        "(c_idx,step)=(%zd,%zd)!",
+                        c_idx, _step);
+          if (c_idx < m && (size_type)d_tags[c_idx] == _step && !pvt[c_idx])
+            if (std::abs(1. / d[c_idx]) <= tau_d) entries.push_back(c_idx);
+        }
+      }
+    } else {
+      // symmetric case
+      const size_type n = u.size();
+      for (size_type i(0); i < n; ++i) {
+        const size_type c_idx = l.c_idx(i);
+        psmilu_assert(c_idx > _step,
+                      "should only contain the lower part of l, "
+                      "(c_idx,step)=(%zd,%zd)!",
+                      c_idx, _step);
+        if (c_idx < m && !pvt[c_idx])
+          if (std::abs(1. / d[c_idx]) <= tau_d) entries.push_back(c_idx);
+      }
+    }
+    if (entries.size()) entries.sort_indices();
+  }
 };
 }  // namespace psmilu
 

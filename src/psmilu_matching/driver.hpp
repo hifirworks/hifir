@@ -68,6 +68,7 @@ inline typename CcsType::size_type defer_zero_diags(
       psmilu_assert(p[col] == q_col, "fatal");
       auto itr = A.row_ind_cbegin(q_col);
       if (itr == A.row_ind_cend(q_col)) return false;
+      if (*itr - ONE_BASED != q_col) return false;
       if (*A.val_cbegin(q_col) == ZERO) return false;
     } else {
       const auto p_diag = p[col];
@@ -125,8 +126,8 @@ compute_perm_leading_block(const CcsType &                   A,
   col_start.front() = 0;  // zero based
 
   // buffer for value array
-  Array<typename CcsType::value_type> buf(m);
-  psmilu_error_if(buf.status() == DATA_UNDEF, "memory allocation failed");
+  // Array<typename CcsType::value_type> buf(m);
+  // psmilu_error_if(buf.status() == DATA_UNDEF, "memory allocation failed");
 
   // determine nnz
   for (size_type col = 0u; col < m; ++col) {
@@ -139,15 +140,17 @@ compute_perm_leading_block(const CcsType &                   A,
   for (size_type i = 0u; i < m; ++i) col_start[i + 1] += col_start[i];
 
   // allocate storage
-  B.reserve(col_start[m]);
+  // B.reserve(col_start[m]);
   auto &row_ind = B.row_ind();
-  psmilu_error_if(row_ind.status() == DATA_UNDEF, "memory allocation failed");
-  auto &vals = B.vals();
-  psmilu_error_if(vals.status() == DATA_UNDEF, "memory allocation failed");
+  // NOTE we only indices for reordering step
   row_ind.resize(col_start[m]);
+  psmilu_error_if(row_ind.status() == DATA_UNDEF, "memory allocation failed");
+  // auto &vals = B.vals();
+  // psmilu_error_if(vals.status() == DATA_UNDEF, "memory allocation failed");
+  // row_ind.resize(col_start[m]);
   auto itr = row_ind.begin();
-  vals.resize(col_start[m]);
-  auto v_itr = vals.begin();
+  // vals.resize(col_start[m]);
+  // auto v_itr = vals.begin();
 
   // assemble nnz arrays
   for (size_type col = 0u; col < m; ++col) {
@@ -157,18 +160,19 @@ compute_perm_leading_block(const CcsType &                   A,
          A_itr != last; ++A_itr, ++A_v_itr) {
       const size_type p_inv = p.inv(c_idx(*A_itr));
       if (p_inv < m) {
-        *itr++     = p_inv;
-        buf[p_inv] = *A_v_itr;
+        *itr++ = p_inv;
+        // buf[p_inv] = *A_v_itr;
       }
     }
     // sort indices
     std::sort(B.row_ind_begin(col), itr);
-    for (auto i = B.row_ind_cbegin(col), last = B.row_ind_cend(col); i != last;
-         ++i, ++v_itr)
-      *v_itr = buf[*i];
+    // for (auto i = B.row_ind_cbegin(col), last = B.row_ind_cend(col); i !=
+    // last;
+    //      ++i, ++v_itr)
+    //   *v_itr = buf[*i];
   }
 
-  psmilu_assert(v_itr == vals.end(), "fatal");
+  // psmilu_assert(v_itr == vals.end(), "fatal");
 
   return B;
 }
@@ -211,37 +215,42 @@ compute_perm_leading_block(const CcsType &                   A,
   col_start.front() = 0;  // zero based
 
   // buffer for value array
-  Array<typename CcsType::value_type> buf(m);
-  psmilu_error_if(buf.status() == DATA_UNDEF, "memory allocation failed");
+  // Array<typename CcsType::value_type> buf(m);
+  // psmilu_error_if(buf.status() == DATA_UNDEF, "memory allocation failed");
 
   // determine nnz
   for (size_type col = 0u; col < m; ++col) {
-    const auto q_col   = q[col];
-    col_start[col + 1] = std::count_if(
-        A.row_ind_cbegin(q_col), A.row_ind_cend(q_col), [&](decltype(q_col) i) {
-          return static_cast<size_type>(p.inv(c_idx(i))) >= col;
-        });
+    const auto q_col = q[col];
+    col_start[col + 1] =
+        std::count_if(A.row_ind_cbegin(q_col), A.row_ind_cend(q_col),
+                      [&, m](decltype(q_col) i) {
+                        const size_type p_idx = p.inv(c_idx(i));
+                        return p_idx >= col && p_idx < m;
+                      });
     if (A_crs.nnz_in_row(q_col)) {
       // for the upper part
-      col_start[col + 1] +=
-          std::count_if(A_crs.col_ind_cbegin(q_col),
-                        A_crs.col_ind_cend(q_col) - 1, [&](decltype(q_col) i) {
-                          return static_cast<size_type>(p.inv(c_idx(i))) >= col;
-                        });
+      col_start[col + 1] += std::count_if(
+          A_crs.col_ind_cbegin(q_col), A_crs.col_ind_cend(q_col) - 1,
+          [&, m](decltype(q_col) i) {
+            const size_type p_idx = p.inv(c_idx(i));
+            return p_idx >= col && p_idx < m;
+          });
     }
   }
   for (size_type i = 0u; i < m; ++i) col_start[i + 1] += col_start[i];
 
   // allocate storage
-  B.reserve(col_start[m]);
+  // B.reserve(col_start[m]);
+  // NOTE we only need indices for next step, i.e. reordering
   auto &row_ind = B.row_ind();
-  psmilu_error_if(row_ind.status() == DATA_UNDEF, "memory allocation failed");
-  auto &vals = B.vals();
-  psmilu_error_if(vals.status() == DATA_UNDEF, "memory allocation failed");
   row_ind.resize(col_start[m]);
+  psmilu_error_if(row_ind.status() == DATA_UNDEF, "memory allocation failed");
+  // auto &vals = B.vals();
+  // psmilu_error_if(vals.status() == DATA_UNDEF, "memory allocation failed");
+  // row_ind.resize(col_start[m]);
   auto itr = row_ind.begin();
-  vals.resize(col_start[m]);
-  auto v_itr = vals.begin();
+  // vals.resize(col_start[m]);
+  // auto v_itr = vals.begin();
 
   // assemble nnz arrays
   for (size_type col = 0u; col < m; ++col) {
@@ -250,9 +259,9 @@ compute_perm_leading_block(const CcsType &                   A,
     for (auto A_itr = A.row_ind_cbegin(q_col), last = A.row_ind_cend(q_col);
          A_itr != last; ++A_itr, ++A_v_itr) {
       const size_type p_inv = p.inv(c_idx(*A_itr));
-      if (p_inv >= col) {
-        *itr++     = p_inv;
-        buf[p_inv] = *A_v_itr;
+      if (p_inv >= col && p_inv < m) {
+        *itr++ = p_inv;
+        // buf[p_inv] = *A_v_itr;
       }
     }
     if (A_crs.nnz_in_row(q_col)) {
@@ -261,20 +270,21 @@ compute_perm_leading_block(const CcsType &                   A,
                 last  = A_crs.col_ind_cend(q_col) - 1;
            A_itr != last; ++A_itr, ++A_v_itr) {
         const size_type p_inv = p.inv(c_idx(*A_itr));
-        if (p_inv >= col) {
-          *itr++     = p_inv;
-          buf[p_inv] = *A_v_itr;
+        if (p_inv >= col && p_inv < m) {
+          *itr++ = p_inv;
+          // buf[p_inv] = *A_v_itr;
         }
       }
     }
     // sort indices
     std::sort(B.row_ind_begin(col), itr);
-    for (auto i = B.row_ind_cbegin(col), last = B.row_ind_cend(col); i != last;
-         ++i, ++v_itr)
-      *v_itr = buf[*i];
+    // for (auto i = B.row_ind_cbegin(col), last = B.row_ind_cend(col); i !=
+    // last;
+    //      ++i, ++v_itr)
+    //   *v_itr = buf[*i];
   }
 
-  psmilu_assert(v_itr == vals.end(), "fatal");
+  // psmilu_assert(v_itr == vals.end(), "fatal");
 
   return B;
 }
@@ -342,12 +352,13 @@ do_maching(const CcsType &A, const typename CcsType::size_type m0,
     q[i] = i;
     t[i] = ONE;
   }
+
   // then determine zero diags
   const size_type m =
       !hdl_zero_diags ? m0 : internal::defer_zero_diags<IsSymm>(B1, m0, p, q);
+#ifndef PSMILU_DISABLE_REORDERING
   const bool is_eye_perm = p.is_eye() && q.is_eye();
   if (!is_eye_perm) {
-    // we need inverse mapping for row permutation
     p.build_inv();
     B = internal::compute_perm_leading_block<IsSymm, return_type>(B1, m, p, q);
   } else {
@@ -376,6 +387,7 @@ do_maching(const CcsType &A, const typename CcsType::size_type m0,
       B.vals() = B1.vals();
     }
   }
+#endif  // PSMILU_DISABLE_REORDERING
   return std::make_pair(B, m);
 }
 }  // namespace psmilu

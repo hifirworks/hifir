@@ -25,6 +25,7 @@ namespace psmilu {
 /// \param[in] step current Crout step
 /// \param[in] U upper part
 /// \param[in,out] kappa_u older slutions in and new solution out
+/// \param[in] col if not zero, then use this column instead of \a step
 /// \return if \a true, then the current rhs is one; ow, it's negative one
 /// \ingroup diag
 /// \note Recall that the upper part is unit diagonal implicit entries
@@ -43,7 +44,8 @@ namespace psmilu {
 /// \f$\mathcal{O}(\textrm{nnz}(\boldsymbol{U}_{:,k}))\f$
 template <class U_AugCrsType, class KappaU_Type>
 inline bool update_kappa_ut(const typename U_AugCrsType::size_type step,
-                            const U_AugCrsType &U, KappaU_Type &kappa_u) {
+                            const U_AugCrsType &U, KappaU_Type &kappa_u,
+                            const typename U_AugCrsType::size_type col = 0) {
   static_assert(U_AugCrsType::ROW_MAJOR, "must be row major storage");
   using value_type          = typename U_AugCrsType::value_type;
   using index_type          = typename U_AugCrsType::index_type;
@@ -59,7 +61,7 @@ inline bool update_kappa_ut(const typename U_AugCrsType::size_type step,
   value_type sum(0);
 
   // start augment id
-  index_type aug_id = U.start_col_id(step);
+  index_type aug_id = U.start_col_id(col ? col : step);
   while (!U.is_nil(aug_id)) {
     const index_type row_idx = U.row_idx(aug_id);
     psmilu_assert((size_type)row_idx < kappa_u.size(),
@@ -88,6 +90,7 @@ inline bool update_kappa_ut(const typename U_AugCrsType::size_type step,
 /// \param[in] L lower part at current step
 /// \param[in] kappa_u condition number for U
 /// \param[in,out] kappa_l previous solutions in and current solution out
+/// \param[in] row if not zero, then use this row instead of \a step
 /// \return if \a true, then the current rhs is one; ow, it's negative one
 /// \ingroup diag
 /// \note Recall that the lower part is unit diagonal with implicit entries
@@ -109,7 +112,8 @@ inline bool update_kappa_ut(const typename U_AugCrsType::size_type step,
 template <bool IsSymm, class L_AugCcsType, class KappaU_Type, class KappaL_Type>
 inline bool update_kappa_l(const typename L_AugCcsType::size_type step,
                            const L_AugCcsType &L, const KappaU_Type &kappa_u,
-                           KappaL_Type &kappa_l) {
+                           KappaL_Type &                          kappa_l,
+                           const typename L_AugCcsType::size_type row = 0) {
   if (!IsSymm) {
     static_assert(!L_AugCcsType::ROW_MAJOR, "must be column major storage");
     using value_type          = typename L_AugCcsType::value_type;
@@ -126,7 +130,7 @@ inline bool update_kappa_l(const typename L_AugCcsType::size_type step,
     value_type sum(0);
 
     // start augment id
-    index_type aug_id = L.start_row_id(step);
+    index_type aug_id = L.start_row_id(row ? row : step);
     while (!L.is_nil(aug_id)) {
       const index_type col_idx = L.col_idx(aug_id);
       psmilu_assert((size_type)col_idx < kappa_l.size(),

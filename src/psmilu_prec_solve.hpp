@@ -61,6 +61,7 @@ inline void prec_solve_udl_inv(const CrsType &U, const DiagType &d,
   psmilu_assert(U.ncols() == m, "U must be squared");
   psmilu_assert(L.nrows() == L.ncols(), "L must be squared");
   psmilu_assert(d.size() >= m, "diagonal must be no smaller than system size");
+  if (!m) return;
 
   // y=inv(L)*y
   for (size_type j = 1u; j < m; ++j) {

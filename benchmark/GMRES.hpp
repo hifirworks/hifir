@@ -34,7 +34,7 @@ namespace internal {
 class IdentityPrec {
  public:
   template <class Operator>
-  inline void compute(const Operator &, const void * = nullptr) {}
+  inline void factorize(const Operator &, const void * = nullptr) {}
 
   template <class Vector>
   inline void solve(const Vector &b, Vector &x) const {
