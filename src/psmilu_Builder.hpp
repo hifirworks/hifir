@@ -21,6 +21,7 @@
 #include "psmilu_Timer.hpp"
 #include "psmilu_fac.hpp"
 #include "psmilu_fac_defer.hpp"
+#include "psmilu_fac_pvt.hpp"
 #include "psmilu_prec_solve.hpp"
 #include "psmilu_utils.hpp"
 #include "psmilu_version.h"
@@ -272,6 +273,69 @@ class PSMILU {
     if (revert_warn) (void)warn_flag(1);
   }
 
+  template <class CsType>
+  inline void pivot_factorize(const CsType &A, const size_type m0 = 0u,
+                              const Options &opts  = get_default_options(),
+                              const bool     check = true) {
+    static_assert(!(CsType::ONE_BASED ^ ONE_BASED), "inconsistent index base");
+
+    const static internal::StdoutStruct  Crout_cout;
+    const static internal::DummyStreamer Crout_cout_dummy;
+
+    // print introduction
+    if (psmilu_verbose(INFO, opts)) {
+      if (!internal::introduced) {
+        psmilu_info(internal::intro, PSMILU_GLOBAL_VERSION,
+                    PSMILU_MAJOR_VERSION, PSMILU_MINOR_VERSION, __TIME__,
+                    __DATE__);
+        internal::introduced = true;
+      }
+      psmilu_info("Options (control parameters) are:\n");
+      psmilu_info(opt_repr(opts).c_str());
+    }
+    const bool revert_warn = warn_flag();
+    if (psmilu_verbose(NONE, opts)) (void)warn_flag(0);
+
+    // check validity of the input system
+    if (check) {
+      if (psmilu_verbose(INFO, opts))
+        psmilu_info("perform input matrix validity checking");
+      A.check_validity();
+    }
+
+    DefaultTimer t;  // record overall time
+    t.start();
+    if (!empty()) {
+      psmilu_warning(
+          "multilevel precs are not empty, wipe previous results first");
+      _precs.clear();
+      // also clear the previous buffer
+      _prec_work.resize(0);
+    }
+    if (psmilu_verbose(FAC, opts))
+      _pvt_factorize_kernel(A, m0, opts, Crout_cout);
+    else
+      _pvt_factorize_kernel(A, m0, opts, Crout_cout_dummy);
+    const size_type n1 = std::accumulate(
+                        _precs.cbegin(), _precs.cend(), size_type(0),
+                        [](const size_type i, const prec_type &p) -> size_type {
+                          const size_type s1 = i + p.m;
+                          if (p.dense_solver.empty()) return s1;
+                          return s1 + p.dense_solver.mat().nrows();
+                        }),
+                    n2(A.nrows());
+    psmilu_error_if(n1 != n2, "invalid prec/system sizes %zd/%zd", n1, n2);
+    t.finish();
+    if (psmilu_verbose(INFO, opts)) {
+      const size_type Nnz = nnz();
+      psmilu_info("\ninput nnz(A)=%zd, nnz(precs)=%zd, ratio=%g", A.nnz(), Nnz,
+                  (double)Nnz / A.nnz());
+      psmilu_info("\nmultilevel precs building time (overall) is %gs",
+                  t.time());
+    }
+    if (revert_warn) (void)warn_flag(1);
+  }
+
   /// \brief solve \f$\boldsymbol{x}=\boldsymbol{M}^{-1}\boldsymbol{b}\f$
   /// \param[in] b right-hand side vector
   /// \param[out] x solution vector
@@ -354,6 +418,36 @@ class PSMILU {
     // check last level
     if (!_precs.back().is_last_level())
       this->_deferred_factorize_kernel(S, 0u, opts, Crout_info);
+  }
+
+  template <class CsType, class CroutStreamer>
+  inline void _pvt_factorize_kernel(const CsType &A, const size_type m0,
+                                    const Options &      opts,
+                                    const CroutStreamer &Crout_info) {
+    psmilu_error_if(A.nrows() != A.ncols(),
+                    "Currently only squared systems are supported");
+    size_type       m(m0);  // init m
+    size_type       N;      // reference size
+    const size_type cur_level = levels() + 1;
+
+    // determine the reference size
+    if (opts.N >= 0)
+      N = opts.N;
+    else
+      N = cur_level == 1u ? A.nrows() : _precs.front().n;
+
+    // check symmetry
+    const bool sym = cur_level == 1u && m > 0u;
+    if (!sym) m = A.nrows();  // IMPORTANT! If asymmetric, set m = n
+
+    // instantiate IsSymm here
+    const CsType S =
+        sym ? iludp_factor_pvt<true>(A, m, N, opts, Crout_info, _precs)
+            : iludp_factor_pvt<false>(A, m, N, opts, Crout_info, _precs);
+
+    // check last level
+    if (!_precs.back().is_last_level())
+      this->_pvt_factorize_kernel(S, 0u, opts, Crout_info);
   }
 
  protected:
