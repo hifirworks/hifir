@@ -55,16 +55,24 @@ namespace internal {
 
 /// \def DETERMINE_LEVEL_PARS
 /// \brief adaptively determine the parameters from level to level
-#define DETERMINE_LEVEL_PARS(__tau_d, __tau_kappa, __tau_U, __tau_L,         \
-                             __alpha_L, __alpha_U, __opts, __lvl)            \
-  const int    _fac    = std::min(1 << (__lvl - 1), 8);                      \
-  const double _fac2   = 1. / std::min(1e3, std::pow(10.0, __lvl - 1));      \
-  const auto   __tau_d = std::max(2.0, std::pow(__opts.tau_d, 1. / _fac)),   \
-             __tau_kappa =                                                   \
-                 std::max(2.0, std::pow(__opts.tau_kappa, 1. / _fac)),       \
-             __tau_U = __opts.tau_U * _fac2, __tau_L = __opts.tau_L * _fac2; \
-  const auto __alpha_L = __opts.alpha_L * _fac,                              \
-             __alpha_U = __opts.alpha_U * _fac
+#ifndef PSMILU_DISABLE_PARREFINE
+#  define DETERMINE_LEVEL_PARS(__tau_d, __tau_kappa, __tau_U, __tau_L,         \
+                               __alpha_L, __alpha_U, __opts, __lvl)            \
+    const int    _fac    = std::min(1 << (__lvl - 1), 8);                      \
+    const double _fac2   = 1. / std::min(1e3, std::pow(10.0, __lvl - 1));      \
+    const auto   __tau_d = std::max(2.0, std::pow(__opts.tau_d, 1. / _fac)),   \
+               __tau_kappa =                                                   \
+                   std::max(2.0, std::pow(__opts.tau_kappa, 1. / _fac)),       \
+               __tau_U = __opts.tau_U * _fac2, __tau_L = __opts.tau_L * _fac2; \
+    const auto __alpha_L = __opts.alpha_L * _fac,                              \
+               __alpha_U = __opts.alpha_U * _fac
+#else
+#  define DETERMINE_LEVEL_PARS(__tau_d, __tau_kappa, __tau_U, __tau_L, \
+                               __alpha_L, __alpha_U, __opts, __lvl)    \
+    const auto __tau_d = __opts.tau_d, __tau_kappa = __opts.tau_kappa, \
+               __tau_U = __opts.tau_U, __tau_L = __opts.tau_L;         \
+    const auto __alpha_L = __opts.alpha_L, __alpha_U = __opts.alpha_U
+#endif
 
 /// \brief extract permutated diagonal
 /// \tparam LeftDiagType left scaling vector type, see \ref Array
