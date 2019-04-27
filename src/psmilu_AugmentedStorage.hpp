@@ -72,7 +72,8 @@ class AugmentedCore {
         _node_start(nlist, _NIL),
         _node_next(),
         _node_end(nlist, _NIL),
-        _val_pos() {
+        _val_pos(),
+        _node_counts(nlist, 0) {
     if (nnz) {
       if (reserve) {
         _node_inds.reserve(nnz);
@@ -97,7 +98,8 @@ class AugmentedCore {
         _node_next(other._node_next, clone),
         _node_end(other._node_end, clone),
         _val_pos(other._val_pos, clone),
-        _val_pos_inv(other._val_pos_inv, clone) {}
+        _val_pos_inv(other._val_pos_inv, clone),
+        _node_counts(other._node_counts, clone) {}
 
   // default stuffs
   AugmentedCore(this_type &&) = default;
@@ -136,6 +138,7 @@ class AugmentedCore {
     const static index_type nil = _NIL;
     _node_start.resize(nlist);
     _node_end.resize(nlist);
+    _node_counts.resize(nlist);
     // resize all nnz arrays to zero, thus reserve them b4hand is the way to go
     _node_inds.resize(0u);
     _node_next.resize(0u);
@@ -144,6 +147,7 @@ class AugmentedCore {
     // also for n-sized arrays, set them to nil
     std::fill_n(_node_start.begin(), nlist, nil);
     std::fill_n(_node_end.begin(), nlist, nil);
+    std::fill_n(_node_counts.begin(), nlist, index_type(0));
   }
 
   /// \brief update linked lists given new nodes from back
@@ -181,6 +185,8 @@ class AugmentedCore {
       _node_end[j] = i;
       // need to check start index as well
       if (is_nil(_node_start[j])) _node_start[j] = i;
+      // increment the counter
+      ++_node_counts[j];
     }
   }
 
@@ -287,6 +293,7 @@ class AugmentedCore {
                   _node_start.size());
     std::swap(_node_start[i], _node_start[k]);
     std::swap(_node_end[i], _node_end[k]);
+    std::swap(_node_counts[i], _node_counts[k]);
   }
 
   /// \brief build augmented cores based on compressed storages
@@ -317,6 +324,14 @@ class AugmentedCore {
     }
   }
 
+  /// \brief query total number of in a certain list
+  inline size_type _nodes_in_list(const size_type i) const {
+    psmilu_assert(i < _node_counts.size(),
+                  "%zd exceeds total number of lists %zd", i,
+                  _node_counts.size());
+    return _node_counts[i];
+  }
+
  protected:
   iarray_type _node_inds;    ///< indices (values) of each node
   iarray_type _node_start;   ///< head nodes
@@ -324,6 +339,7 @@ class AugmentedCore {
   iarray_type _node_end;     ///< ending positions
   iarray_type _val_pos;      ///< value positions
   iarray_type _val_pos_inv;  ///< value position inverse, i.e. inv(_val_pos)
+  iarray_type _node_counts;  ///< number of nodes per list
 
   // TODO do we need to use size_type for storing the positions? This will
   // almost double the memory usage for if index_type is just 32bit,
@@ -464,6 +480,12 @@ class AugCRS : public CrsType,
   inline value_type val_from_col_id(const size_type col_id) const {
     // this is how to get value
     return vals()[val_pos_idx(col_id)];
+  }
+
+  /// \brief get the total number of nonzeros columnwise
+  /// \param[in] col column index
+  inline size_type nnz_in_col(const size_type col) const {
+    return _base::_nodes_in_list(col);
   }
 
   /// \brief interchange two columns
@@ -806,6 +828,12 @@ class AugCCS : public CcsType,
   /// \param[in] row_id row handle/ID
   inline value_type val_from_row_id(const size_type row_id) const {
     return vals()[val_pos_idx(row_id)];
+  }
+
+  /// \brief get the total number of nonzeros in row
+  /// \param[in] row row index
+  inline size_type nnz_in_row(const size_type row) const {
+    return _base::_nodes_in_list(row);
   }
 
   /// \brief interchange two rows
