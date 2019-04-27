@@ -239,6 +239,12 @@ class SparseVector : public IndexValueArray<ValueType, IndexType, OneBased> {
     return false;  // not a new value
   }
 
+  /// \brief reset current state
+  inline void restore_cur_state() {
+    const size_type n = _counts;
+    for (size_type i(0); i < n; ++i) _dense_tags[_base::c_idx(i)] = _EMPTY;
+  }
+
  protected:
   using _base::_counts;            ///< bring in base counts
   using _base::_inds;              ///< bring in base value array
