@@ -654,6 +654,8 @@ class AugCRS : public CrsType,
   inline const iarray_type &col_end() const { return _base::_node_end; }
   inline iarray_type &      col_next() { return _base::_node_next; }
   inline const iarray_type &col_next() const { return _base::_node_next; }
+  inline iarray_type &      col_counts() { return _base::_node_counts; }
+  inline const iarray_type &col_counts() const { return _base::_node_counts; }
 
   /// \brief begin to assemble rows
   inline void begin_assemble_rows() {
@@ -990,6 +992,8 @@ class AugCCS : public CcsType,
   inline const iarray_type *row_end() const { return _base::_node_end; }
   inline iarray_type &      row_next() { return _base::_node_next; }
   inline const iarray_type &row_next() const { return _base::_node_next; }
+  inline iarray_type &      row_counts() { return _base::_node_counts; }
+  inline const iarray_type &row_counts() const { return _base::_node_counts; }
 
   /// \brief begin to assemble columns
   inline void begin_assemble_cols() {
