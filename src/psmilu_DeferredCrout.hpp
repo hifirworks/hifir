@@ -192,8 +192,9 @@ class DeferredCrout : public Crout {
   }
 
   template <class U_AugCrsType, class U_StartType>
-  inline void update_U_start_and_compress_U(U_AugCrsType &U,
-                                            U_StartType & U_start) const {
+  inline void update_U_start_and_compress_U(
+      U_AugCrsType &U, U_StartType &U_start, U_StartType &bak,
+      typename U_StartType::size_type &nbaks) const {
     static_assert(U_AugCrsType::ROW_MAJOR, "U must be AugCRS");
     using index_type                 = typename U_AugCrsType::index_type;
     constexpr static bool ONE_BASED  = U_AugCrsType::ONE_BASED;
@@ -216,16 +217,38 @@ class DeferredCrout : public Crout {
                                          ) {};
 
     if (!_defers)
-      _update_U_start(U, U_start, comp_index_dummy);
+      _update_U_start(U, U_start, bak, nbaks, comp_index_dummy);
     else
-      _update_U_start(U, U_start, comp_index);
-    U.col_start()[_step] = U.col_start()[deferred_step()];
-    U.col_end()[_step]   = U.col_end()[deferred_step()];
+      _update_U_start(U, U_start, bak, nbaks, comp_index);
+    U.col_start()[_step]  = U.col_start()[deferred_step()];
+    U.col_end()[_step]    = U.col_end()[deferred_step()];
+    U.col_counts()[_step] = U.col_counts()[deferred_step()];
+  }
+
+  template <class U_AugCrsType>
+  inline void uncompress_U(U_AugCrsType &U, const size_type start,
+                           const size_type end, const size_type cts) const {
+    using index_type               = typename U_AugCrsType::index_type;
+    const static auto uncomp_index = [](index_type &i, const size_type dfrs) {
+      i += dfrs;
+    };
+
+    if (!_defers) {
+      index_type aug_id = U.start_col_id(_step);
+      while (!U.is_nil(aug_id)) {
+        uncomp_index(*(U.col_ind().begin() + U.val_pos_idx(aug_id)), _defers);
+        aug_id = U.next_col_id(aug_id);
+      }
+      U.col_start()[_step]  = start;
+      U.col_end()[_step]    = end;
+      U.col_counts()[_step] = cts;
+    }
   }
 
   template <bool IsSymm, class L_AugCcsType, class L_StartType>
-  inline void update_L_start_and_compress_L(L_AugCcsType &L, const size_type m,
-                                            L_StartType &L_start) const {
+  inline void update_L_start_and_compress_L(
+      L_AugCcsType &L, const size_type m, L_StartType &L_start,
+      L_StartType &bak, typename L_StartType::size_type &nbaks) const {
     static_assert(!L_AugCcsType::ROW_MAJOR, "L must be AugCCS");
     using index_type                 = typename L_AugCcsType::index_type;
     constexpr static bool ONE_BASED  = L_AugCcsType::ONE_BASED;
@@ -248,11 +271,32 @@ class DeferredCrout : public Crout {
                                          ) {};
 
     if (!_defers)
-      _update_L_start<IsSymm>(L, m, L_start, comp_index_dummy);
+      _update_L_start<IsSymm>(L, m, L_start, bak, nbaks, comp_index_dummy);
     else
-      _update_L_start<IsSymm>(L, m, L_start, comp_index);
-    L.row_start()[_step] = L.row_start()[deferred_step()];
-    L.row_end()[_step]   = L.row_end()[deferred_step()];
+      _update_L_start<IsSymm>(L, m, L_start, bak, nbaks, comp_index);
+    L.row_start()[_step]  = L.row_start()[deferred_step()];
+    L.row_end()[_step]    = L.row_end()[deferred_step()];
+    L.row_counts()[_step] = L.row_counts()[deferred_step()];
+  }
+
+  template <class L_AugCcsType>
+  inline void uncompress_L(L_AugCcsType &L, const size_type start,
+                           const size_type end, const size_type cts) const {
+    using index_type               = typename L_AugCcsType::index_type;
+    const static auto uncomp_index = [](index_type &i, const size_type dfrs) {
+      i += dfrs;
+    };
+
+    if (!_defers) {
+      index_type aug_id = L.start_row_id(_step);
+      while (!L.is_nil(aug_id)) {
+        uncomp_index(*(L.row_ind().begin() + L.val_pos_idx(aug_id)), _defers);
+        aug_id = L.next_row_id(aug_id);
+      }
+      L.row_start()[_step]  = start;
+      L.row_end()[_step]    = end;
+      L.row_counts()[_step] = cts;
+    }
   }
 
   template <bool IsSymm, class SpVecType, class DiagType>
@@ -423,6 +467,8 @@ class DeferredCrout : public Crout {
 
   template <class U_AugCrsType, class U_StartType, class CompIndexKernel>
   inline void _update_U_start(U_AugCrsType &U, U_StartType &U_start,
+                              U_StartType &                    bak,
+                              typename U_StartType::size_type &nbaks,
                               const CompIndexKernel &comp_index) const {
     static_assert(U_AugCrsType::ROW_MAJOR, "U must be AugCRS");
     using index_type                = typename U_AugCrsType::index_type;
@@ -430,6 +476,8 @@ class DeferredCrout : public Crout {
     const auto            c_idx     = [](const size_type i) {
       return to_c_idx<size_type, ONE_BASED>(i);
     };
+
+    nbaks = 0;
 
     if (!_step) return;
 
@@ -440,8 +488,10 @@ class DeferredCrout : public Crout {
     while (!U.is_nil(aug_id)) {
       const index_type row = U.row_idx(aug_id);
       if (U_start[row] < U.row_start()[row + 1] - ONE_BASED &&
-          c_idx(*(U.col_ind().cbegin() + U_start[row])) <= deferred_step())
+          c_idx(*(U.col_ind().cbegin() + U_start[row])) <= deferred_step()) {
         ++U_start[row];
+        bak[nbaks++] = row;
+      }
       comp_index(*(U.col_ind().begin() + U.val_pos_idx(aug_id)), _defers
 #ifndef NDEBUG
                  ,
@@ -457,6 +507,7 @@ class DeferredCrout : public Crout {
             class CompIndexKernel>
   inline typename std::enable_if<!IsSymm>::type _update_L_start(
       L_AugCcsType &L, const size_type /* m */, L_StartType &L_start,
+      L_StartType &bak, typename L_StartType::size_type &nbaks,
       const CompIndexKernel &comp_index) const {
     static_assert(!L_AugCcsType::ROW_MAJOR, "L must be AugCCS");
     using index_type                = typename L_AugCcsType::index_type;
@@ -464,6 +515,8 @@ class DeferredCrout : public Crout {
     const auto            c_idx     = [](const size_type i) {
       return to_c_idx<size_type, ONE_BASED>(i);
     };
+
+    nbaks = 0;
 
     if (!_step) return;
 
@@ -476,8 +529,10 @@ class DeferredCrout : public Crout {
       const index_type col = L.col_idx(aug_id);
       // for each of this starting inds, advance one
       if (L_start[col] < L.col_start()[col + 1] - ONE_BASED &&
-          c_idx(*(L.row_ind().cbegin() + L_start[col])) <= deferred_step())
+          c_idx(*(L.row_ind().cbegin() + L_start[col])) <= deferred_step()) {
         ++L_start[col];
+        bak[nbaks++] = col;
+      }
       comp_index(*(L.row_ind().begin() + L.val_pos_idx(aug_id)), _defers
 #ifndef NDEBUG
                  ,
@@ -493,6 +548,7 @@ class DeferredCrout : public Crout {
             class CompIndexKernel>
   inline typename std::enable_if<IsSymm>::type _update_L_start(
       L_AugCcsType &L, const size_type m, L_StartType &L_start,
+      L_StartType & /* bak */, typename L_StartType::size_type & /* nbaks */,
       const CompIndexKernel &comp_index) const {
     using index_type                = typename L_AugCcsType::index_type;
     constexpr static bool ONE_BASED = L_AugCcsType::ONE_BASED;

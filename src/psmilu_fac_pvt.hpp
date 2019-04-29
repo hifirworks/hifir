@@ -12,10 +12,81 @@
 #ifndef _PSMILU_FACPVT_HPP
 #define _PSMILU_FACPVT_HPP
 
+#include <type_traits>
+
 #include "psmilu_fac_defer.hpp"
 #include "psmilu_pivot.hpp"
 
 namespace psmilu {
+namespace internal {
+// for pivoting, since we will compute U and L then pivoting, we need to, then,
+// adjust the starting positions
+template <class AugType, class PosArray, class T = void>
+inline typename std::enable_if<AugType::ROW_MAJOR, T>::type adjust_start_pos(
+    const typename PosArray::size_type step, const AugType &U,
+    const typename PosArray::size_type pivot, PosArray &start) {
+  using index_type = typename AugType::index_type;
+  using size_type  = typename PosArray::size_type;
+
+  index_type aug_id_k   = U.start_col_id(step),
+             aug_id_pvt = U.start_col_id(pivot);
+  while (!U.is_nil(aug_id_k) || !U.is_nil(aug_id_pvt)) {
+    if (!U.is_nil(aug_id_k) && !U.is_nil(aug_id_pvt)) {
+      const size_type idx_k   = U.row_idx(aug_id_k),
+                      idx_pvt = U.row_idx(aug_id_pvt);
+      if (idx_k < idx_pvt) {
+        ++start[idx_k];
+        aug_id_k = U.next_col_id(aug_id_k);
+      } else if (idx_k > idx_pvt) {
+        --start[idx_pvt];
+        aug_id_pvt = U.next_col_id(aug_id_pvt);
+      } else {
+        aug_id_k   = U.next_col_id(aug_id_k);
+        aug_id_pvt = U.next_col_id(aug_id_pvt);
+      }
+    } else if (!U.is_nil(aug_id_k)) {
+      ++start[U.row_idx(aug_id_k)];
+      aug_id_k = U.next_col_id(aug_id_k);
+    } else {
+      --start[U.row_idx(aug_id_pvt)];
+      aug_id_pvt = U.next_col_id(aug_id_pvt);
+    }
+  }
+}
+
+template <class AugType, class PosArray, class T = void>
+inline typename std::enable_if<!AugType::ROW_MAJOR, T>::type adjust_start_pos(
+    const typename PosArray::size_type step, const AugType &L,
+    const typename PosArray::size_type pivot, PosArray &start) {
+  using index_type = typename AugType::index_type;
+  using size_type  = typename PosArray::size_type;
+
+  index_type aug_id_k   = L.start_row_id(step),
+             aug_id_pvt = L.start_row_id(pivot);
+  while (!L.is_nil(aug_id_k) || !L.is_nil(aug_id_pvt)) {
+    if (!L.is_nil(aug_id_k) && !L.is_nil(aug_id_pvt)) {
+      const size_type idx_k   = L.col_idx(aug_id_k),
+                      idx_pvt = L.col_idx(aug_id_pvt);
+      if (idx_k < idx_pvt) {
+        ++start[idx_k];
+        aug_id_k = L.next_row_id(aug_id_k);
+      } else if (idx_k > idx_pvt) {
+        --start[idx_pvt];
+        aug_id_pvt = L.next_row_id(aug_id_pvt);
+      } else {
+        aug_id_k   = L.next_row_id(aug_id_k);
+        aug_id_pvt = L.next_row_id(aug_id_pvt);
+      }
+    } else if (!L.is_nil(aug_id_k)) {
+      ++start[L.col_idx(aug_id_k)];
+      aug_id_k = L.next_row_id(aug_id_k);
+    } else {
+      --start[L.col_idx(aug_id_pvt)];
+      aug_id_pvt = L.next_row_id(aug_id_pvt);
+    }
+  }
+}
+}  // namespace internal
 
 template <bool IsSymm, class CsType, class CroutStreamer, class PrecsType>
 inline CsType iludp_factor_pvt(const CsType &                   A,
@@ -178,9 +249,10 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
       ut(A.ncols() * 2);
 
   // create buffer for L and U start
-  Array<index_type> L_start(m), U_start(m);
+  Array<index_type> L_start(m), U_start(m), start_bak(m);
   psmilu_error_if(
-      L_start.status() == DATA_UNDEF || U_start.status() == DATA_UNDEF,
+      L_start.status() == DATA_UNDEF || U_start.status() == DATA_UNDEF ||
+          start_bak.status() == DATA_UNDEF,
       "memory allocation failed for L_start and/or U_start at level %zd.",
       cur_level);
 
@@ -224,69 +296,221 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
                   cur_level);
   for (size_type i(0); i < n; ++i) ori2def[i] = i;  // build identity
 
-  // get pivoting candidate buffer
-  IndexValueArray<value_type, index_type> pvt_cands(n);
+  // information counter
+  index_type info_counter[5] = {0, 0, 0, 0, 0};
 
   if (psmilu_verbose(INFO, opts)) psmilu_info("start Crout update...");
   DeferredCrout step;
   for (; step < m; ++step) {
-    // first check diagonal
-    bool            pvt         = is_bad_diag(d[step.deferred_step()]);
-    const size_type m_prev      = m;
-    const size_type defers_prev = step.defers();
-
     Crout_info(" Crout step %zd, leading block size %zd", step, m);
 
-    // compute kappa for u wrp deferred index
-    update_kappa_ut(step, U, kappa_ut, step.deferred_step());
-    // then compute kappa for l
-    update_kappa_l<IsSymm>(step, L, kappa_ut, kappa_l, step.deferred_step());
+    size_type  m_prev, defers_prev;
+    value_type k_ut, k_l;
 
-    // check condition number if diagonal doesn't satisfy
-    if (!pvt)
-      pvt = std::abs(kappa_ut[step]) > tau_kappa ||
-            std::abs(kappa_l[step]) > tau_kappa;
-
-    if (pvt) {
-      while (m > step) {
-        // get candidates
-        find_pvt_candidates(step.deferred_step(), m2, A_crs, A_ccs, p, q, U,
-                            U_start, L, L_start, pvt_cands);
-        if (pvt_cands.size()) {
-          const auto &    pvts = pvt_cands.inds();
-          const size_type nn   = pvt_cands.size();
-          size_type       pp;
-          for (size_type i = 0; i < nn; ++i) {
-            pp  = pvts[i];
-            pvt = is_bad_diag(d[pp]);
-            if (pvt) continue;
-            // compute kappa for u wrp pivoting index
-            update_kappa_ut(step, U, kappa_ut, pp);
-            // then compute kappa for l
-            update_kappa_l<IsSymm>(step, L, kappa_ut, kappa_l, pp);
-            pvt = std::abs(kappa_ut[step]) > tau_kappa ||
-                  std::abs(kappa_l[step]) > tau_kappa;
-            if (pvt) continue;
-            break;
-          }
-          // if we find a pivot
-          if (!pvt) {
-            // defer bad column to the end for U
-            U.interchange_cols(step.deferred_step(), pp);
-            // defer bad row to the end for L
-            L.interchange_rows(step.deferred_step(), pp);
-            // udpate p and q; be aware that the inverse mappings are also
-            // updated
-            p.interchange(step.deferred_step(), pp);
-            q.interchange(step.deferred_step(), pp);
-            // update diagonal since we maintain a permutated version of it
-            std::swap(d[step.deferred_step()], d[pp]);
-            // we need to swap P and Q in case for handling offsets
-            std::swap(P[step.deferred_step()], P[pp]);
-            std::swap(Q[step.deferred_step()], Q[pp]);
-            break;  // break while
-          }
+    for (;;) {
+      m_prev      = m;
+      defers_prev = step.defers();
+      // compute kappa for u wrp deferred index
+      update_kappa_ut(step, U, kappa_ut, step.deferred_step());
+      // then compute kappa for l
+      update_kappa_l<IsSymm>(step, L, kappa_ut, kappa_l, step.deferred_step());
+      // flag to indicate whether or not we shall do deferring
+      bool do_defer = false;
+      do {
+        k_ut = std::abs(kappa_ut[step]);
+        k_l  = std::abs(kappa_l[step]);
+        if ((k_ut > tau_kappa && k_l > tau_kappa) ||
+            (is_bad_diag(d[step.deferred_step()]) && IsSymm)) {
+          do_defer = true;
+          ++info_counter[0];
+          break;
         }
+        if (k_l > tau_kappa ||
+            U.nnz_in_col(step.deferred_step()) <
+                L.nnz_in_row(step.deferred_step()) ||
+            (U.nnz_in_col(step.deferred_step()) ==
+                 L.nnz_in_row(step.deferred_step()) &&
+             k_l >= k_ut)) {
+          // we can safely compute the L
+          // compress diagonal
+          const auto dk_bak = d[step];
+          step.compress_array(d);
+          // backup start/end/counts
+          const size_type str_bak    = L.row_start()[step],
+                          end_bak    = L.row_end()[step],
+                          counts_bak = L.row_counts()[step];
+          // then update L
+          size_type nbaks;
+          step.update_L_start_and_compress_L<IsSymm>(L, m2, L_start, start_bak,
+                                                     nbaks);
+          // compute Lk
+          step.compute_l<IsSymm>(s, A_ccs, t, p, q[step.deferred_step()], m2,
+                                 ori2def, L, L_start, d, U, l);
+          // check if "bad thing" happens
+          if (k_l > tau_kappa || is_bad_diag(d[step])) {
+            size_type pivot = static_cast<size_type>(-1), sz(pivot);
+            for (index_type i(0); i < l.size(); ++i) {
+              const size_type pvt = l.c_idx(i);
+              // we want to ignore the deferred terms
+              if (pvt < n)
+                if (!is_bad_diag(l.val(i))) {
+                  // check inverse conditioning
+                  update_kappa_l<IsSymm>(step, L, kappa_ut, kappa_l, pvt);
+                  if (std::abs(kappa_l[step]) <= tau_kappa &&
+                      L.nnz_in_row(pvt) < sz) {
+                    sz    = L.nnz_in_row(pvt);
+                    pivot = pvt;
+                    k_l   = std::abs(kappa_l[step]);
+                  }
+                }
+            }  // for
+            if (pivot != static_cast<size_type>(-1)) {
+              // swap p
+              p.interchange(step.deferred_step(), pivot);  // p is compressed
+              // swap L
+              L.interchange_rows(step, pivot);
+              // adjust L_start
+              if (!IsSymm) internal::adjust_start_pos(step, L, pivot, L_start);
+              // swap l by interchange it with diagonal
+              std::swap(d[step], l.vals()[pivot]);
+              ++info_counter[1];
+            } else {
+              // restore L
+              step.uncompress_L(L, str_bak, end_bak, counts_bak);
+              // restore sparse vector
+              l.restore_cur_state();
+              // restore L_start
+              if (!IsSymm)
+                for (size_type i(0); i < nbaks; ++i) --L_start[start_bak[i]];
+              // restore diagonal, do we need this??
+              d[step]  = dk_bak;
+              do_defer = true;
+              ++info_counter[2];
+              break;  // do-while
+            }
+          }  // if bad thing
+
+          // handle U part
+
+          // compress permutation vectors
+          step.compress_array(p);
+          step.compress_array(q);
+          // update U
+          step.update_U_start_and_compress_U(U, U_start, start_bak, nbaks);
+          // compute Uk'
+          step.compute_ut(s, A_crs, t, p[step], q, ori2def, L, d, U, U_start,
+                          ut);
+#ifndef NDEBUG
+          const bool u_is_nonsingular =
+#else
+          (void)
+#endif
+              step.scale_inv_diag(d, ut);
+          psmilu_assert(!u_is_nonsingular,
+                        "u is singular at level %zd step %zd", cur_level, step);
+
+          // update diagonals b4 dropping
+          step.update_B_diag<IsSymm>(l, ut, m2, d);
+#ifndef NDEBUG
+          const bool l_is_nonsingular =
+#else
+          (void)
+#endif
+              step.scale_inv_diag(d, l);
+          psmilu_assert(!l_is_nonsingular,
+                        "l is singular at level %zd step %zd", cur_level, step);
+        } else {
+          // safely compute u part
+          // compress diagonal
+          const auto dk_bak = d[step];
+          step.compress_array(d);
+          // backup start/end/counts
+          const size_type str_bak    = U.col_start()[step],
+                          end_bak    = U.col_end()[step],
+                          counts_bak = U.col_counts()[step];
+          // update U
+          size_type nbaks;
+          step.update_U_start_and_compress_U(U, U_start, start_bak, nbaks);
+          // compute Uk'
+          step.compute_ut(s, A_crs, t, p[step.deferred_step()], q, ori2def, L,
+                          d, U, U_start, ut);
+          // check if "bad thing" happens
+          if (k_ut > tau_kappa || is_bad_diag(d[step])) {
+            size_type pivot = static_cast<size_type>(-1), sz(pivot);
+            for (index_type i(0); i < ut.size(); ++i) {
+              const size_type pvt = ut.c_idx(i);
+              if (pvt < n)
+                if (!is_bad_diag(ut.val(i))) {
+                  // check inverse conditioning
+                  update_kappa_ut(step, U, kappa_ut, pvt);
+                  if (std::abs(kappa_ut[step]) <= tau_kappa &&
+                      U.nnz_in_col(pvt) < sz) {
+                    sz    = U.nnz_in_col(pvt);
+                    pivot = pvt;
+                    k_ut  = std::abs(kappa_ut[step]);
+                  }
+                }
+            }  // for
+            if (pivot != static_cast<size_type>(-1)) {
+              // swap q
+              q.interchange(step.deferred_step(), pivot);
+              // interchange U
+              U.interchange_cols(step, pivot);
+              // adjust U_start
+              internal::adjust_start_pos(step, U, pivot, U_start);
+              // swap ut with diagonal
+              std::swap(d[step], ut.vals()[pivot]);
+              ++info_counter[3];
+            } else {
+              // restore U
+              step.uncompress_U(U, str_bak, end_bak, counts_bak);
+              // restore sparse vector
+              ut.restore_cur_state();
+              // restore U_start
+              for (size_type i(0); i < nbaks; ++i) --U_start[start_bak[i]];
+              // restore diagonal, do we need this??
+              d[step]  = dk_bak;
+              do_defer = true;
+              ++info_counter[4];
+              break;  // do-while
+            }
+          }  // if bad thing
+
+          // handle L part
+          // compress permutation vectors
+          step.compress_array(q);
+          step.compress_array(p);
+          // then update L
+          step.update_L_start_and_compress_L<IsSymm>(L, m2, L_start, start_bak,
+                                                     nbaks);
+          // compute Lk
+          step.compute_l<IsSymm>(s, A_ccs, t, p, q[step], m2, ori2def, L,
+                                 L_start, d, U, l);
+          // update diagonal entries for u first
+#ifndef NDEBUG
+          const bool u_is_nonsingular =
+#else
+          (void)
+#endif
+              step.scale_inv_diag(d, ut);
+          psmilu_assert(!u_is_nonsingular,
+                        "u is singular at level %zd step %zd", cur_level, step);
+
+          // update diagonals b4 dropping
+          step.update_B_diag<IsSymm>(l, ut, m2, d);
+
+#ifndef NDEBUG
+          const bool l_is_nonsingular =
+#else
+          (void)
+#endif
+              step.scale_inv_diag(d, l);
+          psmilu_assert(!l_is_nonsingular,
+                        "l is singular at level %zd step %zd", cur_level, step);
+        }
+      } while (false);
+      // if we do deferring
+      if (do_defer) {
         --m;
         const auto tail_pos = n + step.defers();
         U.defer_col(step.deferred_step(), tail_pos);
@@ -297,95 +521,27 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
         Q[tail_pos]                   = q[step.deferred_step()];
         // mark as empty entries
         P[step.deferred_step()] = Q[step.deferred_step()] = -1;
-
         step.increment_defer_counter();  // increment defers here
         // handle the last step
-        if (step.deferred_step() >= m2) {
-          m = step;
-          break;
-        }
-        pvt = is_bad_diag(d[step.deferred_step()]);
-        if (pvt) continue;
-
-        // compute kappa for u wrp deferred index
-        update_kappa_ut(step, U, kappa_ut, step.deferred_step());
-        // then compute kappa for l
-        update_kappa_l<IsSymm>(step, L, kappa_ut, kappa_l,
-                               step.deferred_step());
-        pvt = std::abs(kappa_ut[step]) > tau_kappa ||
-              std::abs(kappa_l[step]) > tau_kappa;
-        if (pvt) continue;
-        break;
-      }                      // while
-      if (m == step) break;  // break for
-    }
+        if (step.deferred_step() >= m2) m = step;
+        if (step == m) break;
+        continue;
+      }
+      break;
+    }  // inf loop
+    if (step == m) break;
 
     //----------------
     // inverse thres
     //----------------
 
-    const auto k_ut = std::abs(kappa_ut[step]), k_l = std::abs(kappa_l[step]);
-
-    // check pivoting
-    psmilu_assert(!(k_ut > tau_kappa || k_l > tau_kappa), "should not happen!");
-
     Crout_info("  kappa_ut=%g, kappa_l=%g", (double)k_ut, (double)k_l);
-
+    // check pivoting
+    // psmilu_assert(!(k_ut > tau_kappa || k_l > tau_kappa), "should not happen!");
     Crout_info(
         "  previous/current leading block sizes %zd/%zd, local/total "
         "defers=%zd/%zd",
         m_prev, m, step.defers() - defers_prev, step.defers());
-
-    //------------------------
-    // update start positions
-    //------------------------
-
-    Crout_info("  updating L_start/U_start and performing Crout update");
-
-    // compress diagonal
-    step.compress_array(d);
-
-    // compress permutation vectors
-    step.compress_array(p);
-    step.compress_array(q);
-
-    // update U
-    step.update_U_start_and_compress_U(U, U_start);
-    // then update L
-    step.update_L_start_and_compress_L<IsSymm>(L, m2, L_start);
-
-    //----------------------
-    // compute Crout updates
-    //----------------------
-
-    // compute Uk'
-    step.compute_ut(s, A_crs, t, p[step], q, ori2def, L, d, U, U_start, ut);
-    // compute Lk
-    step.compute_l<IsSymm>(s, A_ccs, t, p, q[step], m2, ori2def, L, L_start, d,
-                           U, l);
-
-    // update diagonal entries for u first
-#ifndef NDEBUG
-    const bool u_is_nonsingular =
-#else
-    (void)
-#endif
-        step.scale_inv_diag(d, ut);
-    psmilu_assert(!u_is_nonsingular, "u is singular at level %zd step %zd",
-                  cur_level, step);
-
-    // update diagonals b4 dropping
-    step.update_B_diag<IsSymm>(l, ut, m2, d);
-    // step.update_B_diag<IsSymm>(l, ut, n * 2, d2);
-
-#ifndef NDEBUG
-    const bool l_is_nonsingular =
-#else
-    (void)
-#endif
-        step.scale_inv_diag(d, l);
-    psmilu_assert(!l_is_nonsingular, "l is singular at level %zd step %zd",
-                  cur_level, step);
 
     //---------------
     // drop and sort
@@ -456,8 +612,10 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
     // thus, we only need to compress the offsets
     step.compress_array(U.col_start());
     step.compress_array(U.col_end());
+    step.compress_array(U.col_counts());
     step.compress_array(L.row_start());
     step.compress_array(L.row_end());
+    step.compress_array(L.row_counts());
   }
   // rebuild the inverse mappings
   p.build_inv();
@@ -483,8 +641,15 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
         "\ttotal defers=%zd\n"
         "\tleading block size in=%zd\n"
         "\tleading block size out=%zd\n"
-        "\tdiff=%zd",
-        step.defers(), m2, m, m2 - m);
+        "\tdiff=%zd\n"
+        "\tstrict defers=%zd\n"
+        "\trow pivots=%zd\n"
+        "\tfail row defers=%zd\n"
+        "\tcol pivots=%zd\n"
+        "\tfail col defers=%zd",
+        step.defers(), m2, m, m2 - m, (size_type)info_counter[0],
+        (size_type)info_counter[1], (size_type)info_counter[2],
+        (size_type)info_counter[3], (size_type)info_counter[4]);
 #ifndef NDEBUG
     _GET_MAX_MIN_MINABS(d, m);
     _SHOW_MAX_MIN_MINABS(d);
