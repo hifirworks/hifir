@@ -58,8 +58,8 @@ namespace internal {
 #ifndef PSMILU_DISABLE_PARREFINE
 #  define DETERMINE_LEVEL_PARS(__tau_d, __tau_kappa, __tau_U, __tau_L,         \
                                __alpha_L, __alpha_U, __opts, __lvl)            \
-    const int    _fac    = std::min(1 << (__lvl - 1), 8);                      \
-    const double _fac2   = 1. / std::min(1e3, std::pow(10.0, __lvl - 1));      \
+    const int    _fac    = std::min((int)__lvl, 2);                            \
+    const double _fac2   = 1. / std::min(10.0, std::pow(10.0, __lvl - 1));     \
     const auto   __tau_d = std::max(2.0, std::pow(__opts.tau_d, 1. / _fac)),   \
                __tau_kappa =                                                   \
                    std::max(2.0, std::pow(__opts.tau_kappa, 1. / _fac)),       \
