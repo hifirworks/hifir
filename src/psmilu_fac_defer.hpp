@@ -234,6 +234,9 @@ inline CsType iludp_factor_defer(const CsType &                   A,
       "memory allocation failed for kappa_l and/or kappa_ut at level %zd.",
       cur_level);
 
+  // U and L start backup dummy
+  decltype(L_start) bak_dummy(m);
+
   U.begin_assemble_rows();
   L.begin_assemble_cols();
 
@@ -267,8 +270,8 @@ inline CsType iludp_factor_defer(const CsType &                   A,
                   cur_level);
   for (size_type i(0); i < n; ++i) ori2def[i] = i;  // build identity
 
-  // Array<value_type> d2(n * 2);
-  // for (size_type i = 0; i < m2; ++i) d2[i] = d[i];
+  // 0 for defer due to diagonal, 1 for defer due to bad inverse conditioning
+  index_type info_counter[] = {0, 0, 0};
 
   if (psmilu_verbose(INFO, opts)) psmilu_info("start Crout update...");
   DeferredCrout step;
@@ -277,6 +280,7 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     bool            pvt         = is_bad_diag(d[step.deferred_step()]);
     const size_type m_prev      = m;
     const size_type defers_prev = step.defers();
+    info_counter[0] += pvt;
 
     Crout_info(" Crout step %zd, leading block size %zd", step, m);
 
@@ -285,10 +289,17 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     // then compute kappa for l
     update_kappa_l<IsSymm>(step, L, kappa_ut, kappa_l, step.deferred_step());
 
+#ifdef PSMILU_DEFERREDFAC_VERBOSE_STAT
+    info_counter[2] += (pvt && (std::abs(kappa_ut[step]) > tau_kappa &&
+                                std::abs(kappa_l[step]) > tau_kappa));
+#endif  // PSMILU_DEFERREDFAC_VERBOSE_STAT
+
     // check condition number if diagonal doesn't satisfy
-    if (!pvt)
+    if (!pvt) {
       pvt = std::abs(kappa_ut[step]) > tau_kappa ||
             std::abs(kappa_l[step]) > tau_kappa;
+      info_counter[1] += pvt;
+    }
 
     if (pvt) {
       while (m > step) {
@@ -311,7 +322,19 @@ inline CsType iludp_factor_defer(const CsType &                   A,
           break;
         }
         pvt = is_bad_diag(d[step.deferred_step()]);
-        if (pvt) continue;
+        if (pvt) {
+          ++info_counter[0];
+#ifdef PSMILU_DEFERREDFAC_VERBOSE_STAT
+          // compute kappa for u wrp deferred index
+          update_kappa_ut(step, U, kappa_ut, step.deferred_step());
+          // then compute kappa for l
+          update_kappa_l<IsSymm>(step, L, kappa_ut, kappa_l,
+                                 step.deferred_step());
+          info_counter[2] += (std::abs(kappa_ut[step]) > tau_kappa &&
+                              std::abs(kappa_l[step]) > tau_kappa);
+#endif  // PSMILU_DEFERREDFAC_VERBOSE_STAT
+          continue;
+        }
 
         // compute kappa for u wrp deferred index
         update_kappa_ut(step, U, kappa_ut, step.deferred_step());
@@ -320,7 +343,10 @@ inline CsType iludp_factor_defer(const CsType &                   A,
                                step.deferred_step());
         pvt = std::abs(kappa_ut[step]) > tau_kappa ||
               std::abs(kappa_l[step]) > tau_kappa;
-        if (pvt) continue;
+        if (pvt) {
+          ++info_counter[1];
+          continue;
+        }
         break;
       }                      // while
       if (m == step) break;  // break for
@@ -356,9 +382,11 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     step.compress_array(q);
 
     // update U
-    step.update_U_start_and_compress_U(U, U_start);
+    size_type nbaks_dummy;
+    step.update_U_start_and_compress_U(U, U_start, bak_dummy, nbaks_dummy);
     // then update L
-    step.update_L_start_and_compress_L<IsSymm>(L, m2, L_start);
+    step.update_L_start_and_compress_L<IsSymm>(L, m2, L_start, bak_dummy,
+                                               nbaks_dummy);
 
     //----------------------
     // compute Crout updates
@@ -489,8 +517,20 @@ inline CsType iludp_factor_defer(const CsType &                   A,
         "\ttotal defers=%zd\n"
         "\tleading block size in=%zd\n"
         "\tleading block size out=%zd\n"
-        "\tdiff=%zd",
-        step.defers(), m2, m, m2 - m);
+        "\tdiff=%zd\n"
+        "\tdiag defers=%zd\n"
+        "\tinv-norm defers=%zd"
+#ifdef PSMILU_DEFERREDFAC_VERBOSE_STAT
+        "\n\tall-bad defers=%zd"
+#endif  // PSMILU_DEFERREDFAC_VERBOSE_STAT
+        ,
+        step.defers(), m2, m, m2 - m, (size_type)info_counter[0],
+        (size_type)info_counter[1]
+#ifdef PSMILU_DEFERREDFAC_VERBOSE_STAT
+        ,
+        (size_type)info_counter[2]
+#endif  // PSMILU_DEFERREDFAC_VERBOSE_STAT
+    );
 #ifndef NDEBUG
     _GET_MAX_MIN_MINABS(d, m);
     _SHOW_MAX_MIN_MINABS(d);
