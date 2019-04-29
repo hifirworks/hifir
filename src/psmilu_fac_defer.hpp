@@ -290,8 +290,8 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     update_kappa_l<IsSymm>(step, L, kappa_ut, kappa_l, step.deferred_step());
 
 #ifdef PSMILU_DEFERREDFAC_VERBOSE_STAT
-    info_counter[2] += (pvt && (std::abs(kappa_ut[step]) > tau_kappa &&
-                                std::abs(kappa_l[step]) > tau_kappa));
+    info_counter[2] += (std::abs(kappa_ut[step]) > tau_kappa &&
+                        std::abs(kappa_l[step]) > tau_kappa);
 #endif  // PSMILU_DEFERREDFAC_VERBOSE_STAT
 
     // check condition number if diagonal doesn't satisfy
@@ -345,6 +345,10 @@ inline CsType iludp_factor_defer(const CsType &                   A,
               std::abs(kappa_l[step]) > tau_kappa;
         if (pvt) {
           ++info_counter[1];
+#ifdef PSMILU_DEFERREDFAC_VERBOSE_STAT
+          info_counter[2] += (std::abs(kappa_ut[step]) > tau_kappa &&
+                              std::abs(kappa_l[step]) > tau_kappa);
+#endif  // PSMILU_DEFERREDFAC_VERBOSE_STAT
           continue;
         }
         break;
@@ -521,7 +525,7 @@ inline CsType iludp_factor_defer(const CsType &                   A,
         "\tdiag defers=%zd\n"
         "\tinv-norm defers=%zd"
 #ifdef PSMILU_DEFERREDFAC_VERBOSE_STAT
-        "\n\tall-bad defers=%zd"
+        "\n\tboth-inv-bad defers=%zd"
 #endif  // PSMILU_DEFERREDFAC_VERBOSE_STAT
         ,
         step.defers(), m2, m, m2 - m, (size_type)info_counter[0],
