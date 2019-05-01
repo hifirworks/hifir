@@ -234,9 +234,6 @@ inline CsType iludp_factor_defer(const CsType &                   A,
       "memory allocation failed for kappa_l and/or kappa_ut at level %zd.",
       cur_level);
 
-  // U and L start backup dummy
-  decltype(L_start) bak_dummy(m);
-
   U.begin_assemble_rows();
   L.begin_assemble_cols();
 
@@ -386,11 +383,9 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     step.compress_array(q);
 
     // update U
-    size_type nbaks_dummy;
-    step.update_U_start_and_compress_U(U, U_start, bak_dummy, nbaks_dummy);
+    step.update_U_start_and_compress_U(U, U_start);
     // then update L
-    step.update_L_start_and_compress_L<IsSymm>(L, m2, L_start, bak_dummy,
-                                               nbaks_dummy);
+    step.update_L_start_and_compress_L<IsSymm>(L, m2, L_start);
 
     //----------------------
     // compute Crout updates
