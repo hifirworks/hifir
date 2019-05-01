@@ -14,6 +14,7 @@
 
 #include <type_traits>
 
+#include "psmilu_PivotCrout.hpp"
 #include "psmilu_fac_defer.hpp"
 #include "psmilu_pivot.hpp"
 
@@ -288,28 +289,29 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
                   cur_level);
   std::copy_n(p().cbegin(), n, P.begin());
   std::copy_n(q().cbegin(), n, Q.begin());
+  auto &P_inv = p.inv(), &Q_inv = q.inv();
+  // std::copy_n(p.inv().cbegin(), n, P_inv.begin());
+  // std::copy_n(q.inv().cbegin(), n, Q_inv.begin());
 
-  // from L/U index to deferred fac mapping
-  Array<index_type> ori2def(n);
-  psmilu_error_if(ori2def.status() == DATA_UNDEF,
-                  "memory allocation failed for ori2def at level %zd",
-                  cur_level);
-  for (size_type i(0); i < n; ++i) ori2def[i] = i;  // build identity
+  // // from L/U index to deferred fac mapping
+  // Array<index_type> ori2def(n);
+  // psmilu_error_if(ori2def.status() == DATA_UNDEF,
+  //                 "memory allocation failed for ori2def at level %zd",
+  //                 cur_level);
+  // for (size_type i(0); i < n; ++i) ori2def[i] = i;  // build identity
 
   // information counter
   index_type info_counter[5] = {0, 0, 0, 0, 0};
 
   if (psmilu_verbose(INFO, opts)) psmilu_info("start Crout update...");
-  DeferredCrout step;
+  PivotCrout step;
   for (; step < m; ++step) {
     Crout_info(" Crout step %zd, leading block size %zd", step, m);
 
-    size_type  m_prev, defers_prev;
-    value_type k_ut, k_l;
+    const size_type m_prev(m), defers_prev(step.defers());
+    value_type      k_ut, k_l;
 
     for (;;) {
-      m_prev      = m;
-      defers_prev = step.defers();
       // compute kappa for u wrp deferred index
       update_kappa_ut(step, U, kappa_ut, step.deferred_step());
       // then compute kappa for l
@@ -325,12 +327,13 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
           ++info_counter[0];
           break;
         }
-        if (k_l > tau_kappa ||
-            U.nnz_in_col(step.deferred_step()) <
-                L.nnz_in_row(step.deferred_step()) ||
-            (U.nnz_in_col(step.deferred_step()) ==
-                 L.nnz_in_row(step.deferred_step()) &&
-             k_l >= k_ut)) {
+        // if (k_l > tau_kappa ||
+        //     U.nnz_in_col(step.deferred_step()) <
+        //         L.nnz_in_row(step.deferred_step()) ||
+        //     (U.nnz_in_col(step.deferred_step()) ==
+        //          L.nnz_in_row(step.deferred_step()) &&
+        //      k_l >= k_ut)) {
+        if (k_l >= k_ut) {
           // we can safely compute the L
           // compress diagonal
           const auto dk_bak = d[step];
@@ -341,17 +344,17 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
                           counts_bak = L.row_counts()[step];
           // then update L
           size_type nbaks;
-          step.update_L_start_and_compress_L<IsSymm>(L, m2, L_start, start_bak,
-                                                     nbaks);
+          step.update_L_start_and_compress_L_wbak<IsSymm>(L, m2, L_start,
+                                                          start_bak, nbaks);
           // compute Lk
-          step.compute_l<IsSymm>(s, A_ccs, t, p, q[step.deferred_step()], m2,
-                                 ori2def, L, L_start, d, U, l);
+          step.compute_l<IsSymm>(s, A_ccs, t, P_inv, Q[step.deferred_step()],
+                                 m2, L, L_start, d, U, l);
           // check if "bad thing" happens
           if (k_l > tau_kappa || is_bad_diag(d[step])) {
-            size_type pivot = static_cast<size_type>(-1), sz(pivot);
+            size_type pivot = static_cast<size_type>(-1), sz(n);
             for (index_type i(0); i < l.size(); ++i) {
               const size_type pvt = l.c_idx(i);
-              // we want to ignore the deferred terms
+              // we want to ignore the deferals
               if (pvt < n)
                 if (!is_bad_diag(l.val(i))) {
                   // check inverse conditioning
@@ -366,7 +369,8 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
             }  // for
             if (pivot != static_cast<size_type>(-1)) {
               // swap p
-              p.interchange(step.deferred_step(), pivot);  // p is compressed
+              std::swap(P[step.deferred_step()], P[pivot]);
+              std::swap(P_inv[P[step.deferred_step()]], P_inv[P[pivot]]);
               // swap L
               L.interchange_rows(step, pivot);
               // adjust L_start
@@ -393,13 +397,12 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
           // handle U part
 
           // compress permutation vectors
-          step.compress_array(p);
-          step.compress_array(q);
+          step.assign_gap_array(P, p);
+          step.assign_gap_array(Q, q);
           // update U
-          step.update_U_start_and_compress_U(U, U_start, start_bak, nbaks);
+          step.update_U_start_and_compress_U(U, U_start);
           // compute Uk'
-          step.compute_ut(s, A_crs, t, p[step], q, ori2def, L, d, U, U_start,
-                          ut);
+          step.compute_ut(s, A_crs, t, p[step], Q_inv, L, d, U, U_start, ut);
 #ifndef NDEBUG
           const bool u_is_nonsingular =
 #else
@@ -430,13 +433,13 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
                           counts_bak = U.col_counts()[step];
           // update U
           size_type nbaks;
-          step.update_U_start_and_compress_U(U, U_start, start_bak, nbaks);
+          step.update_U_start_and_compress_U_wbak(U, U_start, start_bak, nbaks);
           // compute Uk'
-          step.compute_ut(s, A_crs, t, p[step.deferred_step()], q, ori2def, L,
-                          d, U, U_start, ut);
+          step.compute_ut(s, A_crs, t, P[step.deferred_step()], Q_inv, L, d, U,
+                          U_start, ut);
           // check if "bad thing" happens
           if (k_ut > tau_kappa || is_bad_diag(d[step])) {
-            size_type pivot = static_cast<size_type>(-1), sz(pivot);
+            size_type pivot = static_cast<size_type>(-1), sz(n);
             for (index_type i(0); i < ut.size(); ++i) {
               const size_type pvt = ut.c_idx(i);
               if (pvt < n)
@@ -453,7 +456,8 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
             }  // for
             if (pivot != static_cast<size_type>(-1)) {
               // swap q
-              q.interchange(step.deferred_step(), pivot);
+              std::swap(Q[step.deferred_step()], Q[pivot]);
+              std::swap(Q_inv[Q[step.deferred_step()]], Q_inv[Q[pivot]]);
               // interchange U
               U.interchange_cols(step, pivot);
               // adjust U_start
@@ -478,14 +482,13 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
 
           // handle L part
           // compress permutation vectors
-          step.compress_array(q);
-          step.compress_array(p);
+          step.assign_gap_array(P, p);
+          step.assign_gap_array(Q, q);
           // then update L
-          step.update_L_start_and_compress_L<IsSymm>(L, m2, L_start, start_bak,
-                                                     nbaks);
+          step.update_L_start_and_compress_L<IsSymm>(L, m2, L_start);
           // compute Lk
-          step.compute_l<IsSymm>(s, A_ccs, t, p, q[step], m2, ori2def, L,
-                                 L_start, d, U, l);
+          step.compute_l<IsSymm>(s, A_ccs, t, P_inv, q[step], m2, L, L_start, d,
+                                 U, l);
           // update diagonal entries for u first
 #ifndef NDEBUG
           const bool u_is_nonsingular =
@@ -516,9 +519,10 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
         U.defer_col(step.deferred_step(), tail_pos);
         L.defer_row(step.deferred_step(), tail_pos);
         if (IsSymm) internal::search_back_start_symm(L, tail_pos, m2, L_start);
-        ori2def[step.deferred_step()] = tail_pos;
-        P[tail_pos]                   = p[step.deferred_step()];
-        Q[tail_pos]                   = q[step.deferred_step()];
+        P[tail_pos]        = P[step.deferred_step()];
+        Q[tail_pos]        = Q[step.deferred_step()];
+        P_inv[P[tail_pos]] = tail_pos;
+        Q_inv[Q[tail_pos]] = tail_pos;
         // mark as empty entries
         P[step.deferred_step()] = Q[step.deferred_step()] = -1;
         step.increment_defer_counter();  // increment defers here
@@ -537,7 +541,7 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
 
     Crout_info("  kappa_ut=%g, kappa_l=%g", (double)k_ut, (double)k_l);
     // check pivoting
-    // psmilu_assert(!(k_ut > tau_kappa || k_l > tau_kappa), "should not happen!");
+    psmilu_assert(!(k_ut > tau_kappa || k_l > tau_kappa), "should not happen!");
     Crout_info(
         "  previous/current leading block sizes %zd/%zd, local/total "
         "defers=%zd/%zd",
