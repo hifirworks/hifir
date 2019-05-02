@@ -33,10 +33,12 @@ class PivotCrout : public DeferredCrout {
   template <class ScaleArray, class CrsType, class PermType, class U_CrsType,
             class U_StartType, class DiagType, class L_AugCcsType,
             class SpVecType>
-  void compute_ut(const ScaleArray &s, const CrsType &crs_A,
-                  const ScaleArray &t, const size_type pk, const PermType &q,
-                  const L_AugCcsType &L, const DiagType &d, const U_CrsType &U,
-                  const U_StartType &U_start, SpVecType &ut) const {
+  void compute_ut_diag(const ScaleArray &s, const CrsType &crs_A,
+                       const ScaleArray &t, const size_type pk,
+                       const PermType &q, const L_AugCcsType &L,
+                       const DiagType &d, const U_CrsType &U,
+                       const U_StartType &U_start, SpVecType &ut,
+                       typename SpVecType::value_type &dk) const {
     // compilation checking
     static_assert(CrsType::ROW_MAJOR, "input A must be CRS for loading ut");
     static_assert(!(CrsType::ONE_BASED ^ L_AugCcsType::ONE_BASED),
@@ -50,7 +52,7 @@ class PivotCrout : public DeferredCrout {
     ut.reset_counter();
 
     // first load the A row
-    _load_A2ut(s, crs_A, t, pk, q, ut);
+    _load_A2ut_diag(s, crs_A, t, pk, q, ut, dk);
 
     // if not first step
     if (_step) {
@@ -58,7 +60,7 @@ class PivotCrout : public DeferredCrout {
       auto U_v_first = U.vals().cbegin();
       auto U_i_first = U.col_ind().cbegin();
       // get the starting row ID with deferring
-      index_type aug_id = L.start_row_id(_step);
+      index_type aug_id = L.start_row_id(deferred_step());
       while (!L.is_nil(aug_id)) {
         // get the column index
         const size_type col_idx = L.col_idx(aug_id);
@@ -73,12 +75,11 @@ class PivotCrout : public DeferredCrout {
         // get the starting position from U_start
         auto U_v_itr = U_v_first + U_start[col_idx];
         auto U_i_itr = U_i_first + U_start[col_idx];
-#ifndef NDEBUG
+        // handle diagonal entry
         if (U_i_itr != U.col_ind_cbegin(col_idx)) {
           const auto prev_idx = to_c_idx<size_type, base>(*(U_i_itr - 1));
-          psmilu_error_if(prev_idx > _step, "U_start error!");
+          if (prev_idx == _step) dk -= ld * *(U_v_itr - 1);
         }
-#endif
         // for loop to go thru all entries in U
         for (auto U_i_last = U.col_ind_cend(col_idx); U_i_itr != U_i_last;
              ++U_i_itr, ++U_v_itr) {
@@ -99,13 +100,15 @@ class PivotCrout : public DeferredCrout {
     }
   }
 
-  template <bool IsSymm, class ScaleArray, class CcsType, class PermType,
-            class L_CcsType, class L_StartType, class DiagType,
-            class U_AugCrsType, class SpVecType>
-  void compute_l(const ScaleArray &s, const CcsType &ccs_A, const ScaleArray &t,
-                 const PermType &p, const size_type qk, const size_type m,
-                 const L_CcsType &L, const L_StartType &L_start,
-                 const DiagType &d, const U_AugCrsType &U, SpVecType &l) const {
+  template <class ScaleArray, class CcsType, class PermType, class L_CcsType,
+            class L_StartType, class DiagType, class U_AugCrsType,
+            class SpVecType>
+  void compute_l_diag(const ScaleArray &s, const CcsType &ccs_A,
+                      const ScaleArray &t, const PermType &p,
+                      const size_type qk, const L_CcsType &L,
+                      const L_StartType &L_start, const DiagType &d,
+                      const U_AugCrsType &U, SpVecType &l,
+                      typename SpVecType::value_type &dk) const {
     // compilation checking
     static_assert(!CcsType::ROW_MAJOR, "input A must be CCS for loading l");
     static_assert(!(CcsType::ONE_BASED ^ L_CcsType::ONE_BASED),
@@ -119,7 +122,7 @@ class PivotCrout : public DeferredCrout {
     l.reset_counter();
 
     // load A column
-    _load_A2l<IsSymm>(s, ccs_A, t, p, qk, m, l);
+    _load_A2l_diag(s, ccs_A, t, p, qk, l, dk);
 
     // if not first step
     if (_step) {
@@ -127,15 +130,14 @@ class PivotCrout : public DeferredCrout {
       auto L_v_first = L.vals().cbegin();
       auto L_i_first = L.row_ind().cbegin();
       // get the deferred column handle
-      index_type aug_id = U.start_col_id(_step);
+      index_type aug_id = U.start_col_id(deferred_step());
       while (!U.is_nil(aug_id)) {
         // get the row index
         const size_type r_idx = U.row_idx(aug_id);
-        if (!IsSymm)
-          psmilu_assert(
-              r_idx < _step,
-              "compute_ut row index %zd should not exceed step %zd for U",
-              r_idx, _step);
+        psmilu_assert(
+            r_idx < _step,
+            "compute_ut row index %zd should not exceed step %zd for U", r_idx,
+            _step);
         psmilu_assert(r_idx < L_start.size(), "%zd exceeds the L_start size",
                       r_idx);
         // compute d*U
@@ -143,13 +145,11 @@ class PivotCrout : public DeferredCrout {
         // get the starting position from L_start
         auto L_v_itr = L_v_first + L_start[r_idx];
         auto L_i_itr = L_i_first + L_start[r_idx];
-#ifndef NDEBUG
-        if (!IsSymm)
-          if (L_i_itr != L.row_ind_cbegin(r_idx)) {
-            const auto prev_idx = to_c_idx<size_type, base>(*(L_i_itr - 1));
-            psmilu_error_if(prev_idx > _step, "L_start error!");
-          }
-#endif
+        // handle diagonal entry
+        if (L_i_itr != L.row_ind_cbegin(r_idx)) {
+          const auto prev_idx = to_c_idx<size_type, base>(*(L_i_itr - 1));
+          if (prev_idx == _step) dk -= du * *(L_v_itr - 1);
+        }
         for (auto L_i_last = L.row_ind_cend(r_idx); L_i_itr != L_i_last;
              ++L_i_itr, ++L_v_itr) {
           // convert to c index
@@ -225,10 +225,10 @@ class PivotCrout : public DeferredCrout {
     }
   }
 
-  template <bool IsSymm, class L_AugCcsType, class L_StartType>
+  template <class L_AugCcsType, class L_StartType>
   inline void update_L_start_and_compress_L_wbak(
-      L_AugCcsType &L, const size_type m, L_StartType &L_start,
-      L_StartType &bak, typename L_StartType::size_type &nbaks) const {
+      L_AugCcsType &L, L_StartType &L_start, L_StartType &bak,
+      typename L_StartType::size_type &nbaks) const {
     static_assert(!L_AugCcsType::ROW_MAJOR, "L must be AugCCS");
     using index_type                 = typename L_AugCcsType::index_type;
     constexpr static bool ONE_BASED  = L_AugCcsType::ONE_BASED;
@@ -251,9 +251,9 @@ class PivotCrout : public DeferredCrout {
                                          ) {};
 
     if (!_defers)
-      _update_L_start<IsSymm>(L, m, L_start, bak, nbaks, comp_index_dummy);
+      _update_L_start(L, L_start, bak, nbaks, comp_index_dummy);
     else
-      _update_L_start<IsSymm>(L, m, L_start, bak, nbaks, comp_index);
+      _update_L_start(L, L_start, bak, nbaks, comp_index);
     L.row_start()[_step]  = L.row_start()[deferred_step()];
     L.row_end()[_step]    = L.row_end()[deferred_step()];
     L.row_counts()[_step] = L.row_counts()[deferred_step()];
@@ -280,30 +280,21 @@ class PivotCrout : public DeferredCrout {
   }
 
  protected:
-  /// \brief load a row of A to ut buffer
-  /// \tparam ScaleArray scaling from left/right-hand sides, see \ref Array
-  /// \tparam CrsType crs matrix of input A, see \ref CRS
-  /// \tparam PermType permutation vector type
-  /// \tparam SpVecType sparse vector type, see \ref SparseVector
-  /// \param[in] s row scaling vector
-  /// \param[in] crs_A input matrix in CRS scheme
-  /// \param[in] t column scaling vector
-  /// \param[in] pk row permuted index
-  /// \param[in] q column permutation matrix
-  /// \param[out] ut output sparse vector of row vector for A
-  /// \sa _load_A2l
   template <class ScaleArray, class CrsType, class PermType, class SpVecType>
-  inline void _load_A2ut(const ScaleArray &s, const CrsType &crs_A,
-                         const ScaleArray &t, const size_type &pk,
-                         const PermType &q, SpVecType &ut) const {
+  inline void _load_A2ut_diag(const ScaleArray &s, const CrsType &crs_A,
+                              const ScaleArray &t, const size_type &pk,
+                              const PermType &q, SpVecType &ut,
+                              typename SpVecType::value_type &d) const {
     // compilation consistency checking
     static_assert(!(CrsType::ONE_BASED ^ SpVecType::ONE_BASED),
                   "inconsistent one-based in ccs and sparse vector");
     constexpr static bool base = CrsType::ONE_BASED;
+    using value_type           = typename SpVecType::value_type;
 
     // ut should be empty
     psmilu_assert(ut.empty(), "ut should be empty while loading A");
     const size_type defer_thres = deferred_step();
+    d                           = value_type(0);  // set diagonal to be zero
     // pk is c index
     auto       v_itr = crs_A.val_cbegin(pk);
     auto       i_itr = crs_A.col_ind_cbegin(pk);
@@ -311,48 +302,37 @@ class PivotCrout : public DeferredCrout {
     for (auto last = crs_A.col_ind_cend(pk); i_itr != last; ++i_itr, ++v_itr) {
       const auto      A_idx = to_c_idx<size_type, base>(*i_itr);
       const size_type c_idx = q[A_idx];
-      if (c_idx > defer_thres) {
-        // get the gapped index
+      if (c_idx >= defer_thres) {
+        if (c_idx > defer_thres) {
+          // get the gapped index
 #ifndef NDEBUG
-        const bool val_must_not_exit =
+          const bool val_must_not_exit =
 #endif
-            ut.push_back(to_ori_idx<size_type, base>(c_idx), _step);
-        psmilu_assert(val_must_not_exit,
-                      "see prefix, failed on Crout step %zd for ut", _step);
-        ut.vals()[c_idx] = s_pk * *v_itr * t[A_idx];  // scale here
+              ut.push_back(to_ori_idx<size_type, base>(c_idx), _step);
+          psmilu_assert(val_must_not_exit,
+                        "see prefix, failed on Crout step %zd for ut", _step);
+          ut.vals()[c_idx] = s_pk * *v_itr * t[A_idx];  // scale here
+        } else
+          d = s_pk * *v_itr * t[A_idx];
       }
     }
   }
 
-  /// \brief load a column of A to l buffer
-  /// \tparam IsSymm if \a true, then only load the offset
-  /// \tparam ScaleArray scaling from left/right-hand sides, see \ref Array
-  /// \tparam CcsType ccs matrix of input A, see \ref CCS
-  /// \tparam PermType permutation vector type, see \ref BiPermMatrix
-  /// \tparam SpVecType sparse vector type, see \ref SparseVector
-  /// \param[in] s row scaling vector
-  /// \param[in] ccs_A input matrix in CCS scheme
-  /// \param[in] t column scaling vector
-  /// \param[in] p row permutation matrix
-  /// \param[in] qk permuted column index
-  /// \param[in] m leading size
-  /// \param[out] l output sparse vector of column vector for A
-  /// \sa _load_A2ut
-  template <bool IsSymm, class ScaleArray, class CcsType, class PermType,
-            class SpVecType>
-  inline void _load_A2l(const ScaleArray &s, const CcsType &ccs_A,
-                        const ScaleArray &t, const PermType &p,
-                        const size_type &qk, const size_type m,
-                        SpVecType &l) const {
+  template <class ScaleArray, class CcsType, class PermType, class SpVecType>
+  inline void _load_A2l_diag(const ScaleArray &s, const CcsType &ccs_A,
+                             const ScaleArray &t, const PermType &p,
+                             const size_type &qk, SpVecType &l,
+                             typename SpVecType::value_type &d) const {
     // compilation consistency checking
     static_assert(!(CcsType::ONE_BASED ^ SpVecType::ONE_BASED),
                   "inconsistent one-based in ccs and sparse vector");
     constexpr static bool base = CcsType::ONE_BASED;
+    using value_type           = typename SpVecType::value_type;
 
     // runtime
     psmilu_assert(l.empty(), "l should be empty while loading A");
     const size_type defer_thres = deferred_step();
-    const size_type thres       = IsSymm ? m - 1 : defer_thres;
+    d                           = value_type(0);
     // qk is c index
     auto       v_itr = ccs_A.val_cbegin(qk);
     auto       i_itr = ccs_A.row_ind_cbegin(qk);
@@ -361,14 +341,17 @@ class PivotCrout : public DeferredCrout {
       const auto      A_idx = to_c_idx<size_type, base>(*i_itr);
       const size_type c_idx = p[A_idx];
       // push to the sparse vector only if its in range _step+1:n
-      if (c_idx > thres) {
+      if (c_idx >= defer_thres) {
+        if (c_idx > defer_thres) {
 #ifndef NDEBUG
-        const bool val_must_not_exit =
+          const bool val_must_not_exit =
 #endif
-            l.push_back(to_ori_idx<size_type, base>(c_idx), _step);
-        psmilu_assert(val_must_not_exit,
-                      "see prefix, failed on Crout step %zd for l", _step);
-        l.vals()[c_idx] = s[A_idx] * *v_itr * t_qk;  // scale here
+              l.push_back(to_ori_idx<size_type, base>(c_idx), _step);
+          psmilu_assert(val_must_not_exit,
+                        "see prefix, failed on Crout step %zd for l", _step);
+          l.vals()[c_idx] = s[A_idx] * *v_itr * t_qk;  // scale here
+        } else
+          d = s[A_idx] * *v_itr * t_qk;
       }
     }
   }
@@ -411,12 +394,11 @@ class PivotCrout : public DeferredCrout {
     }
   }
 
-  template <bool IsSymm, class L_AugCcsType, class L_StartType,
-            class CompIndexKernel>
-  inline typename std::enable_if<!IsSymm>::type _update_L_start(
-      L_AugCcsType &L, const size_type /* m */, L_StartType &L_start,
-      L_StartType &bak, typename L_StartType::size_type &nbaks,
-      const CompIndexKernel &comp_index) const {
+  template <class L_AugCcsType, class L_StartType, class CompIndexKernel>
+  inline void _update_L_start(L_AugCcsType &L, L_StartType &L_start,
+                              L_StartType &                    bak,
+                              typename L_StartType::size_type &nbaks,
+                              const CompIndexKernel &comp_index) const {
     static_assert(!L_AugCcsType::ROW_MAJOR, "L must be AugCCS");
     using index_type                = typename L_AugCcsType::index_type;
     constexpr static bool ONE_BASED = L_AugCcsType::ONE_BASED;
@@ -441,49 +423,6 @@ class PivotCrout : public DeferredCrout {
         ++L_start[col];
         bak[nbaks++] = col;
       }
-      comp_index(*(L.row_ind().begin() + L.val_pos_idx(aug_id)), _defers
-#ifndef NDEBUG
-                 ,
-                 _step
-#endif
-      );
-      // advance augmented handle
-      aug_id = L.next_row_id(aug_id);
-    }
-  }
-
-  template <bool IsSymm, class L_AugCcsType, class L_StartType,
-            class CompIndexKernel>
-  inline typename std::enable_if<IsSymm>::type _update_L_start(
-      L_AugCcsType &L, const size_type m, L_StartType &L_start,
-      L_StartType & /* bak */, typename L_StartType::size_type & /* nbaks */,
-      const CompIndexKernel &comp_index) const {
-    using index_type                = typename L_AugCcsType::index_type;
-    constexpr static bool ONE_BASED = L_AugCcsType::ONE_BASED;
-    const auto            ori_idx   = [](const size_type i) {
-      return to_ori_idx<size_type, ONE_BASED>(i);
-    };
-
-    psmilu_assert(m, "cannot have empty leading block for symmetric case!");
-
-    if (!_step) return;
-
-    const auto c_idx = [](const size_type i) {
-      return to_c_idx<size_type, ONE_BASED>(i);
-    };
-
-    do {
-      // binary search to point to start of newly added row
-      auto info          = find_sorted(L.row_ind_cbegin(_step - 1),
-                              L.row_ind_cend(_step - 1), ori_idx(m));
-      L_start[_step - 1] = info.second - L.row_ind().cbegin();
-    } while (false);
-
-    // compress indices
-    // get aug handle wrp the defer step
-    index_type aug_id = L.start_row_id(deferred_step());
-    // go thru all entries
-    while (!L.is_nil(aug_id)) {
       comp_index(*(L.row_ind().begin() + L.val_pos_idx(aug_id)), _defers
 #ifndef NDEBUG
                  ,
