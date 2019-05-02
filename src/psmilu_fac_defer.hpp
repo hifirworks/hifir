@@ -259,13 +259,14 @@ inline CsType iludp_factor_defer(const CsType &                   A,
                   cur_level);
   std::copy_n(p().cbegin(), n, P.begin());
   std::copy_n(q().cbegin(), n, Q.begin());
+  auto &P_inv = p.inv(), &Q_inv = q.inv();
 
   // from L/U index to deferred fac mapping
-  Array<index_type> ori2def(n);
-  psmilu_error_if(ori2def.status() == DATA_UNDEF,
-                  "memory allocation failed for ori2def at level %zd",
-                  cur_level);
-  for (size_type i(0); i < n; ++i) ori2def[i] = i;  // build identity
+  // Array<index_type> ori2def(n);
+  // psmilu_error_if(ori2def.status() == DATA_UNDEF,
+  //                 "memory allocation failed for ori2def at level %zd",
+  //                 cur_level);
+  // for (size_type i(0); i < n; ++i) ori2def[i] = i;  // build identity
 
   // 0 for defer due to diagonal, 1 for defer due to bad inverse conditioning
   index_type info_counter[] = {0, 0, 0};
@@ -305,12 +306,12 @@ inline CsType iludp_factor_defer(const CsType &                   A,
         U.defer_col(step.deferred_step(), tail_pos);
         L.defer_row(step.deferred_step(), tail_pos);
         if (IsSymm) internal::search_back_start_symm(L, tail_pos, m2, L_start);
-        ori2def[step.deferred_step()] = tail_pos;
-        P[tail_pos]                   = p[step.deferred_step()];
-        Q[tail_pos]                   = q[step.deferred_step()];
+        P[tail_pos]        = p[step.deferred_step()];
+        Q[tail_pos]        = q[step.deferred_step()];
+        P_inv[P[tail_pos]] = tail_pos;
+        Q_inv[Q[tail_pos]] = tail_pos;
         // mark as empty entries
         P[step.deferred_step()] = Q[step.deferred_step()] = -1;
-        // d2[tail_pos] = d[step.deferred_step()];
 
         step.increment_defer_counter();  // increment defers here
         // handle the last step
@@ -392,10 +393,10 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     //----------------------
 
     // compute Uk'
-    step.compute_ut(s, A_crs, t, p[step], q, ori2def, L, d, U, U_start, ut);
+    step.compute_ut(s, A_crs, t, p[step], Q_inv, L, d, U, U_start, ut);
     // compute Lk
-    step.compute_l<IsSymm>(s, A_ccs, t, p, q[step], m2, ori2def, L, L_start, d,
-                           U, l);
+    step.compute_l<IsSymm>(s, A_ccs, t, P_inv, q[step], m2, L, L_start, d, U,
+                           l);
 
     // update diagonal entries for u first
 #ifndef NDEBUG

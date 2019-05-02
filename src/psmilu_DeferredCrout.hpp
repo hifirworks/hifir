@@ -38,13 +38,12 @@ class DeferredCrout : public Crout {
   /// \brief increment the defer counter
   inline void increment_defer_counter() { ++_defers; }
 
-  template <class ScaleArray, class CrsType, class PermType, class Ori2Def,
-            class U_CrsType, class U_StartType, class DiagType,
-            class L_AugCcsType, class SpVecType>
+  template <class ScaleArray, class CrsType, class PermType, class U_CrsType,
+            class U_StartType, class DiagType, class L_AugCcsType,
+            class SpVecType>
   void compute_ut(const ScaleArray &s, const CrsType &crs_A,
                   const ScaleArray &t, const size_type pk, const PermType &q,
-                  const Ori2Def &ori2def, const L_AugCcsType &L,
-                  const DiagType &d, const U_CrsType &U,
+                  const L_AugCcsType &L, const DiagType &d, const U_CrsType &U,
                   const U_StartType &U_start, SpVecType &ut) const {
     // compilation checking
     static_assert(CrsType::ROW_MAJOR, "input A must be CRS for loading ut");
@@ -59,7 +58,7 @@ class DeferredCrout : public Crout {
     ut.reset_counter();
 
     // first load the A row
-    _load_A2ut(s, crs_A, t, pk, q, ori2def, ut);
+    _load_A2ut(s, crs_A, t, pk, q, ut);
 
     // if not first step
     if (_step) {
@@ -109,13 +108,12 @@ class DeferredCrout : public Crout {
   }
 
   template <bool IsSymm, class ScaleArray, class CcsType, class PermType,
-            class Ori2Def, class L_CcsType, class L_StartType, class DiagType,
+            class L_CcsType, class L_StartType, class DiagType,
             class U_AugCrsType, class SpVecType>
   void compute_l(const ScaleArray &s, const CcsType &ccs_A, const ScaleArray &t,
                  const PermType &p, const size_type qk, const size_type m,
-                 const Ori2Def &ori2def, const L_CcsType &L,
-                 const L_StartType &L_start, const DiagType &d,
-                 const U_AugCrsType &U, SpVecType &l) const {
+                 const L_CcsType &L, const L_StartType &L_start,
+                 const DiagType &d, const U_AugCrsType &U, SpVecType &l) const {
     // compilation checking
     static_assert(!CcsType::ROW_MAJOR, "input A must be CCS for loading l");
     static_assert(!(CcsType::ONE_BASED ^ L_CcsType::ONE_BASED),
@@ -129,7 +127,7 @@ class DeferredCrout : public Crout {
     l.reset_counter();
 
     // load A column
-    _load_A2l<IsSymm>(s, ccs_A, t, p, qk, m, ori2def, l);
+    _load_A2l<IsSymm>(s, ccs_A, t, p, qk, m, l);
 
     // if not first step
     if (_step) {
@@ -328,22 +326,18 @@ class DeferredCrout : public Crout {
   /// \tparam ScaleArray scaling from left/right-hand sides, see \ref Array
   /// \tparam CrsType crs matrix of input A, see \ref CRS
   /// \tparam PermType permutation vector type, see \ref BiPermMatrix
-  /// \tparam Ori2Def original to deferred mapping type
   /// \tparam SpVecType sparse vector type, see \ref SparseVector
   /// \param[in] s row scaling vector
   /// \param[in] crs_A input matrix in CRS scheme
   /// \param[in] t column scaling vector
   /// \param[in] pk row permuted index
-  /// \param[in] q column permutation matrix
-  /// \param[in] ori2def original to deferred system
+  /// \param[in] q_inv column inverse permutation matrix
   /// \param[out] ut output sparse vector of row vector for A
   /// \sa _load_A2l
-  template <class ScaleArray, class CrsType, class PermType, class Ori2Def,
-            class SpVecType>
+  template <class ScaleArray, class CrsType, class PermType, class SpVecType>
   inline void _load_A2ut(const ScaleArray &s, const CrsType &crs_A,
                          const ScaleArray &t, const size_type &pk,
-                         const PermType &q, const Ori2Def &ori2def,
-                         SpVecType &ut) const {
+                         const PermType &q_inv, SpVecType &ut) const {
     // compilation consistency checking
     static_assert(!(CrsType::ONE_BASED ^ SpVecType::ONE_BASED),
                   "inconsistent one-based in ccs and sparse vector");
@@ -358,7 +352,7 @@ class DeferredCrout : public Crout {
     const auto s_pk  = s[pk];
     for (auto last = crs_A.col_ind_cend(pk); i_itr != last; ++i_itr, ++v_itr) {
       const auto      A_idx = to_c_idx<size_type, base>(*i_itr);
-      const size_type c_idx = ori2def[q.inv(A_idx)];
+      const size_type c_idx = q_inv[A_idx];
       if (c_idx > defer_thres) {
         // get the gapped index
 #ifndef NDEBUG
@@ -377,7 +371,6 @@ class DeferredCrout : public Crout {
   /// \tparam ScaleArray scaling from left/right-hand sides, see \ref Array
   /// \tparam CcsType ccs matrix of input A, see \ref CCS
   /// \tparam PermType permutation vector type, see \ref BiPermMatrix
-  /// \tparam Ori2Def original to deferred mapping type
   /// \tparam SpVecType sparse vector type, see \ref SparseVector
   /// \param[in] s row scaling vector
   /// \param[in] ccs_A input matrix in CCS scheme
@@ -385,15 +378,14 @@ class DeferredCrout : public Crout {
   /// \param[in] p row permutation matrix
   /// \param[in] qk permuted column index
   /// \param[in] m leading size
-  /// \param[in] ori2def original to deferred system
   /// \param[out] l output sparse vector of column vector for A
   /// \sa _load_A2ut
   template <bool IsSymm, class ScaleArray, class CcsType, class PermType,
-            class Ori2Def, class SpVecType>
+            class SpVecType>
   inline void _load_A2l(const ScaleArray &s, const CcsType &ccs_A,
-                        const ScaleArray &t, const PermType &p,
+                        const ScaleArray &t, const PermType &p_inv,
                         const size_type &qk, const size_type m,
-                        const Ori2Def &ori2def, SpVecType &l) const {
+                        SpVecType &l) const {
     // compilation consistency checking
     static_assert(!(CcsType::ONE_BASED ^ SpVecType::ONE_BASED),
                   "inconsistent one-based in ccs and sparse vector");
@@ -409,7 +401,7 @@ class DeferredCrout : public Crout {
     const auto t_qk  = t[qk];
     for (auto last = ccs_A.row_ind_cend(qk); i_itr != last; ++i_itr, ++v_itr) {
       const auto      A_idx = to_c_idx<size_type, base>(*i_itr);
-      const size_type c_idx = ori2def[p.inv(A_idx)];
+      const size_type c_idx = p_inv[A_idx];
       // push to the sparse vector only if its in range _step+1:n
       if (c_idx > thres) {
 #ifndef NDEBUG
