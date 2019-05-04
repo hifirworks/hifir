@@ -11,6 +11,7 @@
 #ifndef _PSMILU_FACDEFERRED_HPP
 #define _PSMILU_FACDEFERRED_HPP
 
+#include "psmilu_Schur2.hpp"
 #include "psmilu_fac.hpp"
 
 #include "psmilu_DeferredCrout.hpp"
@@ -514,14 +515,14 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   if (psmilu_verbose(INFO, opts)) {
     psmilu_info(
         "finish Crout update...\n"
-        "\ttotal defers=%zd\n"
+        "\ttotal deferrals=%zd\n"
         "\tleading block size in=%zd\n"
         "\tleading block size out=%zd\n"
         "\tdiff=%zd\n"
-        "\tdiag defers=%zd\n"
-        "\tinv-norm defers=%zd"
+        "\tdiag deferrals=%zd\n"
+        "\tinv-norm deferrals=%zd"
 #ifdef PSMILU_DEFERREDFAC_VERBOSE_STAT
-        "\n\tboth-inv-bad defers=%zd"
+        "\n\tboth-inv-bad deferrals=%zd"
 #endif  // PSMILU_DEFERREDFAC_VERBOSE_STAT
         ,
         step.defers(), m2, m, m2 - m, (size_type)info_counter[0],
@@ -539,13 +540,31 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   }
 
   if (psmilu_verbose(INFO, opts))
-    psmilu_info("computing Schur complement (C) and assembling Prec...");
+    psmilu_info("computing Schur complement and assembling Prec...");
 
   timer.start();
 
-  // compute C version of Schur complement
+  // drop
+  auto     L_E = L.template split_crs<true>(m, L_start);
+  crs_type U_F;
+  do {
+    auto            U_F2 = U.template split_ccs<true>(m, U_start);
+    const size_type nnz1 = L_E.nnz(), nnz2 = U_F2.nnz();
+    const double    a_L = alpha_L, a_U = alpha_U;
+    if (psmilu_verbose(INFO, opts))
+      psmilu_info("applying dropping on L_E and U_F with alpha_{L,U}=%g,%g...",
+                  a_L, a_U);
+    drop_L_E(p(), A_crs, m, a_L, L_E, l.vals(), l.inds());
+    drop_U_F(q(), A_ccs, m, a_U, U_F2, ut.vals(), ut.inds());
+    U_F = crs_type(U_F2);
+    if (psmilu_verbose(INFO, opts))
+      psmilu_info("nnz(L_E)=%zd/%zd, nnz(U_F)=%zd/%zd...", nnz1, L_E.nnz(),
+                  nnz2, U_F.nnz());
+  } while (false);
+
+  // compute S version of Schur complement
   crs_type S_tmp;
-  compute_Schur_C(s, A_crs, t, p, q, m, A.nrows(), L, d, U, U_start, S_tmp);
+  compute_Schur_simple(s, A_crs, t, p, q, m, L_E, d, U_F, S_tmp, l);
   const input_type S(S_tmp);  // if input==crs, then wrap, ow copy
 
   // compute L_B and U_B
@@ -566,21 +585,21 @@ inline CsType iludp_factor_defer(const CsType &                   A,
       nm <= static_cast<size_type>(opts.c_d * cbrt_N) || !m) {
     bool use_h_ver = false;
     S_D            = dense_type::from_sparse(S);
-    if (m <= static_cast<size_type>(opts.c_h * cbrt_N) && m) {
-#ifdef PSMILU_UNIT_TESTING
-      ccs_type T_E, T_F;
-#endif
-      compute_Schur_H(L, L_start, L_B, s, A_ccs, t, p, q, d, U_B, U, S_D
-#ifdef PSMILU_UNIT_TESTING
-                      ,
-                      T_E, T_F
-#endif
-      );
-      use_h_ver = true;
-    }  // H version check
+    //     if (m <= static_cast<size_type>(opts.c_h * cbrt_N) && m) {
+    // #ifdef PSMILU_UNIT_TESTING
+    //       ccs_type T_E, T_F;
+    // #endif
+    //       compute_Schur_H(L, L_start, L_B, s, A_ccs, t, p, q, d, U_B, U, S_D
+    // #ifdef PSMILU_UNIT_TESTING
+    //                       ,
+    //                       T_E, T_F
+    // #endif
+    //       );
+    //       use_h_ver = true;
+    //     }  // H version check
     if (psmilu_verbose(INFO, opts))
       psmilu_info("converted Schur complement (%s) to dense for last level...",
-                  (use_h_ver ? "H" : "C"));
+                  (use_h_ver ? "H" : "S"));
   }
 
   // NOTE that L_B/U_B are CCS, we need CRS, we can save computation with
