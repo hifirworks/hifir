@@ -411,7 +411,6 @@ inline CsType iludp_factor_defer(const CsType &                   A,
 
     // update diagonals b4 dropping
     step.update_B_diag<IsSymm>(l, ut, m2, d);
-    // step.update_B_diag<IsSymm>(l, ut, n * 2, d2);
 
 #ifndef NDEBUG
     const bool l_is_nonsingular =
@@ -630,7 +629,7 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     last_level.set_matrix(std::move(S_D));
     last_level.factorize();
     if (psmilu_verbose(INFO, opts))
-      psmilu_info("successfully factorized the dense complement...");
+      psmilu_info("successfully factorized the dense component...");
   }
 #ifndef NDEBUG
   else
