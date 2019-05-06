@@ -13,6 +13,7 @@
 #define _PSMILU_SCHUR2_HPP
 
 #include <algorithm>
+#include <cmath>
 #include <type_traits>
 
 #include "psmilu_log.hpp"
@@ -51,7 +52,8 @@ inline void drop_offsets_kernel(const IntArray &ref_indptr, const double alpha,
   auto &gaps = ibuf;
   for (size_type i(0); i < n; ++i) {
     const size_type A_sz     = ref_indptr[i + 1] - ref_indptr[i],
-                    sz_thres = A_sz * alpha, nnz = indptr[i + 1] - indptr[i];
+                    sz_thres = std::ceil(alpha * A_sz),
+                    nnz      = indptr[i + 1] - indptr[i];
     if (sz_thres >= nnz) {
       // if the threshold is no smaller than the local nnz
       gaps[i] = 0;
