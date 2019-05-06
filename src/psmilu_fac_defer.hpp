@@ -544,6 +544,8 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   timer.start();
 
   // drop
+  auto     E   = crs_type(internal::extract_E(s, A_crs, t, m, p, q));
+  auto     F   = internal::extract_F(s, A_ccs, t, m, p, q, ut.vals());
   auto     L_E = L.template split_crs<true>(m, L_start);
   crs_type U_F;
   do {
@@ -553,8 +555,8 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     if (psmilu_verbose(INFO, opts))
       psmilu_info("applying dropping on L_E and U_F with alpha_{L,U}=%g,%g...",
                   a_L, a_U);
-    drop_L_E(p(), A_crs, m, a_L, L_E, l.vals(), l.inds());
-    drop_U_F(q(), A_ccs, m, a_U, U_F2, ut.vals(), ut.inds());
+    drop_L_E(E.row_start(), a_L, L_E, l.vals(), l.inds());
+    drop_U_F(F.col_start(), a_U, U_F2, ut.vals(), ut.inds());
     U_F = crs_type(U_F2);
     if (psmilu_verbose(INFO, opts))
       psmilu_info("nnz(L_E)=%zd/%zd, nnz(U_F)=%zd/%zd...", nnz1, L_E.nnz(),
@@ -617,11 +619,9 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     L_B2 = crs_type(L_B);
     U_B2 = crs_type(U_B);
   }
-  precs.emplace_back(
-      m, A.nrows(), std::move(L_B2), std::move(d), std::move(U_B2),
-      crs_type(internal::extract_E(s, A_crs, t, m, p, q)),
-      crs_type(internal::extract_F(s, A_ccs, t, m, p, q, ut.vals())),
-      std::move(s), std::move(t), std::move(p()), std::move(q.inv()));
+  precs.emplace_back(m, A.nrows(), std::move(L_B2), std::move(d),
+                     std::move(U_B2), std::move(E), crs_type(F), std::move(s),
+                     std::move(t), std::move(p()), std::move(q.inv()));
 
   // if dense is not empty, then push it back
   if (!S_D.empty()) {

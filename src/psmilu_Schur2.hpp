@@ -22,13 +22,12 @@ namespace psmilu {
 namespace internal {
 
 /// \brief drop \a L_E matrix or \a U_F matrix
-/// \tparam PermType permutation type
 /// \tparam OneBased if or not is Fortran based index system
 /// \tparam IntArray integer array, see \ref Array
 /// \tparam ValueArray value array, see \ref Array
 /// \tparam BufArray value buffer array type
 /// \tparam IntBufArray integer buffer array type
-/// \param[in] A_indptr index starting position array or A
+/// \param[in] ref_indptr reference starting position array
 /// \param[in] m starting position of the original matrix A
 /// \param[in] alpha drop space limiter threshold
 /// \param[in,out] indptr in and out put index starting array
@@ -37,13 +36,12 @@ namespace internal {
 /// \param[out] buf work space
 /// \param[out] ibuf integer work space
 /// \ingroup schur
-template <bool OneBased, class PermType, class IntArray, class ValueArray,
-          class BufArray, class IntBufArray>
-inline void drop_offsets_kernel(const PermType &p, const IntArray &A_indptr,
-                                const typename IntArray::size_type m,
-                                const double alpha, IntArray &indptr,
-                                IntArray &indices, ValueArray &vals,
-                                BufArray &buf, IntBufArray &ibuf) {
+template <bool OneBased, class IntArray, class ValueArray, class BufArray,
+          class IntBufArray>
+inline void drop_offsets_kernel(const IntArray &ref_indptr, const double alpha,
+                                IntArray &indptr, IntArray &indices,
+                                ValueArray &vals, BufArray &buf,
+                                IntBufArray &ibuf) {
   using size_type  = typename IntArray::size_type;
   using index_type = typename IntArray::value_type;
 
@@ -52,7 +50,7 @@ inline void drop_offsets_kernel(const PermType &p, const IntArray &A_indptr,
   // loop starts here
   auto &gaps = ibuf;
   for (size_type i(0); i < n; ++i) {
-    const size_type A_sz     = A_indptr[p[i + m] + 1] - A_indptr[p[i + m]],
+    const size_type A_sz     = ref_indptr[i + 1] - ref_indptr[i],
                     sz_thres = A_sz * alpha, nnz = indptr[i + 1] - indptr[i];
     if (sz_thres >= nnz) {
       // if the threshold is no smaller than the local nnz
@@ -98,13 +96,10 @@ inline void drop_offsets_kernel(const PermType &p, const IntArray &A_indptr,
 }  // namespace internal
 
 /// \brief drop \a L_E
-/// \tparam PermType permutation array type
 /// \tparam CrsType crs storage type, see \ref CRS
 /// \tparam BufArray value buffer type
 /// \tparam IntBufArray integer buffer type
-/// \param[in] p row permutation vector
-/// \param[in] A input matrix
-/// \param[in] m starting index of offsets
+/// \param[in] ref_indptr reference starting array
 /// \param[in] alpha drop space limiter threshold
 /// \param[in,out] L_E in and out puts of L offset
 /// \param[out] buf work space
@@ -112,23 +107,21 @@ inline void drop_offsets_kernel(const PermType &p, const IntArray &A_indptr,
 /// \ingroup schur
 /// \note buffers can be got from Crout work spaces
 /// \sa drop_U_F
-template <class PermType, class CrsType, class BufArray, class IntBufArray>
-inline void drop_L_E(const PermType &p, const CrsType &A,
-                     const typename CrsType::size_type m, const double alpha,
-                     CrsType &L_E, BufArray &buf, IntBufArray &ibuf) {
+template <class CrsType, class BufArray, class IntBufArray>
+inline void drop_L_E(const typename CrsType::iarray_type &ref_indptr,
+                     const double alpha, CrsType &L_E, BufArray &buf,
+                     IntBufArray &ibuf) {
   static_assert(CrsType::ROW_MAJOR, "must be CRS");
 
-  if (A.nrows() > m) {
-    if (alpha > 0)
-      internal::drop_offsets_kernel<CrsType::ONE_BASED>(
-          p, A.row_start(), m, alpha, L_E.row_start(), L_E.col_ind(),
-          L_E.vals(), buf, ibuf);
-    else {
-      for (typename CrsType::size_type i(0); i < L_E.nrows(); ++i)
-        L_E.row_start()[i + 1] = CrsType::ONE_BASED;
-      L_E.col_ind().resize(0);
-      L_E.vals().resize(0);
-    }
+  if (alpha > 0)
+    internal::drop_offsets_kernel<CrsType::ONE_BASED>(
+        ref_indptr, alpha, L_E.row_start(), L_E.col_ind(), L_E.vals(), buf,
+        ibuf);
+  else {
+    for (typename CrsType::size_type i(0); i < L_E.nrows(); ++i)
+      L_E.row_start()[i + 1] = CrsType::ONE_BASED;
+    L_E.col_ind().resize(0);
+    L_E.vals().resize(0);
   }
 #ifndef NDEBUG
   L_E.check_validity();
@@ -136,13 +129,10 @@ inline void drop_L_E(const PermType &p, const CrsType &A,
 }
 
 /// \brief drop \a U_F
-/// \tparam PermType permutation array
 /// \tparam CcsType ccs storage type, see \ref CCS
 /// \tparam BufArray value buffer type
 /// \tparam IntBufArray integer buffer type
-/// \param[in] q column permutation vector
-/// \param[in] A input matrix
-/// \param[in] m starting index of offsets
+/// \param[in] ref_indptr reference starting array
 /// \param[in] alpha drop space limiter threshold
 /// \param[in,out] U_F in and out puts of U offset
 /// \param[out] buf work space
@@ -150,23 +140,21 @@ inline void drop_L_E(const PermType &p, const CrsType &A,
 /// \ingroup schur
 /// \note buffers can be got from Crout work spaces
 /// \sa drop_L_E
-template <class PermType, class CcsType, class BufArray, class IntBufArray>
-inline void drop_U_F(const PermType &q, const CcsType &A,
-                     const typename CcsType::size_type m, const double alpha,
-                     CcsType &U_F, BufArray &buf, IntBufArray &ibuf) {
+template <class CcsType, class BufArray, class IntBufArray>
+inline void drop_U_F(const typename CcsType::iarray_type &ref_indptr,
+                     const double alpha, CcsType &U_F, BufArray &buf,
+                     IntBufArray &ibuf) {
   static_assert(!CcsType::ROW_MAJOR, "must be CCS");
 
-  if (A.ncols() > m) {
-    if (alpha > 0)
-      internal::drop_offsets_kernel<CcsType::ONE_BASED>(
-          q, A.col_start(), m, alpha, U_F.col_start(), U_F.row_ind(),
-          U_F.vals(), buf, ibuf);
-    else {
-      for (typename CcsType::size_type i(0); i < U_F.ncols(); ++i)
-        U_F.col_start()[i + 1] = CcsType::ONE_BASED;
-      U_F.row_ind().resize(0);
-      U_F.vals().resize(0);
-    }
+  if (alpha > 0)
+    internal::drop_offsets_kernel<CcsType::ONE_BASED>(
+        ref_indptr, alpha, U_F.col_start(), U_F.row_ind(), U_F.vals(), buf,
+        ibuf);
+  else {
+    for (typename CcsType::size_type i(0); i < U_F.ncols(); ++i)
+      U_F.col_start()[i + 1] = CcsType::ONE_BASED;
+    U_F.row_ind().resize(0);
+    U_F.vals().resize(0);
   }
 #ifndef NDEBUG
   U_F.check_validity();
