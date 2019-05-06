@@ -61,13 +61,15 @@ inline void search_back_start_symm(const L_AugCcsType &               L,
 
 }  // namespace internal
 
-template <bool IsSymm, class CsType, class CroutStreamer, class PrecsType>
+template <bool IsSymm, class CsType, class CroutStreamer, class PrecsType,
+          class IntArray>
 inline CsType iludp_factor_defer(const CsType &                   A,
                                  const typename CsType::size_type m0,
                                  const typename CsType::size_type N,
                                  const Options &                  opts,
                                  const CroutStreamer &            Crout_info,
-                                 PrecsType &                      precs) {
+                                 PrecsType &precs, IntArray &row_sizes,
+                                 IntArray &col_sizes) {
   typedef CsType                      input_type;
   typedef typename CsType::other_type other_type;
   using cs_trait = internal::CompressedTypeTrait<input_type, other_type>;
@@ -107,6 +109,19 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   // and crs components.
   const crs_type &A_crs = cs_trait::select_crs(A, A_counterpart);
   const ccs_type &A_ccs = cs_trait::select_ccs(A, A_counterpart);
+
+  // handle row and column sizes
+  if (cur_level == 1u) {
+    row_sizes.resize(A.nrows());
+    col_sizes.resize(A.ncols());
+  }
+#ifndef PSMILU_USE_CUR_SIZES
+  if (cur_level == 1u)
+#endif  // PSMILU_USE_CUR_SIZES
+  {
+    for (size_type i(0); i < A.nrows(); ++i) row_sizes[i] = A_crs.nnz_in_row(i);
+    for (size_type i(0); i < A.ncols(); ++i) col_sizes[i] = A_ccs.nnz_in_col(i);
+  }
 
   if (psmilu_verbose(INFO, opts))
     psmilu_info("performing preprocessing with leading block size %zd...", m0);
@@ -261,13 +276,6 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   std::copy_n(p().cbegin(), n, P.begin());
   std::copy_n(q().cbegin(), n, Q.begin());
   auto &P_inv = p.inv(), &Q_inv = q.inv();
-
-  // from L/U index to deferred fac mapping
-  // Array<index_type> ori2def(n);
-  // psmilu_error_if(ori2def.status() == DATA_UNDEF,
-  //                 "memory allocation failed for ori2def at level %zd",
-  //                 cur_level);
-  // for (size_type i(0); i < n; ++i) ori2def[i] = i;  // build identity
 
   // 0 for defer due to diagonal, 1 for defer due to bad inverse conditioning
   index_type info_counter[] = {0, 0, 0};
@@ -428,8 +436,7 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     const size_type ori_ut_size = ut.size(), ori_l_size = l.size();
 
     // apply drop for U
-    apply_dropping_and_sort(tau_U, k_ut, A_crs.nnz_in_row(p[step]), alpha_U,
-                            ut);
+    apply_dropping_and_sort(tau_U, k_ut, row_sizes[p[step]], alpha_U, ut);
     // ut.sort_indices();
 
     // push back rows to U
@@ -443,7 +450,7 @@ inline CsType iludp_factor_defer(const CsType &                   A,
       // for symmetric cases, we need first find the leading block size
       auto info = find_sorted(ut.inds().cbegin(),
                               ut.inds().cbegin() + ut.size(), m2 + ONE_BASED);
-      apply_dropping_and_sort(tau_L, k_l, A_ccs.nnz_in_col(q[step]), alpha_L, l,
+      apply_dropping_and_sort(tau_L, k_l, col_sizes[q[step]], alpha_L, l,
                               info.second - ut.inds().cbegin());
 
 #ifndef NDEBUG
@@ -466,8 +473,7 @@ inline CsType iludp_factor_defer(const CsType &                   A,
                       l.vals());
     } else {
       // for asymmetric cases, just do exactly the same things as ut
-      apply_dropping_and_sort(tau_L, k_l, A_ccs.nnz_in_col(q[step]), alpha_L,
-                              l);
+      apply_dropping_and_sort(tau_L, k_l, col_sizes[q[step]], alpha_L, l);
       // l.sort_indices();
 
       Crout_info("  l sizes before/after dropping %zd/%zd, drops=%zd",
@@ -551,12 +557,30 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   do {
     auto            U_F2 = U.template split_ccs<true>(m, U_start);
     const size_type nnz1 = L_E.nnz(), nnz2 = U_F2.nnz();
-    const double    a_L = alpha_L, a_U = alpha_U;
+    const double    a_L = opts.alpha_L, a_U = opts.alpha_U;
     if (psmilu_verbose(INFO, opts))
       psmilu_info("applying dropping on L_E and U_F with alpha_{L,U}=%g,%g...",
                   a_L, a_U);
-    drop_L_E(E.row_start(), a_L, L_E, l.vals(), l.inds());
-    drop_U_F(F.col_start(), a_U, U_F2, ut.vals(), ut.inds());
+    if (m < n) {
+#ifdef PSMILU_USE_CUR_SIZES
+      drop_L_E(E.row_start(), a_L, L_E, l.vals(), l.inds());
+      drop_U_F(F.col_start(), a_U, U_F2, ut.vals(), ut.inds());
+#else
+      if (cur_level == 1u) {
+        drop_L_E(E.row_start(), a_L, L_E, l.vals(), l.inds());
+        drop_U_F(F.col_start(), a_U, U_F2, ut.vals(), ut.inds());
+      } else {
+        // use P and Q as buffers
+        P[0] = Q[0] = 0;
+        for (size_type i(m); i < n; ++i) {
+          P[i - m + 1] = P[i - m] + row_sizes[p[i]];
+          Q[i - m + 1] = Q[i - m] + col_sizes[q[i]];
+        }
+        drop_L_E(P, a_L, L_E, l.vals(), l.inds());
+        drop_U_F(Q, a_U, U_F2, ut.vals(), ut.inds());
+      }
+#endif
+    }
     U_F = crs_type(U_F2);
     if (psmilu_verbose(INFO, opts))
       psmilu_info("nnz(L_E)=%zd/%zd, nnz(U_F)=%zd/%zd...", nnz1, L_E.nnz(),
@@ -578,7 +602,7 @@ inline CsType iludp_factor_defer(const CsType &                   A,
         S.nnz(), L.nnz(), L_B.nnz(), U.nnz(), U_B.nnz());
 
   // test H version
-  const size_type nm     = A.nrows() - m;
+  const size_type nm     = n - m;
   const auto      cbrt_N = std::cbrt(N);
   dense_type      S_D;
   psmilu_assert(S_D.empty(), "fatal!");
@@ -619,9 +643,26 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     L_B2 = crs_type(L_B);
     U_B2 = crs_type(U_B);
   }
-  precs.emplace_back(m, A.nrows(), std::move(L_B2), std::move(d),
-                     std::move(U_B2), std::move(E), crs_type(F), std::move(s),
-                     std::move(t), std::move(p()), std::move(q.inv()));
+#ifndef PSMILU_USE_CUR_SIZES
+  if (S_D.empty()) {
+    // update the row and column sizes
+    // Important! Update this information before destroying p and q in the
+    // following emplace_back call
+    // NOTE use P and Q as buffers
+    for (size_type i(m); i < n; ++i) {
+      P[i] = row_sizes[p[i]];
+      Q[i] = col_sizes[q[i]];
+    }
+    for (size_type i(m); i < n; ++i) {
+      row_sizes[i - m] = P[i];
+      col_sizes[i - m] = Q[i];
+    }
+  }
+#endif  // PSMILU_USE_CUR_SIZES
+
+  precs.emplace_back(m, n, std::move(L_B2), std::move(d), std::move(U_B2),
+                     std::move(E), crs_type(F), std::move(s), std::move(t),
+                     std::move(p()), std::move(q.inv()));
 
   // if dense is not empty, then push it back
   if (!S_D.empty()) {
@@ -631,10 +672,6 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     if (psmilu_verbose(INFO, opts))
       psmilu_info("successfully factorized the dense component...");
   }
-#ifndef NDEBUG
-  else
-    psmilu_error_if(!precs.back().dense_solver.empty(), "should be empty!");
-#endif
 
   timer.finish();  // profile post-processing
 
