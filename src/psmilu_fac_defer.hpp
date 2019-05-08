@@ -557,15 +557,16 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   do {
     auto            U_F2 = U.template split_ccs<true>(m, U_start);
     const size_type nnz1 = L_E.nnz(), nnz2 = U_F2.nnz();
-    const double    a_L = opts.alpha_L, a_U = opts.alpha_U;
+#ifndef PSMILU_NO_DROP_LE_UF
+    const double a_L = opts.alpha_L, a_U = opts.alpha_U;
     if (psmilu_verbose(INFO, opts))
       psmilu_info("applying dropping on L_E and U_F with alpha_{L,U}=%g,%g...",
                   a_L, a_U);
     if (m < n) {
-#ifdef PSMILU_USE_CUR_SIZES
+#  ifdef PSMILU_USE_CUR_SIZES
       drop_L_E(E.row_start(), a_L, L_E, l.vals(), l.inds());
       drop_U_F(F.col_start(), a_U, U_F2, ut.vals(), ut.inds());
-#else
+#  else
       if (cur_level == 1u) {
         drop_L_E(E.row_start(), a_L, L_E, l.vals(), l.inds());
         drop_U_F(F.col_start(), a_U, U_F2, ut.vals(), ut.inds());
@@ -579,13 +580,18 @@ inline CsType iludp_factor_defer(const CsType &                   A,
         drop_L_E(P, a_L, L_E, l.vals(), l.inds());
         drop_U_F(Q, a_U, U_F2, ut.vals(), ut.inds());
       }
-#endif
+#  endif
     }
+#endif  // PSMILU_NO_DROP_LE_UF
     U_F = crs_type(U_F2);
     if (psmilu_verbose(INFO, opts))
       psmilu_info("nnz(L_E)=%zd/%zd, nnz(U_F)=%zd/%zd...", nnz1, L_E.nnz(),
                   nnz2, U_F.nnz());
   } while (false);
+
+  // compute the nnz(A)-nnz(B) for first level
+  size_type AmB_nnz(0);
+  for (size_type i(m); i < n; ++i) AmB_nnz += row_sizes[p[i]] + col_sizes[q[i]];
 
   // compute S version of Schur complement
   crs_type S_tmp;
@@ -596,18 +602,26 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   auto L_B = L.template split<false>(m, L_start);
   auto U_B = U.template split_ccs<false>(m, U_start);
 
+  const size_type dense_thres1 = static_cast<size_type>(
+                      std::max(opts.alpha_L, opts.alpha_U) * AmB_nnz),
+                  dense_thres2 = std::max(static_cast<size_type>(std::ceil(
+                                              opts.c_d * std::cbrt(N))),
+                                          size_type(1000));
+
   if (psmilu_verbose(INFO, opts))
     psmilu_info(
-        "nnz(S_C)=%zd, nnz(L)=%zd, nnz(L_B)=%zd, nnz(U)=%zd, nnz(U_B)=%zd...",
-        S.nnz(), L.nnz(), L_B.nnz(), U.nnz(), U_B.nnz());
+        "nnz(S_C)=%zd, nnz(L/L_B)=%zd/%zd, nnz(U/U_B)=%zd/%zd, "
+        "dense_thres{1,2}=%zd/%zd...",
+        S.nnz(), L.nnz(), L_B.nnz(), U.nnz(), U_B.nnz(), dense_thres1,
+        dense_thres2);
 
   // test H version
-  const size_type nm     = n - m;
-  const auto      cbrt_N = std::cbrt(N);
+  const size_type nm = n - m;
   dense_type      S_D;
   psmilu_assert(S_D.empty(), "fatal!");
-  if (S.nnz() >= static_cast<size_type>(opts.rho * nm * nm) ||
-      nm <= static_cast<size_type>(opts.c_d * cbrt_N) || !m) {
+
+  if ((size_type)std::ceil(nm * nm * opts.rho) <= dense_thres1 ||
+      nm <= dense_thres2 || !m) {
     bool use_h_ver = false;
     S_D            = dense_type::from_sparse(S);
     //     if (m <= static_cast<size_type>(opts.c_h * cbrt_N) && m) {
