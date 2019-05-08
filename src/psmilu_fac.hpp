@@ -777,6 +777,8 @@ inline void update_L_start_symm(const L_AugCcsType &                   L,
 /// complement with \a L_start and \a U_start as well as augmented \a L and \a
 /// U. Therefore, instead of sorely factorization, this routine is more or less
 /// like a level problem solver.
+///
+/// \deprecated got deferred factorization instead
 template <bool IsSymm, class CsType, class CroutStreamer, class PrecsType>
 inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
                            const typename CsType::size_type N,
