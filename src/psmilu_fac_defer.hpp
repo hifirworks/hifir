@@ -19,6 +19,21 @@
 namespace psmilu {
 namespace internal {
 
+/*!
+ * \addtogroup fac
+ * @{
+ */
+
+/// \brief compress offsets to have a compact L and U
+/// \tparam L_AugType augmented storage for \a L, see \ref AugCCS
+/// \tparam U_AugType augmented storage for \a U, see \ref AugCRS
+/// \tparam PosArray array for storing starting positions, see \ref Array
+/// \param[in,out] U uncompressed \a U part
+/// \param[in,out] L uncompressed \a L part
+/// \param[in] U_start starting positions of the offset of \a U
+/// \param[in] L_start starting positions of the offset of \a L
+/// \param[in] m leading block size
+/// \param[in] dfrs total number of deferrals
 template <class L_AugType, class U_AugType, class PosArray>
 inline void compress_tails(U_AugType &U, L_AugType &L, const PosArray &U_start,
                            const PosArray &                   L_start,
@@ -36,6 +51,7 @@ inline void compress_tails(U_AugType &U, L_AugType &L, const PosArray &U_start,
     }
   }
 
+  // reshape the secondary axis of the matrices
   L.resize_nrows(L.nrows() / 2);
   U.resize_ncols(U.ncols() / 2);
 
@@ -45,11 +61,23 @@ inline void compress_tails(U_AugType &U, L_AugType &L, const PosArray &U_start,
 #endif
 }
 
+/// \brief fix the starting positions for symmetric cases while doing deferrals
+/// \tparam L_AugCcsType augmented ccs type for \a L, see \ref AugCCS
+/// \tparam PosArray position array type, see \ref Array
+/// \param[in] L lower part of the decomposition
+/// \param[in] back_step the step where we defer to
+/// \param[out] L_start starting positions for offset of \a L
+///
+/// For symmetric factorization, we only are interested in factorizing the
+/// offset of \a L, thus we are maintaining the starting positions pointing to
+/// the offset locations. However, while we defer a row in \a L, the starting
+/// positions no long valid, thus we need to fix it by looping through the nnz
+/// entries in the deferred step and decrement the position values.
 template <class L_AugCcsType, class PosArray>
 inline void search_back_start_symm(const L_AugCcsType &               L,
                                    const typename PosArray::size_type back_step,
-                                   const typename PosArray::size_type m,
-                                   PosArray &                         L_start) {
+                                   const typename PosArray::size_type /* m */,
+                                   PosArray &L_start) {
   using index_type  = typename L_AugCcsType::index_type;
   index_type aug_id = L.start_row_id(back_step);
   while (!L.is_nil(aug_id)) {
@@ -59,8 +87,40 @@ inline void search_back_start_symm(const L_AugCcsType &               L,
   }
 }
 
+/*!
+ * @}
+ */ // group fac
+
 }  // namespace internal
 
+/// \brief perform incomplete LU with deferrer factorization for a single level
+/// \tparam IsSymm if \a true, then assume a symmetric leading block
+/// \tparam CsType input compressed storage, either \ref CRS or \ref CCS
+/// \tparam CroutStreamer information streamer for \ref Crout update
+/// \tparam PrecsType multilevel preconditioner type, \ref Precs and \ref Prec
+/// \tparam IntArray integer array type for nnz storage, see \ref Array
+/// \param[in] A input for this level
+/// \param[in] m0 initial leading block size
+/// \param[in] N reference \b global size for determining Schur sparsity
+/// \param[in] opts control parameters
+/// \param[in] Crout_info information streamer, API same as \ref psmilu_info
+/// \param[in,out] precs list of preconditioner, newly computed components will
+///                      be pushed back to the list.
+/// \param[in,out] row_sizes nnz of rows in the original input A
+/// \param[in,out] col_sizes nnz of columns in the original input A
+/// \return Schur complement for next level (if needed), in the same type as
+///         that of the input, i.e. \a CsType
+/// \ingroup fac
+///
+/// This is the core algorithm, which has been demonstrated in the paper, i.e.
+/// the algorithm 2, \b ilu_dp_factor. There are two modifications: 1) we put
+/// the preprocessing inside this routine, and 2) we embed post-processing (
+/// computing Schur complement and updating preconditioner components for the
+/// current level) as well. The reason(s) is(are), for 1), the preprocessing
+/// requires the input type to be \ref CCS, which can only be determined inside
+/// this routine (we want to keep this routine as clean as possible, we can, of
+/// course, extract the preprocessing out and make this routine takes inputs
+/// of both CCS and CRS of \a A.)
 template <bool IsSymm, class CsType, class CroutStreamer, class PrecsType,
           class IntArray>
 inline CsType iludp_factor_defer(const CsType &                   A,
@@ -610,7 +670,7 @@ inline CsType iludp_factor_defer(const CsType &                   A,
 
   if (psmilu_verbose(INFO, opts))
     psmilu_info(
-        "nnz(S_C)=%zd, nnz(L/L_B)=%zd/%zd, nnz(U/U_B)=%zd/%zd, "
+        "nnz(S_C)=%zd, nnz(L/L_B)=%zd/%zd, nnz(U/U_B)=%zd/%zd\n"
         "dense_thres{1,2}=%zd/%zd...",
         S.nnz(), L.nnz(), L_B.nnz(), U.nnz(), U_B.nnz(), dense_thres1,
         dense_thres2);
