@@ -117,6 +117,23 @@ class IndexValueArray {
   /// \param[in] i local index in range of _counts (C-based)
   inline value_type val(const size_type i) const { return _vals[c_idx(i)]; }
 
+  /// \brief get the 1 norm of the vector
+  inline value_type norm1() const {
+    value_type tmp(0);
+    for (size_type i(0); i < _counts; ++i) tmp += std::abs(val(i));
+    return tmp;
+  }
+
+  /// \brief get the 2 norm squared of the vector
+  inline value_type norm2_sq() const {
+    value_type tmp(0);
+    for (size_type i(0); i < _counts; ++i) tmp += val(i) * val(i);
+    return tmp;
+  }
+
+  /// \brief get the 2 norm of the vector
+  inline value_type norm2() const { return std::sqrt(norm2_sq()); }
+
   /// \brief operator access
   /// \param[in] idx idx in range of dense size, one-based aware
   inline value_type &operator[](const size_type idx) {
