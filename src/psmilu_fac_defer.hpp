@@ -496,8 +496,11 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     const size_type ori_ut_size = ut.size(), ori_l_size = l.size();
 
     // apply drop for U
-    apply_dropping_and_sort(tau_U, k_ut, row_sizes[p[step]], alpha_U, ut);
-    // ut.sort_indices();
+    apply_num_dropping(tau_U, k_ut, ut);
+#ifndef PSMILU_DISABLE_SPACE_DROP
+    apply_space_dropping(row_sizes[p[step]], alpha_U, ut);
+#endif  // PSMILU_DISABLE_SPACE_DROP
+    ut.sort_indices();
 
     // push back rows to U
     U.push_back_row(step, ut.inds().cbegin(), ut.inds().cbegin() + ut.size(),
@@ -506,14 +509,18 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     Crout_info("  ut sizes before/after dropping %zd/%zd, drops=%zd",
                ori_ut_size, ut.size(), ori_ut_size - ut.size());
 
+    // apply numerical dropping on L
+    apply_num_dropping(tau_L, k_l, l);
+
     if (IsSymm) {
+#ifndef PSMILU_DISABLE_SPACE_DROP
       // for symmetric cases, we need first find the leading block size
       auto info = find_sorted(ut.inds().cbegin(),
                               ut.inds().cbegin() + ut.size(), m2 + ONE_BASED);
-      apply_dropping_and_sort(tau_L, k_l, col_sizes[q[step]], alpha_L, l,
-                              info.second - ut.inds().cbegin());
+      apply_space_dropping(col_sizes[q[step]], alpha_L, l,
+                           info.second - ut.inds().cbegin());
 
-#ifndef NDEBUG
+#  ifndef NDEBUG
       if (info.second != ut.inds().cbegin() &&
           info.second != ut.inds().cbegin() + ut.size() && l.size())
         psmilu_error_if(*(info.second - 1) >= *l.inds().cbegin() ||
@@ -521,24 +528,27 @@ inline CsType iludp_factor_defer(const CsType &                   A,
                         "l contains symm part (%zd,%zd,%zd)",
                         (size_type)(*(info.second - 1)),
                         (size_type)*l.inds().cbegin(), m2);
-#endif
-
+#  endif
+      auto u_last = info.second;
+#else   // !PSMILU_DISABLE_SPACE_DROP
+      auto u_last = ut.inds().cbegin() + ut.size();
+#endif  // PSMILU_DISABLE_SPACE_DROP
+      l.sort_indices();
       Crout_info(
           "  l sizes (asymm parts) before/after dropping %zd/%zd, drops=%zd",
           ori_l_size, l.size(), ori_l_size - l.size());
 
       // push back symmetric entries and offsets
-      L.push_back_col(step, ut.inds().cbegin(), info.second, ut.vals(),
+      L.push_back_col(step, ut.inds().cbegin(), u_last, ut.vals(),
                       l.inds().cbegin(), l.inds().cbegin() + l.size(),
                       l.vals());
     } else {
-      // for asymmetric cases, just do exactly the same things as ut
-      apply_dropping_and_sort(tau_L, k_l, col_sizes[q[step]], alpha_L, l);
-      // l.sort_indices();
-
+#ifndef PSMILU_DISABLE_SPACE_DROP
+      apply_space_dropping(col_sizes[q[step]], alpha_L, l);
+#endif  // PSMILU_DISABLE_SPACE_DROP
+      l.sort_indices();
       Crout_info("  l sizes before/after dropping %zd/%zd, drops=%zd",
                  ori_l_size, l.size(), ori_l_size - l.size());
-
       L.push_back_col(step, l.inds().cbegin(), l.inds().cbegin() + l.size(),
                       l.vals());
     }
