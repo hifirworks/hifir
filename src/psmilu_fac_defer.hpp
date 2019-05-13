@@ -338,7 +338,7 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   auto &P_inv = p.inv(), &Q_inv = q.inv();
 
   // 0 for defer due to diagonal, 1 for defer due to bad inverse conditioning
-  index_type info_counter[] = {0, 0, 0};
+  index_type info_counter[] = {0, 0, 0, 0, 0, 0, 0};
 
   if (psmilu_verbose(INFO, opts)) psmilu_info("start Crout update...");
   DeferredCrout step;
@@ -498,8 +498,13 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     // apply drop for U
     apply_num_dropping(tau_U, k_ut, ut);
 #ifndef PSMILU_DISABLE_SPACE_DROP
+    const size_type n_ut = ut.size();
+    Crout_info("  before: size(ut)=%zd, norm1(ut)=%g", n_ut, ut.norm1());
     apply_space_dropping(row_sizes[p[step]], alpha_U, ut);
+    Crout_info("  after: size(ut)=%zd, norm1(ut)=%g", ut.size(), ut.norm1());
+    info_counter[3] += n_ut - ut.size();
 #endif  // PSMILU_DISABLE_SPACE_DROP
+    info_counter[5] += ori_ut_size - ut.size();
     ut.sort_indices();
 
     // push back rows to U
@@ -544,8 +549,13 @@ inline CsType iludp_factor_defer(const CsType &                   A,
                       l.vals());
     } else {
 #ifndef PSMILU_DISABLE_SPACE_DROP
+      const size_type n_l = l.size();
+      Crout_info("  before: size(l)=%zd, norm1(l)=%g", n_l, l.norm1());
       apply_space_dropping(col_sizes[q[step]], alpha_L, l);
+      Crout_info("  after: size(l)=%zd, norm1(l)=%g", l.size(), l.norm1());
+      info_counter[4] += n_l - l.size();
 #endif  // PSMILU_DISABLE_SPACE_DROP
+      info_counter[6] += ori_l_size - l.size();
       l.sort_indices();
       Crout_info("  l sizes before/after dropping %zd/%zd, drops=%zd",
                  ori_l_size, l.size(), ori_l_size - l.size());
@@ -595,13 +605,19 @@ inline CsType iludp_factor_defer(const CsType &                   A,
         "\tleading block size out=%zd\n"
         "\tdiff=%zd\n"
         "\tdiag deferrals=%zd\n"
-        "\tinv-norm deferrals=%zd"
+        "\tinv-norm deferrals=%zd\n"
+        "\tdrop ut=%zd\n"
+        "\tspace drop ut=%zd\n"
+        "\tdrop l=%zd\n"
+        "\tspace drop l=%zd"
 #ifdef PSMILU_DEFERREDFAC_VERBOSE_STAT
         "\n\tboth-inv-bad deferrals=%zd"
 #endif  // PSMILU_DEFERREDFAC_VERBOSE_STAT
         ,
         step.defers(), m2, m, m2 - m, (size_type)info_counter[0],
-        (size_type)info_counter[1]
+        (size_type)info_counter[1], (size_type)info_counter[5],
+        (size_type)info_counter[3], (size_type)info_counter[6],
+        (size_type)info_counter[4]
 #ifdef PSMILU_DEFERREDFAC_VERBOSE_STAT
         ,
         (size_type)info_counter[2]
