@@ -310,6 +310,10 @@ inline CsType iludp_factor_defer(const CsType &                   A,
       "memory allocation failed for kappa_l and/or kappa_ut at level %zd.",
       cur_level);
 
+#ifdef PSMILU_ENABLE_NORM_STAT
+  Array<value_type> ut_norm_ratios(m), l_norm_ratios(m);
+#endif  // PSMILU_ENABLE_NORM_STAT
+
   U.begin_assemble_rows();
   L.begin_assemble_cols();
 
@@ -497,15 +501,19 @@ inline CsType iludp_factor_defer(const CsType &                   A,
 
     // apply drop for U
     apply_num_dropping(tau_U, k_ut, ut);
+#ifdef PSMILU_ENABLE_NORM_STAT
+    ut_norm_ratios[step] = ut.norm1();
+#endif  // PSMILU_ENABLE_NORM_STAT
 #ifndef PSMILU_DISABLE_SPACE_DROP
     const size_type n_ut = ut.size();
-    Crout_info("  before: size(ut)=%zd, norm1(ut)=%g", n_ut, ut.norm1());
     apply_space_dropping(row_sizes[p[step]], alpha_U, ut);
-    Crout_info("  after: size(ut)=%zd, norm1(ut)=%g", ut.size(), ut.norm1());
     info_counter[3] += n_ut - ut.size();
 #endif  // PSMILU_DISABLE_SPACE_DROP
     info_counter[5] += ori_ut_size - ut.size();
     ut.sort_indices();
+#ifdef PSMILU_ENABLE_NORM_STAT
+    ut_norm_ratios[step] = ut.norm1() / ut_norm_ratios[step];
+#endif  // PSMILU_ENABLE_NORM_STAT
 
     // push back rows to U
     U.push_back_row(step, ut.inds().cbegin(), ut.inds().cbegin() + ut.size(),
@@ -516,6 +524,10 @@ inline CsType iludp_factor_defer(const CsType &                   A,
 
     // apply numerical dropping on L
     apply_num_dropping(tau_L, k_l, l);
+
+#ifdef PSMILU_ENABLE_NORM_STAT
+    l_norm_ratios[step] = l.norm1();
+#endif  // PSMILU_ENABLE_NORM_STAT
 
     if (IsSymm) {
 #ifndef PSMILU_DISABLE_SPACE_DROP
@@ -538,6 +550,7 @@ inline CsType iludp_factor_defer(const CsType &                   A,
 #else   // !PSMILU_DISABLE_SPACE_DROP
       auto u_last = ut.inds().cbegin() + ut.size();
 #endif  // PSMILU_DISABLE_SPACE_DROP
+
       l.sort_indices();
       Crout_info(
           "  l sizes (asymm parts) before/after dropping %zd/%zd, drops=%zd",
@@ -550,9 +563,7 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     } else {
 #ifndef PSMILU_DISABLE_SPACE_DROP
       const size_type n_l = l.size();
-      Crout_info("  before: size(l)=%zd, norm1(l)=%g", n_l, l.norm1());
       apply_space_dropping(col_sizes[q[step]], alpha_L, l);
-      Crout_info("  after: size(l)=%zd, norm1(l)=%g", l.size(), l.norm1());
       info_counter[4] += n_l - l.size();
 #endif  // PSMILU_DISABLE_SPACE_DROP
       info_counter[6] += ori_l_size - l.size();
@@ -562,7 +573,9 @@ inline CsType iludp_factor_defer(const CsType &                   A,
       L.push_back_col(step, l.inds().cbegin(), l.inds().cbegin() + l.size(),
                       l.vals());
     }
-
+#ifdef PSMILU_ENABLE_NORM_STAT
+    l_norm_ratios[step] = l.norm1() / l_norm_ratios[step];
+#endif  // PSMILU_ENABLE_NORM_STAT
     Crout_info(" Crout step %zd done!", step);
   }
 
@@ -627,6 +640,32 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     _GET_MAX_MIN_MINABS(d, m);
     _SHOW_MAX_MIN_MINABS(d);
 #endif
+#ifdef PSMILU_ENABLE_NORM_STAT
+    psmilu_info(
+        "analyzing the behaviors of l and ut after/before space dropping...");
+    std::sort(ut_norm_ratios.begin(), ut_norm_ratios.begin() + m);
+    std::sort(l_norm_ratios.begin(), l_norm_ratios.begin() + m);
+    const size_type i25 = 25.0 * m / 100, i50 = 50.0 * m / 100,
+                    i75 = 75.0 * m / 100;
+    psmilu_info(
+        "\tut 1-norm ratio:\n"
+        "\t\tmin=%g\n"
+        "\t\t25%%=%g\n"
+        "\t\tmedian=%g\n"
+        "\t\t75%%=%g\n"
+        "\t\tmax=%g\n"
+        "\tl 1-norm ratio:\n"
+        "\t\tmin=%g\n"
+        "\t\t25%%=%g\n"
+        "\t\tmedian=%g\n"
+        "\t\t75%%=%g\n"
+        "\t\tmax=%g",
+        (double)ut_norm_ratios.front(), (double)ut_norm_ratios[i25],
+        (double)ut_norm_ratios[i50], (double)ut_norm_ratios[i75],
+        (double)ut_norm_ratios[m - 1], (double)l_norm_ratios.front(),
+        (double)l_norm_ratios[i25], (double)l_norm_ratios[i50],
+        (double)l_norm_ratios[i75], (double)l_norm_ratios[m - 1]);
+#endif  // PSMILU_ENABLE_NORM_STAT
     psmilu_info("time: %gs", timer.time());
   }
 
