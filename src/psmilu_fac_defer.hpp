@@ -654,17 +654,26 @@ inline CsType iludp_factor_defer(const CsType &                   A,
         "\t\tmedian=%g\n"
         "\t\t75%%=%g\n"
         "\t\tmax=%g\n"
+        "\t\t<=99%%=%zd\n"
         "\tl 1-norm ratio:\n"
         "\t\tmin=%g\n"
         "\t\t25%%=%g\n"
         "\t\tmedian=%g\n"
         "\t\t75%%=%g\n"
-        "\t\tmax=%g",
+        "\t\tmax=%g\n"
+        "\t\t<=99%%=%zd",
         (double)ut_norm_ratios.front(), (double)ut_norm_ratios[i25],
         (double)ut_norm_ratios[i50], (double)ut_norm_ratios[i75],
-        (double)ut_norm_ratios[m - 1], (double)l_norm_ratios.front(),
-        (double)l_norm_ratios[i25], (double)l_norm_ratios[i50],
-        (double)l_norm_ratios[i75], (double)l_norm_ratios[m - 1]);
+        (double)ut_norm_ratios[m - 1],
+        size_type(std::upper_bound(ut_norm_ratios.cbegin(),
+                                   ut_norm_ratios.cend(), 0.99) -
+                  ut_norm_ratios.cbegin()),
+        (double)l_norm_ratios.front(), (double)l_norm_ratios[i25],
+        (double)l_norm_ratios[i50], (double)l_norm_ratios[i75],
+        (double)l_norm_ratios[m - 1],
+        size_type(std::upper_bound(l_norm_ratios.cbegin(), l_norm_ratios.cend(),
+                                   0.99) -
+                  l_norm_ratios.cbegin()));
 #endif  // PSMILU_ENABLE_NORM_STAT
     psmilu_info("time: %gs", timer.time());
   }
