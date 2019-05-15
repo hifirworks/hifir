@@ -111,6 +111,66 @@ inline void apply_space_dropping(
   }
 }
 
+/// \brief apply space limitation dropping for leading block and deferred
+///        parts, separately.
+/// \tparam SpVecType sparse vector type, see \ref SparseVector
+/// \param[in] nnz reference (local) number of nonzeros, i.e. input matrix
+/// \param[in] alpha filling limiter
+/// \param[in] m leading block size
+/// \param[in,out] v sparse vector
+/// \sa apply_space_dropping
+template <class SpVecType>
+inline void apply_space_dropping_sep(const typename SpVecType::size_type nnz,
+                                     const int                           alpha,
+                                     const typename SpVecType::size_type m,
+                                     SpVecType &                         v) {
+  using size_type                 = typename SpVecType::size_type;
+  using index_type                = typename SpVecType::index_type;
+  using extractor                 = internal::SpVInternalExtractor<SpVecType>;
+  constexpr static bool ONE_BASED = SpVecType::ONE_BASED;
+
+  if (v.size()) {
+    // get size upper bound
+    const size_type N(nnz * alpha);
+    // get the thres for deferred sections
+    const size_type thres = m + ONE_BASED;
+    // partition, O(N)
+    auto sep = std::partition(v.inds().begin(), v.inds().begin() + v.size(),
+                              [=](const index_type i) { return i < thres; });
+    const auto to_c = [](const index_type i) -> index_type {
+      return to_c_idx<index_type, ONE_BASED>(i);
+    };
+    size_type   n(sep - v.inds().begin());
+    const auto &vals  = v.vals();
+    auto        m_itr = sep;
+    // drop the leading block
+    if (n > N) {
+      std::nth_element(
+          v.inds().begin(), v.inds().begin() + N - 1, v.inds().begin() + n,
+          [&](const index_type i, const index_type j) -> bool {
+            return std::abs(vals[to_c(i)]) > std::abs(vals[to_c(j)]);
+          });
+      n = N;
+      // compress the deferred part
+      std::copy(sep, v.inds().begin() + v.size(), v.inds().begin() + N);
+      m_itr = v.inds().begin() + N;
+    }
+    // drop the deferred part
+    const size_type n2 = v.inds().begin() + v.size() - sep;
+    if (n2 > N) {
+      std::nth_element(m_itr, m_itr + N - 1, m_itr + n2,
+                       [&](const index_type i, const index_type j) -> bool {
+                         return std::abs(vals[to_c(i)]) >
+                                std::abs(vals[to_c(j)]);
+                       });
+      n += N;
+    } else
+      n += n2;
+    // directly modify the internal counter O(1)
+    static_cast<extractor &>(v).counts() = n;
+  }
+}
+
 /// \brief apply dropping and sort the resulting index list
 /// \tparam TauType data type for dropper parameter \f$\tau\f$, e.g. \a double
 /// \tparam KappaType data type for condition number \f$\kappa\f$
