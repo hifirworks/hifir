@@ -688,8 +688,8 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   auto     F   = internal::extract_F(s, A_ccs, t, m, p, q, ut.vals());
   auto     L_E = L.template split_crs<true>(m, L_start);
   crs_type U_F;
+  auto     U_F2 = U.template split_ccs<true>(m, U_start);
   do {
-    auto            U_F2 = U.template split_ccs<true>(m, U_start);
     const size_type nnz1 = L_E.nnz(), nnz2 = U_F2.nnz();
 #ifndef PSMILU_NO_DROP_LE_UF
     const double a_L = opts.alpha_L, a_U = opts.alpha_U;
@@ -728,13 +728,17 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   for (size_type i(m); i < n; ++i) AmB_nnz += row_sizes[p[i]] + col_sizes[q[i]];
 
   // compute S version of Schur complement
+  bool     use_h_ver = false;
   crs_type S_tmp;
   compute_Schur_simple(s, A_crs, t, p, q, m, L_E, d, U_F, S_tmp, l);
-  const input_type S(S_tmp);  // if input==crs, then wrap, ow copy
+  input_type S(S_tmp);  // if input==crs, then wrap, ow copy
 
   // compute L_B and U_B
   auto L_B = L.template split<false>(m, L_start);
   auto U_B = U.template split_ccs<false>(m, U_start);
+
+  // S = input_type(
+  //     compute_Schur_hybrid(L_E, L_B, s, A_ccs, t, p, q, d, U_B, U_F2, S, ut));
 
   const size_type dense_thres1 = static_cast<size_type>(
                       std::max(opts.alpha_L, opts.alpha_U) * AmB_nnz),
@@ -756,20 +760,7 @@ inline CsType iludp_factor_defer(const CsType &                   A,
 
   if ((size_type)std::ceil(nm * nm * opts.rho) <= dense_thres1 ||
       nm <= dense_thres2 || !m) {
-    bool use_h_ver = false;
-    S_D            = dense_type::from_sparse(S);
-    //     if (m <= static_cast<size_type>(opts.c_h * cbrt_N) && m) {
-    // #ifdef PSMILU_UNIT_TESTING
-    //       ccs_type T_E, T_F;
-    // #endif
-    //       compute_Schur_H(L, L_start, L_B, s, A_ccs, t, p, q, d, U_B, U, S_D
-    // #ifdef PSMILU_UNIT_TESTING
-    //                       ,
-    //                       T_E, T_F
-    // #endif
-    //       );
-    //       use_h_ver = true;
-    //     }  // H version check
+    S_D = dense_type::from_sparse(S);
     if (psmilu_verbose(INFO, opts))
       psmilu_info("converted Schur complement (%s) to dense for last level...",
                   (use_h_ver ? "H" : "S"));
