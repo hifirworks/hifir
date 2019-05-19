@@ -30,7 +30,6 @@ namespace internal {
 /// \tparam BufArray value buffer array type
 /// \tparam IntBufArray integer buffer array type
 /// \param[in] ref_indptr reference starting position array
-/// \param[in] m starting position of the original matrix A
 /// \param[in] alpha drop space limiter threshold
 /// \param[in,out] indptr in and out put index starting array
 /// \param[in,out] indices in and out put index array
@@ -465,8 +464,7 @@ inline void compute_Schur_hybrid_T_E(
           // x_j is nz, then for each nz in L(:,j), we known there must be an
           // entry in the solution
           auto last = L_B.row_ind_cend(j);
-          auto info = find_sorted(L_B.row_ind_cbegin(j), last, ori_idx(j + 1));
-          for (auto itr = info.second; itr != last; ++itr)
+          for (auto itr = L_B.row_ind_cbegin(j); itr != last; ++itr)
             v.push_back(*itr, tag);  // NOTE this may update d_tags
         }
       };
@@ -572,14 +570,13 @@ inline void compute_Schur_hybrid_T_E(
     auto &vals = v.vals();  // get reference to dense value
     for (size_type j = start_index; j < m; ++j) {
       if (static_cast<size_type>(d_tags[j]) != tag) continue;
-      const auto x_j  = vals[j];
-      auto       last = L_B.row_ind_cend(j);
-      auto info  = find_sorted(L_B.row_ind_cbegin(j), last, ori_idx(j + 1));
-      auto v_itr = L_B.val_cbegin(j) + (info.second - L_B.row_ind_cbegin(j));
+      const auto x_j   = vals[j];
+      auto       last  = L_B.row_ind_cend(j);
+      auto       v_itr = L_B.val_cbegin(j);
       // for each nz in L(:,j), we push the index back
       // if a new value is added to the sparse vector (return true), then
       // we assign -L(*itr,j)*x_j, ow subtract L(*itr,j)
-      for (auto itr = info.second; itr != last; ++itr, ++v_itr)
+      for (auto itr = L_B.row_ind_cbegin(j); itr != last; ++itr, ++v_itr)
         v.push_back(*itr, tag) ? vals[c_idx(*itr)] = -*v_itr * x_j
                                : vals[c_idx(*itr)] -= *v_itr * x_j;
     }
@@ -749,9 +746,6 @@ inline void compute_Schur_hybrid_T_F(
   const auto c_idx                = [](const size_type i) {
     return to_c_idx<size_type, ONE_BASED>(i);
   };
-  const auto ori_idx = [](const size_type i) {
-    return to_ori_idx<size_type, ONE_BASED>(i);
-  };
 
   const size_type m = U_B.nrows();
   psmilu_assert(m == U_B.ncols(), "U should be squared matrix");
@@ -804,16 +798,9 @@ inline void compute_Schur_hybrid_T_F(
         // note for first entry, no new entries will be added
         for (size_type j = start_index; j != 0u; --j) {
           if (static_cast<size_type>(d_tags[j]) != tag) continue;
-          // find the last entry
-          auto info = find_sorted(U_B.row_ind_cbegin(j), U_B.row_ind_cend(j),
-                                  ori_idx(j - 1));
-          // IMPORTANT! since find_sorted uses lower_bound, which means if we
-          // actually find an entry with value j-1, then it will be skipped in
-          // reserve_iterator! Therefore, we need to advance the iterator if we
-          // encounter this.
-          if (info.first) ++info.second;
+          if (!U_B.nnz_in_col(j)) continue;
           auto last = iterator(U_B.row_ind_cbegin(j));
-          auto itr  = iterator(info.second);
+          auto itr  = iterator(U_B.row_ind_cend(j));
           for (; itr != last; ++itr) v.push_back(*itr, tag);
         }
       };
@@ -873,14 +860,11 @@ inline void compute_Schur_hybrid_T_F(
     auto &buf_vals   = v.vals();
     for (size_type j = start_index; j != 0u; --j) {
       if (static_cast<size_type>(d_tags[j]) != tag) continue;
-      const auto x_j  = buf_vals[j];
-      auto       info = find_sorted(U_B.row_ind_cbegin(j), U_B.row_ind_cend(j),
-                              ori_idx(j - 1));
-      if (info.first) ++info.second;  // increment if *info.second==j-1
-      auto v_itr =
-          v_iterator(U_B.val_cbegin(j) + (info.second - U_B.row_ind_cbegin(j)));
-      auto last = iterator(U_B.row_ind_cbegin(j));
-      auto itr  = iterator(info.second);
+      if (!U_B.nnz_in_col(j)) continue;
+      const auto x_j   = buf_vals[j];
+      auto       v_itr = v_iterator(U_B.val_cend(j));
+      auto       last  = iterator(U_B.row_ind_cbegin(j));
+      auto       itr   = iterator(U_B.row_ind_cend(j));
       for (; itr != last; ++itr, ++v_itr)
         v.push_back(*itr, tag) ? buf_vals[c_idx(*itr)] = -*v_itr * x_j
                                : buf_vals[c_idx(*itr)] -= *v_itr * x_j;
