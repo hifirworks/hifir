@@ -826,7 +826,7 @@ inline void compute_Schur_hybrid_T_F(
   auto &vals    = T_F.vals();
   psmilu_error_if(row_ind.status() == DATA_UNDEF || vals.status() == DATA_UNDEF,
                   "memory allocation failed!");
-  row_ind.reserve(col_start[n] - ONE_BASED);
+  row_ind.resize(col_start[n] - ONE_BASED);
   auto i_itr = row_ind.begin();
   // same loop but for indices
   for (size_type col = 0u; col < n; ++col, ++tag) {
@@ -1082,6 +1082,440 @@ inline CcsType compute_Schur_hybrid(const CrsType &L_E, const CcsType &L_B,
     for (size_type j(0); j < nn; ++j, ++v_itr) *v_itr = buf.val(j);
   }
   return HC;
+}
+
+namespace internal {
+
+template <class CcsType, class DiagType, class SpVecType>
+inline CcsType compute_Schur_invDL_F(
+    const DiagType &d, const CcsType &L, const CcsType &F, SpVecType &buf,
+    const typename CcsType::size_type start_tag) {
+  constexpr static bool ONE_BASED = CcsType::ONE_BASED;
+  using size_type                 = typename CcsType::size_type;
+  using sp_vec_type               = SpVecType;
+  using extractor                 = internal::SpVInternalExtractor<sp_vec_type>;
+
+  CcsType S;
+
+  // get number of rhs
+  const size_type n = F.ncols();
+  if (!n) return S;
+  const size_type m = L.nrows();
+
+  // index helper
+  const auto c_idx = [](const size_type i) {
+    return to_c_idx<size_type, ONE_BASED>(i);
+  };
+
+  // load rhs(F) in symbolic fashion
+  const auto load_F_symbolic = [&](const size_type col, const size_type tag,
+                                   sp_vec_type &v) {
+    v.reset_counter();  // reset counter
+    for (auto itr = F.row_ind_cbegin(col), last = F.row_ind_cend(col);
+         itr != last; ++itr)
+      v.push_back(*itr, tag);
+  };
+
+  // we need to direct track the dense tags
+  // Notice the d_tags is captured as reference inside the following lambda
+  const auto &d_tags = static_cast<const extractor &>(buf).dense_tags();
+
+  // solve for inv(L) in symbolic fashion
+  const auto solve_L_symbolic =
+      [&, m](const size_type tag, const size_type start_idx, sp_vec_type &v) {
+        for (size_type j(start_idx); j < m; ++j) {
+          // by comparing the tags, we know if or not the current entry is
+          // zero.
+          // NOTE the d_tags is dynamically changing!
+          if (static_cast<size_type>(d_tags[j]) != tag) continue;
+          for (auto itr = L.row_ind_cbegin(j), last = L.row_ind_cend(j);
+               itr != last; ++itr)
+            v.push_back(*itr, tag);  // dense tag may change
+        }
+      };
+
+  // prepare S
+  S.resize(m, n);
+  auto &col_start = S.col_start();
+  col_start.resize(n + 1);
+  psmilu_error_if(col_start.status() == DATA_UNDEF, "memory allocation failed");
+  col_start.front() = ONE_BASED;
+
+  size_type tag(start_tag);
+
+  for (size_type col(0); col < n; ++col, ++tag) {
+    // load F
+    load_F_symbolic(col, tag, buf);
+    // compute inv(L), NOTE that F is sorted so as buf
+    if (F.nnz_in_col(col))
+      solve_L_symbolic(tag, c_idx(*F.row_ind_cbegin(col)), buf);
+    // update start positions
+    col_start[col + 1] = col_start[col] + buf.size();
+  }
+
+  if (!(col_start[n] - ONE_BASED)) {
+    psmilu_warning("computing inv(D)*inv(L)*F is empty!");
+    return S;
+  }
+
+  auto &row_ind = S.row_ind();
+  auto &vals    = S.vals();
+  row_ind.resize(col_start[n] - ONE_BASED);
+  vals.resize(col_start[n] - ONE_BASED);
+  psmilu_error_if(row_ind.status() == DATA_UNDEF || vals.status() == DATA_UNDEF,
+                  "memory allocation failed");
+  auto i_itr = row_ind.begin();
+  for (size_type col(0); col < n; ++col) {
+    load_F_symbolic(col, tag, buf);
+    if (F.nnz_in_col(col))
+      solve_L_symbolic(tag, c_idx(*F.row_ind_cbegin(col)), buf);
+    // buf may not be sorted, thus sort it
+    buf.sort_indices();
+    i_itr = std::copy_n(buf.inds().cbegin(), buf.size(), i_itr);
+  }
+
+  // symbolic part is done, we now deal with numeric part
+
+  auto &v_buf   = buf.vals();
+  auto  o_v_itr = vals.begin();
+  for (size_type col(0); col < n; ++col) {
+    // set all values to zero
+    for (auto itr = S.row_ind_cbegin(col), last = S.row_ind_cend(col);
+         itr != last; ++itr)
+      v_buf[c_idx(*itr)] = 0;
+    // load F
+    do {
+      auto v_itr = F.val_cbegin(col);
+      for (auto itr = F.row_ind_cbegin(col), last = F.row_ind_cend(col);
+           itr != last; ++itr, ++v_itr)
+        v_buf[c_idx(*itr)] = *v_itr;
+    } while (false);
+    // solve inv(L)
+    for (auto itr = S.row_ind_cbegin(col), last = S.row_ind_cend(col);
+         itr != last; ++itr) {
+      const auto j   = c_idx(*itr);
+      const auto x_j = v_buf[j];
+      if (x_j == typename CcsType::value_type(0)) continue;
+      auto v_itr = L.val_cbegin(j);
+      for (auto itr = L.row_ind_cbegin(j), last = L.row_ind_cend(j);
+           itr != last; ++itr, ++v_itr)
+        v_buf[c_idx(*itr)] -= *v_itr * x_j;
+    }
+    // solve inv(D) and assemble
+    for (auto itr = S.row_ind_cbegin(col), last = S.row_ind_cend(col);
+         itr != last; ++itr, ++o_v_itr) {
+      const auto j = c_idx(*itr);
+      v_buf[j] /= d[j];
+      *o_v_itr = v_buf[j];
+    }
+  }
+
+  return S;
+}
+
+template <class CcsType, class SpVecType>
+inline CcsType compute_Schur_invU_S(
+    const CcsType &U, const CcsType &S, SpVecType &buf,
+    const typename CcsType::size_type start_tag) {
+  constexpr static bool ONE_BASED = CcsType::ONE_BASED;
+  using size_type                 = typename CcsType::size_type;
+  using sp_vec_type               = SpVecType;
+  using extractor                 = internal::SpVInternalExtractor<sp_vec_type>;
+  using iterator = std::reverse_iterator<decltype(U.row_ind_cbegin(0))>;
+
+  CcsType T;
+
+  const size_type n = S.ncols();
+  if (!n) return T;
+  const size_type m = U.nrows();
+
+  // index helper
+  const auto c_idx = [](const size_type i) {
+    return to_c_idx<size_type, ONE_BASED>(i);
+  };
+
+  // load rhs, S from previous routine
+  const auto load_S_symbolic = [&](const size_type col, const size_type tag,
+                                   sp_vec_type &v) {
+    v.reset_counter();
+    for (auto itr = S.row_ind_cbegin(col), last = S.row_ind_cend(col);
+         itr != last; ++itr)
+      v.push_back(*itr, tag);
+  };
+
+  // extract the dense tags, which is used in backward sub
+  const auto &d_tags = static_cast<const extractor &>(buf).dense_tags();
+
+  // solve inv(U) in symbolic fashion
+
+  const auto solve_U_symbolic = [&](const size_type tag,
+                                    const size_type start_idx, sp_vec_type &v) {
+    for (size_type j = start_idx; j != 0u; --j) {
+      if (static_cast<size_type>(d_tags[j]) != tag) continue;
+      if (!U.nnz_in_col(j)) continue;
+      auto last = iterator(U.row_ind_cbegin(j));
+      auto itr  = iterator(U.row_ind_cend(j));
+      for (; itr != last; ++itr) v.push_back(*itr, tag);
+    }
+  };
+
+  size_type tag(start_tag);
+
+  // prepare T
+  T.resize(m, n);
+  auto &col_start = T.col_start();
+  col_start.resize(n + 1);
+  psmilu_error_if(col_start.status() == DATA_UNDEF, "memory allocation failed");
+  col_start.front() = ONE_BASED;
+
+  // determine nnz
+  for (size_type col(0); col < n; ++col, ++tag) {
+    load_S_symbolic(col, tag, buf);
+    if (buf.size())
+      solve_U_symbolic(tag, c_idx(*(S.row_ind_cend(col) - 1)), buf);
+    col_start[col + 1] = col_start[col] + buf.size();
+  }
+
+  if (!(col_start[n] - ONE_BASED)) {
+    psmilu_warning("solving inv(U)*S is empty!");
+    return T;
+  }
+
+  // allocation for nnz arrays
+  auto &row_ind = T.row_ind();
+  auto &vals    = T.vals();
+  row_ind.resize(col_start[n] - ONE_BASED);
+  vals.resize(col_start[n] - ONE_BASED);
+  psmilu_error_if(row_ind.status() == DATA_UNDEF || vals.status() == DATA_UNDEF,
+                  "memory allocation failed");
+  auto i_itr = row_ind.begin();
+
+  // assemble indices
+  for (size_type col(0); col < n; ++col, ++tag) {
+    load_S_symbolic(col, tag, buf);
+    if (buf.size())
+      solve_U_symbolic(tag, c_idx(*(S.row_ind_cend(col) - 1)), buf);
+    // sort the indices
+    buf.sort_indices();
+    i_itr = std::copy_n(buf.inds().cbegin(), buf.size(), i_itr);
+  }
+
+  // now, symbolic part is done, we need to handle the numerical computation
+
+  auto &     v_buf   = buf.vals();
+  const auto solve_U = [&](const size_type col) {
+    using v_iterator = std::reverse_iterator<decltype(U.val_cbegin(0))>;
+    auto itr         = iterator(T.row_ind_cend(col));
+    auto last        = iterator(T.row_ind_cbegin(col));
+    for (; itr != last; ++itr) {
+      const auto j   = c_idx(*itr);
+      const auto x_j = v_buf[j];
+      if (x_j == typename CcsType::value_type(0)) continue;
+      auto itr_   = iterator(U.row_ind_cend(j));
+      auto last_  = iterator(U.row_ind_cbegin(j));
+      auto v_itr_ = v_iterator(U.val_cend(j));
+      for (; itr_ != last_; ++itr_, ++v_itr_)
+        v_buf[c_idx(*itr_)] -= x_j * *v_itr_;
+    }
+  };
+  auto o_v_itr = vals.begin();
+  for (size_type col(0); col < n; ++col) {
+    // set all rhs to zeros
+    for (auto itr = T.row_ind_cbegin(col), last = T.row_ind_cend(col);
+         itr != last; ++itr)
+      v_buf[c_idx(*itr)] = 0;
+    // load rhs
+    do {
+      auto v_itr = S.val_cbegin(col);
+      for (auto itr = S.row_ind_cbegin(col), last = S.row_ind_cend(col);
+           itr != last; ++itr, ++v_itr)
+        v_buf[c_idx(*itr)] = *v_itr;
+    } while (false);
+    // solve U
+    solve_U(col);
+    // assemble numerical values
+    for (auto itr = T.row_ind_cbegin(col), last = T.row_ind_cend(col);
+         itr != last; ++itr, ++o_v_itr)
+      *o_v_itr = v_buf[c_idx(*itr)];
+  }
+  return T;
+}
+
+template <class E_Type, class CcsType, class DiagType, class SpVecType>
+inline CcsType compute_Schur_E_invUDL_F(const E_Type &E_, const CcsType &U,
+                                        const DiagType &d, const CcsType &L,
+                                        const CcsType &F, SpVecType &buf) {
+  constexpr static bool ONE_BASED = CcsType::ONE_BASED;
+  using size_type                 = typename CcsType::size_type;
+
+  CcsType S;
+  if (!F.ncols()) return S;
+  const size_type N(F.ncols() + L.ncols());
+  const auto T = compute_Schur_invU_S(U, compute_Schur_invDL_F(d, L, F, buf, N),
+                                      buf, N * 2);
+  const size_type n(E_.nrows());
+  // convert E_ to ccs
+  const CcsType E(E_);
+  size_type     tag(N * 3);
+  // now compute E*T
+  S.resize(n, n);
+  auto &col_start = S.col_start();
+  col_start.resize(n + 1);
+  psmilu_error_if(col_start.status() == DATA_UNDEF, "memory allocation failed");
+  col_start.front() = ONE_BASED;
+
+  const auto c_idx = [](const size_type i) {
+    return to_c_idx<size_type, ONE_BASED>(i);
+  };
+
+  for (size_type i(0); i < n; ++i, ++tag) {
+    buf.reset_counter();
+    for (auto o_itr = T.row_ind_cbegin(i), o_last = T.row_ind_cend(i);
+         o_itr != o_last; ++o_itr) {
+      const size_type j = c_idx(*o_itr);
+      for (auto itr = E.row_ind_cbegin(j), last = E.row_ind_cend(j);
+           itr != last; ++itr)
+        buf.push_back(*itr, tag);
+    }
+    col_start[i + 1] = col_start[i] + buf.size();
+  }
+
+  if (!(col_start[n] - ONE_BASED)) return S;
+
+  // allocation for nnz arrays
+  auto &row_ind = S.row_ind();
+  auto &vals    = S.vals();
+  row_ind.resize(col_start[n] - ONE_BASED);
+  vals.resize(col_start[n] - ONE_BASED);
+  psmilu_error_if(row_ind.status() == DATA_UNDEF || vals.status() == DATA_UNDEF,
+                  "memory allocation failed");
+
+  auto i_itr = row_ind.begin();
+  auto v_itr = vals.begin();
+
+  // form indices and values
+  for (size_type i(0); i < n; ++i, ++tag) {
+    buf.reset_counter();
+    auto v_itr1 = T.val_cbegin(i);
+    for (auto o_itr = T.row_ind_cbegin(i), o_last = T.row_ind_cend(i);
+         o_itr != o_last; ++o_itr, ++v_itr1) {
+      const size_type j      = *o_itr - ONE_BASED;
+      const auto      tmp    = *v_itr1;
+      auto            v_itr2 = E.val_cbegin(j);
+      for (auto itr = E.row_ind_cbegin(j), last = E.row_ind_cend(j);
+           itr != last; ++itr, ++v_itr2)
+        buf.push_back(*itr, tag) ? buf.vals()[c_idx(*itr)] = tmp * *v_itr2
+                                 : buf.vals()[c_idx(*itr)] += tmp * *v_itr2;
+    }
+    buf.sort_indices();
+    const size_type nn = buf.size();
+    for (size_type j(0); j < nn; ++j, ++i_itr, ++v_itr) {
+      *i_itr = buf.idx(j);
+      *v_itr = buf.val(j);
+    }
+  }
+
+  return S;
+}
+
+}  // namespace internal
+
+template <class CcsType, class ScaleArray, class PermType, class E_Type,
+          class DiagType, class SpVecType>
+inline CcsType compute_Schur_native(const CcsType &A, const ScaleArray &s,
+                                    const ScaleArray &t, const PermType &p,
+                                    const PermType &q, const E_Type &E,
+                                    const CcsType &U, const DiagType &d,
+                                    const CcsType &L, const CcsType &F,
+                                    SpVecType &buf) {
+  constexpr static bool ONE_BASED = CcsType::ONE_BASED;
+  static_assert(!(ONE_BASED ^ E_Type::ONE_BASED), "inconsistent index base");
+  static_assert(!CcsType::ROW_MAJOR, "must be CCS");
+  using size_type = typename CcsType::size_type;
+
+  const size_type n = E.nrows();
+  if (!n) return CcsType();
+  const size_type m = L.nrows();
+
+  psmilu_assert(n + m == A.nrows(), "fatal");
+
+  const auto S = internal::compute_Schur_E_invUDL_F(E, U, d, L, F, buf);
+
+  CcsType SC;
+
+  SC.resize(n, n);
+  auto &col_start = SC.col_start();
+  col_start.resize(n + 1);
+  psmilu_error_if(col_start.status() == DATA_UNDEF, "memory allocation failed");
+  col_start.front() = ONE_BASED;
+  size_type tag(A.nrows() * 4);
+
+  const auto c_idx = [](const size_type i) {
+    return to_c_idx<size_type, ONE_BASED>(i);
+  };
+
+  for (size_type i(0); i < n; ++i, ++tag) {
+    buf.reset_counter();
+    // load C
+    for (auto itr = A.row_ind_cbegin(q[i + m]), last = A.row_ind_cend(q[i + m]);
+         itr != last; ++itr) {
+      const size_type j = p.inv(c_idx(*itr));
+      if (j >= m) buf.push_back(j + ONE_BASED - m, tag);
+    }
+    // load S
+    for (auto itr = S.row_ind_cbegin(i), last = S.row_ind_cend(i); itr != last;
+         ++itr)
+      buf.push_back(*itr, tag);
+    col_start[i + 1] = col_start[i] + buf.size();
+  }
+
+  if (!(col_start[n] - ONE_BASED)) {
+    psmilu_warning("the Schur complement is exactly empty!");
+    return SC;
+  }
+
+  // allocation for nnz arrays
+  auto &row_ind = SC.row_ind();
+  auto &vals    = SC.vals();
+  row_ind.resize(col_start[n] - ONE_BASED);
+  vals.resize(col_start[n] - ONE_BASED);
+  psmilu_error_if(row_ind.status() == DATA_UNDEF || vals.status() == DATA_UNDEF,
+                  "memory allocation failed");
+
+  auto i_itr = row_ind.begin();
+  auto v_itr = vals.begin();
+
+  for (size_type i(0); i < n; ++i, ++tag) {
+    buf.reset_counter();
+    // load C
+    auto       A_itr = A.val_cbegin(q[i + m]);
+    const auto tq    = t[q[i + m]];
+    for (auto itr = A.row_ind_cbegin(q[i + m]), last = A.row_ind_cend(q[i + m]);
+         itr != last; ++itr, ++A_itr) {
+      const size_type idx = c_idx(*itr);
+      const size_type j   = p.inv(idx);
+      if (j >= m) {
+        buf.push_back(j + ONE_BASED - m, tag);
+        buf.vals()[j - m] = s[idx] * *A_itr * tq;
+      }
+    }
+    // load S
+    auto S_itr = S.val_cbegin(i);
+    for (auto itr = S.row_ind_cbegin(i), last = S.row_ind_cend(i); itr != last;
+         ++itr, ++S_itr)
+      buf.push_back(*itr, tag) ? buf.vals()[c_idx(*itr)] = -*S_itr
+                               : buf.vals()[c_idx(*itr)] -= *S_itr;
+
+    // sort indices
+    buf.sort_indices();
+    const size_type nn = buf.size();
+    for (size_type j(0); j < nn; ++j, ++i_itr, ++v_itr) {
+      *i_itr = buf.idx(j);
+      *v_itr = buf.val(j);
+    }
+  }
+
+  return SC;
 }
 
 }  // namespace psmilu
