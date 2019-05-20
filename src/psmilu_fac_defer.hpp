@@ -324,6 +324,7 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   // const auto alpha_L = opts.alpha_L, alpha_U = opts.alpha_U;
   DETERMINE_LEVEL_PARS(tau_d, tau_kappa, tau_U, tau_L, alpha_L, alpha_U, opts,
                        cur_level);
+  const auto kappa_sq = tau_kappa * tau_kappa;
 
   // Removing bounding the large diagonal values
   const auto is_bad_diag = [=](const value_type a) -> bool {
@@ -431,17 +432,23 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     // inverse thres
     //----------------
 
-    const auto k_ut = std::abs(kappa_ut[step]), k_l = std::abs(kappa_l[step]);
+    const auto k_ut = kappa_ut[step], k_l = kappa_l[step];
 
     // check pivoting
-    psmilu_assert(!(k_ut > tau_kappa || k_l > tau_kappa), "should not happen!");
+    psmilu_assert(!(std::abs(k_ut) > tau_kappa || std::abs(k_l) > tau_kappa),
+                  "should not happen!");
 
-    Crout_info("  kappa_ut=%g, kappa_l=%g", (double)k_ut, (double)k_l);
+    Crout_info("  kappa_ut=%g, kappa_l=%g", (double)std::abs(k_ut),
+               (double)std::abs(k_l));
 
     Crout_info(
         "  previous/current leading block sizes %zd/%zd, local/total "
         "defers=%zd/%zd",
         m_prev, m, step.defers() - defers_prev, step.defers());
+
+#ifndef PSMILU_DISABLE_DYN_PVT_THRES
+    const auto kappa_sq = std::abs(k_ut * k_l);
+#endif  // PSMILU_DISABLE_DYN_PVT_THRES
 
     //------------------------
     // update start positions
@@ -500,7 +507,7 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     const size_type ori_ut_size = ut.size(), ori_l_size = l.size();
 
     // apply drop for U
-    apply_num_dropping(tau_U, k_ut, ut);
+    apply_num_dropping(tau_U, kappa_sq, ut);
 #ifdef PSMILU_ENABLE_NORM_STAT
     ut_norm_ratios[step] = ut.norm1();
 #endif  // PSMILU_ENABLE_NORM_STAT
@@ -523,7 +530,7 @@ inline CsType iludp_factor_defer(const CsType &                   A,
                ori_ut_size, ut.size(), ori_ut_size - ut.size());
 
     // apply numerical dropping on L
-    apply_num_dropping(tau_L, k_l, l);
+    apply_num_dropping(tau_L, kappa_sq, l);
 
 #ifdef PSMILU_ENABLE_NORM_STAT
     l_norm_ratios[step] = l.norm1();
@@ -622,7 +629,11 @@ inline CsType iludp_factor_defer(const CsType &                   A,
         "\tdrop ut=%zd\n"
         "\tspace drop ut=%zd\n"
         "\tdrop l=%zd\n"
-        "\tspace drop l=%zd"
+        "\tspace drop l=%zd\n"
+        "\tmin |kappa_u|=%g\n"
+        "\tmax |kappa_u|=%g\n"
+        "\tmin |kappa_l|=%g\n"
+        "\tmax |kappa_l|=%g"
 #ifdef PSMILU_DEFERREDFAC_VERBOSE_STAT
         "\n\tboth-inv-bad deferrals=%zd"
 #endif  // PSMILU_DEFERREDFAC_VERBOSE_STAT
@@ -630,9 +641,29 @@ inline CsType iludp_factor_defer(const CsType &                   A,
         step.defers(), m2, m, m2 - m, (size_type)info_counter[0],
         (size_type)info_counter[1], (size_type)info_counter[5],
         (size_type)info_counter[3], (size_type)info_counter[6],
-        (size_type)info_counter[4]
+        (size_type)info_counter[4],
+        (double)std::abs(
+            *std::min_element(kappa_ut.cbegin(), kappa_ut.cbegin() + m,
+                              [](const value_type l, const value_type r) {
+                                return std::abs(l) < std::abs(r);
+                              })),
+        (double)std::abs(
+            *std::max_element(kappa_ut.cbegin(), kappa_ut.cbegin() + m,
+                              [](const value_type l, const value_type r) {
+                                return std::abs(l) < std::abs(r);
+                              })),
+        (double)std::abs(
+            *std::min_element(kappa_l.cbegin(), kappa_l.cbegin() + m,
+                              [](const value_type l, const value_type r) {
+                                return std::abs(l) < std::abs(r);
+                              })),
+        (double)std::abs(
+            *std::max_element(kappa_l.cbegin(), kappa_l.cbegin() + m,
+                              [](const value_type l, const value_type r) {
+                                return std::abs(l) < std::abs(r);
+                              }))
 #ifdef PSMILU_DEFERREDFAC_VERBOSE_STAT
-        ,
+            ,
         (size_type)info_counter[2]
 #endif  // PSMILU_DEFERREDFAC_VERBOSE_STAT
     );
@@ -738,7 +769,8 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   auto U_B = U.template split_ccs<false>(m, U_start);
 
   // S = input_type(
-  //     compute_Schur_hybrid(L_E, L_B, s, A_ccs, t, p, q, d, U_B, U_F2, S, ut));
+  //     compute_Schur_hybrid(L_E, L_B, s, A_ccs, t, p, q, d, U_B, U_F2, S,
+  //     ut));
 
   const size_type dense_thres1 = static_cast<size_type>(
                       std::max(opts.alpha_L, opts.alpha_U) * AmB_nnz),
