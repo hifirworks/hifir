@@ -18,6 +18,159 @@
 
 namespace psmilu {
 
+/*!
+ * \addtogroup inv
+ * @{
+ */
+
+/// \brief apply numerical dropping based on dropping tolerance
+/// \tparam KappaType data type for inverse norm
+/// \tparam SpVecType sparse vector type, see \ref SparseVector
+/// \param[in] tau dropping threshold parameter
+/// \param[in] kappa inverse condition number of either L or U
+/// \param[in,out] v sparse vector
+/// \sa apply_space_dropping
+template <class KappaType, class SpVecType>
+inline void apply_num_dropping(const double tau, const KappaType kappa,
+                               SpVecType &v) {
+  using size_type = typename SpVecType::size_type;
+
+  const KappaType coeff = tau / kappa;
+
+  const size_type n = v.size();
+  for (size_type i = 0u; i < n; ++i)
+    if (std::abs(v.val(i)) <= coeff) v.mark_delete(i);
+  v.compress_indices();  // NOTE sparse flags are reset here
+}
+
+/// \brief apply space limitation dropping
+/// \tparam SpVecType sparse vector type, see \ref SparseVector
+/// \param[in] nnz reference (local) number of nonzeros, i.e. input matrix
+/// \param[in] alpha filling limiter
+/// \param[in,out] v sparse vector
+/// \param[in] start_size starting size, default is 0
+/// \sa apply_num_dropping
+template <class SpVecType>
+inline void apply_space_dropping(
+    const typename SpVecType::size_type nnz, const int alpha, SpVecType &v,
+    const typename SpVecType::size_type start_size = 0u) {
+  using size_type                 = typename SpVecType::size_type;
+  using index_type                = typename SpVecType::index_type;
+  using extractor                 = internal::SpVInternalExtractor<SpVecType>;
+  constexpr static bool ONE_BASED = SpVecType::ONE_BASED;
+
+  if (v.size()) {
+    size_type N1 = alpha * nnz;
+    if (start_size >= N1) N1 = start_size + 1;
+    const size_type N = N1 - start_size;
+    psmilu_assert(N != 0u, "zero number of limitation!");
+    const size_type n = v.size();
+    if (n > N) {
+      // we need to extract the N values with largest mag of values, in other
+      // words, the rest any entry in the rest n2-N is smaller the extracted
+      // entries in terms of mag
+
+      auto &      inds  = v.inds();  // std::vector
+      const auto &vals  = v.vals();  // std::vector
+      auto        first = inds.begin(), last = first + n;
+      const auto  to_c = [](const index_type i) -> index_type {
+        return to_c_idx<index_type, ONE_BASED>(i);
+      };
+
+      if (N == 1u)
+        // special case, not sure if nth_element can have nth == first
+        std::iter_swap(first,
+                       std::max_element(
+                           first, last,
+                           [&](const index_type i, const index_type j) -> bool {
+                             return std::abs(vals[to_c(i)]) >
+                                    std::abs(vals[to_c(j)]);
+                           }));
+      else
+        // using c++ built-in selection/partition to find the n largest
+        // values. Note that it's most likely that the internal implementation
+        // is using introselect, where the average complexity is O(n2), worst
+        // cast O(n2 log n2)
+        //
+        // explain of the routine (basically the lambda CMP):
+        // after this routine returns, the following relation is satisfied:
+        // for each j in [first, first+N) and i in [first+N,last)
+        //  the lambda CMP(i,j)==false,
+        // in other words, any entry in the first part is an upper bound for the
+        // second part with the following impl
+        //
+        std::nth_element(first, first + N - 1, last,
+                         [&](const index_type i, const index_type j) -> bool {
+                           return std::abs(vals[to_c(i)]) >
+                                  std::abs(vals[to_c(j)]);
+                         });
+
+      // directly modify the internal counter O(1)
+      static_cast<extractor &>(v).counts() = N;
+    }
+  }
+}
+
+/// \brief apply space limitation dropping for leading block and deferred
+///        parts, separately.
+/// \tparam SpVecType sparse vector type, see \ref SparseVector
+/// \param[in] nnz reference (local) number of nonzeros, i.e. input matrix
+/// \param[in] alpha filling limiter
+/// \param[in] m leading block size
+/// \param[in,out] v sparse vector
+/// \sa apply_space_dropping
+template <class SpVecType>
+inline void apply_space_dropping_sep(const typename SpVecType::size_type nnz,
+                                     const int                           alpha,
+                                     const typename SpVecType::size_type m,
+                                     SpVecType &                         v) {
+  using size_type                 = typename SpVecType::size_type;
+  using index_type                = typename SpVecType::index_type;
+  using extractor                 = internal::SpVInternalExtractor<SpVecType>;
+  constexpr static bool ONE_BASED = SpVecType::ONE_BASED;
+
+  if (v.size()) {
+    // get size upper bound
+    const size_type N(nnz * alpha);
+    // get the thres for deferred sections
+    const size_type thres = m + ONE_BASED;
+    // partition, O(N)
+    auto sep = std::partition(v.inds().begin(), v.inds().begin() + v.size(),
+                              [=](const index_type i) { return i < thres; });
+    const auto to_c = [](const index_type i) -> index_type {
+      return to_c_idx<index_type, ONE_BASED>(i);
+    };
+    size_type   n(sep - v.inds().begin());
+    const auto &vals  = v.vals();
+    auto        m_itr = sep;
+    // drop the leading block
+    if (n > N) {
+      std::nth_element(
+          v.inds().begin(), v.inds().begin() + N - 1, v.inds().begin() + n,
+          [&](const index_type i, const index_type j) -> bool {
+            return std::abs(vals[to_c(i)]) > std::abs(vals[to_c(j)]);
+          });
+      n = N;
+      // compress the deferred part
+      std::copy(sep, v.inds().begin() + v.size(), v.inds().begin() + N);
+      m_itr = v.inds().begin() + N;
+    }
+    // drop the deferred part
+    const size_type n2 = v.inds().begin() + v.size() - sep;
+    if (n2 > N) {
+      std::nth_element(m_itr, m_itr + N - 1, m_itr + n2,
+                       [&](const index_type i, const index_type j) -> bool {
+                         return std::abs(vals[to_c(i)]) >
+                                std::abs(vals[to_c(j)]);
+                       });
+      n += N;
+    } else
+      n += n2;
+    // directly modify the internal counter O(1)
+    static_cast<extractor &>(v).counts() = n;
+  }
+}
+
 /// \brief apply dropping and sort the resulting index list
 /// \tparam TauType data type for dropper parameter \f$\tau\f$, e.g. \a double
 /// \tparam KappaType data type for condition number \f$\kappa\f$
@@ -30,7 +183,6 @@ namespace psmilu {
 /// \param[in] start_size starting size
 /// \return the intermediate vector size before applying final limitation
 /// \note The returned parameter is mainly for unit-testing/debugging
-/// \ingroup inv
 ///
 /// This subroutine is to apply the dropping and, then, sort the remaining
 /// index list. Mathematically, there are three steps:
@@ -91,79 +243,18 @@ inline typename SpVecType::size_type apply_dropping_and_sort(
     const TauType tau, const KappaType kappa,
     const typename SpVecType::size_type nnz, const int alpha, SpVecType &v,
     const typename SpVecType::size_type start_size = 0u) {
-  using size_type                 = typename SpVecType::size_type;
-  using index_type                = typename SpVecType::index_type;
-  using extractor                 = internal::SpVInternalExtractor<SpVecType>;
-  constexpr static bool ONE_BASED = SpVecType::ONE_BASED;
-
-  // psmilu_warning_if(tau == TauType(), "zero threshold tau");
-  size_type N1 = alpha * nnz;
-  if (start_size >= N1) {
-    // we at least add one entry
-    N1 = start_size + 1u;
-    // static_cast<extractor &>(v).counts() = 0u;
-    // return 0u;
-  }
-  const size_type N = N1 - start_size;
-  psmilu_assert(N != 0u, "zero number of limitation!");
-  // filter coeff based on inverse-based thresholding
-  // TODO need to test potential float overflow?
-  const KappaType coeff = tau / kappa;
-  const auto      n1    = v.size();
-  // O(n1)
-  for (size_type i = 0u; i < n1; ++i)
-    if (std::abs(v.val(i)) <= coeff) v.mark_delete(i);
-  // O(n1)
-  v.compress_indices();  // NOTE sparse flags are reset here
-  // NOTE, v, now, has a new size
-  const auto n2 = v.size();
-  if (n2 > N) {
-    // we need to extract the N values with largest mag of values, in other
-    // words, the rest any entry in the rest n2-N is smaller the extracted
-    // entries in terms of mag
-
-    auto &      inds  = v.inds();  // std::vector
-    const auto &vals  = v.vals();  // std::vector
-    auto        first = inds.begin(), last = first + n2;
-    const auto  to_c = [](const index_type i) -> index_type {
-      return to_c_idx<index_type, ONE_BASED>(i);
-    };
-
-    if (N == 1u)
-      // special case, not sure if nth_element can have nth == first
-      std::iter_swap(
-          first,
-          std::max_element(
-              first, last, [&](const index_type i, const index_type j) -> bool {
-                return std::abs(vals[to_c(i)]) > std::abs(vals[to_c(j)]);
-              }));
-    else
-      // using c++ built-in selection/partition to find the n largest
-      // values. Note that it's most likely that the internal implementation
-      // is using introselect, where the average complexity is O(n2), worst
-      // cast O(n2 log n2)
-      //
-      // explain of the routine (basically the lambda CMP):
-      // after this routine returns, the following relation is satisfied:
-      // for each j in [first, first+N) and i in [first+N,last)
-      //  the lambda CMP(i,j)==false,
-      // in other words, any entry in the first part is an upper bound for the
-      // second part with the following impl
-      //
-      std::nth_element(first, first + N - 1, last,
-                       [&](const index_type i, const index_type j) -> bool {
-                         return std::abs(vals[to_c(i)]) >
-                                std::abs(vals[to_c(j)]);
-                       });
-
-    // directly modify the internal counter O(1)
-    static_cast<extractor &>(v).counts() = N;
-  }
+  apply_num_dropping(tau, kappa, v);
+  const auto n = v.size();
+  apply_space_dropping(nnz, alpha, v, start_size);
   // sort indices, O(min(n2,N)log(min(n2,N))), note that we assume min(n2,N)
   // is constant for PDE problems
   v.sort_indices();
-  return n2;  // mainly for unit testing purpose
+  return n;  // mainly for unit testing purpose
 }
+
+/*!
+ * @}
+ */ // group inv
 
 }  // namespace psmilu
 

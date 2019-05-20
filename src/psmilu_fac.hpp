@@ -55,16 +55,24 @@ namespace internal {
 
 /// \def DETERMINE_LEVEL_PARS
 /// \brief adaptively determine the parameters from level to level
-#define DETERMINE_LEVEL_PARS(__tau_d, __tau_kappa, __tau_U, __tau_L,         \
-                             __alpha_L, __alpha_U, __opts, __lvl)            \
-  const int    _fac    = std::min(1 << (__lvl - 1), 8);                      \
-  const double _fac2   = 1. / std::min(1e3, std::pow(10.0, __lvl - 1));      \
-  const auto   __tau_d = std::max(2.0, std::pow(__opts.tau_d, 1. / _fac)),   \
-             __tau_kappa =                                                   \
-                 std::max(2.0, std::pow(__opts.tau_kappa, 1. / _fac)),       \
-             __tau_U = __opts.tau_U * _fac2, __tau_L = __opts.tau_L * _fac2; \
-  const auto __alpha_L = __opts.alpha_L * _fac,                              \
-             __alpha_U = __opts.alpha_U * _fac
+#ifndef PSMILU_DISABLE_PARREFINE
+#  define DETERMINE_LEVEL_PARS(__tau_d, __tau_kappa, __tau_U, __tau_L,         \
+                               __alpha_L, __alpha_U, __opts, __lvl)            \
+    const int    _fac    = std::min((int)__lvl, 2);                            \
+    const double _fac2   = 1. / std::min(10.0, std::pow(10.0, __lvl - 1));     \
+    const auto   __tau_d = std::max(2.0, std::pow(__opts.tau_d, 1. / _fac)),   \
+               __tau_kappa =                                                   \
+                   std::max(2.0, std::pow(__opts.tau_kappa, 1. / _fac)),       \
+               __tau_U = __opts.tau_U * _fac2, __tau_L = __opts.tau_L * _fac2; \
+    const auto __alpha_L = __opts.alpha_L * _fac,                              \
+               __alpha_U = __opts.alpha_U * _fac
+#else
+#  define DETERMINE_LEVEL_PARS(__tau_d, __tau_kappa, __tau_U, __tau_L, \
+                               __alpha_L, __alpha_U, __opts, __lvl)    \
+    const auto __tau_d = __opts.tau_d, __tau_kappa = __opts.tau_kappa, \
+               __tau_U = __opts.tau_U, __tau_L = __opts.tau_L;         \
+    const auto __alpha_L = __opts.alpha_L, __alpha_U = __opts.alpha_U
+#endif
 
 /// \brief extract permutated diagonal
 /// \tparam LeftDiagType left scaling vector type, see \ref Array
@@ -77,6 +85,7 @@ namespace internal {
 /// \param[in] m leading block size
 /// \param[in] p row permutation vector
 /// \param[in] q column permutation vector
+/// \param[in] m0 actual extrated size, default is \a m
 /// \return permutated diagonal of \a A
 ///
 /// This routine, essentially, is to compute:
@@ -92,7 +101,8 @@ template <class LeftDiagType, class CcsType, class RightDiagType,
           class PermType>
 inline Array<typename CcsType::value_type> extract_perm_diag(
     const LeftDiagType &s, const CcsType A, const RightDiagType &t,
-    const typename CcsType::size_type m, const PermType &p, const PermType &q) {
+    const typename CcsType::size_type m, const PermType &p, const PermType &q,
+    const typename CcsType::size_type m0 = 0) {
   using value_type                = typename CcsType::value_type;
   using size_type                 = typename CcsType::size_type;
   using array_type                = Array<value_type>;
@@ -107,9 +117,10 @@ inline Array<typename CcsType::value_type> extract_perm_diag(
   array_type diag(m);
   psmilu_error_if(diag.status() == DATA_UNDEF, "memory allocation failed");
 
-  auto v_begin = A.vals().cbegin();
-  auto i_begin = A.row_ind().cbegin();
-  for (size_type i = 0u; i < m; ++i) {
+  auto            v_begin = A.vals().cbegin();
+  auto            i_begin = A.row_ind().cbegin();
+  const size_type M       = m0 ? m0 : m;
+  for (size_type i = 0u; i < M; ++i) {
     psmilu_assert((size_type)q[i] < A.ncols(),
                   "permutated index %zd exceeds the col bound",
                   (size_type)q[i]);
@@ -766,6 +777,8 @@ inline void update_L_start_symm(const L_AugCcsType &                   L,
 /// complement with \a L_start and \a U_start as well as augmented \a L and \a
 /// U. Therefore, instead of sorely factorization, this routine is more or less
 /// like a level problem solver.
+///
+/// \deprecated got deferred factorization instead
 template <bool IsSymm, class CsType, class CroutStreamer, class PrecsType>
 inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
                            const typename CsType::size_type N,
