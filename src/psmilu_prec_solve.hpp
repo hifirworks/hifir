@@ -24,7 +24,7 @@
 namespace psmilu {
 namespace internal {
 
-#if 1
+#if 0
 /// \brief triangular solving kernel in \a psmilu_solve algorithm
 /// \tparam CrsType crs storage for input U and L, see \ref CRS
 /// \tparam DiagType diagonal vector type, see \ref Array
