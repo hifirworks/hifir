@@ -310,7 +310,7 @@ inline void compute_Schur_simple(const ScaleArray &s, const CrsType &A,
     for (auto itr = A.col_ind_cbegin(pi), last = A.col_ind_cend(pi);
          itr != last; ++itr, ++a_val_itr) {
       const size_type A_idx = c_idx(*itr);
-      const size_type inv_q = q.inv(c_idx(A_idx));
+      const size_type inv_q = q.inv(A_idx);
       // load and scale
       if (inv_q >= m) buf_vals[inv_q - m] = s_pi * *a_val_itr * t[A_idx];
     }
