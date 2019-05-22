@@ -757,10 +757,9 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   for (size_type i(m); i < n; ++i) AmB_nnz += row_sizes[p[i]] + col_sizes[q[i]];
 
   // compute S version of Schur complement
-  bool     use_h_ver = false;
-  crs_type S_tmp;
-  compute_Schur_simple(s, A_crs, t, p, q, m, L_E, d, U_F, S_tmp, l);
-  input_type S(S_tmp);  // if input==crs, then wrap, ow copy
+  bool             use_h_ver = false;
+  const input_type S =
+      input_type(compute_Schur_simple(s, A_crs, t, p, q, m, L_E, d, U_F, l));
 
   // compute L_B and U_B
   auto L_B = L.template split<false>(m, L_start);
@@ -792,22 +791,6 @@ inline CsType iludp_factor_defer(const CsType &                   A,
                   (use_h_ver ? "H" : "S"));
   }
 
-  // NOTE that L_B/U_B are CCS, we need CRS, we can save computation with
-  // symmetric case
-  //   crs_type L_B2, U_B2;
-  // if (IsSymm) {
-  // L_B2.resize(m, m);
-  // U_B2.resize(m, m);
-  // L_B2.row_start() = std::move(U_B.col_start());
-  // U_B2.row_start() = std::move(L_B.col_start());
-  // L_B2.col_ind()   = std::move(U_B.row_ind());
-  // U_B2.col_ind()   = std::move(L_B.row_ind());
-  // L_B2.vals()      = std::move(U_B.vals());
-  // U_B2.vals()      = std::move(L_B.vals());
-  //} else {
-  // L_B2 = crs_type(L_B);
-  // U_B2 = crs_type(U_B);
-  //}
 #ifndef PSMILU_USE_CUR_SIZES
   if (S_D.empty()) {
     // update the row and column sizes

@@ -338,6 +338,37 @@ inline void compute_Schur_simple(const ScaleArray &s, const CrsType &A,
   }
 }
 
+/// \brief compute the simple version of Schur complement
+/// \tparam ScaleArray row/column scaling vector type, see \ref Array
+/// \tparam CrsType crs matrix used for input, see \ref CRS
+/// \tparam PermType permutation vector type, see \ref BiPermMatrix
+/// \tparam DiagArray diagonal vector type, see \ref Array
+/// \tparam SpVecType sparse vector buffer type, see \ref SparseVector
+/// \param[in] s row scaling vector
+/// \param[in] A input crs matrix
+/// \param[in] t column scaling vector
+/// \param[in] p row permutation vector
+/// \param[in] q column permutation vector
+/// \param[in] m leading block size of current level
+/// \param[in] L_E lower part after \ref Crout update
+/// \param[in] d diagonal entry that contains the leading block
+/// \param[in] U_F upper part after \ref Crout update
+/// \param[out] buf work space, can use directly passed in as from Crout bufs
+/// \ingroup schur
+/// \return simple version of Schur complement
+template <class ScaleArray, class CrsType, class PermType, class DiagArray,
+          class SpVecType>
+inline CrsType compute_Schur_simple(const ScaleArray &s, const CrsType &A,
+                                    const ScaleArray &t, const PermType &p,
+                                    const PermType &                  q,
+                                    const typename CrsType::size_type m,
+                                    const CrsType &L_E, const DiagArray &d,
+                                    const CrsType &U_F, SpVecType &buf) {
+  CrsType SC;
+  compute_Schur_simple(s, A, t, p, q, m, L_E, d, U_F, SC, buf);
+  return SC;
+}
+
 namespace internal {
 /// \brief compute the first part of H version, i.e. \f$\boldsymbol{T}_E\f$
 /// \tparam CrsType crs type, see \ref CRS
