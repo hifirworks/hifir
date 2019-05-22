@@ -160,7 +160,7 @@ template <class InStream>
 inline InStream &operator>>(InStream &in_str, Options &opt) {
   in_str >> opt.tau_L >> opt.tau_U >> opt.tau_d >> opt.tau_kappa >>
       opt.alpha_L >> opt.alpha_U >> opt.rho >> opt.c_d >> opt.c_h >> opt.N >>
-      opt.verbose;
+      opt.verbose >> opt.rf_par;
   return in_str;
 }
 
