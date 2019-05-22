@@ -318,12 +318,10 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   L.begin_assemble_cols();
 
   // localize parameters
-  // const auto tau_d = opts.tau_d, tau_kappa = opts.tau_kappa, tau_U =
-  // opts.tau_U,
-  //            tau_L   = opts.tau_L;
-  // const auto alpha_L = opts.alpha_L, alpha_U = opts.alpha_U;
-  DETERMINE_LEVEL_PARS(tau_d, tau_kappa, tau_U, tau_L, alpha_L, alpha_U, opts,
-                       cur_level);
+  double tau_d, tau_kappa, tau_L, tau_U;
+  int    alpha_L, alpha_U;
+  std::tie(tau_d, tau_kappa, tau_L, tau_U, alpha_L, alpha_U) =
+      determine_fac_pars(opts, cur_level);
   const auto kappa_sq = tau_kappa * tau_kappa;
 
   // Removing bounding the large diagonal values

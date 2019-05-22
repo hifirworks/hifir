@@ -53,6 +53,7 @@ struct psmilu_Options {
   double c_h;       /*!< size parameter for H-version (2.0) */
   int    N;         /*!< reference size of matrix (-1, system size) */
   int    verbose;   /*!< message output level (1, i.e. info) */
+  int    rf_par;    /*!< parameter refinement */
 };
 
 /*!
@@ -76,7 +77,8 @@ static psmilu_Options psmilu_get_default_options(void) {
                           .c_d       = 1.0,
                           .c_h       = 2.0,
                           .N         = -1,
-                          .verbose   = PSMILU_VERBOSE_INFO};
+                          .verbose   = PSMILU_VERBOSE_INFO,
+                          .rf_par    = 1};
 }
 
 /*!
@@ -87,7 +89,10 @@ static psmilu_Options psmilu_get_default_options(void) {
 }
 
 /* C++ interface */
+#  include <algorithm>
+#  include <cmath>
 #  include <string>
+#  include <tuple>
 #  include <unordered_map>
 
 namespace psmilu {
@@ -111,6 +116,36 @@ enum : int {
  * \ingroup cpp
  */
 typedef psmilu_Options Options;
+
+/*!
+ * \brief adjust parameters based on levels
+ * \param[in] opts control parameters, i.e. Options
+ * \param[in] lvl levels
+ * \ingroup fac
+ */
+std::tuple<double, double, double, double, int, int> determine_fac_pars(
+    const Options &opts, const int lvl) {
+  double tau_d, tau_kappa, tau_U, tau_L;
+  int    alpha_L, alpha_U;
+  if (opts.rf_par) {
+    const int    fac  = std::min(lvl, 2);
+    const double fac2 = 1. / std::min(10.0, std::pow(10.0, lvl - 1));
+    tau_d             = std::max(2.0, std::pow(opts.tau_d, 1. / fac));
+    tau_kappa         = std::max(2.0, std::pow(opts.tau_kappa, 1. / fac));
+    tau_U             = opts.tau_U * fac2;
+    tau_L             = opts.tau_L * fac2;
+    alpha_L           = opts.alpha_L * fac;
+    alpha_U           = opts.alpha_U * fac;
+  } else {
+    tau_d     = opts.tau_d;
+    tau_kappa = opts.tau_kappa;
+    tau_U     = opts.tau_U;
+    tau_L     = opts.tau_L;
+    alpha_L   = opts.alpha_L;
+    alpha_U   = opts.alpha_U;
+  }
+  return std::make_tuple(tau_d, tau_kappa, tau_U, tau_L, alpha_L, alpha_U);
+}
 
 /*!
  * \brief read control parameters from a standard input streamer
@@ -157,7 +192,7 @@ inline std::string opt_repr(const Options &opt) {
          pack_int("alpha_L", opt.alpha_L) + pack_int("alpha_U", opt.alpha_U) +
          pack_double("rho", opt.rho) + pack_double("c_d", opt.c_d) +
          pack_double("c_h", opt.c_h) + pack_int("N", opt.N) +
-         pack_int("verbose", opt.verbose);
+         pack_int("verbose", opt.verbose) + pack_int("rf_par", opt.rf_par);
 }
 
 #  ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -166,7 +201,7 @@ namespace internal {
  * build a byte map, i.e. the value is the leading byte position of the attrs
  * in Options
  */
-const static std::size_t option_attr_pos[11] = {
+const static std::size_t option_attr_pos[12] = {
     0,
     sizeof(double),
     option_attr_pos[1] + sizeof(double),
@@ -178,17 +213,17 @@ const static std::size_t option_attr_pos[11] = {
     option_attr_pos[7] + sizeof(double),
     option_attr_pos[8] + sizeof(double),
     option_attr_pos[9] + sizeof(int),
-};
+    option_attr_pos[10] + sizeof(int)};
 
 /* data type tags, true for double, false for int */
-const static bool option_dtypes[11] = {true, true, true, true,  false, false,
-                                       true, true, true, false, false};
+const static bool option_dtypes[12] = {true, true, true, true,  false, false,
+                                       true, true, true, false, false, false};
 
 /* using unordered map to store the string to index map */
 const static std::unordered_map<std::string, int> option_tag2pos = {
-    {"tau_L", 0},   {"tau_U", 1},   {"tau_d", 2},   {"tau_kappa", 3},
-    {"alpha_L", 4}, {"alpha_U", 5}, {"rho", 6},     {"c_d", 7},
-    {"c_h", 8},     {"N", 9},       {"verbose", 10}};
+    {"tau_L", 0},   {"tau_U", 1},   {"tau_d", 2},    {"tau_kappa", 3},
+    {"alpha_L", 4}, {"alpha_U", 5}, {"rho", 6},      {"c_d", 7},
+    {"c_h", 8},     {"N", 9},       {"verbose", 10}, {"rf_par", 11}};
 
 } /* namespace internal */
 #  endif /* DOXYGEN_SHOULD_SKIP_THIS */

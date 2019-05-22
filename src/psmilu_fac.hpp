@@ -53,27 +53,6 @@ namespace internal {
 #  define PSMILU_RESERVE_FAC 5
 #endif
 
-/// \def DETERMINE_LEVEL_PARS
-/// \brief adaptively determine the parameters from level to level
-#ifndef PSMILU_DISABLE_PARREFINE
-#  define DETERMINE_LEVEL_PARS(__tau_d, __tau_kappa, __tau_U, __tau_L,         \
-                               __alpha_L, __alpha_U, __opts, __lvl)            \
-    const int    _fac    = std::min((int)__lvl, 2);                            \
-    const double _fac2   = 1. / std::min(10.0, std::pow(10.0, __lvl - 1));     \
-    const auto   __tau_d = std::max(2.0, std::pow(__opts.tau_d, 1. / _fac)),   \
-               __tau_kappa =                                                   \
-                   std::max(2.0, std::pow(__opts.tau_kappa, 1. / _fac)),       \
-               __tau_U = __opts.tau_U * _fac2, __tau_L = __opts.tau_L * _fac2; \
-    const auto __alpha_L = __opts.alpha_L * _fac,                              \
-               __alpha_U = __opts.alpha_U * _fac
-#else
-#  define DETERMINE_LEVEL_PARS(__tau_d, __tau_kappa, __tau_U, __tau_L, \
-                               __alpha_L, __alpha_U, __opts, __lvl)    \
-    const auto __tau_d = __opts.tau_d, __tau_kappa = __opts.tau_kappa, \
-               __tau_U = __opts.tau_U, __tau_L = __opts.tau_L;         \
-    const auto __alpha_L = __opts.alpha_L, __alpha_U = __opts.alpha_U
-#endif
-
 /// \brief extract permutated diagonal
 /// \tparam LeftDiagType left scaling vector type, see \ref Array
 /// \tparam CcsType input ccs matrix, see \ref CCS
@@ -952,12 +931,10 @@ inline CsType iludp_factor(const CsType &A, const typename CsType::size_type m0,
   L.begin_assemble_cols();
 
   // localize parameters
-  // const auto tau_d = opts.tau_d, tau_kappa = opts.tau_kappa, tau_U =
-  // opts.tau_U,
-  //            tau_L   = opts.tau_L;
-  // const auto alpha_L = opts.alpha_L, alpha_U = opts.alpha_U;
-  DETERMINE_LEVEL_PARS(tau_d, tau_kappa, tau_U, tau_L, alpha_L, alpha_U, opts,
-                       cur_level);
+  double tau_d, tau_kappa, tau_L, tau_U;
+  int    alpha_L, alpha_U;
+  std::tie(tau_d, tau_kappa, tau_L, tau_U, alpha_L, alpha_U) =
+      determine_fac_pars(opts, cur_level);
 
   // Removing bounding the large diagonal values
   const auto is_bad_diag = [=](const value_type a) -> bool {
@@ -1446,12 +1423,10 @@ inline CsType iludp_factor2(const CsType &                   A,
   L.begin_assemble_cols();
 
   // localize parameters
-  // const auto tau_d = opts.tau_d, tau_kappa = opts.tau_kappa, tau_U =
-  // opts.tau_U,
-  //            tau_L   = opts.tau_L;
-  // const auto alpha_L = opts.alpha_L, alpha_U = opts.alpha_U;
-  DETERMINE_LEVEL_PARS(tau_d, tau_kappa, tau_U, tau_L, alpha_L, alpha_U, opts,
-                       cur_level);
+  double tau_d, tau_kappa, tau_L, tau_U;
+  int    alpha_L, alpha_U;
+  std::tie(tau_d, tau_kappa, tau_L, tau_U, alpha_L, alpha_U) =
+      determine_fac_pars(opts, cur_level);
 
   // Removing bounding the large diagonal values
   const auto is_bad_diag = [=](const value_type a) -> bool {
