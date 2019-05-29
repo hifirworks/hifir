@@ -147,6 +147,10 @@ class CompressedStorage {
   inline const_i_iterator ind_cend(const size_type i) const {
     return _ind_cend(i);
   }
+  inline iarray_type &      inds() { return _indices; }
+  inline const iarray_type &inds() const { return _indices; }
+  inline iarray_type &      ind_start() { return _ind_start; }
+  inline const iarray_type &ind_start() const { return _ind_start; }
 
   /// \brief reserve space for nnz
   /// \param[in] nnz total number of nonzeros
