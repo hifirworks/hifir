@@ -268,8 +268,10 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
   L.begin_assemble_cols();
 
   // determine parameters
-  DETERMINE_LEVEL_PARS(tau_d, tau_kappa, tau_U, tau_L, alpha_L, alpha_U, opts,
-                       cur_level);
+  double tau_d, tau_kappa, tau_U, tau_L;
+  int    alpha_L, alpha_U;
+  std::tie(tau_d, tau_kappa, tau_L, tau_U, alpha_L, alpha_U) =
+      determine_fac_pars(opts, cur_level);
 
   // Removing bounding the large diagonal values
   const auto is_bad_diag = [=](const value_type a) -> bool {

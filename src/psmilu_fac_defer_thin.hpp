@@ -4,139 +4,32 @@
 //----------------------------------------------------------------------------
 //@HEADER
 
-/// \file psmilu_fac_defer.hpp
-/// \brief Implementation of incomplete multilevel deferred factorization
+/// \file psmilu_fac_defer_thin.hpp
+/// \brief Kernels for deferred factorization in thin data structure
 /// \authors Qiao,
 
-#ifndef _PSMILU_FACDEFERRED_HPP
-#define _PSMILU_FACDEFERRED_HPP
+#ifndef _PSMILU_FACDEFERTHIN_HPP
+#define _PSMILU_FACDEFERTHIN_HPP
 
-#include "psmilu_Schur2.hpp"
-#include "psmilu_fac.hpp"
-
-#include "psmilu_DeferredCrout.hpp"
+#include "psmilu_DeferredCrout_thin.hpp"
+#include "psmilu_fac_defer.hpp"
 
 namespace psmilu {
-namespace internal {
 
-/*!
- * \addtogroup fac
- * @{
- */
-
-/// \brief compress offsets to have a compact L and U
-/// \tparam L_AugType augmented storage for \a L, see \ref AugCCS
-/// \tparam U_AugType augmented storage for \a U, see \ref AugCRS
-/// \tparam PosArray array for storing starting positions, see \ref Array
-/// \param[in,out] U uncompressed \a U part
-/// \param[in,out] L uncompressed \a L part
-/// \param[in] U_start starting positions of the offset of \a U
-/// \param[in] L_start starting positions of the offset of \a L
-/// \param[in] m leading block size
-/// \param[in] dfrs total number of deferrals
-template <class L_AugType, class U_AugType, class PosArray>
-inline void compress_tails(U_AugType &U, L_AugType &L, const PosArray &U_start,
-                           const PosArray &                   L_start,
-                           const typename PosArray::size_type m,
-                           const typename PosArray::size_type dfrs) {
-  using size_type  = typename PosArray::size_type;
-  using index_type = typename L_AugType::index_type;
-
-  if (dfrs) {
-    const auto comp_index = [=](index_type &j) { j -= dfrs; };
-    auto       U_first = U.col_ind().begin(), L_first = L.row_ind().begin();
-    for (size_type i(0); i < m; ++i) {
-      std::for_each(U_first + U_start[i], U.col_ind_end(i), comp_index);
-      std::for_each(L_first + L_start[i], L.row_ind_end(i), comp_index);
-    }
-  }
-
-  // reshape the secondary axis of the matrices
-  L.resize_nrows(L.nrows() / 2);
-  U.resize_ncols(U.ncols() / 2);
-
-#ifndef NDEBUG
-  L.check_validity();
-  U.check_validity();
-#endif
-}
-
-/// \brief fix the starting positions for symmetric cases while doing deferrals
-/// \tparam L_AugCcsType augmented ccs type for \a L, see \ref AugCCS
-/// \tparam PosArray position array type, see \ref Array
-/// \param[in] L lower part of the decomposition
-/// \param[in] back_step the step where we defer to
-/// \param[out] L_start starting positions for offset of \a L
-///
-/// For symmetric factorization, we only are interested in factorizing the
-/// offset of \a L, thus we are maintaining the starting positions pointing to
-/// the offset locations. However, while we defer a row in \a L, the starting
-/// positions no long valid, thus we need to fix it by looping through the nnz
-/// entries in the deferred step and decrement the position values.
-template <class L_AugCcsType, class PosArray>
-inline void search_back_start_symm(const L_AugCcsType &               L,
-                                   const typename PosArray::size_type back_step,
-                                   const typename PosArray::size_type /* m */,
-                                   PosArray &L_start) {
-  using index_type  = typename L_AugCcsType::index_type;
-  index_type aug_id = L.start_row_id(back_step);
-  while (!L.is_nil(aug_id)) {
-    const auto col_idx = L.col_idx(aug_id);
-    --L_start[col_idx];
-    aug_id = L.next_row_id(aug_id);
-  }
-}
-
-/*!
- * @}
- */ // group fac
-
-}  // namespace internal
-
-/// \brief perform incomplete LU with deferrer factorization for a single level
-/// \tparam IsSymm if \a true, then assume a symmetric leading block
-/// \tparam CsType input compressed storage, either \ref CRS or \ref CCS
-/// \tparam CroutStreamer information streamer for \ref Crout update
-/// \tparam PrecsType multilevel preconditioner type, \ref Precs and \ref Prec
-/// \tparam IntArray integer array type for nnz storage, see \ref Array
-/// \param[in] A input for this level
-/// \param[in] m0 initial leading block size
-/// \param[in] N reference \b global size for determining Schur sparsity
-/// \param[in] opts control parameters
-/// \param[in] Crout_info information streamer, API same as \ref psmilu_info
-/// \param[in,out] precs list of preconditioner, newly computed components will
-///                      be pushed back to the list.
-/// \param[in,out] row_sizes nnz of rows in the original input A
-/// \param[in,out] col_sizes nnz of columns in the original input A
-/// \return Schur complement for next level (if needed), in the same type as
-///         that of the input, i.e. \a CsType
-/// \ingroup fac
-///
-/// This is the core algorithm, which has been demonstrated in the paper, i.e.
-/// the algorithm 2, \b ilu_dp_factor. There are two modifications: 1) we put
-/// the preprocessing inside this routine, and 2) we embed post-processing (
-/// computing Schur complement and updating preconditioner components for the
-/// current level) as well. The reason(s) is(are), for 1), the preprocessing
-/// requires the input type to be \ref CCS, which can only be determined inside
-/// this routine (we want to keep this routine as clean as possible, we can, of
-/// course, extract the preprocessing out and make this routine takes inputs
-/// of both CCS and CRS of \a A.)
 template <bool IsSymm, class CsType, class CroutStreamer, class PrecsType,
           class IntArray>
-inline CsType iludp_factor_defer(const CsType &                   A,
-                                 const typename CsType::size_type m0,
-                                 const typename CsType::size_type N,
-                                 const Options &                  opts,
-                                 const CroutStreamer &            Crout_info,
-                                 PrecsType &precs, IntArray &row_sizes,
-                                 IntArray &col_sizes) {
+inline CsType iludp_factor_defer_thin(const CsType &                   A,
+                                      const typename CsType::size_type m0,
+                                      const typename CsType::size_type N,
+                                      const Options &                  opts,
+                                      const CroutStreamer &Crout_info,
+                                      PrecsType &precs, IntArray &row_sizes,
+                                      IntArray &col_sizes) {
   typedef CsType                      input_type;
   typedef typename CsType::other_type other_type;
   using cs_trait = internal::CompressedTypeTrait<input_type, other_type>;
   typedef typename cs_trait::crs_type crs_type;
   typedef typename cs_trait::ccs_type ccs_type;
-  typedef AugCRS<crs_type>            aug_crs_type;
-  typedef AugCCS<ccs_type>            aug_ccs_type;
   typedef typename CsType::index_type index_type;
   typedef typename CsType::size_type  size_type;
   typedef typename CsType::value_type value_type;
@@ -265,7 +158,7 @@ inline CsType iludp_factor_defer(const CsType &                   A,
 #endif
 
   // create U storage with deferred
-  aug_crs_type U(m, A.ncols() * 2);
+  crs_type U(m, A.ncols() * 2);
   psmilu_error_if(U.row_start().status() == DATA_UNDEF,
                   "memory allocation failed for U:row_start at level %zd.",
                   cur_level);
@@ -279,7 +172,7 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   } while (false);
 
   // create L storage with deferred
-  aug_ccs_type L(A.nrows() * 2, m);
+  ccs_type L(A.nrows() * 2, m);
   psmilu_error_if(L.col_start().status() == DATA_UNDEF,
                   "memory allocation failed for L:col_start at level %zd.",
                   cur_level);
@@ -296,12 +189,33 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   SparseVector<value_type, index_type, ONE_BASED> l(A.nrows() * 2),
       ut(A.ncols() * 2);
 
-  // create buffer for L and U start
+  // create buffer for L and U starts
   Array<index_type> L_start(m), U_start(m);
   psmilu_error_if(
       L_start.status() == DATA_UNDEF || U_start.status() == DATA_UNDEF,
       "memory allocation failed for L_start and/or U_start at level %zd.",
       cur_level);
+
+  Array<index_type> L_offsets;
+  if (IsSymm) {
+    L_offsets.resize(m);
+    psmilu_error_if(L_offsets.status() == DATA_UNDEF,
+                    "memory allocation failed for L_offsets at level %zd.",
+                    cur_level);
+  }
+
+  const Array<index_type> &Crout_L_start = !IsSymm ? L_start : L_offsets;
+
+  // create buffer for L and U lists
+  Array<index_type> L_list(m * 2), U_list(m * 2);
+  psmilu_error_if(
+      L_list.status() == DATA_UNDEF || U_list.status() == DATA_UNDEF,
+      "memory allocation failed for L_list and/or U_list at level %zd.",
+      cur_level);
+
+  // set default value
+  std::fill(L_list.begin(), L_list.end(), static_cast<index_type>(-1));
+  std::fill(U_list.begin(), U_list.end(), static_cast<index_type>(-1));
 
   // create storage for kappa's
   Array<value_type> kappa_l(m), kappa_ut(m);
@@ -344,7 +258,7 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   index_type info_counter[] = {0, 0, 0, 0, 0, 0, 0};
 
   if (psmilu_verbose(INFO, opts)) psmilu_info("start Crout update...");
-  DeferredCrout step;
+  DeferredCrout_thin step;
   for (; step < m; ++step) {
     // first check diagonal
     bool            pvt         = is_bad_diag(d[step.deferred_step()]);
@@ -355,9 +269,12 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     Crout_info(" Crout step %zd, leading block size %zd", step, m);
 
     // compute kappa for u wrp deferred index
-    update_kappa_ut(step, U, kappa_ut, step.deferred_step());
+    step.update_kappa(U, U_list, U_start, kappa_ut);
     // then compute kappa for l
-    update_kappa_l<IsSymm>(step, L, kappa_ut, kappa_l, step.deferred_step());
+    if (!IsSymm)
+      step.update_kappa(L, L_list, L_start, kappa_l);
+    else
+      kappa_l[step] = kappa_ut[step];
 
 #ifdef PSMILU_DEFERREDFAC_VERBOSE_STAT
     info_counter[2] += (std::abs(kappa_ut[step]) > tau_kappa &&
@@ -371,13 +288,16 @@ inline CsType iludp_factor_defer(const CsType &                   A,
       info_counter[1] += pvt;
     }
 
+    // handle defer
     if (pvt) {
       while (m > step) {
         --m;
         const auto tail_pos = n + step.defers();
-        U.defer_col(step.deferred_step(), tail_pos);
-        L.defer_row(step.deferred_step(), tail_pos);
-        if (IsSymm) internal::search_back_start_symm(L, tail_pos, m2, L_start);
+        step.defer_entry(tail_pos, U_start, U, U_list);
+        if (!IsSymm)
+          step.defer_entry(tail_pos, L_start, L, L_list);
+        else
+          step.defer_L_and_fix_offsets(tail_pos, L_start, L, L_list, L_offsets);
         P[tail_pos]        = p[step.deferred_step()];
         Q[tail_pos]        = q[step.deferred_step()];
         P_inv[P[tail_pos]] = tail_pos;
@@ -396,21 +316,24 @@ inline CsType iludp_factor_defer(const CsType &                   A,
           ++info_counter[0];
 #ifdef PSMILU_DEFERREDFAC_VERBOSE_STAT
           // compute kappa for u wrp deferred index
-          update_kappa_ut(step, U, kappa_ut, step.deferred_step());
+          step.update_kappa(U, U_list, U_start, kappa_ut);
           // then compute kappa for l
-          update_kappa_l<IsSymm>(step, L, kappa_ut, kappa_l,
-                                 step.deferred_step());
+          if (!IsSymm)
+            step.update_kappa(L, L_list, L_start, kappa_l);
+          else
+            kappa_l[step] = kappa_ut[step];
           info_counter[2] += (std::abs(kappa_ut[step]) > tau_kappa &&
                               std::abs(kappa_l[step]) > tau_kappa);
 #endif  // PSMILU_DEFERREDFAC_VERBOSE_STAT
           continue;
         }
-
         // compute kappa for u wrp deferred index
-        update_kappa_ut(step, U, kappa_ut, step.deferred_step());
+        step.update_kappa(U, U_list, U_start, kappa_ut);
         // then compute kappa for l
-        update_kappa_l<IsSymm>(step, L, kappa_ut, kappa_l,
-                               step.deferred_step());
+        if (!IsSymm)
+          step.update_kappa(L, L_list, L_start, kappa_l);
+        else
+          kappa_l[step] = kappa_ut[step];
         pvt = std::abs(kappa_ut[step]) > tau_kappa ||
               std::abs(kappa_l[step]) > tau_kappa;
         if (pvt) {
@@ -461,20 +384,12 @@ inline CsType iludp_factor_defer(const CsType &                   A,
     step.compress_array(p);
     step.compress_array(q);
 
-    // update U
-    step.update_U_start_and_compress_U(U, U_start);
-    // then update L
-    step.update_L_start_and_compress_L<IsSymm>(L, m2, L_start);
-
-    //----------------------
-    // compute Crout updates
-    //----------------------
-
-    // compute Uk'
-    step.compute_ut(s, A_crs, t, p[step], Q_inv, L, d, U, U_start, ut);
-    // compute Lk
-    step.compute_l<IsSymm>(s, A_ccs, t, P_inv, q[step], m2, L, L_start, d, U,
-                           l);
+    // compute ut
+    step.compute_ut(s, A_crs, t, p[step], Q_inv, L, L_start, L_list, d, U,
+                    U_start, ut);
+    // compute l
+    step.compute_l<IsSymm>(s, A_ccs, t, P_inv, q[step], m2, L, Crout_L_start, d,
+                           U, U_start, U_list, l);
 
     // update diagonal entries for u first
 #ifndef NDEBUG
@@ -542,15 +457,6 @@ inline CsType iludp_factor_defer(const CsType &                   A,
       apply_space_dropping(col_sizes[q[step]], alpha_L, l,
                            info.second - ut.inds().cbegin());
 
-#  ifndef NDEBUG
-      if (info.second != ut.inds().cbegin() &&
-          info.second != ut.inds().cbegin() + ut.size() && l.size())
-        psmilu_error_if(*(info.second - 1) >= *l.inds().cbegin() ||
-                            *(info.second - 1) - ONE_BASED >= m2,
-                        "l contains symm part (%zd,%zd,%zd)",
-                        (size_type)(*(info.second - 1)),
-                        (size_type)*l.inds().cbegin(), m2);
-#  endif
       auto u_last = info.second;
 #else   // !PSMILU_DISABLE_SPACE_DROP
       auto u_last = ut.inds().cbegin() + ut.size();
@@ -581,22 +487,25 @@ inline CsType iludp_factor_defer(const CsType &                   A,
 #ifdef PSMILU_ENABLE_NORM_STAT
     l_norm_ratios[step] = l.norm1() / l_norm_ratios[step];
 #endif  // PSMILU_ENABLE_NORM_STAT
+
+    // update position
+    step.update_compress(U, U_list, U_start);
+    step.update_compress(L, L_list, L_start);
+    if (IsSymm) {
+      if (!step.defers() && m2 == n)
+        L_offsets[step] = L.nnz_in_col(step);
+      else
+        step.update_L_start_offset_symm(L, m2, L_offsets);
+    }
     Crout_info(" Crout step %zd done!", step);
-  }
+  }  // for
 
   // compress permutation vectors
   for (; step < n; ++step) {
     step.assign_gap_array(P, p);
     step.assign_gap_array(Q, q);
-    // NOTE important to compress the start/end in augmented DS
-    // the tails were updated while deferring and the leading
-    // block is compressed while updating L and U starts
-    // thus, we only need to compress the offsets
-    step.compress_array(U.col_start());
-    step.compress_array(U.col_end());
-    step.compress_array(L.row_start());
-    step.compress_array(L.row_end());
   }
+
   // rebuild the inverse mappings
   p.build_inv();
   q.build_inv();
@@ -604,11 +513,13 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   U.end_assemble_rows();
   L.end_assemble_cols();
 
-  // finalize start positions
-  if (m) {
-    U_start[m - 1] = U.row_start()[m - 1];
-    L_start[m - 1] = L.col_start()[m - 1];
+  // Important! Revert the starting positions to global index that is required
+  // in older routines
+  for (size_type i(0); i < m; ++i) {
+    L_start[i] += L.col_start()[i] - ONE_BASED;
+    U_start[i] += U.row_start()[i] - ONE_BASED;
   }
+
   // compress tails
   internal::compress_tails(U, L, U_start, L_start, m, step.defers());
 
@@ -832,4 +743,4 @@ inline CsType iludp_factor_defer(const CsType &                   A,
 
 }  // namespace psmilu
 
-#endif  // _PSMILU_FACDEFERRED_HPP
+#endif  // _PSMILU_FACDEFERTHIN_HPP

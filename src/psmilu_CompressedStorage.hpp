@@ -132,6 +132,25 @@ class CompressedStorage {
   inline const_v_iterator val_cend(const size_type i) const {
     return val_cbegin(i) + _nnz(i);
   }
+  inline size_type  nnz_in_primary(const size_type i) const { return _nnz(i); }
+  inline i_iterator ind_begin(const size_type i) { return _ind_begin(i); }
+  inline i_iterator ind_end(const size_type i) { return _ind_end(i); }
+  inline const_i_iterator ind_begin(const size_type i) const {
+    return _ind_cbegin(i);
+  }
+  inline const_i_iterator ind_end(const size_type i) const {
+    return _ind_cend(i);
+  }
+  inline const_i_iterator ind_cbegin(const size_type i) const {
+    return _ind_cbegin(i);
+  }
+  inline const_i_iterator ind_cend(const size_type i) const {
+    return _ind_cend(i);
+  }
+  inline iarray_type &      inds() { return _indices; }
+  inline const iarray_type &inds() const { return _indices; }
+  inline iarray_type &      ind_start() { return _ind_start; }
+  inline const iarray_type &ind_start() const { return _ind_start; }
 
   /// \brief reserve space for nnz
   /// \param[in] nnz total number of nonzeros

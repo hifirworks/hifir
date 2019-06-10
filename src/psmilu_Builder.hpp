@@ -21,7 +21,7 @@
 #include "psmilu_Timer.hpp"
 #include "psmilu_fac.hpp"
 #include "psmilu_fac_defer.hpp"
-#include "psmilu_fac_pvt.hpp"
+#include "psmilu_fac_defer_thin.hpp"
 #include "psmilu_prec_solve.hpp"
 #include "psmilu_utils.hpp"
 #include "psmilu_version.h"
@@ -147,14 +147,24 @@ class PSMILU {
   ///               will assume an asymmetric leading block.
   /// \param[in] opts control parameters, using the default values in the paper.
   /// \param[in] check if \a true (default), will perform validity checking
-  /// \sa solve, _factorize_kernel
+  /// \param[in] use_thin if \a true (default), then call single-list version
+  /// \sa solve
   template <class CsType>
   inline void factorize(const CsType &A, const size_type m0 = 0u,
-                        const Options &opts  = get_default_options(),
-                        const bool     check = true) {
-    deferred_factorize(A, m0, opts, check);
+                        const Options &opts = get_default_options(),
+                        const bool check = true, const bool use_thin = true) {
+    use_thin ? deferred_factorize_thin(A, m0, opts, check)
+             : deferred_factorize(A, m0, opts, check);
   }
 
+  /// \brief deferred factorization
+  /// \tparam CsType compressed storage input, either \ref CRS or \ref CCS
+  /// \param[in] A input matrix
+  /// \param[in] m0 leading block size, if it's zero (default), then the routine
+  ///               will assume an asymmetric leading block.
+  /// \param[in] opts control parameters, using the default values in the paper.
+  /// \param[in] check if \a true (default), will perform validity checking
+  /// \sa _deferred_factorize_kernel
   template <class CsType>
   inline void deferred_factorize(const CsType &A, const size_type m0 = 0u,
                                  const Options &opts  = get_default_options(),
@@ -221,10 +231,22 @@ class PSMILU {
     if (revert_warn) (void)warn_flag(1);
   }
 
+  /// \brief deferred factorization using less memory
+  /// \tparam CsType compressed storage input, either \ref CRS or \ref CCS
+  /// \param[in] A input matrix
+  /// \param[in] m0 leading block size, if it's zero (default), then the routine
+  ///               will assume an asymmetric leading block.
+  /// \param[in] opts control parameters, using the default values in the paper.
+  /// \param[in] check if \a true (default), will perform validity checking
+  /// \sa _thin_deferred_factorize_kernel
+  ///
+  /// This version, differing from deferred_factorize, is that it only builds
+  /// a single linked list for each of L and U factors for the current crout
+  /// step.
   template <class CsType>
-  inline void pivot_factorize(const CsType &A, const size_type m0 = 0u,
-                              const Options &opts  = get_default_options(),
-                              const bool     check = true) {
+  inline void deferred_factorize_thin(
+      const CsType &A, const size_type m0 = 0u,
+      const Options &opts = get_default_options(), const bool check = true) {
     static_assert(!(CsType::ONE_BASED ^ ONE_BASED), "inconsistent index base");
 
     const static internal::StdoutStruct  Crout_cout;
@@ -260,10 +282,14 @@ class PSMILU {
       // also clear the previous buffer
       _prec_work.resize(0);
     }
+    // create size references for dropping
+    iarray_type row_sizes, col_sizes;
     if (psmilu_verbose(FAC, opts))
-      _pvt_factorize_kernel(A, m0, opts, Crout_cout);
+      _thin_deferred_factorize_kernel(A, m0, opts, row_sizes, col_sizes,
+                                      Crout_cout);
     else
-      _pvt_factorize_kernel(A, m0, opts, Crout_cout_dummy);
+      _thin_deferred_factorize_kernel(A, m0, opts, row_sizes, col_sizes,
+                                      Crout_cout_dummy);
     const size_type n1 = std::accumulate(
                         _precs.cbegin(), _precs.cend(), size_type(0),
                         [](const size_type i, const prec_type &p) -> size_type {
@@ -334,9 +360,12 @@ class PSMILU {
   }
 
   template <class CsType, class CroutStreamer>
-  inline void _pvt_factorize_kernel(const CsType &A, const size_type m0,
-                                    const Options &      opts,
-                                    const CroutStreamer &Crout_info) {
+  inline void _thin_deferred_factorize_kernel(const CsType &       A,
+                                              const size_type      m0,
+                                              const Options &      opts,
+                                              iarray_type &        row_sizes,
+                                              iarray_type &        col_sizes,
+                                              const CroutStreamer &Crout_info) {
     psmilu_error_if(A.nrows() != A.ncols(),
                     "Currently only squared systems are supported");
     size_type       m(m0);  // init m
@@ -355,12 +384,15 @@ class PSMILU {
 
     // instantiate IsSymm here
     const CsType S =
-        sym ? iludp_factor_pvt<true>(A, m, N, opts, Crout_info, _precs)
-            : iludp_factor_pvt<false>(A, m, N, opts, Crout_info, _precs);
+        sym ? iludp_factor_defer_thin<true>(A, m, N, opts, Crout_info, _precs,
+                                            row_sizes, col_sizes)
+            : iludp_factor_defer_thin<false>(A, m, N, opts, Crout_info, _precs,
+                                             row_sizes, col_sizes);
 
     // check last level
     if (!_precs.back().is_last_level())
-      this->_pvt_factorize_kernel(S, 0u, opts, Crout_info);
+      this->_thin_deferred_factorize_kernel(S, 0u, opts, row_sizes, col_sizes,
+                                            Crout_info);
   }
 
  protected:
