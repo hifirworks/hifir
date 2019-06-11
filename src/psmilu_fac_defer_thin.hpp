@@ -44,11 +44,6 @@ inline CsType iludp_factor_defer_thin(const CsType &                   A,
   psmilu_assert(m0 <= std::min(A.nrows(), A.ncols()),
                 "leading size should be smaller than size of A");
   const size_type cur_level = precs.size() + 1;
-#ifndef NDEBUG
-  if (IsSymm)
-    psmilu_error_if(cur_level != 1u,
-                    "symmetric must be applied to first level!");
-#endif
 
   if (psmilu_verbose(INFO, opts))
     psmilu_info("\nenter level %zd.\n", cur_level);
