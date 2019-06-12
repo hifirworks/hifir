@@ -46,10 +46,12 @@ namespace psmilu {
 /// step uses HSL_MC64.
 ///
 /// \todo Implement matching algorithm to drop the dependency on MC64.
-template <bool IsSymm, class CcsType, class ScalingArray, class PermType>
+template <bool IsSymm, class CcsType, class CrsType, class ScalingArray,
+          class PermType>
 inline typename CcsType::size_type do_preprocessing(
-    const CcsType &A, const typename CcsType::size_type m0, const Options &opt,
-    ScalingArray &s, ScalingArray &t, PermType &p, PermType &q,
+    const CcsType &A, const CrsType &A_crs,
+    const typename CcsType::size_type m0, const Options &opt, ScalingArray &s,
+    ScalingArray &t, PermType &p, PermType &q,
     const bool hdl_zero_diag = false) {
   static_assert(!CcsType::ROW_MAJOR, "must be CCS");
   using index_type = typename CcsType::index_type;
@@ -59,7 +61,7 @@ inline typename CcsType::size_type do_preprocessing(
   if (psmilu_verbose(PRE, opt)) psmilu_info("performing matching step");
 
   const auto match_res =
-      do_maching<IsSymm>(A, m0, opt.verbose, s, t, p, q, hdl_zero_diag);
+      do_maching<IsSymm>(A, A_crs, m0, opt.verbose, s, t, p, q, hdl_zero_diag);
 
   const size_type m = match_res.second;
 #ifndef PSMILU_DISABLE_REORDERING

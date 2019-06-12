@@ -80,8 +80,8 @@ inline CsType iludp_factor_defer_thin(const CsType &                   A,
   Array<value_type>        s, t;
   BiPermMatrix<index_type> p, q;
 #ifndef PSMILU_DISABLE_PRE
-  size_type m =
-      do_preprocessing<IsSymm>(A_ccs, m0, opts, s, t, p, q, check_zero_diag);
+  size_type m = do_preprocessing<IsSymm>(A_ccs, A_crs, m0, opts, s, t, p, q,
+                                         check_zero_diag);
   // m = defer_dense_tail(A_crs, A_ccs, p, q, m);
 #else
   s.resize(m0);

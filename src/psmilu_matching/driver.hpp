@@ -108,14 +108,16 @@ inline typename CcsType::size_type defer_zero_diags(
 /// \param[in] q column permutation matrix
 /// \ingroup pre
 /// \note It's worth noting that \a q must be bi-directional mapping
-template <bool IsSymm, class ReturnCcsType, class CcsType, class PermType>
+template <bool IsSymm, class ReturnCcsType, class CcsType, class CrsType,
+          class PermType>
 inline typename std::enable_if<!IsSymm, ReturnCcsType>::type
-compute_perm_leading_block(const CcsType &                   A,
+compute_perm_leading_block(const CcsType &                   A, const CrsType &,
                            const typename CcsType::size_type m,
                            const PermType &p, const PermType &q) {
   using size_type                 = typename CcsType::size_type;
   constexpr static bool ONE_BASED = CcsType::ONE_BASED;
-  const auto            c_idx     = [](const size_type i) {
+  static_assert(!(ONE_BASED ^ CrsType::ONE_BASED), "inconsistent ONE_BASED");
+  const auto c_idx = [](const size_type i) {
     return to_c_idx<size_type, ONE_BASED>(i);
   };
 
@@ -192,21 +194,23 @@ compute_perm_leading_block(const CcsType &                   A,
 /// Notice that, for symmetric cases, since only the lower part is stored, we
 /// need to build the \ref CRS version of \a A, which is nothing but the CCS
 /// version of upper part of \a A.
-template <bool IsSymm, class ReturnCcsType, class CcsType, class PermType>
+template <bool IsSymm, class ReturnCcsType, class CcsType, class CrsType,
+          class PermType>
 inline typename std::enable_if<IsSymm, ReturnCcsType>::type
-compute_perm_leading_block(const CcsType &                   A,
+compute_perm_leading_block(const CcsType &A, const CrsType &A_crs,
                            const typename CcsType::size_type m,
                            const PermType &p, const PermType &q) {
   using size_type                 = typename CcsType::size_type;
   constexpr static bool ONE_BASED = CcsType::ONE_BASED;
-  const auto            c_idx     = [](const size_type i) {
+  static_assert(!(ONE_BASED ^ CrsType::ONE_BASED), "inconsistent ONE_BASED");
+  const auto c_idx = [](const size_type i) {
     return to_c_idx<size_type, ONE_BASED>(i);
   };
   // for symmetric case, we need first build a CRS of the lower part, which is
   // the "CCS" of the upper part
   using crs_type = typename CcsType::other_type;
 
-  const crs_type A_crs = crs_type(A);
+  // const crs_type A_crs = crs_type(A);
 
   ReturnCcsType B(m, m);
   auto &        col_start = B.col_start();
@@ -307,13 +311,15 @@ compute_perm_leading_block(const CcsType &                   A,
 /// \return A \a pair of \ref CCS matrix in \b C-index and the actual leading
 ///         block size, which is no larger than \a m0.
 /// \ingroup pre
-template <bool IsSymm, class CcsType, class ScalingArray, class PermType>
+template <bool IsSymm, class CcsType, class CrsType, class ScalingArray,
+          class PermType>
 inline std::pair<
     CCS<typename CcsType::value_type, typename CcsType::index_type>,
     typename CcsType::size_type>
-do_maching(const CcsType &A, const typename CcsType::size_type m0,
-           const int verbose, ScalingArray &s, ScalingArray &t, PermType &p,
-           PermType &q, const bool hdl_zero_diags = false) {
+do_maching(const CcsType &A, const CrsType &A_crs,
+           const typename CcsType::size_type m0, const int verbose,
+           ScalingArray &s, ScalingArray &t, PermType &p, PermType &q,
+           const bool hdl_zero_diags = false) {
   static_assert(!CcsType::ROW_MAJOR, "input must be CCS type");
   using value_type                = typename CcsType::value_type;
   using index_type                = typename CcsType::index_type;
@@ -360,7 +366,8 @@ do_maching(const CcsType &A, const typename CcsType::size_type m0,
   const bool is_eye_perm = p.is_eye() && q.is_eye();
   if (!is_eye_perm) {
     p.build_inv();
-    B = internal::compute_perm_leading_block<IsSymm, return_type>(B1, m, p, q);
+    B = internal::compute_perm_leading_block<IsSymm, return_type>(B1, A_crs, m,
+                                                                  p, q);
   } else {
     psmilu_assert(m0 == m,
                   "if no permutation occurred from matching, then the leading "
