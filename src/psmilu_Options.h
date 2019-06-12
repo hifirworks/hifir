@@ -134,8 +134,13 @@ std::tuple<double, double, double, double, int, int> determine_fac_pars(
     tau_kappa         = std::max(2.0, std::pow(opts.tau_kappa, 1. / fac));
     tau_U             = opts.tau_U * fac2;
     tau_L             = opts.tau_L * fac2;
-    alpha_L           = opts.alpha_L * fac;
-    alpha_U           = opts.alpha_U * fac;
+    if (lvl > 2) {
+      alpha_L = opts.alpha_L;
+      alpha_U = opts.alpha_U;
+    } else {
+      alpha_L = opts.alpha_L * fac;
+      alpha_U = opts.alpha_U * fac;
+    }
   } else {
     tau_d     = opts.tau_d;
     tau_kappa = opts.tau_kappa;
