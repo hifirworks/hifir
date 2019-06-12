@@ -46,7 +46,8 @@ inline CsType iludp_factor_defer_thin(const CsType &                   A,
   const size_type cur_level = precs.size() + 1;
 
   if (psmilu_verbose(INFO, opts))
-    psmilu_info("\nenter level %zd.\n", cur_level);
+    psmilu_info("\nenter level %zd (%s).\n", cur_level,
+                (IsSymm ? "symmetric" : "asymmetric"));
 
   DefaultTimer timer;
 
