@@ -35,9 +35,15 @@ namespace internal {
 template <class IndexType>
 struct BGL_UndirectedGraphTrait {
   using index_type      = IndexType;  ///< index type
-  using vertex_property = boost::property<boost::vertex_index_t, index_type>;
+  using vertex_property = boost::property<
+      boost::vertex_index_t, index_type,
+      boost::property<
+          boost::vertex_degree_t, index_type,
+          boost::property<boost::vertex_color_t, boost::default_color_type>>>;
   ///< vertex property
-  using edge_property = boost::property<boost::edge_index_t, index_type>;
+  using edge_property = boost::property<
+      boost::edge_index_t, index_type,
+      boost::property<boost::edge_color_t, boost::default_color_type>>;
   ///< edge property
   using graph_type =
       boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS,
