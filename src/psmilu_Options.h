@@ -82,12 +82,12 @@ typedef struct psmilu_Options psmilu_Options;
  * \note See the values of attributes in parentheses
  */
 static psmilu_Options psmilu_get_default_options(void) {
-  return (psmilu_Options){.tau_L     = 0.001,
-                          .tau_U     = 0.001,
+  return (psmilu_Options){.tau_L     = 0.0001,
+                          .tau_U     = 0.0001,
                           .tau_d     = 3.0,
                           .tau_kappa = 3.0,
-                          .alpha_L   = 10,
-                          .alpha_U   = 10,
+                          .alpha_L   = 8,
+                          .alpha_U   = 8,
                           .rho       = 0.5,
                           .c_d       = 10.0,
                           .c_h       = 2.0,
