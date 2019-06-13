@@ -39,7 +39,8 @@ struct BGL_UndirectedGraphTrait {
       boost::vertex_index_t, index_type,
       boost::property<
           boost::vertex_degree_t, index_type,
-          boost::property<boost::vertex_color_t, boost::default_color_type>>>;
+          boost::property<boost::vertex_color_t, boost::default_color_type,
+                          boost::property<boost::vertex_priority_t, float>>>>;
   ///< vertex property
   using edge_property = boost::property<
       boost::edge_index_t, index_type,
