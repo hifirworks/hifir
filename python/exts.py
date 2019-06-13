@@ -23,7 +23,7 @@ libs += _lapack_libs
 MC64_ROOT = os.environ.get('MC64_ROOT', None)
 lib_dirs = []
 if MC64_ROOT is not None:
-    libs += ['hsl_mc64']
+    libs += ['hsl_mc64', 'gfortran']
     incs += [os.path.join(MC64_ROOT, 'include')]
     lib_dirs += [os.path.join(MC64_ROOT, 'lib')]
     macros = [('PSMILU4PY_USE_MC64', '1')]
@@ -81,14 +81,13 @@ for f in _pyx:
     _f = f.split('.')[0]
     mod = '.'.join(_f.split(os.sep))
     exts.append(
-        Extension(
-            mod, [f],
-            language='c++',
-            include_dirs=incs,
-            libraries=libs,
-            library_dirs=lib_dirs,
-            define_macros=macros,
-            runtime_library_dirs=rpath))
+        Extension(mod, [f],
+                  language='c++',
+                  include_dirs=incs,
+                  libraries=libs,
+                  library_dirs=lib_dirs,
+                  define_macros=macros,
+                  runtime_library_dirs=rpath))
 
 _opts = {'language_level': 3, 'embedsignature': True}
 if not _psmilu4py_debug:
