@@ -21,9 +21,9 @@
 #include "psmilu_log.hpp"
 #include "psmilu_matching/driver.hpp"
 
-#ifndef PSMILU_DISABLE_RCM
-#  include "psmilu_RCM/driver.hpp"
-#endif  // PSMILU_DISABLE_RCM
+#ifndef PSMILU_DISABLE_BGL
+#  include "psmilu_BGL/rcm.hpp"
+#endif  // PSMILU_DISABLE_BGL
 
 namespace psmilu {
 
@@ -118,7 +118,7 @@ inline typename CcsType::size_type do_preprocessing(
   // }
   Array<index_type> P;
 
-#  ifdef PSMILU_DISABLE_RCM
+#  ifdef PSMILU_DISABLE_BGL
   P = run_amd<IsSymm>(B, opt);
 #  else
   P = run_rcm<IsSymm>(B, opt);
