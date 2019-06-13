@@ -373,7 +373,7 @@ inline bool set_option_attr(const std::string &attr, const T v, Options &opt) {
 
 std::string psmilu::get_verbose(const psmilu::Options &opt) {
   std::string name("");
-  if (psmilu_verbose(NONE, opt))
+  if (opt.verbose == VERBOSE_NONE)
     name = "none";
   else {
     if (psmilu_verbose(INFO, opt)) name = "info";
