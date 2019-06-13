@@ -56,7 +56,7 @@ inline Array<typename CcsType_C::index_type> run_sloan(const CcsType_C &B,
                           boost::get(boost::vertex_priority, graph));
     for (size_type i(0); i < nv; ++i) P[i] = index_map[P[i]];
   } while (false);
-  if (psmilu_verbose(PRE, opt)) psmilu_info("finish RCM reordering...");
+  if (psmilu_verbose(PRE, opt)) psmilu_info("finish Sloan reordering...");
   return P;
 }
 }  // namespace psmilu
