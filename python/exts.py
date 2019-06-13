@@ -63,8 +63,8 @@ class BuildExt(build_ext):
 
         opts = []
         if cpl_type == 'unix':
-            assert test_switch('-std=c++1z'), 'must have C++11 support'
-            opts.append('-std=c++1z')
+            assert test_switch('-std=c++11'), 'must have C++11 support'
+            opts.append('-std=c++11')
             if test_switch('-rdynamic'):
                 opts.append('-rdynamic')
             if test_switch('-O3') and '-O3' not in self.compiler.compiler_so:
