@@ -109,9 +109,6 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
   typedef DenseMatrix<value_type>     dense_type;
   constexpr static bool               ONE_BASED = CsType::ONE_BASED;
 
-  // TODO put this into control parameters or function arg
-  constexpr static bool check_zero_diag = true;
-
   psmilu_error_if(A.nrows() != A.ncols(), "only squared systems are supported");
 
   psmilu_assert(m0 <= std::min(A.nrows(), A.ncols()),
@@ -144,8 +141,8 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
   Array<value_type>        s, t;
   BiPermMatrix<index_type> p, q;
 #ifndef PSMILU_DISABLE_PRE
-  size_type m =
-      do_preprocessing<false>(A_ccs, m0, opts, s, t, p, q, check_zero_diag);
+  size_type m = do_preprocessing<false>(A_ccs, A_crs, m0, opts, cur_level, s, t,
+                                        p, q, opts.saddle);
   // m = defer_dense_tail(A_crs, A_ccs, p, q, m);
 #else
   s.resize(m0);
