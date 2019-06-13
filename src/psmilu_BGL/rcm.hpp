@@ -11,6 +11,7 @@
 #ifndef _PSMILU_BGL_RCM_HPP
 #define _PSMILU_BGL_RCM_HPP
 
+#include <iterator>
 #include <vector>
 
 #include "graph.hpp"
@@ -36,24 +37,23 @@ inline Array<typename CcsType_C::index_type> run_rcm(const CcsType_C &B,
   using index_type = typename CcsType_C::index_type;
   using graph_type =
       typename internal::BGL_UndirectedGraphTrait<index_type>::graph_type;
+  using iarray_type = Array<index_type>;
 
   if (psmilu_verbose(PRE, opt)) psmilu_info("begin running RCM reordering...");
 
   const graph_type graph = create_graph<IsSymm>(B);
   const size_type  nv    = B.ncols();
 
-  Array<index_type> P(nv);
+  iarray_type P(nv);
   psmilu_error_if(P.status() == DATA_UNDEF, "memory allocation failed");
-  do {
-    // get property map
-    const typename boost::property_map<graph_type, boost::vertex_index_t>::type
-        index_map = boost::get(boost::vertex_index, graph);
-    // use vector's reversed iterator to enable RCM
-    std::vector<index_type> inv_perm(nv);
-    // call RCM
-    boost::cuthill_mckee_ordering(graph, inv_perm.rbegin());
-    for (size_type i(0); i < nv; ++i) P[i] = index_map[inv_perm[i]];
-  } while (false);
+
+  // get property map
+  const typename boost::property_map<graph_type, boost::vertex_index_t>::type
+                                                        index_map = boost::get(boost::vertex_index, graph);
+  std::reverse_iterator<typename iarray_type::iterator> r_itr(P.end());
+  // call RCM
+  boost::cuthill_mckee_ordering(graph, r_itr);
+  for (size_type i(0); i < nv; ++i) P[i] = index_map[P[i]];
   if (psmilu_verbose(PRE, opt)) psmilu_info("finish RCM reordering...");
   return P;
 }
