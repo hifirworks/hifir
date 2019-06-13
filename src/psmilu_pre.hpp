@@ -37,6 +37,7 @@ namespace psmilu {
 /// \param[in] A input matrix
 /// \param[in] m0 leading block size
 /// \param[in] opt control parameters
+/// \param[in] level current factorization level
 /// \param[out] s row scaling vector
 /// \param[out] t column scaling vector
 /// \param[out] p row permutation
@@ -56,13 +57,16 @@ template <bool IsSymm, class CcsType, class CrsType, class ScalingArray,
           class PermType>
 inline typename CcsType::size_type do_preprocessing(
     const CcsType &A, const CrsType &A_crs,
-    const typename CcsType::size_type m0, const Options &opt, ScalingArray &s,
-    ScalingArray &t, PermType &p, PermType &q,
-    const bool hdl_zero_diag = false) {
+    const typename CcsType::size_type m0, const Options &opt,
+    const typename CcsType::size_type level, ScalingArray &s, ScalingArray &t,
+    PermType &p, PermType &q, const bool hdl_zero_diag = false) {
   static_assert(!CcsType::ROW_MAJOR, "must be CCS");
   using index_type = typename CcsType::index_type;
   using amd        = AMD<index_type>;
   using size_type  = typename CcsType::size_type;
+
+  if (opt.reorder < 0 || opt.reorder >= REORDER_NULL)
+    psmilu_error("invalid reorder flag %d", opt.reorder);
 
   if (psmilu_verbose(PRE, opt)) psmilu_info("performing matching step");
 
@@ -70,35 +74,58 @@ inline typename CcsType::size_type do_preprocessing(
       do_maching<IsSymm>(A, A_crs, m0, opt.verbose, s, t, p, q, hdl_zero_diag);
 
   const size_type m = match_res.second;
-#ifndef PSMILU_DISABLE_REORDERING
-  const auto &B = match_res.first;
-  Array<index_type> P;
+  if (opt.reorder != REORDER_OFF) {
+    const auto &      B = match_res.first;
+    Array<index_type> P;
 
-#  ifdef PSMILU_DISABLE_BGL
-  P = run_amd<IsSymm>(B, opt);
-#  else
-  P = run_rcm<IsSymm>(B, opt);
-#  endif  // PSMILU_DISABLE_RCM
-
-  // now let's reorder the permutation arrays
-  // we use the inverse mapping as buffer
-  const auto reorder_finalize_perm = [&P, m](PermType &Q) {
-    auto &          forward = Q(), &buf = Q.inv();
-    const size_type N = forward.size();
-    size_type       i(0);
-    for (; i < m; ++i) buf[i] = forward[P[i]];
-    for (; i < N; ++i) buf[i] = forward[i];
-    forward.swap(buf);
-    Q.build_inv();
-  };
-
-  reorder_finalize_perm(p);
-  reorder_finalize_perm(q);
+#ifdef PSMILU_DISABLE_BGL
+    if (opt.reorder != REORDER_AUTO && opt.reorder != REORDER_AMD)
+      psmilu_warning(
+          "%s ordering is only available in BGL, rebuild with Boost\n"
+          "Ordering method fallback to AMD",
+          get_reorder_name(opt).c_str());
+    P = run_amd<IsSymm>(B, opt);
 #else
-  p.build_inv();
-  q.build_inv();
-#endif  // PSMILU_DISABLE_REORDERING
+    switch (opt.reorder) {
+      case REORDER_AUTO: {
+        if (IsSymm && level == 1)
+          P = run_rcm<IsSymm>(B, opt);
+        else
+          P = run_amd<IsSymm>(B, opt);
+      } break;
+      case REORDER_AMD:
+        P = run_amd<IsSymm>(B, opt);
+        break;
+      case REORDER_RCM:
+        P = run_rcm<IsSymm>(B, opt);
+        break;
+      case REORDER_KING:
+        P = run_king<IsSymm>(B, opt);
+        break;
+      default:
+        P = run_sloan<IsSymm>(B, opt);
+        break;
+    }
+#endif  // PSMILU_DISABLE_RCM
 
+    // now let's reorder the permutation arrays
+    // we use the inverse mapping as buffer
+    const auto reorder_finalize_perm = [&P, m](PermType &Q) {
+      auto &          forward = Q(), &buf = Q.inv();
+      const size_type N = forward.size();
+      size_type       i(0);
+      for (; i < m; ++i) buf[i] = forward[P[i]];
+      for (; i < N; ++i) buf[i] = forward[i];
+      forward.swap(buf);
+      Q.build_inv();
+    };
+
+    reorder_finalize_perm(p);
+    reorder_finalize_perm(q);
+  } else {
+    p.build_inv();
+    q.build_inv();
+  }
   return m;
 }
 
