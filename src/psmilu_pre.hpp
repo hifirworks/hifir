@@ -15,11 +15,15 @@
 #include <sstream>
 #include <string>
 
-#include "psmilu_AMD/amd.hpp"
+#include "psmilu_AMD/driver.hpp"
 #include "psmilu_Array.hpp"
 #include "psmilu_Options.h"
 #include "psmilu_log.hpp"
 #include "psmilu_matching/driver.hpp"
+
+#ifndef PSMILU_DISABLE_RCM
+#  include "psmilu_RCM/driver.hpp"
+#endif  // PSMILU_DISABLE_RCM
 
 namespace psmilu {
 
@@ -67,49 +71,58 @@ inline typename CcsType::size_type do_preprocessing(
 #ifndef PSMILU_DISABLE_REORDERING
   const auto &B = match_res.first;
 
-  psmilu_assert(B.nrows() == m, "the leading block size should be size(B)");
+  // psmilu_assert(B.nrows() == m, "the leading block size should be size(B)");
 
-  if (psmilu_verbose(PRE, opt))
-    psmilu_info("matching step done with input/output block sizes %zd/%zd.", m0,
-                m);
+  // if (psmilu_verbose(PRE, opt))
+  //   psmilu_info("matching step done with input/output block sizes %zd/%zd.",
+  //   m0,
+  //               m);
 
-  // reordering
-  double Control[PSMILU_AMD_CONTROL], Info[AMD_INFO];
-  amd::defaults(Control);
+  // // reordering
+  // double Control[PSMILU_AMD_CONTROL], Info[AMD_INFO];
+  // amd::defaults(Control);
 
-  // #  ifdef NDEBUG
-  //   Control[PSMILU_AMD_CHECKING] = 0;
-  // #  endif
+  // // #  ifdef NDEBUG
+  // //   Control[PSMILU_AMD_CHECKING] = 0;
+  // // #  endif
 
-  Control[PSMILU_AMD_SYMM_FLAG] = !IsSymm;
+  // Control[PSMILU_AMD_SYMM_FLAG] = !IsSymm;
 
-  if (psmilu_verbose(PRE, opt)) {
-    psmilu_info("performing AMD reordering");
-    std::stringstream s;
-    amd::control(s, Control);
-    psmilu_info(s.str().c_str());
-  }
-  Array<index_type> P(m);
-  psmilu_error_if(P.status() == DATA_UNDEF, "memory allocation failed");
-  const int result = amd::order(m, B.col_start().data(), B.row_ind().data(),
-                                P.data(), Control, Info);
-  if (result != AMD_OK && result != AMD_OK_BUT_JUMBLED) {
-    // NOTE that we modified AMD to utilize jumbled return to automatically
-    // compute the transpose
-    std::stringstream s;
-    amd::info(s, Info);
-    const std::string msg =
-        "AMD returned invalid flag " + std::to_string(result) +
-        ", the following message was loaded from AMD info routine:\n" + s.str();
-    psmilu_error(msg.c_str());
-  }
+  // if (psmilu_verbose(PRE, opt)) {
+  //   psmilu_info("performing AMD reordering");
+  //   std::stringstream s;
+  //   amd::control(s, Control);
+  //   psmilu_info(s.str().c_str());
+  // }
+  // Array<index_type> P(m);
+  // psmilu_error_if(P.status() == DATA_UNDEF, "memory allocation failed");
+  // const int result = amd::order(m, B.col_start().data(), B.row_ind().data(),
+  //                               P.data(), Control, Info);
+  // if (result != AMD_OK && result != AMD_OK_BUT_JUMBLED) {
+  //   // NOTE that we modified AMD to utilize jumbled return to automatically
+  //   // compute the transpose
+  //   std::stringstream s;
+  //   amd::info(s, Info);
+  //   const std::string msg =
+  //       "AMD returned invalid flag " + std::to_string(result) +
+  //       ", the following message was loaded from AMD info routine:\n" +
+  //       s.str();
+  //   psmilu_error(msg.c_str());
+  // }
 
-  if (psmilu_verbose(PRE, opt)) {
-    psmilu_info("AMD reordering done with information:\n");
-    std::stringstream s;
-    amd::info(s, Info);
-    psmilu_info(s.str().c_str());
-  }
+  // if (psmilu_verbose(PRE, opt)) {
+  //   psmilu_info("AMD reordering done with information:\n");
+  //   std::stringstream s;
+  //   amd::info(s, Info);
+  //   psmilu_info(s.str().c_str());
+  // }
+  Array<index_type> P;
+
+#  ifdef PSMILU_DISABLE_RCM
+  P = run_amd<IsSymm>(B, opt);
+#  else
+  P = run_rcm<IsSymm>(B, opt);
+#  endif  // PSMILU_DISABLE_RCM
 
   // now let's reorder the permutation arrays
   // we use the inverse mapping as buffer
