@@ -71,7 +71,8 @@ inline typename CcsType::size_type do_preprocessing(
   if (psmilu_verbose(PRE, opt)) psmilu_info("performing matching step");
 
   const auto match_res =
-      do_maching<IsSymm>(A, A_crs, m0, opt.verbose, s, t, p, q, hdl_zero_diag);
+      do_maching<IsSymm>(A, A_crs, m0, opt.verbose, s, t, p, q, hdl_zero_diag,
+                         opt.reorder != REORDER_OFF);
 
   const size_type m = match_res.second;
   if (opt.reorder != REORDER_OFF) {
@@ -88,7 +89,7 @@ inline typename CcsType::size_type do_preprocessing(
 #else
     switch (opt.reorder) {
       case REORDER_AUTO: {
-        if (IsSymm && level == 1)
+        if (IsSymm && level == 1u)
           P = run_rcm<IsSymm>(B, opt);
         else
           P = run_amd<IsSymm>(B, opt);
