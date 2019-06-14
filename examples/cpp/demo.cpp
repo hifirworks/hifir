@@ -112,7 +112,9 @@ int main(int argc, char *argv[]) {
   } else if (!symm)
     m = 0;
   std::cout << "rtol=" << rtol << ", restart=" << restart << ", aug=" << (!thin)
-            << "\n#ofUnknowns=" << A.nrows() << ", nnz(A)=" << A.nnz() << "\n\n"
+            << "\nNumberofUnknowns=" << A.nrows() << ", nnz(A)=" << A.nnz()
+            << "\n"
+            << "symmetric=" << symm << ", leading-block=" << m << "\n\n"
             << opt_repr(opts) << std::endl;
 
   array_t x(b.size());  // solution
