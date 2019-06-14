@@ -219,7 +219,7 @@ inline void set_default_control(const int              verbose,
   mc64_default_control(&control);
   control.f_arrays = one_based;
 
-  if (psmilu_verbose2(NONE, verbose)) {
+  if (verbose == VERBOSE_NONE) {
     control.lp = control.wp = -1;
     control.ldiag           = 0;
   } else {
@@ -229,6 +229,9 @@ inline void set_default_control(const int              verbose,
     control.sp = 6;
     if (psmilu_verbose2(PRE, verbose)) control.ldiag = 3;
   }
+#  ifdef NDEBUG
+  control.checking = 1;
+#  endif  // NDEBUG
 }
 
 /*!
