@@ -22,6 +22,7 @@ extern "C" {
 
 #include "psmilu_Array.hpp"
 #include "psmilu_CompressedStorage.hpp"
+#include "psmilu_Timer.hpp"
 #include "psmilu_log.hpp"
 #include "psmilu_utils.hpp"
 
@@ -352,7 +353,8 @@ inline std::pair<
 do_maching(const CcsType &A, const CrsType &A_crs,
            const typename CcsType::size_type m0, const int verbose,
            ScalingArray &s, ScalingArray &t, PermType &p, PermType &q,
-           const bool hdl_zero_diags = false, const bool compute_perm = true) {
+           const bool hdl_zero_diags = false, const bool compute_perm = true,
+           const bool timing = false) {
   static_assert(!CcsType::ROW_MAJOR, "input must be CCS type");
   using value_type                = typename CcsType::value_type;
   using index_type                = typename CcsType::index_type;
@@ -381,7 +383,21 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   // first extract matching
   input_type B1 = internal::extract_leading_block4matching<IsSymm>(A, m0);
   // then compute matching
-  match_driver::template do_matching<IsSymm>(B1, control, p(), q(), s, t);
+  do {
+    DefaultTimer timer;
+    timer.start();
+    match_driver::template do_matching<IsSymm>(B1, control, p(), q(), s, t);
+    timer.finish();
+    if (timing)
+      psmilu_info("%s matching took %gs.",
+#ifdef mc64_matching
+                  "MC64"
+#else
+                  "generic"
+#endif
+                  ,
+                  (double)timer.time());
+  } while (false);
   // fill identity mapping and add one to scaling vectors for offsets, if any
   for (size_type i = m0; i < M; ++i) {
     p[i] = i;

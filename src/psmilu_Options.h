@@ -33,7 +33,8 @@ enum {
   PSMILU_VERBOSE_INFO = 1,                        /*!< general information */
   PSMILU_VERBOSE_PRE  = PSMILU_VERBOSE_INFO << 1, /*!< preprocessing */
   PSMILU_VERBOSE_FAC  = PSMILU_VERBOSE_PRE << 1,  /*!< factorization update */
-  PSMILU_VERBOSE_MEM  = PSMILU_VERBOSE_FAC << 1,  /*!< memory debug */
+  PSMILU_VERBOSE_PRE_TIME = PSMILU_VERBOSE_FAC << 1,      /*! pre time */
+  PSMILU_VERBOSE_MEM      = PSMILU_VERBOSE_PRE_TIME << 1, /*!< memory debug */
 };
 
 /*!
@@ -147,11 +148,12 @@ namespace psmilu {
  * \ingroup cpp
  */
 enum : int {
-  VERBOSE_NONE = ::PSMILU_VERBOSE_NONE, /*!< mute */
-  VERBOSE_INFO = ::PSMILU_VERBOSE_INFO, /*!< general information */
-  VERBOSE_PRE  = ::PSMILU_VERBOSE_PRE,  /*!< preprocessing */
-  VERBOSE_FAC  = ::PSMILU_VERBOSE_FAC,  /*!< factorization update */
-  VERBOSE_MEM  = ::PSMILU_VERBOSE_MEM,  /*!< memory debug */
+  VERBOSE_NONE     = ::PSMILU_VERBOSE_NONE,     /*!< mute */
+  VERBOSE_INFO     = ::PSMILU_VERBOSE_INFO,     /*!< general information */
+  VERBOSE_PRE      = ::PSMILU_VERBOSE_PRE,      /*!< preprocessing */
+  VERBOSE_FAC      = ::PSMILU_VERBOSE_FAC,      /*!< factorization update */
+  VERBOSE_PRE_TIME = ::PSMILU_VERBOSE_PRE_TIME, /*!< pre time */
+  VERBOSE_MEM      = ::PSMILU_VERBOSE_MEM,      /*!< memory debug */
 };
 
 /*!

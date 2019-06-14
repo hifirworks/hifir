@@ -18,6 +18,7 @@
 #include "psmilu_AMD/driver.hpp"
 #include "psmilu_Array.hpp"
 #include "psmilu_Options.h"
+#include "psmilu_Timer.hpp"
 #include "psmilu_log.hpp"
 #include "psmilu_matching/driver.hpp"
 
@@ -68,14 +69,25 @@ inline typename CcsType::size_type do_preprocessing(
   if (opt.reorder < 0 || opt.reorder >= REORDER_NULL)
     psmilu_error("invalid reorder flag %d", opt.reorder);
 
+  DefaultTimer timer;
+
   if (psmilu_verbose(PRE, opt)) psmilu_info("performing matching step");
 
-  const auto match_res =
-      do_maching<IsSymm>(A, A_crs, m0, opt.verbose, s, t, p, q, hdl_zero_diag,
-                         opt.reorder != REORDER_OFF);
+  timer.start();
+
+  const auto match_res = do_maching<IsSymm>(
+      A, A_crs, m0, opt.verbose, s, t, p, q, hdl_zero_diag,
+      opt.reorder != REORDER_OFF, psmilu_verbose(PRE_TIME, opt));
+
+  timer.finish();
+  if (psmilu_verbose(PRE_TIME, opt))
+    psmilu_info("matching took %gs.", (double)timer.time());
 
   const size_type m = match_res.second;
   if (opt.reorder != REORDER_OFF) {
+    if (psmilu_verbose(PRE, opt)) psmilu_info("performing reordering step");
+    timer.start();
+
     const auto &      B = match_res.first;
     Array<index_type> P;
 
@@ -109,6 +121,11 @@ inline typename CcsType::size_type do_preprocessing(
     }
 #endif  // PSMILU_DISABLE_RCM
 
+    timer.finish();
+
+    if (psmilu_verbose(PRE_TIME, opt))
+      psmilu_info("reordering took %gs.", (double)timer.time());
+
     // now let's reorder the permutation arrays
     // we use the inverse mapping as buffer
     const auto reorder_finalize_perm = [&P, m](PermType &Q) {
@@ -124,6 +141,7 @@ inline typename CcsType::size_type do_preprocessing(
     reorder_finalize_perm(p);
     reorder_finalize_perm(q);
   } else {
+    if (psmilu_verbose(PRE, opt)) psmilu_info("reordering skipped");
     p.build_inv();
     q.build_inv();
   }
