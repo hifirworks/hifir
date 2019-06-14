@@ -273,6 +273,9 @@ inline CCS<ValueType, IndexType, OneBased> extract_leading_block4matching(
       m > M || m > N,
       "leading block size should not be larger than the matrix sizes");
 
+  // shallow copy if leading block is the same as input and not symmetric
+  if (!IsSymm && m == M) return A;
+
   return_ccs B(m, m);
 
   // NOTE use col_start to first store the position in A
@@ -321,9 +324,6 @@ inline CCS<ValueType, IndexType, OneBased> extract_leading_block4matching(
       }
     }
   } else {
-    // shallow copy if leading block is the same as input
-    if (m == M) return A;
-
     // for asymmetric case, we use col_start to store the pass-of-end positions
     // it's worth nothing that one a single binary search is needed for
     // determining the nnz.
