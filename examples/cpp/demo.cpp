@@ -140,7 +140,12 @@ int main(int argc, char *argv[]) {
   std::tie(flag, iters) = solver.solve_pre(A, b, x, opts.verbose);
   timer.finish();
   std::cout << "\nSolver return flag: " << get_fgmres_flag(flag)
-            << ", iters: " << iters << ", time: " << timer.time() << "s.\n\n";
+            << ", iters: " << iters << ", ";
+  if (iters)
+    std::cout << "res: " << solver.resids().back();
+  else
+    std::cout << "res: N/A";
+  std::cout << ", time: " << timer.time() << "s.\n\n";
   return flag;
 }
 

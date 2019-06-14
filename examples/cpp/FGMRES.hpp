@@ -455,6 +455,7 @@ class FGMRES {
           R_itr                 = std::copy_n(_w.cbegin(), j + 1, R_itr);
           const auto resid_prev = resid;
           resid                 = std::abs(_y[j + 1]) / beta0;
+          _resids.push_back(resid);
           if (resid >= resid_prev * (1 - _stag_eps)) {
             Cerr(
                 "\033[1;33mWARNING!\033[0m Stagnated detected at iteration "
@@ -472,7 +473,6 @@ class FGMRES {
           }
           ++iter;
           Cout("  At iteration %zd, relative residual is %g.\n", iter, resid);
-          _resids.push_back(resid);
           if (resid < rtol || j + 1 >= (size_type)restart) break;
           ++j;
         }  // inf loop
