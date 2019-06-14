@@ -40,10 +40,13 @@ namespace internal {
 /// \tparam IsSymm if \a true, then assume a symmetric leading block
 /// \tparam CcsType ccs storage for intermidiate matrix after matching
 /// \tparam PermType permutation matrix, see \ref BiPermMatrix
+/// \tparam BufType buffer used to stored deferred entries
 /// \param[in] A input matrix after calling matching
 /// \param[in] m0 initial leading block size
 /// \param[in,out] p row permutation matrix
 /// \param[in,out] q column permutation matrix
+/// \param[out] work_p workspace
+/// \param[out] work_q workspace
 /// \return actual leading block with no zero entries, <= \a m0
 /// \ingroup pre
 ///
@@ -51,10 +54,10 @@ namespace internal {
 /// search to locate the diagonal entries. For symmetric cases, on the other
 /// side, since only the \b lower part is stored, we just need to test the first
 /// entry of each column.
-template <bool IsSymm, class CcsType, class PermType>
+template <bool IsSymm, class CcsType, class PermType, class BufType>
 inline typename CcsType::size_type defer_zero_diags(
     const CcsType &A, const typename CcsType::size_type m0, PermType &p,
-    PermType &q) {
+    PermType &q, BufType &work_p, BufType &work_q) {
   using value_type                      = typename CcsType::value_type;
   using size_type                       = typename CcsType::size_type;
   constexpr static value_type ZERO      = Const<value_type>::ZERO;
@@ -65,6 +68,10 @@ inline typename CcsType::size_type defer_zero_diags(
   const auto is_valid_entry = [&](const size_type col) -> bool {
     const auto q_col = q[col];
     if (IsSymm) {
+      // NOTE that since we only store the lower part, and due to the the
+      // fact of symmetric pivoting, if the original is a saddle point, then
+      // it is still a saddle entry in the permutated system. This makes
+      // checking for invalid diagonal efficient for symmetric case
       psmilu_assert(p[col] == q_col, "fatal");
       auto itr = A.row_ind_cbegin(q_col);
       if (itr == A.row_ind_cend(q_col)) return false;
@@ -83,16 +90,40 @@ inline typename CcsType::size_type defer_zero_diags(
   };
   size_type m = m0;
 
-  for (size_type i = 0u; i < m; ++i)
-    if (!is_valid_entry(i)) {
-      for (;;) {
-        if (i == m) break;
-        --m;
-        if (is_valid_entry(m)) break;
+  // for (size_type i = 0u; i < m; ++i)
+  //   if (!is_valid_entry(i)) {
+  //     for (;;) {
+  //       if (i == m) break;
+  //       --m;
+  //       if (is_valid_entry(m)) break;
+  //     }
+  //     std::swap(p[i], p[m]);
+  //     std::swap(q[i], q[m]);
+  //   }
+  size_type deferrals(0);
+  for (size_type i(0); i < m; ++i) {
+    while (!is_valid_entry(i + deferrals)) {
+      --m;
+      work_p[deferrals] = p[i + deferrals];
+      work_q[deferrals] = q[i + deferrals];
+      ++deferrals;
+      if (i + deferrals >= m0) {
+        m = i;
+        break;
       }
-      std::swap(p[i], p[m]);
-      std::swap(q[i], q[m]);
     }
+    if (m == i) break;
+    // compress
+    p[i] = p[i + deferrals];
+    q[i] = q[i + deferrals];
+  }
+  if (deferrals) {
+    size_type j(0);
+    for (size_type i(m); i < m0; ++i, ++j) {
+      p[i] = work_p[j];
+      q[i] = work_q[j];
+    }
+  }
 
   return m;
 }
@@ -308,6 +339,8 @@ compute_perm_leading_block(const CcsType &A, const CrsType &A_crs,
 /// \param[out] q column permutation vector
 /// \param[in] hdl_zero_diags if \a false (default), the routine won't handle
 ///            zero diagonal entries.
+/// \param[in] compute_perm if \a true (default), will perform explicit
+///            computation for permutation matrix for further processing
 /// \return A \a pair of \ref CCS matrix in \b C-index and the actual leading
 ///         block size, which is no larger than \a m0.
 /// \ingroup pre
@@ -319,7 +352,7 @@ inline std::pair<
 do_maching(const CcsType &A, const CrsType &A_crs,
            const typename CcsType::size_type m0, const int verbose,
            ScalingArray &s, ScalingArray &t, PermType &p, PermType &q,
-           const bool hdl_zero_diags = false) {
+           const bool hdl_zero_diags = false, const bool compute_perm = true) {
   static_assert(!CcsType::ROW_MAJOR, "input must be CCS type");
   using value_type                = typename CcsType::value_type;
   using index_type                = typename CcsType::index_type;
@@ -360,41 +393,45 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   }
 
   // then determine zero diags
-  const size_type m =
-      !hdl_zero_diags ? m0 : internal::defer_zero_diags<IsSymm>(B1, m0, p, q);
-#ifndef PSMILU_DISABLE_REORDERING
-  const bool is_eye_perm = p.is_eye() && q.is_eye();
-  if (!is_eye_perm) {
-    p.build_inv();
-    B = internal::compute_perm_leading_block<IsSymm, return_type>(B1, A_crs, m,
-                                                                  p, q);
-  } else {
-    psmilu_assert(m0 == m,
-                  "if no permutation occurred from matching, then the leading "
-                  "sizes, at least, should match!!??");
-    if (!INPUT_ONE_BASED)
-      B = return_type(B1);  // shallow
-    else {
-      // if the input is Fortran index system
-      B.resize(B1.nrows(), B1.ncols());
-      auto &col_start = B.col_start();
-      col_start.resize(B1.ncols() + 1);
-      psmilu_error_if(col_start.status() == DATA_UNDEF,
-                      "memory callocation failed");
-      std::transform(B1.col_start().cbegin(), B1.col_start().cend(),
-                     col_start.begin(),
-                     [](const index_type i) { return i - 1; });
-      auto &row_ind = B.row_ind();
-      row_ind.resize(B1.nnz());
-      psmilu_error_if(row_ind.status() == DATA_UNDEF,
-                      "memory allocation failed");
-      std::transform(B1.row_ind().cbegin(), B1.row_ind().cend(),
-                     row_ind.begin(), [](const index_type i) { return i - 1; });
-      // shallow copy
-      B.vals() = B1.vals();
+  // using the inverse mappings are buffers since we don't need them for now
+  const size_type m = !hdl_zero_diags ? m0
+                                      : internal::defer_zero_diags<IsSymm>(
+                                            B1, m0, p, q, p.inv(), q.inv());
+  if (compute_perm) {
+    const bool is_eye_perm = p.is_eye() && q.is_eye();
+    if (!is_eye_perm) {
+      p.build_inv();
+      B = internal::compute_perm_leading_block<IsSymm, return_type>(B1, A_crs,
+                                                                    m, p, q);
+    } else {
+      psmilu_assert(
+          m0 == m,
+          "if no permutation occurred from matching, then the leading "
+          "sizes, at least, should match!!??");
+      if (!INPUT_ONE_BASED)
+        B = return_type(B1);  // shallow
+      else {
+        // if the input is Fortran index system
+        B.resize(B1.nrows(), B1.ncols());
+        auto &col_start = B.col_start();
+        col_start.resize(B1.ncols() + 1);
+        psmilu_error_if(col_start.status() == DATA_UNDEF,
+                        "memory callocation failed");
+        std::transform(B1.col_start().cbegin(), B1.col_start().cend(),
+                       col_start.begin(),
+                       [](const index_type i) { return i - 1; });
+        auto &row_ind = B.row_ind();
+        row_ind.resize(B1.nnz());
+        psmilu_error_if(row_ind.status() == DATA_UNDEF,
+                        "memory allocation failed");
+        std::transform(B1.row_ind().cbegin(), B1.row_ind().cend(),
+                       row_ind.begin(),
+                       [](const index_type i) { return i - 1; });
+        // shallow copy
+        B.vals() = B1.vals();
+      }
     }
   }
-#endif  // PSMILU_DISABLE_REORDERING
   return std::make_pair(B, m);
 }
 }  // namespace psmilu
