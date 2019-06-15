@@ -31,7 +31,7 @@ inline void do_mc64(const CcsType &A, const int verbose, ScaleType &s,
   hsl_driver::template do_matching<IsSymm>(A, control, p, q, s, t);
 #else
   using f77_driver = MC64<value_type, index_type, ONE_BASED>;
-  if (1) {
+  if (IsSymm) {
     matching_control_type control;
     set_default_control(verbose, control, ONE_BASED);
     hsl_driver::template do_matching<IsSymm>(A, control, p, q, s, t);
