@@ -391,6 +391,12 @@ std::string psmilu::get_verbose(const psmilu::Options &opt) {
       else
         name = "fac";
     }
+    if (psmilu_verbose(PRE_TIME, opt)) {
+      if (name != "")
+        name += ",pre_time";
+      else
+        name = "pre_time";
+    }
     if (psmilu_verbose(MEM, opt)) {
       if (name != "")
         name += ",mem";

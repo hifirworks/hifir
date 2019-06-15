@@ -28,7 +28,7 @@ extern "C" {
 
 #ifdef mc64_matching
 
-#  include "HSL_MC64.hpp"
+#  include "mc64_driver.hpp"
 
 #else
 #  error "PSMILU requires HSL_MC64, for now..."
@@ -359,9 +359,9 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   using value_type                = typename CcsType::value_type;
   using index_type                = typename CcsType::index_type;
   constexpr static bool ONE_BASED = CcsType::ONE_BASED;
-  using match_driver = MatchingDriver<value_type, index_type, ONE_BASED>;
-  using input_type   = typename match_driver::input_type;
-  constexpr static bool INPUT_ONE_BASED = input_type::ONE_BASED;
+  // using match_driver = MatchingDriver<value_type, index_type, ONE_BASED>;
+  // using input_type   = typename match_driver::input_type;
+  constexpr static bool INPUT_ONE_BASED = ONE_BASED;
   using return_type                     = CCS<value_type, index_type>;
   using size_type                       = typename CcsType::size_type;
   constexpr static value_type ONE       = Const<value_type>::ONE;
@@ -377,26 +377,20 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   psmilu_error_if(s.status() == DATA_UNDEF, "memory allocation failed for s");
   t.resize(N);
   psmilu_error_if(s.status() == DATA_UNDEF, "memory allocation failed for t");
-  matching_control_type control;  // create control parameters for matching
-  return_type           B;
-  set_default_control(verbose, control, ONE_BASED);
+  // matching_control_type control;  // create control parameters for matching
+  return_type B;
+  // set_default_control(verbose, control, ONE_BASED);
   // first extract matching
-  input_type B1 = internal::extract_leading_block4matching<IsSymm>(A, m0);
+  auto B1 = internal::extract_leading_block4matching<IsSymm>(A, m0);
   // then compute matching
   do {
     DefaultTimer timer;
     timer.start();
-    match_driver::template do_matching<IsSymm>(B1, control, p(), q(), s, t);
+    // match_driver::template do_matching<IsSymm>(B1, control, p(), q(), s, t);
+    do_mc64<IsSymm>(B1, verbose, s, t, p(), q());
     timer.finish();
     if (timing)
-      psmilu_info("%s matching took %gs.",
-#ifdef mc64_matching
-                  "MC64"
-#else
-                  "generic"
-#endif
-                  ,
-                  (double)timer.time());
+      psmilu_info("%s matching took %gs.", "MC64", (double)timer.time());
   } while (false);
   // fill identity mapping and add one to scaling vectors for offsets, if any
   for (size_type i = m0; i < M; ++i) {

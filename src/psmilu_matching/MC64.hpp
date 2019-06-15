@@ -115,6 +115,7 @@ class MC64 {
     mc64_mat_type   B;
     const size_type n = A.ncols();
     B.resize(A.nrows(), n);
+    B.col_start().resize(n + 1);
     psmilu_error_if(B.col_start().status() == DATA_UNDEF,
                     "memory allocation failed");
     const size_type nnz = A.nnz();
@@ -131,7 +132,6 @@ class MC64 {
     return B;
   }
 
-  template <class PermType>
   inline static void do_matching(
       const CCS<value_type, index_type, ONE_BASED> &A, const int verbose,
       Array<index_type> &q, Array<value_type> &s, Array<value_type> &t) {
