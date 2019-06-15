@@ -7,6 +7,10 @@
 /// \file psmilu_matching/MC64.hpp
 /// \brief old (Fortran 77) MC64 Wrapper
 /// \authors Qiao,
+/// \warning There is no need to enable Fo77 MC64 since it only supports
+///          \a double and \a float, and it only support squared systems.
+///          Most importantly, it only supports general systems. This is just
+///          for testing purpose.
 
 #ifndef _PSMILU_MATCHING_MC64_HPP
 #define _PSMILU_MATCHING_MC64_HPP
