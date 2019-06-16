@@ -57,18 +57,17 @@ struct BGL_UndirectedGraphTrait {
 
 /// \brief create graph
 /// \tparam IsSymm if \a true, then assume symmetric input
-/// \tparam CcsType_C input matrix storage \ref CCS in C index order
+/// \tparam CcsType input matrix storage \ref CCS
 /// \param[in] B input matrix
 /// \return graph representation of matrix \a B
-template <bool IsSymm, class CcsType_C>
+template <bool IsSymm, class CcsType>
 inline typename internal::BGL_UndirectedGraphTrait<
-    typename CcsType_C::index_type>::graph_type
-create_graph(const CcsType_C &B) {
-  using index_type = typename CcsType_C::index_type;
+    typename CcsType::index_type>::graph_type
+create_graph(const CcsType &B) {
+  using index_type = typename CcsType::index_type;
   using graph_type =
       typename internal::BGL_UndirectedGraphTrait<index_type>::graph_type;
-  using size_type = typename CcsType_C::size_type;
-  static_assert(!CcsType_C::ONE_BASED, "must be C index");
+  using size_type = typename CcsType::size_type;
   using edge_type = std::pair<index_type, index_type>;
 
   const size_type nv = B.ncols();  // number of vertices
@@ -81,14 +80,16 @@ create_graph(const CcsType_C &B) {
     if (IsSymm) {
       if (B.nnz_in_col(col)) {
         auto itr = B.row_ind_cbegin(col);
-        if (*itr == (index_type)col) ++itr;
+        if (*itr - CcsType::ONE_BASED == (index_type)col) ++itr;
         for (auto j = itr; j != B.row_ind_cend(col); ++j)
-          edges[i++] = std::make_pair(static_cast<index_type>(col), *j);
+          edges[i++] = std::make_pair(static_cast<index_type>(col),
+                                      *j - CcsType::ONE_BASED);
       }
     } else {
       for (auto itr = B.row_ind_cbegin(col); itr != B.row_ind_cend(col); ++itr)
-        if (*itr != (index_type)col)
-          edges[i++] = std::make_pair(static_cast<index_type>(col), *itr);
+        if (*itr - CcsType::ONE_BASED != (index_type)col)
+          edges[i++] = std::make_pair(static_cast<index_type>(col),
+                                      *itr - CcsType::ONE_BASED);
     }
   }
   ne = i;

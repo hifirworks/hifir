@@ -31,8 +31,7 @@ namespace psmilu {
 template <bool IsSymm, class CcsType_C>
 inline Array<typename CcsType_C::index_type> run_sloan(const CcsType_C &B,
                                                        const Options &  opt) {
-  using size_type = typename CcsType_C::size_type;
-  static_assert(!CcsType_C::ONE_BASED, "must be C index");
+  using size_type  = typename CcsType_C::size_type;
   using index_type = typename CcsType_C::index_type;
   using graph_type =
       typename internal::BGL_UndirectedGraphTrait<index_type>::graph_type;
@@ -40,8 +39,8 @@ inline Array<typename CcsType_C::index_type> run_sloan(const CcsType_C &B,
   if (psmilu_verbose(PRE, opt))
     psmilu_info("begin running Sloan reordering...");
 
-  graph_type graph = create_graph<IsSymm>(B);
-  const size_type  nv    = B.ncols();
+  graph_type      graph = create_graph<IsSymm>(B);
+  const size_type nv    = B.ncols();
 
   Array<index_type> P(nv);
   psmilu_error_if(P.status() == DATA_UNDEF, "memory allocation failed");
