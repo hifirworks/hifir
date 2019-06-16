@@ -17,6 +17,7 @@
 
 #include "psmilu_AMD/driver.hpp"
 #include "psmilu_Array.hpp"
+#include "psmilu_CompressedStorage.hpp"
 #include "psmilu_Options.h"
 #include "psmilu_Timer.hpp"
 #include "psmilu_log.hpp"
@@ -29,6 +30,11 @@
 #endif  // PSMILU_DISABLE_BGL
 
 namespace psmilu {
+
+/*!
+ * \addtogroup pre
+ * @{
+ */
 
 /// \brief routine to perform preprocessing for improving the quality of input
 /// \tparam IsSymm if \a true, the assume the leading block is symmetric
@@ -45,15 +51,12 @@ namespace psmilu {
 /// \param[out] q column permutation
 /// \param[in] hdl_zero_diag if \a false (default), assume not saddle point
 /// \return The actual leading block size, no larger than \a m0
-/// \ingroup pre
 ///
 /// Notice that, in general, the preprocessing involves two steps: 1) perform
 /// matching to improve the diagonal domination, and 2) perform reordering
 /// to improve the sparsity of LU decomposition. Currently, the reorder step
 /// is done by calling AMD package, which is embedded in PSMILU. The matching
 /// step uses HSL_MC64.
-///
-/// \todo Implement matching algorithm to drop the dependency on MC64.
 template <bool IsSymm, class CcsType, class CrsType, class ScalingArray,
           class PermType>
 inline typename CcsType::size_type do_preprocessing(
@@ -148,6 +151,109 @@ inline typename CcsType::size_type do_preprocessing(
   return m;
 }
 
+// only for complete general matrices
+template <class CcsType, class CrsType, class ScalingArray, class PermType>
+inline typename CcsType::size_type do_preprocessing2(
+    const CcsType &A, const CrsType &A_crs, const Options &opt,
+    const typename CcsType::size_type level, ScalingArray &s, ScalingArray &t,
+    PermType &p, PermType &q, const bool hdl_zero_diag = false) {
+  static_assert(!CcsType::ROW_MAJOR, "must be CCS");
+  using index_type = typename CcsType::index_type;
+  using amd        = AMD<index_type>;
+  using size_type  = typename CcsType::size_type;
+  using value_type = typename CcsType::value_type;
+
+  if (opt.pre_reorder < 0 || opt.pre_reorder >= REORDER_NULL)
+    psmilu_error("invalid pre_reorder flag %d", opt.pre_reorder);
+
+  if (psmilu_verbose(PRE, opt)) psmilu_info("performing pre-reordering");
+
+  DefaultTimer timer;
+
+  PermType P;
+#ifdef PSMILU_DISABLE_BGL
+  if (opt.pre_reorder != REORDER_AMD && opt.pre_reorder != REORDER_AUTO)
+    psmilu_warning(
+        "%s ordering is only available in BGL, rebuild with Boost\n"
+        "Ordering method fallback to AMD",
+        get_reorder_name(opt).c_str());
+#else
+  timer.start();
+  if (opt.pre_reorder == REORDER_AMD || opt.pre_reorder == REORDER_AUTO) {  // 1
+#endif  // PSMILU_DISABLE_RCM
+  CCS<value_type, index_type> A2;
+  if (CcsType::ONE_BASED) {
+    // for Fortran index, we need to convert to C
+    A2.resize(A.nrows(), A.ncols());
+    A2.col_start().resize(A.ncols() + 1);
+    psmilu_error_if(A2.col_start().status() == DATA_UNDEF,
+                    "memory allocation failed");
+    A2.row_ind().resize(A.nnz());
+    psmilu_error_if(A2.row_ind().status() == DATA_UNDEF,
+                    "memory allocation failed");
+    for (size_type i(0); i < A.ncols(); ++i)
+      A2.col_start()[i + 1] = A.col_start()[i + 1] - 1;
+    A2.col_start().front() = 0;
+    for (size_type i(0); i < A.nnz(); ++i) A2.row_ind()[i] = A.row_ind()[i] - 1;
+  } else
+    A2 = CCS<value_type, index_type>(
+        A.nrows(), A.ncols(), (index_type *)A.col_start().data(),
+        (index_type *)A.row_ind().data(), (value_type *)A.vals().data(), true);
+  P() = run_amd<false>(A2, opt);
+#ifndef PSMILU_DISABLE_BGL
+}  // 1
+else {
+  switch (opt.reorder) {
+    case REORDER_RCM:
+      P() = run_rcm<false>(A, opt);
+      break;
+    case REORDER_KING:
+      P() = run_king<false>(A, opt);
+      break;
+    default:
+      P() = run_sloan<false>(A, opt);
+      break;
+  }
+}
+#endif  // PSMILU_DISABLE_RCM
+timer.finish();
+if (psmilu_verbose(PRE_TIME, opt))
+  psmilu_info("pre-reordering took %gs.", timer.time());
+const size_type n(A.nrows());  // assume squared
+if (P.is_eye())
+  return do_preprocessing<false>(A, A_crs, n, opt, level, s, t, p, q,
+                                 hdl_zero_diag);
+P.inv().resize(n);
+psmilu_error_if(P.inv().status() == DATA_UNDEF, "memory allocation failed");
+P.build_inv();
+const CcsType AA = A.compute_perm(P.inv(), P());
+CrsType       AA_crs;  // dummy
+
+// do regular preprocessing
+const size_type m = do_preprocessing<false>(AA, AA_crs, n, opt, level, s, t, p,
+                                            q, hdl_zero_diag);
+
+Array<value_type> buf(n);
+for (size_type i(0); i < n; ++i) buf[P[i]] = s[i];
+s.swap(buf);
+for (size_type i(0); i < n; ++i) buf[P[i]] = t[i];
+t.swap(buf);
+do {
+  auto &i_buf = p.inv();
+  for (size_type i(0); i < n; ++i) i_buf[i] = P[p[i]];
+  p().swap(i_buf);
+} while (false);
+do {
+  auto &i_buf = q.inv();
+  for (size_type i(0); i < n; ++i) i_buf[i] = P[q[i]];
+  q().swap(i_buf);
+} while (false);
+p.build_inv();
+q.build_inv();
+
+return m;
+}  // namespace psmilu
+
 /// \brief defer dense row and column
 /// \tparam CrsType crs matrix, see \ref CRS
 /// \tparam CcsType ccs matrix, see \ref CCS
@@ -187,6 +293,10 @@ inline typename CrsType::size_type defer_dense_tail(
 
   return m;
 }
+
+/*!
+ * @}
+ */
 
 }  // namespace psmilu
 
