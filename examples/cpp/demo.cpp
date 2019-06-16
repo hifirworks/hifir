@@ -211,6 +211,10 @@ inline static std::tuple<Options, bool, int, double, bool> parse_args(
       ++i;
       if (i >= argc) fatal_exit("missing reorder method tag!");
       opts.reorder = std::atoi(argv[i]);
+    } else if (arg == string("-p") || arg == string("--pre-reorder")) {
+      ++i;
+      if (i >= argc) fatal_exit("missing pre-reorder method tag!");
+      opts.pre_reorder = std::atoi(argv[i]);
     } else if (arg == string("-n") || arg == string("--no-saddle")) {
       opts.saddle = 0;
     } else if (arg == string("-")) {
