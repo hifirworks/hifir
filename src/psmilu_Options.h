@@ -47,7 +47,7 @@ enum {
   PSMILU_REORDER_RCM   = 3, /*!< use RCM ordering (require BGL) */
   PSMILU_REORDER_KING  = 4, /*!< use King ordering (require BGL) */
   PSMILU_REORDER_SLOAN = 5, /*!< use Sloan ordering (require BGL) */
-  PSMILU_REORDER_NULL  = 6, /*!< ordering Null flag */
+  PSMILU_REORDER_NULL  = 6, /*!< ordering Null flag (internal checking) */
 };
 
 /*!
@@ -56,20 +56,21 @@ enum {
  * \note Values in parentheses are default settings
  */
 struct psmilu_Options {
-  double tau_L;     /*!< inverse-based threshold for L (0.001) */
-  double tau_U;     /*!< inverse-based threshold for U (0.001) */
-  double tau_d;     /*!< threshold for inverse-diagonal (3.) */
-  double tau_kappa; /*!< inverse-norm threshold (3.) */
-  int    alpha_L;   /*!< growth factor of nnz per col (8) */
-  int    alpha_U;   /*!< growth factor of nnz per row (8) */
-  double rho;       /*!< density threshold for dense LU (0.5) */
-  double c_d;       /*!< size parameter for dense LU (10.0) */
-  double c_h;       /*!< size parameter for H-version (2.0) */
-  int    N;         /*!< reference size of matrix (-1, system size) */
-  int    verbose;   /*!< message output level (1, i.e. info) */
-  int    rf_par;    /*!< parameter refinement (default 1) */
-  int    reorder;   /*!< reordering method */
-  int    saddle;    /*!< enable saddle point static deferring (default 1) */
+  double tau_L;       /*!< inverse-based threshold for L (0.001) */
+  double tau_U;       /*!< inverse-based threshold for U (0.001) */
+  double tau_d;       /*!< threshold for inverse-diagonal (3.) */
+  double tau_kappa;   /*!< inverse-norm threshold (3.) */
+  int    alpha_L;     /*!< growth factor of nnz per col (8) */
+  int    alpha_U;     /*!< growth factor of nnz per row (8) */
+  double rho;         /*!< density threshold for dense LU (0.5) */
+  double c_d;         /*!< size parameter for dense LU (10.0) */
+  double c_h;         /*!< size parameter for H-version (2.0) */
+  int    N;           /*!< reference size of matrix (-1, system size) */
+  int    verbose;     /*!< message output level (1, i.e. info) */
+  int    rf_par;      /*!< parameter refinement (default 1) */
+  int    reorder;     /*!< reordering method */
+  int    saddle;      /*!< enable saddle point static deferring (default 1) */
+  int    pre_reorder; /*!< reordering before matching */
 };
 
 /*!
@@ -83,20 +84,35 @@ typedef struct psmilu_Options psmilu_Options;
  * \note See the values of attributes in parentheses
  */
 static psmilu_Options psmilu_get_default_options(void) {
-  return (psmilu_Options){.tau_L     = 0.0001,
-                          .tau_U     = 0.0001,
-                          .tau_d     = 3.0,
-                          .tau_kappa = 3.0,
-                          .alpha_L   = 8,
-                          .alpha_U   = 8,
-                          .rho       = 0.5,
-                          .c_d       = 10.0,
-                          .c_h       = 2.0,
-                          .N         = -1,
-                          .verbose   = PSMILU_VERBOSE_INFO,
-                          .rf_par    = 1,
-                          .reorder   = PSMILU_REORDER_AUTO,
-                          .saddle    = 1};
+  return (psmilu_Options){.tau_L       = 0.0001,
+                          .tau_U       = 0.0001,
+                          .tau_d       = 3.0,
+                          .tau_kappa   = 3.0,
+                          .alpha_L     = 8,
+                          .alpha_U     = 8,
+                          .rho         = 0.5,
+                          .c_d         = 10.0,
+                          .c_h         = 2.0,
+                          .N           = -1,
+                          .verbose     = PSMILU_VERBOSE_INFO,
+                          .rf_par      = 1,
+                          .reorder     = PSMILU_REORDER_AUTO,
+                          .saddle      = 1,
+                          .pre_reorder = PSMILU_REORDER_OFF};
+}
+
+/*!
+ * \brief enable verbose flag
+ * \param[in] flag verbose flag
+ * \param[in,out] opts options
+ */
+static void psmilu_enable_verbose(const int flag, psmilu_Options *opts) {
+  if (opts) {
+    if (flag > 0)
+      opts->verbose |= flag;
+    else
+      opts->verbose = PSMILU_VERBOSE_NONE;
+  }
 }
 
 /*!
@@ -188,6 +204,15 @@ inline std::string get_reorder_name(const Options &opt) {
 }
 
 /*!
+ * \brief enable verbose flags
+ * \param[in] flag verbose options
+ * \param[in,out] opts options
+ */
+inline void enable_verbose(const int flag, Options &opts) {
+  ::psmilu_enable_verbose(flag, &opts);
+}
+
+/*!
  * \brief get the verbose name
  */
 inline std::string get_verbose(const Options &opt);
@@ -240,7 +265,7 @@ template <class InStream>
 inline InStream &operator>>(InStream &in_str, Options &opt) {
   in_str >> opt.tau_L >> opt.tau_U >> opt.tau_d >> opt.tau_kappa >>
       opt.alpha_L >> opt.alpha_U >> opt.rho >> opt.c_d >> opt.c_h >> opt.N >>
-      opt.verbose >> opt.rf_par >> opt.reorder >> opt.saddle;
+      opt.verbose >> opt.rf_par >> opt.reorder >> opt.saddle >> opt.pre_reorder;
   return in_str;
 }
 
@@ -279,7 +304,25 @@ inline std::string opt_repr(const Options &opt) {
          pack_double("c_h", opt.c_h) + pack_int("N", opt.N) +
          pack_name("verbose", get_verbose) + pack_int("rf_par", opt.rf_par) +
          pack_name("reorder", get_reorder_name) +
-         pack_int("saddle", opt.saddle);
+         pack_int("saddle", opt.saddle) +
+         pack_name("pre_reorder", [](const Options &opt_) {
+           switch (opt_.pre_reorder) {
+             case PSMILU_REORDER_OFF:
+               return "Off";
+             case PSMILU_REORDER_AUTO:
+               return "Auto";
+             case PSMILU_REORDER_AMD:
+               return "AMD";
+             case PSMILU_REORDER_RCM:
+               return "RCM";
+             case PSMILU_REORDER_KING:
+               return "King";
+             case PSMILU_REORDER_SLOAN:
+               return "Sloan";
+             default:
+               return "Null";
+           }
+         });
 }
 
 #  ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -288,7 +331,7 @@ namespace internal {
  * build a byte map, i.e. the value is the leading byte position of the attrs
  * in Options
  */
-const static std::size_t option_attr_pos[14] = {
+const static std::size_t option_attr_pos[15] = {
     0,
     sizeof(double),
     option_attr_pos[1] + sizeof(double),
@@ -302,19 +345,20 @@ const static std::size_t option_attr_pos[14] = {
     option_attr_pos[9] + sizeof(int),
     option_attr_pos[10] + sizeof(int),
     option_attr_pos[11] + sizeof(int),
-    option_attr_pos[12] + sizeof(int)};
+    option_attr_pos[12] + sizeof(int),
+    option_attr_pos[13] + sizeof(int)};
 
 /* data type tags, true for double, false for int */
-const static bool option_dtypes[14] = {true,  true,  true,  true, false,
-                                       false, true,  true,  true, false,
-                                       false, false, false, false};
+const static bool option_dtypes[15] = {true,  true,  true,  true,  false,
+                                       false, true,  true,  true,  false,
+                                       false, false, false, false, false};
 
 /* using unordered map to store the string to index map */
 const static std::unordered_map<std::string, int> option_tag2pos = {
-    {"tau_L", 0},    {"tau_U", 1},   {"tau_d", 2},    {"tau_kappa", 3},
-    {"alpha_L", 4},  {"alpha_U", 5}, {"rho", 6},      {"c_d", 7},
-    {"c_h", 8},      {"N", 9},       {"verbose", 10}, {"rf_par", 11},
-    {"reorder", 12}, {"saddle", 13}};
+    {"tau_L", 0},    {"tau_U", 1},   {"tau_d", 2},       {"tau_kappa", 3},
+    {"alpha_L", 4},  {"alpha_U", 5}, {"rho", 6},         {"c_d", 7},
+    {"c_h", 8},      {"N", 9},       {"verbose", 10},    {"rf_par", 11},
+    {"reorder", 12}, {"saddle", 13}, {"pre_reorder", 14}};
 
 } /* namespace internal */
 #  endif /* DOXYGEN_SHOULD_SKIP_THIS */
