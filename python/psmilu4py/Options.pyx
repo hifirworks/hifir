@@ -28,6 +28,12 @@ __all__ = [
     'VERBOSE_PRE',
     'VERBOSE_FAC',
     'VERBOSE_MEM',
+    'REORDER_OFF',
+    'REORDER_AUTO',
+    'REORDER_AMD',
+    'REORDER_RCM',
+    'REORDER_KING',
+    'REORDER_SLOAN',
     'Options',
 ]
 
@@ -38,6 +44,16 @@ VERBOSE_INFO = 1
 VERBOSE_PRE = VERBOSE_INFO << 1
 VERBOSE_FAC = VERBOSE_PRE << 1
 VERBOSE_MEM = VERBOSE_FAC << 1
+
+
+# reorderingoptions
+REORDER_OFF = 0
+REORDER_AUTO = 1
+REORDER_AMD = 2
+REORDER_RCM = 3
+REORDER_KING = 4
+REORDER_SLOAN = 5
+
 
 # determine total number of parameters
 def _get_opt_info():
@@ -81,6 +97,15 @@ cdef class Options:
     def reset(self):
         """This function will reset all options to their default values"""
         self.opts = psmilu.get_default_options()
+
+    def enable_verbose(self, int flag):
+        """Enable a verbose flag"""
+        psmilu.enable_verbose(<int> flag, self.opts)
+
+    @property
+    def verbose(self):
+        """str: get the verbose flag(s)"""
+        return psmilu.get_verbose(self.opts).decode('utf-8')
 
     def __str__(self):
         return psmilu.opt_repr(self.opts).decode('utf-8')

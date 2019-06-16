@@ -26,6 +26,10 @@ cdef extern from 'psmilu4py.hpp' namespace 'psmilu' nogil:
     std_string opt_repr(const Options &opts) except +
     # also, manipulation method
     bool set_option_attr[T](const std_string &attr, const T v, Options &opts)
+    # enable verbose flags
+    void enable_verbose(const int flag, Options &opts)
+    # get verbose
+    std_string get_verbose(const Options &opts);
 
     # io
     void read_native_psmilu(const std_string &fn, size_t &nrows, size_t &ncols,
@@ -58,4 +62,4 @@ cdef extern from 'psmilu4py.hpp' namespace 'psmilu' nogil:
 cdef extern from 'psmilu4py.hpp' namespace 'psmilu::internal' nogil:
     # using an internal var to determine the data types of options
     # true for double, flase for int
-    bool option_dtypes[14]
+    bool option_dtypes[15]
