@@ -51,6 +51,8 @@ const static char *help =
     "\tverbose information printing level\n"
     " -r|--reorder method\n"
     "\treordering methods\n"
+    " -p|--pre-reorder method\n"
+    "\treordering method used for general system before matching\n"
     " -T|--rtol\n"
     "\trelative tolerance for FGMRES (1e-6) solver\n"
     " -R|--restart\n"
