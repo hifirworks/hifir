@@ -15,7 +15,7 @@
 
 #include "graph.hpp"
 
-#include <boost/graph/compressed_sparse_row_graph.hpp>
+#include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/cuthill_mckee_ordering.hpp>
 #include <boost/graph/properties.hpp>
 
@@ -35,21 +35,25 @@ inline Array<typename CcsType::index_type> run_rcm(const CcsType &B,
                                                    const Options &opt) {
   using size_type  = typename CcsType::size_type;
   using index_type = typename CcsType::index_type;
+  using vertex_property =
+      boost::property<boost::vertex_index_t, index_type,
+                      boost::property<boost::vertex_degree_t, index_type>>;
+  ///< vertex property
+  using edge_property = boost::property<
+      boost::edge_index_t, index_type,
+      boost::property<boost::edge_color_t, boost::default_color_type>>;
+  ///< edge property
   using graph_type =
-      boost::compressed_sparse_row_graph<boost::directedS, boost::no_property,
-                                         boost::no_property, boost::no_property,
-                                         index_type, index_type>;
+      boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS,
+                            vertex_property, edge_property, boost::no_property>;
   using iarray_type = Array<index_type>;
 
   if (psmilu_verbose(PRE, opt)) psmilu_info("begin running RCM reordering...");
   const size_type nv = B.ncols();
   graph_type      graph;
   do {
-    const auto edges = create_csr_edges<IsSymm>(B);
-    graph = IsSymm ? graph_type(boost::edges_are_unsorted, edges.cbegin(),
-                                edges.cend(), (index_type)nv)
-                   : graph_type(boost::edges_are_sorted, edges.cbegin(),
-                                edges.cend(), (index_type)nv);
+    const auto edges = create_graph_edges<IsSymm>(B);
+    graph = graph_type(edges.cbegin(), edges.cend(), nv, edges.size());
   } while (false);
 
   iarray_type P(nv);

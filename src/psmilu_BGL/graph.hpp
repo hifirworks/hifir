@@ -72,37 +72,37 @@ inline bgl_edges_type<typename CcsType::index_type> create_graph_edges(
   // return GraphType(edges.cbegin(), edges.cend(), nv, ne);
 }
 
-/// \brief create crs graph
-/// \tparam IsSymm if \a true, then assume symmetric input
-/// \param[in] B input matrix
-/// \return graph representation of edges
-template <bool IsSymm, class CcsType>
-inline bgl_edges_type<typename CcsType::index_type> create_csr_edges(
-    const CcsType &B) {
-  using index_type                = typename CcsType::index_type;
-  using size_type                 = typename CcsType::size_type;
-  constexpr static bool ONE_BASED = CcsType::ONE_BASED;
+// /// \brief create crs graph
+// /// \tparam IsSymm if \a true, then assume symmetric input
+// /// \param[in] B input matrix
+// /// \return graph representation of edges
+// template <bool IsSymm, class CcsType>
+// inline bgl_edges_type<typename CcsType::index_type> create_csr_edges(
+//     const CcsType &B) {
+//   using index_type                = typename CcsType::index_type;
+//   using size_type                 = typename CcsType::size_type;
+//   constexpr static bool ONE_BASED = CcsType::ONE_BASED;
 
-  const size_type nv = B.ncols();
-  if (!IsSymm) return create_graph_edges<false>(B);
+//   const size_type nv = B.ncols();
+//   if (!IsSymm) return create_graph_edges<false>(B);
 
-  // count number of edges
-  bgl_edges_type<index_type> edges(B.nnz() * 2);
-  size_type                  i(0);
-  for (size_type col(0); col < nv; ++col)
-    if (B.nnz_in_col(col)) {
-      auto itr = B.row_ind_cbegin(col);
-      if (*itr - ONE_BASED == (index_type)col) ++itr;
-      for (auto j = itr; j != B.row_ind_cend(col); ++j) {
-        edges[i++] =
-            std::make_pair(static_cast<index_type>(col), *j - ONE_BASED);
-        edges[i++] =
-            std::make_pair(*j - ONE_BASED, static_cast<index_type>(col));
-      }
-    }
-  edges.resize(i);
-  return edges;
-}
+//   // count number of edges
+//   bgl_edges_type<index_type> edges(B.nnz() * 2);
+//   size_type                  i(0);
+//   for (size_type col(0); col < nv; ++col)
+//     if (B.nnz_in_col(col)) {
+//       auto itr = B.row_ind_cbegin(col);
+//       if (*itr - ONE_BASED == (index_type)col) ++itr;
+//       for (auto j = itr; j != B.row_ind_cend(col); ++j) {
+//         edges[i++] =
+//             std::make_pair(static_cast<index_type>(col), *j - ONE_BASED);
+//         edges[i++] =
+//             std::make_pair(*j - ONE_BASED, static_cast<index_type>(col));
+//       }
+//     }
+//   edges.resize(i);
+//   return edges;
+// }
 
 /*!
  * @}
