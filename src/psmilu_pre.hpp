@@ -91,6 +91,8 @@ inline typename CcsType::size_type do_preprocessing(
     if (psmilu_verbose(PRE, opt)) psmilu_info("performing reordering step");
     timer.start();
 
+    std::string reorder_name = "AMD";
+
     const auto &      B = match_res.first;
     Array<index_type> P;
 
@@ -104,10 +106,13 @@ inline typename CcsType::size_type do_preprocessing(
 #else
     switch (opt.reorder) {
       case REORDER_AUTO: {
-        if (IsSymm && level == 1u)
-          P = run_rcm<IsSymm>(B, opt);
-        else
-          P = run_amd<IsSymm>(B, opt);
+        if (IsSymm && level == 1u) {
+          P            = run_rcm<IsSymm>(B, opt);
+          reorder_name = "RCM";
+        } else {
+          P            = run_amd<IsSymm>(B, opt);
+          reorder_name = "AMD";
+        }
       } break;
       case REORDER_AMD:
         P = run_amd<IsSymm>(B, opt);
@@ -122,12 +127,14 @@ inline typename CcsType::size_type do_preprocessing(
         P = run_sloan<IsSymm>(B, opt);
         break;
     }
+    if (opt.reorder != REORDER_AUTO) reorder_name = get_reorder_name(opt);
 #endif  // PSMILU_DISABLE_RCM
 
     timer.finish();
 
     if (psmilu_verbose(PRE_TIME, opt))
-      psmilu_info("reordering took %gs.", (double)timer.time());
+      psmilu_info("reordering %s took %gs.", reorder_name.c_str(),
+                  (double)timer.time());
 
     // now let's reorder the permutation arrays
     // we use the inverse mapping as buffer
@@ -170,7 +177,8 @@ inline typename CcsType::size_type do_preprocessing2(
 
   DefaultTimer timer;
 
-  PermType P;
+  std::string reorder_name = "AMD";
+  PermType    P;
 #ifdef PSMILU_DISABLE_BGL
   if (opt.pre_reorder != REORDER_AMD && opt.pre_reorder != REORDER_AUTO)
     psmilu_warning(
@@ -203,22 +211,26 @@ inline typename CcsType::size_type do_preprocessing2(
 #ifndef PSMILU_DISABLE_BGL
 }  // 1
 else {
-  switch (opt.reorder) {
+  switch (opt.pre_reorder) {
     case REORDER_RCM:
-      P() = run_rcm<false>(A, opt);
+      P()          = run_rcm<false>(A, opt);
+      reorder_name = "RCM";
       break;
     case REORDER_KING:
-      P() = run_king<false>(A, opt);
+      P()          = run_king<false>(A, opt);
+      reorder_name = "King";
       break;
     default:
-      P() = run_sloan<false>(A, opt);
+      P()          = run_sloan<false>(A, opt);
+      reorder_name = "Sloan";
       break;
   }
 }
 #endif  // PSMILU_DISABLE_RCM
 timer.finish();
 if (psmilu_verbose(PRE_TIME, opt))
-  psmilu_info("pre-reordering took %gs.", timer.time());
+  psmilu_info("pre-reordering %s took %gs.", reorder_name.c_str(),
+              timer.time());
 const size_type n(A.nrows());  // assume squared
 if (P.is_eye())
   return do_preprocessing<false>(A, A_crs, n, opt, level, s, t, p, q,
