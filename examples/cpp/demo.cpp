@@ -70,6 +70,8 @@ const static char *help =
     "\ttreat as symmetric problems\n"
     " -A|--aug\n"
     "\tusing augmented data structure\n"
+    " -P|--pre-order-all\n"
+    "\tenable pre-reordering on all levels\n"
     " -\n"
     "\tindicator for reading Options from stdin\n"
     "\n"
@@ -219,6 +221,8 @@ inline static std::tuple<Options, bool, int, double, bool> parse_args(
       opts.pre_reorder = std::atoi(argv[i]);
     } else if (arg == string("-n") || arg == string("--no-saddle")) {
       opts.saddle = 0;
+    } else if (arg == string("-P") || arg == string("--pre-reorder-all")) {
+      opts.pre_reorder_lvl1 = 0;
     } else if (arg == string("-")) {
       // read options from stdin
       std::cout << "read options from stdin" << std::endl;
