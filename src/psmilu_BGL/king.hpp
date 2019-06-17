@@ -11,12 +11,13 @@
 #ifndef _PSMILU_BGL_KING_HPP
 #define _PSMILU_BGL_KING_HPP
 
-#include <iterator>
 #include <vector>
 
 #include "graph.hpp"
 
+#include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/king_ordering.hpp>
+#include <boost/graph/properties.hpp>
 
 #include "psmilu_Options.h"
 
@@ -34,23 +35,34 @@ inline Array<typename CcsType_C::index_type> run_king(const CcsType_C &B,
                                                       const Options &  opt) {
   using size_type  = typename CcsType_C::size_type;
   using index_type = typename CcsType_C::index_type;
+  using vertex_property =
+      boost::property<boost::vertex_index_t, index_type,
+                      boost::property<boost::vertex_degree_t, index_type>>;
+  ///< vertex property
+  using edge_property = boost::property<
+      boost::edge_index_t, index_type,
+      boost::property<boost::edge_color_t, boost::default_color_type>>;
+  ///< edge property
   using graph_type =
-      typename internal::BGL_UndirectedGraphTrait<index_type>::graph_type;
+      boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS,
+                            vertex_property, edge_property, boost::no_property>;
 
   if (psmilu_verbose(PRE, opt)) psmilu_info("begin running King reordering...");
 
-  const graph_type graph = create_graph<IsSymm>(B);
-  const size_type  nv    = B.ncols();
+  const size_type nv = B.ncols();
+  graph_type      graph;
+  do {
+    const auto edges = create_graph_edges<IsSymm>(B);
+    graph = graph_type(edges.cbegin(), edges.cend(), nv, edges.size());
+  } while (false);
 
   Array<index_type> P(nv);
   psmilu_error_if(P.status() == DATA_UNDEF, "memory allocation failed");
   // get property map
-  const typename boost::property_map<graph_type, boost::vertex_index_t>::type
-                                                              index_map = boost::get(boost::vertex_index, graph);
-  std::reverse_iterator<typename Array<index_type>::iterator> r_itr(P.end());
+  std::vector<index_type> buf(P.size());
   // call King
-  boost::king_ordering(graph, r_itr);
-  for (size_type i(0); i < nv; ++i) P[i] = index_map[P[i]];
+  boost::king_ordering(graph, buf.rbegin());
+  for (size_type i(0); i < nv; ++i) P[buf[i]] = i;
   if (psmilu_verbose(PRE, opt)) psmilu_info("finish King reordering...");
   return P;
 }

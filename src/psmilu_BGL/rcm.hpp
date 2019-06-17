@@ -11,48 +11,59 @@
 #ifndef _PSMILU_BGL_RCM_HPP
 #define _PSMILU_BGL_RCM_HPP
 
-#include <iterator>
 #include <vector>
 
 #include "graph.hpp"
 
+#include <boost/graph/compressed_sparse_row_graph.hpp>
 #include <boost/graph/cuthill_mckee_ordering.hpp>
+#include <boost/graph/properties.hpp>
 
 #include "psmilu_Options.h"
 
 namespace psmilu {
 /// \brief use RCM algorithm to reduce the bandwidth
 /// \tparam IsSymm if \a true, use symmetric version (undirected graph)
-/// \tparam CcsType_C c index \ref CCS matrix
+/// \tparam CcsType ccs \ref CCS matrix
 /// \param[in] B input matrix with only *sparsity pattern*
 /// \param[in] opt options
 /// \return permutation vector
 /// \ingroup pre
 /// \note This requires Boost Graph Library (BGL)
-template <bool IsSymm, class CcsType_C>
-inline Array<typename CcsType_C::index_type> run_rcm(const CcsType_C &B,
-                                                     const Options &  opt) {
-  using size_type  = typename CcsType_C::size_type;
-  using index_type = typename CcsType_C::index_type;
+template <bool IsSymm, class CcsType>
+inline Array<typename CcsType::index_type> run_rcm(const CcsType &B,
+                                                   const Options &opt) {
+  using size_type  = typename CcsType::size_type;
+  using index_type = typename CcsType::index_type;
   using graph_type =
-      typename internal::BGL_UndirectedGraphTrait<index_type>::graph_type;
+      boost::compressed_sparse_row_graph<boost::directedS, boost::no_property,
+                                         boost::no_property, boost::no_property,
+                                         index_type, index_type>;
   using iarray_type = Array<index_type>;
 
   if (psmilu_verbose(PRE, opt)) psmilu_info("begin running RCM reordering...");
-
-  const graph_type graph = create_graph<IsSymm>(B);
-  const size_type  nv    = B.ncols();
+  const size_type nv = B.ncols();
+  graph_type      graph;
+  do {
+    const auto edges = create_csr_edges<IsSymm>(B);
+    graph = IsSymm ? graph_type(boost::edges_are_unsorted, edges.cbegin(),
+                                edges.cend(), (index_type)nv)
+                   : graph_type(boost::edges_are_sorted, edges.cbegin(),
+                                edges.cend(), (index_type)nv);
+  } while (false);
 
   iarray_type P(nv);
   psmilu_error_if(P.status() == DATA_UNDEF, "memory allocation failed");
 
   // get property map
-  const typename boost::property_map<graph_type, boost::vertex_index_t>::type
-                                                        index_map = boost::get(boost::vertex_index, graph);
-  std::reverse_iterator<typename iarray_type::iterator> r_itr(P.end());
+  // using prop_map =
+  //     typename boost::property_map<graph_type, boost::vertex_index_t>::type;
+  // const prop_map index_map = boost::get(boost::vertex_index, graph);
+
   // call RCM
-  boost::cuthill_mckee_ordering(graph, r_itr);
-  for (size_type i(0); i < nv; ++i) P[i] = index_map[P[i]];
+  std::vector<index_type> buf(P.size());
+  boost::cuthill_mckee_ordering(graph, buf.rbegin());
+  for (size_type i(0); i < nv; ++i) P[buf[i]] = i;
   if (psmilu_verbose(PRE, opt)) psmilu_info("finish RCM reordering...");
   return P;
 }
