@@ -51,6 +51,8 @@ const static char *help =
     "\tverbose information printing level\n"
     " -r|--reorder method\n"
     "\treordering methods\n"
+    " -p|--pre-reorder method\n"
+    "\treordering method used for general system before matching\n"
     " -T|--rtol\n"
     "\trelative tolerance for FGMRES (1e-6) solver\n"
     " -R|--restart\n"
@@ -68,6 +70,8 @@ const static char *help =
     "\ttreat as symmetric problems\n"
     " -A|--aug\n"
     "\tusing augmented data structure\n"
+    " -P|--pre-order-all\n"
+    "\tenable pre-reordering on all levels\n"
     " -\n"
     "\tindicator for reading Options from stdin\n"
     "\n"
@@ -100,6 +104,7 @@ int main(int argc, char *argv[]) {
   bool    symm;
   // parse arguments
   std::tie(opts, thin, restart, rtol, symm) = parse_args(argc, argv);
+  if (opts.verbose == VERBOSE_NONE) warn_flag(0);
   crs_t              A;
   array_t            b;
   array_t::size_type m;
@@ -211,8 +216,14 @@ inline static std::tuple<Options, bool, int, double, bool> parse_args(
       ++i;
       if (i >= argc) fatal_exit("missing reorder method tag!");
       opts.reorder = std::atoi(argv[i]);
+    } else if (arg == string("-p") || arg == string("--pre-reorder")) {
+      ++i;
+      if (i >= argc) fatal_exit("missing pre-reorder method tag!");
+      opts.pre_reorder = std::atoi(argv[i]);
     } else if (arg == string("-n") || arg == string("--no-saddle")) {
       opts.saddle = 0;
+    } else if (arg == string("-P") || arg == string("--pre-reorder-all")) {
+      opts.pre_reorder_lvl1 = 0;
     } else if (arg == string("-")) {
       // read options from stdin
       std::cout << "read options from stdin" << std::endl;

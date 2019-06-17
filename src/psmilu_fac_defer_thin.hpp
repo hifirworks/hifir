@@ -77,9 +77,26 @@ inline CsType iludp_factor_defer_thin(const CsType &                   A,
   Array<value_type>        s, t;
   BiPermMatrix<index_type> p, q;
 #ifndef PSMILU_DISABLE_PRE
-  size_type m = do_preprocessing<IsSymm>(A_ccs, A_crs, m0, opts, cur_level, s,
-                                         t, p, q, opts.saddle);
-  // m = defer_dense_tail(A_crs, A_ccs, p, q, m);
+  size_type m;
+  if (!IsSymm) {
+    if (opts.pre_reorder != REORDER_OFF && m0 == A.nrows()) {
+      if (!opts.pre_reorder_lvl1 || cur_level == 1u)
+        m = do_preprocessing2(A_ccs, A_crs, opts, cur_level, s, t, p, q,
+                              opts.saddle);
+      else
+        m = do_preprocessing<false>(A_ccs, A_crs, m0, opts, cur_level, s, t, p,
+                                    q, opts.saddle);
+    } else {
+      if (opts.pre_reorder != REORDER_OFF)
+        psmilu_warning("pre-reordering is not available for PS systems");
+      m = do_preprocessing<false>(A_ccs, A_crs, m0, opts, cur_level, s, t, p, q,
+                                  opts.saddle);
+    }
+  } else
+    m = do_preprocessing<true>(A_ccs, A_crs, m0, opts, cur_level, s, t, p, q,
+                               opts.saddle);
+
+    // m = defer_dense_tail(A_crs, A_ccs, p, q, m);
 #else
   s.resize(m0);
   psmilu_error_if(s.status() == DATA_UNDEF, "memory allocation failed");
