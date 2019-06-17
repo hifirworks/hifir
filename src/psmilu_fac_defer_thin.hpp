@@ -79,10 +79,14 @@ inline CsType iludp_factor_defer_thin(const CsType &                   A,
 #ifndef PSMILU_DISABLE_PRE
   size_type m;
   if (!IsSymm) {
-    if (opts.pre_reorder != REORDER_OFF && m0 == A.nrows())
-      m = do_preprocessing2(A_ccs, A_crs, opts, cur_level, s, t, p, q,
-                            opts.saddle);
-    else {
+    if (opts.pre_reorder != REORDER_OFF && m0 == A.nrows()) {
+      if (!opts.pre_reorder_lvl1 || cur_level == 1u)
+        m = do_preprocessing2(A_ccs, A_crs, opts, cur_level, s, t, p, q,
+                              opts.saddle);
+      else
+        m = do_preprocessing<false>(A_ccs, A_crs, m0, opts, cur_level, s, t, p,
+                                    q, opts.saddle);
+    } else {
       if (opts.pre_reorder != REORDER_OFF)
         psmilu_warning("pre-reordering is not available for PS systems");
       m = do_preprocessing<false>(A_ccs, A_crs, m0, opts, cur_level, s, t, p, q,

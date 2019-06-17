@@ -71,6 +71,8 @@ struct psmilu_Options {
   int    reorder;     /*!< reordering method */
   int    saddle;      /*!< enable saddle point static deferring (default 1) */
   int    pre_reorder; /*!< reordering before matching */
+  int    pre_reorder_lvl1;
+  /*!< only do pre reorder on level 1 (default 1) */
 };
 
 /*!
@@ -84,21 +86,22 @@ typedef struct psmilu_Options psmilu_Options;
  * \note See the values of attributes in parentheses
  */
 static psmilu_Options psmilu_get_default_options(void) {
-  return (psmilu_Options){.tau_L       = 0.0001,
-                          .tau_U       = 0.0001,
-                          .tau_d       = 3.0,
-                          .tau_kappa   = 3.0,
-                          .alpha_L     = 10,
-                          .alpha_U     = 10,
-                          .rho         = 0.5,
-                          .c_d         = 10.0,
-                          .c_h         = 2.0,
-                          .N           = -1,
-                          .verbose     = PSMILU_VERBOSE_INFO,
-                          .rf_par      = 1,
-                          .reorder     = PSMILU_REORDER_AUTO,
-                          .saddle      = 1,
-                          .pre_reorder = PSMILU_REORDER_OFF};
+  return (psmilu_Options){.tau_L            = 0.0001,
+                          .tau_U            = 0.0001,
+                          .tau_d            = 3.0,
+                          .tau_kappa        = 3.0,
+                          .alpha_L          = 10,
+                          .alpha_U          = 10,
+                          .rho              = 0.5,
+                          .c_d              = 10.0,
+                          .c_h              = 2.0,
+                          .N                = -1,
+                          .verbose          = PSMILU_VERBOSE_INFO,
+                          .rf_par           = 1,
+                          .reorder          = PSMILU_REORDER_AUTO,
+                          .saddle           = 1,
+                          .pre_reorder      = PSMILU_REORDER_OFF,
+                          .pre_reorder_lvl1 = 1};
 }
 
 /*!
@@ -265,7 +268,8 @@ template <class InStream>
 inline InStream &operator>>(InStream &in_str, Options &opt) {
   in_str >> opt.tau_L >> opt.tau_U >> opt.tau_d >> opt.tau_kappa >>
       opt.alpha_L >> opt.alpha_U >> opt.rho >> opt.c_d >> opt.c_h >> opt.N >>
-      opt.verbose >> opt.rf_par >> opt.reorder >> opt.saddle >> opt.pre_reorder;
+      opt.verbose >> opt.rf_par >> opt.reorder >> opt.saddle >>
+      opt.pre_reorder >> opt.pre_reorder_lvl1;
   return in_str;
 }
 
@@ -305,24 +309,26 @@ inline std::string opt_repr(const Options &opt) {
          pack_name("verbose", get_verbose) + pack_int("rf_par", opt.rf_par) +
          pack_name("reorder", get_reorder_name) +
          pack_int("saddle", opt.saddle) +
-         pack_name("pre_reorder", [](const Options &opt_) {
-           switch (opt_.pre_reorder) {
-             case PSMILU_REORDER_OFF:
-               return "Off";
-             case PSMILU_REORDER_AUTO:
-               return "Auto";
-             case PSMILU_REORDER_AMD:
-               return "AMD";
-             case PSMILU_REORDER_RCM:
-               return "RCM";
-             case PSMILU_REORDER_KING:
-               return "King";
-             case PSMILU_REORDER_SLOAN:
-               return "Sloan";
-             default:
-               return "Null";
-           }
-         });
+         pack_name("pre_reorder",
+                   [](const Options &opt_) {
+                     switch (opt_.pre_reorder) {
+                       case PSMILU_REORDER_OFF:
+                         return "Off";
+                       case PSMILU_REORDER_AUTO:
+                         return "Auto";
+                       case PSMILU_REORDER_AMD:
+                         return "AMD";
+                       case PSMILU_REORDER_RCM:
+                         return "RCM";
+                       case PSMILU_REORDER_KING:
+                         return "King";
+                       case PSMILU_REORDER_SLOAN:
+                         return "Sloan";
+                       default:
+                         return "Null";
+                     }
+                   }) +
+         pack_int("pre_reorder_lvl1", opt.pre_reorder_lvl1);
 }
 
 #  ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -331,7 +337,7 @@ namespace internal {
  * build a byte map, i.e. the value is the leading byte position of the attrs
  * in Options
  */
-const static std::size_t option_attr_pos[15] = {
+const static std::size_t option_attr_pos[16] = {
     0,
     sizeof(double),
     option_attr_pos[1] + sizeof(double),
@@ -346,19 +352,24 @@ const static std::size_t option_attr_pos[15] = {
     option_attr_pos[10] + sizeof(int),
     option_attr_pos[11] + sizeof(int),
     option_attr_pos[12] + sizeof(int),
-    option_attr_pos[13] + sizeof(int)};
+    option_attr_pos[13] + sizeof(int),
+    option_attr_pos[14] + sizeof(int)};
 
 /* data type tags, true for double, false for int */
-const static bool option_dtypes[15] = {true,  true,  true,  true,  false,
-                                       false, true,  true,  true,  false,
-                                       false, false, false, false, false};
+const static bool option_dtypes[16] = {true,  true,  true,  true,  false, false,
+                                       true,  true,  true,  false, false, false,
+                                       false, false, false, false};
 
 /* using unordered map to store the string to index map */
 const static std::unordered_map<std::string, int> option_tag2pos = {
-    {"tau_L", 0},    {"tau_U", 1},   {"tau_d", 2},       {"tau_kappa", 3},
-    {"alpha_L", 4},  {"alpha_U", 5}, {"rho", 6},         {"c_d", 7},
-    {"c_h", 8},      {"N", 9},       {"verbose", 10},    {"rf_par", 11},
-    {"reorder", 12}, {"saddle", 13}, {"pre_reorder", 14}};
+    {"tau_L", 0},        {"tau_U", 1},
+    {"tau_d", 2},        {"tau_kappa", 3},
+    {"alpha_L", 4},      {"alpha_U", 5},
+    {"rho", 6},          {"c_d", 7},
+    {"c_h", 8},          {"N", 9},
+    {"verbose", 10},     {"rf_par", 11},
+    {"reorder", 12},     {"saddle", 13},
+    {"pre_reorder", 14}, {"pre_reorder_lvl1", 15}};
 
 } /* namespace internal */
 #  endif /* DOXYGEN_SHOULD_SKIP_THIS */
