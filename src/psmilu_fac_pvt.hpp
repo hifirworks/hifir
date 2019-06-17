@@ -89,13 +89,15 @@ inline typename std::enable_if<!AugType::ROW_MAJOR, T>::type adjust_start_pos(
 }
 }  // namespace internal
 
-template <bool IsSymm, class CsType, class CroutStreamer, class PrecsType>
+template <bool IsSymm, class CsType, class CroutStreamer, class PrecsType,
+          class IntArray>
 inline CsType iludp_factor_pvt(const CsType &                   A,
                                const typename CsType::size_type m0,
                                const typename CsType::size_type N,
                                const Options &                  opts,
                                const CroutStreamer &            Crout_info,
-                               PrecsType &                      precs) {
+                               PrecsType &precs, IntArray &row_sizes,
+                               IntArray &col_sizes) {
   typedef CsType                      input_type;
   typedef typename CsType::other_type other_type;
   using cs_trait = internal::CompressedTypeTrait<input_type, other_type>;
@@ -114,14 +116,10 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
   psmilu_assert(m0 <= std::min(A.nrows(), A.ncols()),
                 "leading size should be smaller than size of A");
   const size_type cur_level = precs.size() + 1;
-#ifndef NDEBUG
-  if (IsSymm)
-    psmilu_error_if(cur_level != 1u,
-                    "symmetric must be applied to first level!");
-#endif
 
   if (psmilu_verbose(INFO, opts))
-    psmilu_info("\nenter level %zd.\n", cur_level);
+    psmilu_info("\nenter level %zd (%s).\n", cur_level,
+                (IsSymm ? "symmetric" : "asymmetric"));
 
   DefaultTimer timer;
 
@@ -133,6 +131,19 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
   const crs_type &A_crs = cs_trait::select_crs(A, A_counterpart);
   const ccs_type &A_ccs = cs_trait::select_ccs(A, A_counterpart);
 
+  // handle row and column sizes
+  if (cur_level == 1u) {
+    row_sizes.resize(A.nrows());
+    col_sizes.resize(A.ncols());
+  }
+#ifndef PSMILU_USE_CUR_SIZES
+  if (cur_level == 1u)
+#endif  // PSMILU_USE_CUR_SIZES
+  {
+    for (size_type i(0); i < A.nrows(); ++i) row_sizes[i] = A_crs.nnz_in_row(i);
+    for (size_type i(0); i < A.ncols(); ++i) col_sizes[i] = A_ccs.nnz_in_col(i);
+  }
+
   if (psmilu_verbose(INFO, opts))
     psmilu_info("performing preprocessing with leading block size %zd...", m0);
 
@@ -141,9 +152,25 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
   Array<value_type>        s, t;
   BiPermMatrix<index_type> p, q;
 #ifndef PSMILU_DISABLE_PRE
-  size_type m = do_preprocessing<false>(A_ccs, A_crs, m0, opts, cur_level, s, t,
-                                        p, q, opts.saddle);
-  // m = defer_dense_tail(A_crs, A_ccs, p, q, m);
+  size_type m;
+  if (!IsSymm) {
+    if (opts.pre_reorder != REORDER_OFF && m0 == A.nrows()) {
+      if (!opts.pre_reorder_lvl1 || cur_level == 1u)
+        m = do_preprocessing2(A_ccs, A_crs, opts, cur_level, s, t, p, q,
+                              opts.saddle);
+      else
+        m = do_preprocessing<false>(A_ccs, A_crs, m0, opts, cur_level, s, t, p,
+                                    q, opts.saddle);
+    } else {
+      if (opts.pre_reorder != REORDER_OFF)
+        psmilu_warning("pre-reordering is not available for PS systems");
+      m = do_preprocessing<false>(A_ccs, A_crs, m0, opts, cur_level, s, t, p, q,
+                                  opts.saddle);
+    }
+  } else
+    m = do_preprocessing<true>(A_ccs, A_crs, m0, opts, cur_level, s, t, p, q,
+                               opts.saddle);
+    // m = defer_dense_tail(A_crs, A_ccs, p, q, m);
 #else
   s.resize(m0);
   psmilu_error_if(s.status() == DATA_UNDEF, "memory allocation failed");
@@ -287,7 +314,7 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
   auto &P_inv = p.inv(), &Q_inv = q.inv();
 
   // information counter
-  index_type info_counter[5] = {0, 0, 0, 0, 0};
+  index_type info_counter[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 
   if (psmilu_verbose(INFO, opts)) psmilu_info("start Crout update...");
   PivotCrout step;
@@ -533,16 +560,22 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
         "defers=%zd/%zd",
         m_prev, m, step.defers() - defers_prev, step.defers());
 
+    const auto kappa_sq = k_ut * k_l;
+
     //---------------
     // drop and sort
     //---------------
 
     const size_type ori_ut_size = ut.size(), ori_l_size = l.size();
 
-    // apply drop for U
-    apply_dropping_and_sort(tau_U, k_ut, A_crs.nnz_in_row(p[step]), alpha_U,
-                            ut);
-    // ut.sort_indices();
+    apply_num_dropping(tau_U, kappa_sq, ut);
+#ifndef PSMILU_DISABLE_SPACE_DROP
+    const size_type n_ut = ut.size();
+    apply_space_dropping(row_sizes[p[step]], alpha_U, ut);
+    info_counter[5] += n_ut - ut.size();
+#endif  // PSMILU_DISABLE_SPACE_DROP
+    info_counter[6] += ori_ut_size - ut.size();
+    ut.sort_indices();
 
     // push back rows to U
     U.push_back_row(step, ut.inds().cbegin(), ut.inds().cbegin() + ut.size(),
@@ -551,9 +584,15 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
     Crout_info("  ut sizes before/after dropping %zd/%zd, drops=%zd",
                ori_ut_size, ut.size(), ori_ut_size - ut.size());
 
-    // apply drop for L
-    apply_dropping_and_sort(tau_L, k_l, A_ccs.nnz_in_col(q[step]), alpha_L, l);
-    // l.sort_indices();
+    // apply numerical dropping on L
+    apply_num_dropping(tau_L, kappa_sq, l);
+#ifndef PSMILU_DISABLE_SPACE_DROP
+    const size_type n_l = l.size();
+    apply_space_dropping(col_sizes[q[step]], alpha_L, l);
+    info_counter[7] += n_l - l.size();
+#endif  // PSMILU_DISABLE_SPACE_DROP
+    info_counter[8] += ori_l_size - l.size();
+    l.sort_indices();
 
     Crout_info("  l sizes before/after dropping %zd/%zd, drops=%zd", ori_l_size,
                l.size(), ori_l_size - l.size());
@@ -608,10 +647,16 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
         "\trow pivots=%zd\n"
         "\tfallback row defers=%zd\n"
         "\tcol pivots=%zd\n"
-        "\tfallback col defers=%zd",
+        "\tfallback col defers=%zd\n"
+        "\tdrop ut=%zd\n"
+        "\tspace drop ut=%zd\n"
+        "\tdrop l=%zd\n"
+        "\tspace drop l=%zd",
         step.defers(), m2, m, m2 - m, (size_type)info_counter[0],
         (size_type)info_counter[1], (size_type)info_counter[2],
-        (size_type)info_counter[3], (size_type)info_counter[4]);
+        (size_type)info_counter[3], (size_type)info_counter[4],
+        (size_type)info_counter[5], (size_type)info_counter[6],
+        (size_type)info_counter[7], (size_type)info_counter[8]);
 #ifndef NDEBUG
     _GET_MAX_MIN_MINABS(d, m);
     _SHOW_MAX_MIN_MINABS(d);
@@ -620,71 +665,109 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
   }
 
   if (psmilu_verbose(INFO, opts))
-    psmilu_info("computing Schur complement (C) and assembling Prec...");
+    psmilu_info("computing Schur complement and assembling Prec...");
 
   timer.start();
 
-  // compute C version of Schur complement
-  crs_type S_tmp;
-  compute_Schur_C(s, A_crs, t, p, q, m, A.nrows(), L, d, U, U_start, S_tmp);
-  const input_type S(S_tmp);  // if input==crs, then wrap, ow copy
+  // drop
+  auto     E   = crs_type(internal::extract_E(s, A_crs, t, m, p, q));
+  auto     F   = internal::extract_F(s, A_ccs, t, m, p, q, ut.vals());
+  auto     L_E = L.template split_crs<true>(m, L_start);
+  crs_type U_F;
+  do {
+    auto            U_F2 = U.template split_ccs<true>(m, U_start);
+    const size_type nnz1 = L_E.nnz(), nnz2 = U_F2.nnz();
+#ifndef PSMILU_NO_DROP_LE_UF
+    const double a_L = opts.alpha_L, a_U = opts.alpha_U;
+    if (psmilu_verbose(INFO, opts))
+      psmilu_info("applying dropping on L_E and U_F with alpha_{L,U}=%g,%g...",
+                  a_L, a_U);
+    if (m < n) {
+#  ifdef PSMILU_USE_CUR_SIZES
+      drop_L_E(E.row_start(), a_L, L_E, l.vals(), l.inds());
+      drop_U_F(F.col_start(), a_U, U_F2, ut.vals(), ut.inds());
+#  else
+      if (cur_level == 1u) {
+        drop_L_E(E.row_start(), a_L, L_E, l.vals(), l.inds());
+        drop_U_F(F.col_start(), a_U, U_F2, ut.vals(), ut.inds());
+      } else {
+        // use P and Q as buffers
+        P[0] = Q[0] = 0;
+        for (size_type i(m); i < n; ++i) {
+          P[i - m + 1] = P[i - m] + row_sizes[p[i]];
+          Q[i - m + 1] = Q[i - m] + col_sizes[q[i]];
+        }
+        drop_L_E(P, a_L, L_E, l.vals(), l.inds());
+        drop_U_F(Q, a_U, U_F2, ut.vals(), ut.inds());
+      }
+#  endif
+    }
+#endif  // PSMILU_NO_DROP_LE_UF
+    U_F = crs_type(U_F2);
+    if (psmilu_verbose(INFO, opts))
+      psmilu_info("nnz(L_E)=%zd/%zd, nnz(U_F)=%zd/%zd...", nnz1, L_E.nnz(),
+                  nnz2, U_F.nnz());
+  } while (false);
+
+  // compute the nnz(A)-nnz(B) for first level
+  size_type AmB_nnz(0);
+  for (size_type i(m); i < n; ++i) AmB_nnz += row_sizes[p[i]] + col_sizes[q[i]];
+
+  // compute S version of Schur complement
+  bool             use_h_ver = false;
+  const input_type S =
+      input_type(compute_Schur_simple(s, A_crs, t, p, q, m, L_E, d, U_F, l));
 
   // compute L_B and U_B
   auto L_B = L.template split<false>(m, L_start);
   auto U_B = U.template split_ccs<false>(m, U_start);
 
+  const size_type dense_thres1 = static_cast<size_type>(
+                      std::max(opts.alpha_L, opts.alpha_U) * AmB_nnz),
+                  dense_thres2 = std::max(static_cast<size_type>(std::ceil(
+                                              opts.c_d * std::cbrt(N))),
+                                          size_type(1000));
+
   if (psmilu_verbose(INFO, opts))
     psmilu_info(
-        "nnz(S_C)=%zd, nnz(L)=%zd, nnz(L_B)=%zd, nnz(U)=%zd, nnz(U_B)=%zd...",
-        S.nnz(), L.nnz(), L_B.nnz(), U.nnz(), U_B.nnz());
+        "nnz(S_C)=%zd, nnz(L/L_B)=%zd/%zd, nnz(U/U_B)=%zd/%zd\n"
+        "dense_thres{1,2}=%zd/%zd...",
+        S.nnz(), L.nnz(), L_B.nnz(), U.nnz(), U_B.nnz(), dense_thres1,
+        dense_thres2);
 
   // test H version
-  const size_type nm     = A.nrows() - m;
-  const auto      cbrt_N = std::cbrt(N);
+  const size_type nm = n - m;
   dense_type      S_D;
   psmilu_assert(S_D.empty(), "fatal!");
-  if (S.nnz() >= static_cast<size_type>(opts.rho * nm * nm) ||
-      nm <= static_cast<size_type>(opts.c_d * cbrt_N) || !m) {
-    bool use_h_ver = false;
-    S_D            = dense_type::from_sparse(S);
-    if (m <= static_cast<size_type>(opts.c_h * cbrt_N) && m) {
-#ifdef PSMILU_UNIT_TESTING
-      ccs_type T_E, T_F;
-#endif
-      compute_Schur_H(L, L_start, L_B, s, A_ccs, t, p, q, d, U_B, U, S_D
-#ifdef PSMILU_UNIT_TESTING
-                      ,
-                      T_E, T_F
-#endif
-      );
-      use_h_ver = true;
-    }  // H version check
+
+  if ((size_type)std::ceil(nm * nm * opts.rho) <= dense_thres1 ||
+      nm <= dense_thres2 || !m) {
+    S_D = dense_type::from_sparse(S);
     if (psmilu_verbose(INFO, opts))
       psmilu_info("converted Schur complement (%s) to dense for last level...",
-                  (use_h_ver ? "H" : "C"));
+                  (use_h_ver ? "H" : "S"));
   }
 
-  // NOTE that L_B/U_B are CCS, we need CRS, we can save computation with
-  // symmetric case
-  crs_type L_B2, U_B2;
-  if (IsSymm) {
-    L_B2.resize(m, m);
-    U_B2.resize(m, m);
-    L_B2.row_start() = std::move(U_B.col_start());
-    U_B2.row_start() = std::move(L_B.col_start());
-    L_B2.col_ind()   = std::move(U_B.row_ind());
-    U_B2.col_ind()   = std::move(L_B.row_ind());
-    L_B2.vals()      = std::move(U_B.vals());
-    U_B2.vals()      = std::move(L_B.vals());
-  } else {
-    L_B2 = crs_type(L_B);
-    U_B2 = crs_type(U_B);
+#ifndef PSMILU_USE_CUR_SIZES
+  if (S_D.empty()) {
+    // update the row and column sizes
+    // Important! Update this information before destroying p and q in the
+    // following emplace_back call
+    // NOTE use P and Q as buffers
+    for (size_type i(m); i < n; ++i) {
+      P[i] = row_sizes[p[i]];
+      Q[i] = col_sizes[q[i]];
+    }
+    for (size_type i(m); i < n; ++i) {
+      row_sizes[i - m] = P[i];
+      col_sizes[i - m] = Q[i];
+    }
   }
-  precs.emplace_back(
-      m, A.nrows(), std::move(L_B2), std::move(d), std::move(U_B2),
-      crs_type(internal::extract_E(s, A_crs, t, m, p, q)),
-      crs_type(internal::extract_F(s, A_ccs, t, m, p, q, ut.vals())),
-      std::move(s), std::move(t), std::move(p()), std::move(q.inv()));
+#endif  // PSMILU_USE_CUR_SIZES
+
+  precs.emplace_back(m, n, std::move(L_B), std::move(d), std::move(U_B),
+                     std::move(E), std::move(F), std::move(s), std::move(t),
+                     std::move(p()), std::move(q.inv()));
 
   // if dense is not empty, then push it back
   if (!S_D.empty()) {
@@ -692,12 +775,8 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
     last_level.set_matrix(std::move(S_D));
     last_level.factorize();
     if (psmilu_verbose(INFO, opts))
-      psmilu_info("successfully factorized the dense complement...");
+      psmilu_info("successfully factorized the dense component...");
   }
-#ifndef NDEBUG
-  else
-    psmilu_error_if(!precs.back().dense_solver.empty(), "should be empty!");
-#endif
 
   timer.finish();  // profile post-processing
 
