@@ -104,6 +104,7 @@ int main(int argc, char *argv[]) {
   bool    symm;
   // parse arguments
   std::tie(opts, thin, restart, rtol, symm) = parse_args(argc, argv);
+  if (opts.verbose == VERBOSE_NONE) warn_flag(0);
   crs_t              A;
   array_t            b;
   array_t::size_type m;
