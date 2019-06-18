@@ -109,7 +109,11 @@ class PSMILU {
 
   /// \brief check number of levels
   /// \note This function takes \f$\mathcal{O}(1)\f$ since C++11
-  inline size_type levels() const { return _precs.size(); }
+  inline size_type levels() const {
+    const size_type lvls = _precs.size();
+    if (lvls) return lvls + !_precs.back().dense_solver.empty();
+    return 0;
+  }
 
   // utilities
 

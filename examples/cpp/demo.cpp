@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) {
   M.factorize(A, m, opts, true, thin);
   timer.finish();
   std::cout << "\nMLILU done, ratio: " << (double)M.nnz() / A.nnz()
-            << ", sp-lvls: " << M.levels() << ", time: " << timer.time()
+            << ", levels: " << M.levels() << ", time: " << timer.time()
             << "s.\n\n";
 
   // solve
