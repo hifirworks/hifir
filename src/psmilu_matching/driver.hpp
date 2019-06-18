@@ -22,16 +22,17 @@ extern "C" {
 
 #include "psmilu_Array.hpp"
 #include "psmilu_CompressedStorage.hpp"
+#include "psmilu_Options.h"
 #include "psmilu_Timer.hpp"
 #include "psmilu_log.hpp"
 #include "psmilu_utils.hpp"
+
+#include "MUMPS.hpp"
 
 #ifdef mc64_matching
 
 #  include "mc64_driver.hpp"
 
-#else
-#  error "PSMILU requires HSL_MC64, for now..."
 #endif
 
 namespace psmilu {
@@ -159,10 +160,6 @@ compute_perm_leading_block(const CcsType &                   A, const CrsType &,
   psmilu_error_if(col_start.status() == DATA_UNDEF, "memory allocation failed");
   col_start.front() = 0;  // zero based
 
-  // buffer for value array
-  // Array<typename CcsType::value_type> buf(m);
-  // psmilu_error_if(buf.status() == DATA_UNDEF, "memory allocation failed");
-
   // determine nnz
   for (size_type col = 0u; col < m; ++col) {
     const auto q_col   = q[col];
@@ -179,12 +176,7 @@ compute_perm_leading_block(const CcsType &                   A, const CrsType &,
   // NOTE we only indices for reordering step
   row_ind.resize(col_start[m]);
   psmilu_error_if(row_ind.status() == DATA_UNDEF, "memory allocation failed");
-  // auto &vals = B.vals();
-  // psmilu_error_if(vals.status() == DATA_UNDEF, "memory allocation failed");
-  // row_ind.resize(col_start[m]);
   auto itr = row_ind.begin();
-  // vals.resize(col_start[m]);
-  // auto v_itr = vals.begin();
 
   // assemble nnz arrays
   for (size_type col = 0u; col < m; ++col) {
@@ -195,18 +187,11 @@ compute_perm_leading_block(const CcsType &                   A, const CrsType &,
       const size_type p_inv = p.inv(c_idx(*A_itr));
       if (p_inv < m) {
         *itr++ = p_inv;
-        // buf[p_inv] = *A_v_itr;
       }
     }
     // sort indices
     std::sort(B.row_ind_begin(col), itr);
-    // for (auto i = B.row_ind_cbegin(col), last = B.row_ind_cend(col); i !=
-    // last;
-    //      ++i, ++v_itr)
-    //   *v_itr = buf[*i];
   }
-
-  // psmilu_assert(v_itr == vals.end(), "fatal");
 
   return B;
 }
@@ -281,12 +266,7 @@ compute_perm_leading_block(const CcsType &A, const CrsType &A_crs,
   auto &row_ind = B.row_ind();
   row_ind.resize(col_start[m]);
   psmilu_error_if(row_ind.status() == DATA_UNDEF, "memory allocation failed");
-  // auto &vals = B.vals();
-  // psmilu_error_if(vals.status() == DATA_UNDEF, "memory allocation failed");
-  // row_ind.resize(col_start[m]);
   auto itr = row_ind.begin();
-  // vals.resize(col_start[m]);
-  // auto v_itr = vals.begin();
 
   // assemble nnz arrays
   for (size_type col = 0u; col < m; ++col) {
@@ -297,7 +277,6 @@ compute_perm_leading_block(const CcsType &A, const CrsType &A_crs,
       const size_type p_inv = p.inv(c_idx(*A_itr));
       if (p_inv >= col && p_inv < m) {
         *itr++ = p_inv;
-        // buf[p_inv] = *A_v_itr;
       }
     }
     if (A_crs.nnz_in_row(q_col)) {
@@ -308,19 +287,12 @@ compute_perm_leading_block(const CcsType &A, const CrsType &A_crs,
         const size_type p_inv = p.inv(c_idx(*A_itr));
         if (p_inv >= col && p_inv < m) {
           *itr++ = p_inv;
-          // buf[p_inv] = *A_v_itr;
         }
       }
     }
     // sort indices
     std::sort(B.row_ind_begin(col), itr);
-    // for (auto i = B.row_ind_cbegin(col), last = B.row_ind_cend(col); i !=
-    // last;
-    //      ++i, ++v_itr)
-    //   *v_itr = buf[*i];
   }
-
-  // psmilu_assert(v_itr == vals.end(), "fatal");
 
   return B;
 }
@@ -476,7 +448,7 @@ do_maching(const CcsType &A, const CrsType &A_crs,
            const typename CcsType::size_type m0, const int verbose,
            ScalingArray &s, ScalingArray &t, PermType &p, PermType &q,
            const bool hdl_zero_diags = false, const bool compute_perm = true,
-           const bool timing = false) {
+           const bool timing = false, const int matching = 0) {
   static_assert(!CcsType::ROW_MAJOR, "input must be CCS type");
   using value_type                = typename CcsType::value_type;
   using index_type                = typename CcsType::index_type;
@@ -487,6 +459,7 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   using return_type                     = CCS<value_type, index_type>;
   using size_type                       = typename CcsType::size_type;
   constexpr static value_type ONE       = Const<value_type>::ONE;
+  using mumps_kernel = MUMPS<value_type, index_type, ONE_BASED>;
 
   const size_type M = A.nrows(), N = A.ncols();
   p.resize(M);
@@ -501,18 +474,38 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   psmilu_error_if(s.status() == DATA_UNDEF, "memory allocation failed for t");
   // matching_control_type control;  // create control parameters for matching
   return_type B;
-  // set_default_control(verbose, control, ONE_BASED);
-  // first extract matching
-  auto B1 = internal::extract_leading_block4matching<IsSymm>(A, m0);
+// first extract matching
+#ifdef mc64_matching
+  CcsType     B1;
+  std::string match_name = "MUMPS";
+  if (matching != MATCHING_MUMPS) {
+    B1         = internal::extract_leading_block4matching<IsSymm>(A, m0);
+    match_name = "MC64";
+  } else
+    B1 = internal::extract_leading_block4matching<false>(A, m0);
+#else
+  if (matching == MATCHING_MC64)
+    psmilu_warning("MC64 is not available, skip to use MUMPS");
+  const static match_name = "MUMPS";
+  auto B1 = internal::extract_leading_block4matching<false>(A, m0);
+#endif
   // then compute matching
   do {
     DefaultTimer timer;
     timer.start();
-    // match_driver::template do_matching<IsSymm>(B1, control, p(), q(), s, t);
-    do_mc64<IsSymm>(B1, verbose, s, t, p(), q());
+
+#ifndef mc64_matching
+    mumps_kernel::template do_matching<IsSymm>(B1, verbose, p(), q(), s, t);
+#else
+    if (matching != MATCHING_MUMPS)
+      do_mc64<IsSymm>(B1, verbose, s, t, p(), q());
+    else
+      mumps_kernel::template do_matching<IsSymm>(B1, verbose, p(), q(), s, t);
+#endif
     timer.finish();
     if (timing)
-      psmilu_info("%s matching took %gs.", "MC64", (double)timer.time());
+      psmilu_info("%s matching took %gs.", match_name.c_str(),
+                  (double)timer.time());
   } while (false);
   // fill identity mapping and add one to scaling vectors for offsets, if any
   for (size_type i = m0; i < M; ++i) {
