@@ -80,7 +80,7 @@ inline typename CcsType::size_type do_preprocessing(
 
   const auto match_res = do_maching<IsSymm>(
       A, A_crs, m0, opt.verbose, s, t, p, q, hdl_zero_diag,
-      opt.reorder != REORDER_OFF, psmilu_verbose(PRE_TIME, opt));
+      opt.reorder != REORDER_OFF, psmilu_verbose(PRE_TIME, opt), opt.matching);
 
   timer.finish();
   if (psmilu_verbose(PRE_TIME, opt))

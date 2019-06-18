@@ -22,16 +22,17 @@ extern "C" {
 
 #include "psmilu_Array.hpp"
 #include "psmilu_CompressedStorage.hpp"
+#include "psmilu_Options.h"
 #include "psmilu_Timer.hpp"
 #include "psmilu_log.hpp"
 #include "psmilu_utils.hpp"
+
+#include "MUMPS.hpp"
 
 #ifdef mc64_matching
 
 #  include "mc64_driver.hpp"
 
-#else
-#  error "PSMILU requires HSL_MC64, for now..."
 #endif
 
 namespace psmilu {
@@ -159,10 +160,6 @@ compute_perm_leading_block(const CcsType &                   A, const CrsType &,
   psmilu_error_if(col_start.status() == DATA_UNDEF, "memory allocation failed");
   col_start.front() = 0;  // zero based
 
-  // buffer for value array
-  // Array<typename CcsType::value_type> buf(m);
-  // psmilu_error_if(buf.status() == DATA_UNDEF, "memory allocation failed");
-
   // determine nnz
   for (size_type col = 0u; col < m; ++col) {
     const auto q_col   = q[col];
@@ -179,12 +176,7 @@ compute_perm_leading_block(const CcsType &                   A, const CrsType &,
   // NOTE we only indices for reordering step
   row_ind.resize(col_start[m]);
   psmilu_error_if(row_ind.status() == DATA_UNDEF, "memory allocation failed");
-  // auto &vals = B.vals();
-  // psmilu_error_if(vals.status() == DATA_UNDEF, "memory allocation failed");
-  // row_ind.resize(col_start[m]);
   auto itr = row_ind.begin();
-  // vals.resize(col_start[m]);
-  // auto v_itr = vals.begin();
 
   // assemble nnz arrays
   for (size_type col = 0u; col < m; ++col) {
@@ -195,18 +187,11 @@ compute_perm_leading_block(const CcsType &                   A, const CrsType &,
       const size_type p_inv = p.inv(c_idx(*A_itr));
       if (p_inv < m) {
         *itr++ = p_inv;
-        // buf[p_inv] = *A_v_itr;
       }
     }
     // sort indices
     std::sort(B.row_ind_begin(col), itr);
-    // for (auto i = B.row_ind_cbegin(col), last = B.row_ind_cend(col); i !=
-    // last;
-    //      ++i, ++v_itr)
-    //   *v_itr = buf[*i];
   }
-
-  // psmilu_assert(v_itr == vals.end(), "fatal");
 
   return B;
 }
@@ -281,12 +266,7 @@ compute_perm_leading_block(const CcsType &A, const CrsType &A_crs,
   auto &row_ind = B.row_ind();
   row_ind.resize(col_start[m]);
   psmilu_error_if(row_ind.status() == DATA_UNDEF, "memory allocation failed");
-  // auto &vals = B.vals();
-  // psmilu_error_if(vals.status() == DATA_UNDEF, "memory allocation failed");
-  // row_ind.resize(col_start[m]);
   auto itr = row_ind.begin();
-  // vals.resize(col_start[m]);
-  // auto v_itr = vals.begin();
 
   // assemble nnz arrays
   for (size_type col = 0u; col < m; ++col) {
@@ -297,7 +277,6 @@ compute_perm_leading_block(const CcsType &A, const CrsType &A_crs,
       const size_type p_inv = p.inv(c_idx(*A_itr));
       if (p_inv >= col && p_inv < m) {
         *itr++ = p_inv;
-        // buf[p_inv] = *A_v_itr;
       }
     }
     if (A_crs.nnz_in_row(q_col)) {
@@ -308,19 +287,134 @@ compute_perm_leading_block(const CcsType &A, const CrsType &A_crs,
         const size_type p_inv = p.inv(c_idx(*A_itr));
         if (p_inv >= col && p_inv < m) {
           *itr++ = p_inv;
-          // buf[p_inv] = *A_v_itr;
         }
       }
     }
     // sort indices
     std::sort(B.row_ind_begin(col), itr);
-    // for (auto i = B.row_ind_cbegin(col), last = B.row_ind_cend(col); i !=
-    // last;
-    //      ++i, ++v_itr)
-    //   *v_itr = buf[*i];
   }
 
-  // psmilu_assert(v_itr == vals.end(), "fatal");
+  return B;
+}
+
+/// \brief extract leading diagonal entries for MC64 routine
+/// \tparam IsSymm if \a true, then assume a symmetric leading block
+/// \tparam ValueType value type for input, e.g. \a double
+/// \tparam IndexType index type for input, e.g. \a int
+/// \tparam OneBased index flag
+/// \param[in] A input matrix
+/// \param[in] m leading block size to extract
+/// \ingroup pre
+///
+/// Notice that for efficiency purpose, we return CCS matrices. Also,
+/// be aware that the input only accept \ref CCS matrix, which is fine, because
+/// by the time calling this function, we should have both \ref CRS and
+/// CCS versions of the input matrix.
+///
+/// \note This function only allocate memory needed for the leading block. No
+///       additional heap memory is needed.
+template <bool IsSymm, class ValueType, class IndexType, bool OneBased>
+inline CCS<ValueType, IndexType, OneBased> extract_leading_block4matching(
+    const CCS<ValueType, IndexType, OneBased> &                   A,
+    const typename CCS<ValueType, IndexType, OneBased>::size_type m) {
+  using value_type                = ValueType;
+  using index_type                = IndexType;
+  using return_ccs                = CCS<value_type, index_type, OneBased>;
+  using size_type                 = typename return_ccs::size_type;
+  constexpr static bool ONE_BASED = OneBased;
+  const auto            ori_idx   = [](const size_type i) {
+    return to_ori_idx<size_type, ONE_BASED>(i);
+  };
+
+  const size_type M = A.nrows(), N = A.ncols();
+  psmilu_error_if(
+      m > M || m > N,
+      "leading block size should not be larger than the matrix sizes");
+
+  // shallow copy if leading block is the same as input and not symmetric
+  if (!IsSymm && m == M) return A;
+
+  return_ccs B(m, m);
+
+  // NOTE use col_start to first store the position in A
+  auto A_itr = A.row_ind().cbegin();
+  B.col_start().resize(m + 1);
+  auto &col_start = B.col_start();
+  psmilu_error_if(col_start.status() == DATA_UNDEF, "memory allocation failed");
+  auto &          row_ind = B.row_ind();
+  auto &          vals    = B.vals();
+  const size_type tgt     = ori_idx(m);
+
+  if (IsSymm) {
+    // for symmetric case, we use col_start to store first position
+    // note that two binary searches are needed for each column to determine
+    // the nnz. Then, while filling values, only one binary is needed.
+
+    auto      A_v_itr1 = A.vals().cbegin();
+    size_type nnz(0u);
+    for (size_type i = 0u; i < m; ++i) {
+      auto info1 = find_sorted(A.row_ind_cbegin(i), A.row_ind_cend(i), tgt);
+      auto info2 = find_sorted(A.row_ind_cbegin(i), info1.second, ori_idx(i));
+      // only lower part
+      nnz += info1.second - info2.second;
+      col_start[i + 1] = info2.second - A_itr;
+    }
+
+    // memory allocation
+    row_ind.resize(nnz);
+    psmilu_error_if(row_ind.status() == DATA_UNDEF, "memory allocation failed");
+    vals.resize(nnz);
+    psmilu_error_if(vals.status() == DATA_UNDEF, "memory allocation failed");
+
+    auto itr   = row_ind.begin();
+    auto v_itr = vals.begin();
+
+    col_start[0] = ONE_BASED;
+    for (size_type i = 0u; i < m; ++i) {
+      auto a_itr   = A_itr + col_start[i + 1],
+           last    = find_sorted(a_itr, A.row_ind_cend(i), tgt).second;
+      auto A_v_itr = A_v_itr1 + col_start[i + 1];
+      // NOTE it's safe to modify col_start now
+      col_start[i + 1] = col_start[i] + (last - a_itr);
+      for (; a_itr != last; ++a_itr, ++itr, ++v_itr, ++A_v_itr) {
+        *itr   = *a_itr;
+        *v_itr = *A_v_itr;
+      }
+    }
+  } else {
+    // for asymmetric case, we use col_start to store the pass-of-end positions
+    // it's worth nothing that one a single binary search is needed for
+    // determining the nnz.
+
+    size_type nnz(0u);
+    for (size_type i = 0u; i < m; ++i) {
+      auto info = find_sorted(A.row_ind_cbegin(i), A.row_ind_cend(i), tgt);
+      nnz += info.second - A.row_ind_cbegin(i);
+      col_start[i + 1] = info.second - A_itr;
+    }
+
+    // memory allocation
+    row_ind.resize(nnz);
+    psmilu_error_if(row_ind.status() == DATA_UNDEF, "memory allocation failed");
+    vals.resize(nnz);
+    psmilu_error_if(vals.status() == DATA_UNDEF, "memory allocation failed");
+
+    auto itr   = row_ind.begin();
+    auto v_itr = vals.begin();
+
+    col_start[0] = ONE_BASED;
+    for (size_type i = 0u; i < m; ++i) {
+      auto a_itr   = A.row_ind_cbegin(i);
+      auto last    = A_itr + col_start[i + 1];
+      auto A_v_itr = A.val_cbegin(i);
+      // safe to modify col_start
+      col_start[i + 1] = col_start[i] + (last - a_itr);
+      for (; a_itr != last; ++a_itr, ++itr, ++v_itr, ++A_v_itr) {
+        *itr   = *a_itr;
+        *v_itr = *A_v_itr;
+      }
+    }
+  }
 
   return B;
 }
@@ -354,7 +448,7 @@ do_maching(const CcsType &A, const CrsType &A_crs,
            const typename CcsType::size_type m0, const int verbose,
            ScalingArray &s, ScalingArray &t, PermType &p, PermType &q,
            const bool hdl_zero_diags = false, const bool compute_perm = true,
-           const bool timing = false) {
+           const bool timing = false, const int matching = 0) {
   static_assert(!CcsType::ROW_MAJOR, "input must be CCS type");
   using value_type                = typename CcsType::value_type;
   using index_type                = typename CcsType::index_type;
@@ -365,6 +459,7 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   using return_type                     = CCS<value_type, index_type>;
   using size_type                       = typename CcsType::size_type;
   constexpr static value_type ONE       = Const<value_type>::ONE;
+  using mumps_kernel = MUMPS<value_type, index_type, ONE_BASED>;
 
   const size_type M = A.nrows(), N = A.ncols();
   p.resize(M);
@@ -379,18 +474,38 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   psmilu_error_if(s.status() == DATA_UNDEF, "memory allocation failed for t");
   // matching_control_type control;  // create control parameters for matching
   return_type B;
-  // set_default_control(verbose, control, ONE_BASED);
-  // first extract matching
-  auto B1 = internal::extract_leading_block4matching<IsSymm>(A, m0);
+// first extract matching
+#ifdef mc64_matching
+  CcsType     B1;
+  std::string match_name = "MUMPS";
+  if (matching != MATCHING_MUMPS) {
+    B1         = internal::extract_leading_block4matching<IsSymm>(A, m0);
+    match_name = "MC64";
+  } else
+    B1 = internal::extract_leading_block4matching<false>(A, m0);
+#else
+  if (matching == MATCHING_MC64)
+    psmilu_warning("MC64 is not available, skip to use MUMPS");
+  const static match_name = "MUMPS";
+  auto B1 = internal::extract_leading_block4matching<false>(A, m0);
+#endif
   // then compute matching
   do {
     DefaultTimer timer;
     timer.start();
-    // match_driver::template do_matching<IsSymm>(B1, control, p(), q(), s, t);
-    do_mc64<IsSymm>(B1, verbose, s, t, p(), q());
+
+#ifndef mc64_matching
+    mumps_kernel::template do_matching<IsSymm>(B1, verbose, p(), q(), s, t);
+#else
+    if (matching != MATCHING_MUMPS)
+      do_mc64<IsSymm>(B1, verbose, s, t, p(), q());
+    else
+      mumps_kernel::template do_matching<IsSymm>(B1, verbose, p(), q(), s, t);
+#endif
     timer.finish();
     if (timing)
-      psmilu_info("%s matching took %gs.", "MC64", (double)timer.time());
+      psmilu_info("%s matching took %gs.", match_name.c_str(),
+                  (double)timer.time());
   } while (false);
   // fill identity mapping and add one to scaling vectors for offsets, if any
   for (size_type i = m0; i < M; ++i) {

@@ -51,6 +51,16 @@ enum {
 };
 
 /*!
+ * \brief matching backend
+ */
+enum {
+  PSMILU_MATCHING_AUTO  = 0, /*!< automatically determined */
+  PSMILU_MATCHING_MUMPS = 1, /*!< using mumps */
+  PSMILU_MATCHING_MC64  = 2,
+  /*!< using HSL_MC64, user needs to provide the package */
+};
+
+/*!
  * \struct psmilu_Options
  * \brief POD parameter controls
  * \note Values in parentheses are default settings
@@ -73,6 +83,7 @@ struct psmilu_Options {
   int    pre_reorder; /*!< reordering before matching */
   int    pre_reorder_lvl1;
   /*!< only do pre reorder on level 1 (default 1) */
+  int matching; /*!< matching method, default is auto */
 };
 
 /*!
@@ -101,7 +112,8 @@ static psmilu_Options psmilu_get_default_options(void) {
                           .reorder          = PSMILU_REORDER_AUTO,
                           .saddle           = 1,
                           .pre_reorder      = PSMILU_REORDER_OFF,
-                          .pre_reorder_lvl1 = 1};
+                          .pre_reorder_lvl1 = 1,
+                          .matching         = PSMILU_MATCHING_AUTO};
 }
 
 /*!
@@ -120,6 +132,7 @@ static void psmilu_enable_verbose(const int flag, psmilu_Options *opts) {
 
 /*!
  * \brief get the string tag for reordering methods
+ * \param[in] opt options
  * \return C-string of the method name
  */
 static const char *psmilu_get_reorder_name(const psmilu_Options *opt) {
@@ -142,6 +155,25 @@ static const char *psmilu_get_reorder_name(const psmilu_Options *opt) {
     }
   }
   return "Null";
+}
+
+/*!
+ * \brief get the matching method name
+ * \param[in] opt options
+ * \return C-string of the matching method name
+ */
+static const char *psmilu_get_matching_name(const psmilu_Options *opt) {
+  if (opt) {
+    switch (opt->matching) {
+      case PSMILU_MATCHING_AUTO:
+        return "Auto";
+      case PSMILU_MATCHING_MUMPS:
+        return "MUMPS";
+      default:
+        return "MC64";
+    }
+  }
+  return "Auto";
 }
 
 /*!
@@ -193,6 +225,18 @@ enum : int {
 };
 
 /*!
+ * \brief enum wrapper for matching methods
+ * \note The prefix of \a PSMILU will be dropped
+ * \ingroup cpp
+ */
+enum : int {
+  MATCHING_AUTO  = ::PSMILU_MATCHING_AUTO,  /*!< automatically determined */
+  MATCHING_MUMPS = ::PSMILU_MATCHING_MUMPS, /*!< using mumps */
+  MATCHING_MC64  = ::PSMILU_MATCHING_MC64,
+  /*!< using HSL_MC64, user needs to provide the package */
+};
+
+/*!
  * \typedef Options
  * \brief type wrapper
  * \ingroup cpp
@@ -204,6 +248,14 @@ typedef psmilu_Options Options;
  */
 inline std::string get_reorder_name(const Options &opt) {
   return ::psmilu_get_reorder_name(&opt);
+}
+
+/*!
+ * \brief get the matching method name
+ * \param[in] opt Options
+ */
+inline std::string get_matching_name(const Options &opt) {
+  return ::psmilu_get_matching_name(&opt);
 }
 
 /*!
@@ -269,7 +321,7 @@ inline InStream &operator>>(InStream &in_str, Options &opt) {
   in_str >> opt.tau_L >> opt.tau_U >> opt.tau_d >> opt.tau_kappa >>
       opt.alpha_L >> opt.alpha_U >> opt.rho >> opt.c_d >> opt.c_h >> opt.N >>
       opt.verbose >> opt.rf_par >> opt.reorder >> opt.saddle >>
-      opt.pre_reorder >> opt.pre_reorder_lvl1;
+      opt.pre_reorder >> opt.pre_reorder_lvl1 >> opt.matching;
   return in_str;
 }
 
@@ -328,7 +380,8 @@ inline std::string opt_repr(const Options &opt) {
                          return "Null";
                      }
                    }) +
-         pack_int("pre_reorder_lvl1", opt.pre_reorder_lvl1);
+         pack_int("pre_reorder_lvl1", opt.pre_reorder_lvl1) +
+         pack_name("matching", get_matching_name);
 }
 
 #  ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -337,7 +390,7 @@ namespace internal {
  * build a byte map, i.e. the value is the leading byte position of the attrs
  * in Options
  */
-const static std::size_t option_attr_pos[16] = {
+const static std::size_t option_attr_pos[17] = {
     0,
     sizeof(double),
     option_attr_pos[1] + sizeof(double),
@@ -353,12 +406,13 @@ const static std::size_t option_attr_pos[16] = {
     option_attr_pos[11] + sizeof(int),
     option_attr_pos[12] + sizeof(int),
     option_attr_pos[13] + sizeof(int),
-    option_attr_pos[14] + sizeof(int)};
+    option_attr_pos[14] + sizeof(int),
+    option_attr_pos[15] + sizeof(int)};
 
 /* data type tags, true for double, false for int */
-const static bool option_dtypes[16] = {true,  true,  true,  true,  false, false,
+const static bool option_dtypes[17] = {true,  true,  true,  true,  false, false,
                                        true,  true,  true,  false, false, false,
-                                       false, false, false, false};
+                                       false, false, false, false, false};
 
 /* using unordered map to store the string to index map */
 const static std::unordered_map<std::string, int> option_tag2pos = {
@@ -369,7 +423,8 @@ const static std::unordered_map<std::string, int> option_tag2pos = {
     {"c_h", 8},          {"N", 9},
     {"verbose", 10},     {"rf_par", 11},
     {"reorder", 12},     {"saddle", 13},
-    {"pre_reorder", 14}, {"pre_reorder_lvl1", 15}};
+    {"pre_reorder", 14}, {"pre_reorder_lvl1", 15},
+    {"matching", 16}};
 
 } /* namespace internal */
 #  endif /* DOXYGEN_SHOULD_SKIP_THIS */

@@ -43,8 +43,6 @@ extern "C" {
 
 namespace psmilu {
 
-#ifndef PSMILU_UNIT_TESTING
-
 /*!
  * \addtogroup pre
  * @{
@@ -67,13 +65,13 @@ class HSL_MC64 {
 
   constexpr static bool ONE_BASED = OneBased;  ///< index flag
 
-#  ifdef HSL_MC64D_H
+#ifdef HSL_MC64D_H
   static_assert(std::is_same<value_type, double>::value, "must be double!");
-#  elif defined(HSL_MC64S_H)
+#elif defined(HSL_MC64S_H)
   static_assert(std::is_same<value_type, float>::value, "must be float!");
-#  else
-#    error "Unsupported data type (complex is not supported yet in PSMILU)!"
-#  endif
+#else
+#  error "Unsupported data type (complex is not supported yet in PSMILU)!"
+#endif
 
   /// \brief perform matching
   /// \tparam IsSymm is \a true, then assume \a A is symmetric
@@ -229,142 +227,15 @@ inline void set_default_control(const int              verbose,
     control.sp = 6;
     if (psmilu_verbose2(PRE, verbose)) control.ldiag = 3;
   }
-#  ifdef NDEBUG
+#ifdef NDEBUG
   control.checking = 1;
-#  endif  // NDEBUG
+#endif  // NDEBUG
 }
 
 /*!
  * @}
  */
 
-#endif  // PSMILU_UNIT_TESTING
-
-namespace internal {
-
-/// \brief extract leading diagonal entries for MC64 routine
-/// \tparam IsSymm if \a true, then assume a symmetric leading block
-/// \tparam ValueType value type for input, e.g. \a double
-/// \tparam IndexType index type for input, e.g. \a int
-/// \tparam OneBased index flag
-/// \param[in] A input matrix
-/// \param[in] m leading block size to extract
-/// \ingroup pre
-///
-/// Notice that for efficiency purpose, we return CCS matrices. Also,
-/// be aware that the input only accept \ref CCS matrix, which is fine, because
-/// by the time calling this function, we should have both \ref CRS and
-/// CCS versions of the input matrix.
-///
-/// \note This function only allocate memory needed for the leading block. No
-///       additional heap memory is needed.
-template <bool IsSymm, class ValueType, class IndexType, bool OneBased>
-inline CCS<ValueType, IndexType, OneBased> extract_leading_block4matching(
-    const CCS<ValueType, IndexType, OneBased> &                   A,
-    const typename CCS<ValueType, IndexType, OneBased>::size_type m) {
-  using value_type                = ValueType;
-  using index_type                = IndexType;
-  using return_ccs                = CCS<value_type, index_type, OneBased>;
-  using size_type                 = typename return_ccs::size_type;
-  constexpr static bool ONE_BASED = OneBased;
-  const auto            ori_idx   = [](const size_type i) {
-    return to_ori_idx<size_type, ONE_BASED>(i);
-  };
-
-  const size_type M = A.nrows(), N = A.ncols();
-  psmilu_error_if(
-      m > M || m > N,
-      "leading block size should not be larger than the matrix sizes");
-
-  // shallow copy if leading block is the same as input and not symmetric
-  if (!IsSymm && m == M) return A;
-
-  return_ccs B(m, m);
-
-  // NOTE use col_start to first store the position in A
-  auto A_itr = A.row_ind().cbegin();
-  B.col_start().resize(m + 1);
-  auto &col_start = B.col_start();
-  psmilu_error_if(col_start.status() == DATA_UNDEF, "memory allocation failed");
-  auto &          row_ind = B.row_ind();
-  auto &          vals    = B.vals();
-  const size_type tgt     = ori_idx(m);
-
-  if (IsSymm) {
-    // for symmetric case, we use col_start to store first position
-    // note that two binary searches are needed for each column to determine
-    // the nnz. Then, while filling values, only one binary is needed.
-
-    auto      A_v_itr1 = A.vals().cbegin();
-    size_type nnz(0u);
-    for (size_type i = 0u; i < m; ++i) {
-      auto info1 = find_sorted(A.row_ind_cbegin(i), A.row_ind_cend(i), tgt);
-      auto info2 = find_sorted(A.row_ind_cbegin(i), info1.second, ori_idx(i));
-      // only lower part
-      nnz += info1.second - info2.second;
-      col_start[i + 1] = info2.second - A_itr;
-    }
-
-    // memory allocation
-    row_ind.resize(nnz);
-    psmilu_error_if(row_ind.status() == DATA_UNDEF, "memory allocation failed");
-    vals.resize(nnz);
-    psmilu_error_if(vals.status() == DATA_UNDEF, "memory allocation failed");
-
-    auto itr   = row_ind.begin();
-    auto v_itr = vals.begin();
-
-    col_start[0] = ONE_BASED;
-    for (size_type i = 0u; i < m; ++i) {
-      auto a_itr   = A_itr + col_start[i + 1],
-           last    = find_sorted(a_itr, A.row_ind_cend(i), tgt).second;
-      auto A_v_itr = A_v_itr1 + col_start[i + 1];
-      // NOTE it's safe to modify col_start now
-      col_start[i + 1] = col_start[i] + (last - a_itr);
-      for (; a_itr != last; ++a_itr, ++itr, ++v_itr, ++A_v_itr) {
-        *itr   = *a_itr;
-        *v_itr = *A_v_itr;
-      }
-    }
-  } else {
-    // for asymmetric case, we use col_start to store the pass-of-end positions
-    // it's worth nothing that one a single binary search is needed for
-    // determining the nnz.
-
-    size_type nnz(0u);
-    for (size_type i = 0u; i < m; ++i) {
-      auto info = find_sorted(A.row_ind_cbegin(i), A.row_ind_cend(i), tgt);
-      nnz += info.second - A.row_ind_cbegin(i);
-      col_start[i + 1] = info.second - A_itr;
-    }
-
-    // memory allocation
-    row_ind.resize(nnz);
-    psmilu_error_if(row_ind.status() == DATA_UNDEF, "memory allocation failed");
-    vals.resize(nnz);
-    psmilu_error_if(vals.status() == DATA_UNDEF, "memory allocation failed");
-
-    auto itr   = row_ind.begin();
-    auto v_itr = vals.begin();
-
-    col_start[0] = ONE_BASED;
-    for (size_type i = 0u; i < m; ++i) {
-      auto a_itr   = A.row_ind_cbegin(i);
-      auto last    = A_itr + col_start[i + 1];
-      auto A_v_itr = A.val_cbegin(i);
-      // safe to modify col_start
-      col_start[i + 1] = col_start[i] + (last - a_itr);
-      for (; a_itr != last; ++a_itr, ++itr, ++v_itr, ++A_v_itr) {
-        *itr   = *a_itr;
-        *v_itr = *A_v_itr;
-      }
-    }
-  }
-
-  return B;
-}
-
-}  // namespace internal
 }  // namespace psmilu
 
 #endif  // _PSMILU_MATCHING_HSL_MC64_HPP

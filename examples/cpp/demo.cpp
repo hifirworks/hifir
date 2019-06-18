@@ -53,6 +53,8 @@ const static char *help =
     "\treordering methods\n"
     " -p|--pre-reorder method\n"
     "\treordering method used for general system before matching\n"
+    " -m|--matching method\n"
+    "\tmatching method\n"
     " -T|--rtol\n"
     "\trelative tolerance for FGMRES (1e-6) solver\n"
     " -R|--restart\n"
@@ -220,6 +222,10 @@ inline static std::tuple<Options, bool, int, double, bool> parse_args(
       ++i;
       if (i >= argc) fatal_exit("missing pre-reorder method tag!");
       opts.pre_reorder = std::atoi(argv[i]);
+    } else if (arg == string("-m") || arg == string("--matching")) {
+      ++i;
+      if (i >= argc) fatal_exit("missing matching method tag!");
+      opts.matching = std::atoi(argv[i]);
     } else if (arg == string("-n") || arg == string("--no-saddle")) {
       opts.saddle = 0;
     } else if (arg == string("-P") || arg == string("--pre-reorder-all")) {
