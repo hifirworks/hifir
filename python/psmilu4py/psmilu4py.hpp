@@ -33,6 +33,11 @@
     psmilu4py_stderr(__msg);     \
   } while (false)
 
+// test for mc64
+#if PSMILU4PY_USE_MC64
+#  define PSMILU_ENABLE_MC64
+#endif  // PSMILU4PY_USE_MC64
+
 // now, include the psmilu code generator
 #include <PSMILU.hpp>
 
