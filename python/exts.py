@@ -23,8 +23,7 @@ libs += _lapack_libs
 MC64_ROOT = os.environ.get('MC64_ROOT', None)
 lib_dirs = []
 if MC64_ROOT is not None:
-    libs += ['hsl_mc64', 'gfortran']
-    incs += [os.path.join(MC64_ROOT, 'include')]
+    libs += ['mc64', 'gfortran']
     lib_dirs += [os.path.join(MC64_ROOT, 'lib')]
     macros = [('PSMILU4PY_USE_MC64', '1')]
 else:
