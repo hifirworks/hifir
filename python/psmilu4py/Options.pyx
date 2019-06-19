@@ -34,6 +34,9 @@ __all__ = [
     'REORDER_RCM',
     'REORDER_KING',
     'REORDER_SLOAN',
+    'MATCHING_AUTO',
+    'MATCHING_MUMPS',
+    'MATCHING_MC64',
     'Options',
 ]
 
@@ -53,6 +56,11 @@ REORDER_AMD = 2
 REORDER_RCM = 3
 REORDER_KING = 4
 REORDER_SLOAN = 5
+
+# matching
+MATCHING_AUTO = 0
+MATCHING_MUMPS = 1
+MATCHING_MC64 = 2
 
 
 # determine total number of parameters
