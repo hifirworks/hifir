@@ -109,10 +109,9 @@ class MC64 {
   }
 
   template <bool IsSymm>
-  inline static void do_matching(const ccs_type &A, const int verbose,
-                                 crs_type &B, Array<index_type> &p,
-                                 Array<index_type> &q, Array<value_type> &s,
-                                 Array<value_type> &t) {
+  inline static void do_matching(const int verbose, crs_type &B,
+                                 Array<index_type> &p, Array<index_type> &q,
+                                 Array<value_type> &s, Array<value_type> &t) {
     constexpr static bool consist_int = sizeof(index_type) == sizeof(int);
     const size_type       n = B.nrows(), nnz = B.nnz();
     psmilu_error_if(B.nrows() != n, "must be squared systems");

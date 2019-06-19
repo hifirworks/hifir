@@ -474,7 +474,7 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   do {
     DefaultTimer timer;
     timer.start();
-    mumps_kernel::template do_matching<IsSymm>(A, verbose, B, p(), q(), s, t);
+    mumps_kernel::template do_matching<IsSymm>(verbose, B, p(), q(), s, t);
     timer.finish();
     if (timing) psmilu_info("MUMPS matching took %gs.", (double)timer.time());
   } while (false);
@@ -486,50 +486,15 @@ do_maching(const CcsType &A, const CrsType &A_crs,
     timer.start();
     if (matching != MATCHING_MUMPS) {
       match_name = "MC64";
-      mc64_kernel::template do_matching<IsSymm>(A, verbose, B, p(), q(), s, t);
+      mc64_kernel::template do_matching<IsSymm>(verbose, B, p(), q(), s, t);
     } else
-      mumps_kernel::template do_matching<IsSymm>(A, verbose, B, p(), q(), s, t);
+      mumps_kernel::template do_matching<IsSymm>(verbose, B, p(), q(), s, t);
     timer.finish();
     if (timing)
       psmilu_info("%s matching took %gs.", match_name.c_str(),
                   (double)timer.time());
   } while (false);
 #endif  // PSMILU_ENABLE_MC64
-        // // first extract matching
-        // #ifdef mc64_matching
-        //   CcsType     B1;
-        //   std::string match_name = "MUMPS";
-        //   if (matching != MATCHING_MUMPS) {
-  //     B1         = internal::extract_leading_block4matching<IsSymm>(A, m0);
-  //     match_name = "MC64";
-  //   } else
-  //     B1 = internal::extract_leading_block4matching<false>(A, m0);
-  // #else
-  //   if (matching == MATCHING_MC64)
-  //     psmilu_warning("MC64 is not available, skip to use MUMPS");
-  //   const static match_name = "MUMPS";
-  //   auto B1 = internal::extract_leading_block4matching<false>(A, m0);
-  // #endif
-  //   // then compute matching
-  //   do {
-  //     DefaultTimer timer;
-  //     timer.start();
-
-  // #ifndef mc64_matching
-  //     mumps_kernel::template do_matching<IsSymm>(B1, verbose, p(), q(), s,
-  //     t);
-  // #else
-  //     if (matching != MATCHING_MUMPS)
-  //       do_mc64<IsSymm>(B1, verbose, s, t, p(), q());
-  //     else
-  //       mumps_kernel::template do_matching<IsSymm>(B1, verbose, p(), q(), s,
-  //       t);
-  // #endif
-  //     timer.finish();
-  //     if (timing)
-  //       psmilu_info("%s matching took %gs.", match_name.c_str(),
-  //                   (double)timer.time());
-  //   } while (false);
   // fill identity mapping and add one to scaling vectors for offsets, if any
   for (size_type i = m0; i < M; ++i) {
     p[i] = i;
@@ -545,25 +510,6 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   const size_type m = !hdl_zero_diags ? m0
                                       : internal::defer_zero_diags<false>(
                                             A, m0, p, q, p.inv(), q.inv());
-  // #ifndef mc64_matching
-  //   const size_type m = !hdl_zero_diags ? m0
-  //                                       : internal::defer_zero_diags<false>(
-  //                                             B1, m0, p, q, p.inv(),
-  //                                             q.inv());
-  // #else
-  //   size_type m;
-  //   if (hdl_zero_diags) {
-  //     // NOTE for MUMPS we store all entries, thus we treat the static
-  //     deferals
-  //     // as nonsymmetric case
-  //     if (!IsSymm || matching != MATCHING_MC64)
-  //       m = internal::defer_zero_diags<false>(B1, m0, p, q, p.inv(),
-  //       q.inv());
-  //     else
-  //       m = internal::defer_zero_diags<true>(B1, m0, p, q, p.inv(), q.inv());
-  //   } else
-  //     m = m0;
-  // #endif
   return_type BB;
   if (compute_perm) {
     p.build_inv();
