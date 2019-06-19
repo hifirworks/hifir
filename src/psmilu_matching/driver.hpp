@@ -439,8 +439,7 @@ inline std::pair<
 do_maching(const CcsType &A, const CrsType &A_crs,
            const typename CcsType::size_type m0, const int verbose,
            ScalingArray &s, ScalingArray &t, PermType &p, PermType &q,
-           const bool hdl_zero_diags = false, const bool compute_perm = true,
-           const bool timing = false, const int matching = 0) {
+           const Options &opts, const bool hdl_zero_diags = false) {
   static_assert(!CcsType::ROW_MAJOR, "input must be CCS type");
   using value_type                = typename CcsType::value_type;
   using index_type                = typename CcsType::index_type;
@@ -462,6 +461,10 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   t.resize(N);
   psmilu_error_if(s.status() == DATA_UNDEF, "memory allocation failed for t");
 
+  const int  matching     = opts.matching;
+  const bool timing       = psmilu_verbose(PRE_TIME, opts);
+  const bool compute_perm = opts.reorder != REORDER_OFF;
+
   CrsType B;
   if (m0 == M)
     B = CrsType(A_crs, true);
@@ -474,7 +477,8 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   do {
     DefaultTimer timer;
     timer.start();
-    mumps_kernel::template do_matching<IsSymm>(verbose, B, p(), q(), s, t);
+    mumps_kernel::template do_matching<IsSymm>(verbose, B, p(), q(), s, t,
+                                               opts.iter_pre_scale);
     timer.finish();
     if (timing) psmilu_info("MUMPS matching took %gs.", (double)timer.time());
   } while (false);
@@ -486,9 +490,11 @@ do_maching(const CcsType &A, const CrsType &A_crs,
     timer.start();
     if (matching != MATCHING_MUMPS) {
       match_name = "MC64";
-      mc64_kernel::template do_matching<IsSymm>(verbose, B, p(), q(), s, t);
+      mc64_kernel::template do_matching<IsSymm>(verbose, B, p(), q(), s, t,
+                                                opts.iter_pre_scale);
     } else
-      mumps_kernel::template do_matching<IsSymm>(verbose, B, p(), q(), s, t);
+      mumps_kernel::template do_matching<IsSymm>(verbose, B, p(), q(), s, t,
+                                                 opts.iter_pre_scale);
     timer.finish();
     if (timing)
       psmilu_info("%s matching took %gs.", match_name.c_str(),
