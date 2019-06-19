@@ -168,7 +168,10 @@ inline void iterative_scale(CrsType &A, typename CrsType::array_type &rs,
     }
     res_c = tmp;
     ++iters;
-    std::cout << iters << ':' << res_r << ' ' << res_c << ' ' << std::endl;
+#ifndef NDEBUG
+    psmilu_info("iter-scaling, iter=%zd, res_r=%g, res_c=%g", iters, res_r,
+                res_c);
+#endif
   } while ((res_r > tol || res_c > tol) && iters < max_iters);
 
   if (IsSymm) std::copy_n(rs.cbegin(), m, cs.begin());
