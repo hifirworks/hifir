@@ -217,7 +217,7 @@ inline CsType iludp_factor_defer_thin(const CsType &                   A,
   const Array<index_type> &Crout_L_start = !IsSymm ? L_start : L_offsets;
 
   // create buffer for L and U lists
-  Array<index_type> L_list(m * 2), U_list(m * 2);
+  Array<index_type> L_list(A.nrows() * 2), U_list(A.ncols() * 2);
   psmilu_error_if(
       L_list.status() == DATA_UNDEF || U_list.status() == DATA_UNDEF,
       "memory allocation failed for L_list and/or U_list at level %zd.",
@@ -324,17 +324,6 @@ inline CsType iludp_factor_defer_thin(const CsType &                   A,
         pvt = is_bad_diag(d[step.deferred_step()]);
         if (pvt) {
           ++info_counter[0];
-#ifdef PSMILU_DEFERREDFAC_VERBOSE_STAT
-          // compute kappa for u wrp deferred index
-          step.update_kappa(U, U_list, U_start, kappa_ut);
-          // then compute kappa for l
-          if (!IsSymm)
-            step.update_kappa(L, L_list, L_start, kappa_l);
-          else
-            kappa_l[step] = kappa_ut[step];
-          info_counter[2] += (std::abs(kappa_ut[step]) > tau_kappa &&
-                              std::abs(kappa_l[step]) > tau_kappa);
-#endif  // PSMILU_DEFERREDFAC_VERBOSE_STAT
           continue;
         }
         // compute kappa for u wrp deferred index
@@ -348,10 +337,6 @@ inline CsType iludp_factor_defer_thin(const CsType &                   A,
               std::abs(kappa_l[step]) > tau_kappa;
         if (pvt) {
           ++info_counter[1];
-#ifdef PSMILU_DEFERREDFAC_VERBOSE_STAT
-          info_counter[2] += (std::abs(kappa_ut[step]) > tau_kappa &&
-                              std::abs(kappa_l[step]) > tau_kappa);
-#endif  // PSMILU_DEFERREDFAC_VERBOSE_STAT
           continue;
         }
         break;

@@ -35,9 +35,7 @@
 
 // test for mc64
 #if PSMILU4PY_USE_MC64
-extern "C" {
-#  include <hsl_mc64d.h>
-}
+#  define PSMILU_ENABLE_MC64
 #endif  // PSMILU4PY_USE_MC64
 
 // now, include the psmilu code generator

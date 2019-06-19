@@ -13,6 +13,9 @@ PSMILU_INCLUDE = os.environ.get('PSMILU_INCLUDE', None)
 if PSMILU_INCLUDE is None:
     raise RuntimeError('you must specify PSMILU_INCLUDE (path/to/PSMILU.hpp)')
 incs = ['.', PSMILU_INCLUDE]
+MUMPS_ROOT = os.environ.get('MUMPS_ROOT', None)
+if MUMPS_ROOT is None:
+    raise RuntimeError('you must specify MUMPS_ROOT')
 LAPACK_LIB = os.environ.get('LAPACK_LIB', '-llapack')
 _lapack_libs = LAPACK_LIB.split(' ')
 for i in range(len(_lapack_libs)):
@@ -20,11 +23,11 @@ for i in range(len(_lapack_libs)):
     _lapack_libs[i] = _l[2:]
 libs = []
 libs += _lapack_libs
+libs += ['mumps', 'gfortran']
+lib_dirs = [os.path.join(MUMPS_ROOT, 'lib')]
 MC64_ROOT = os.environ.get('MC64_ROOT', None)
-lib_dirs = []
 if MC64_ROOT is not None:
-    libs += ['hsl_mc64', 'gfortran']
-    incs += [os.path.join(MC64_ROOT, 'include')]
+    libs += ['mc64']
     lib_dirs += [os.path.join(MC64_ROOT, 'lib')]
     macros = [('PSMILU4PY_USE_MC64', '1')]
 else:

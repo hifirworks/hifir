@@ -586,6 +586,45 @@ class CompressedStorage {
       std::for_each(indices.begin(), indices.end(), [](index_type &i) { ++i; });
   }
 
+  /// \brief extract leading block structure
+  /// \param[in] m leading block size
+  inline void _extract_leading_struct(const size_type m, iarray_type &indptr,
+                                      iarray_type &indices) const {
+    indptr.resize(m + 1);
+    psmilu_error_if(indptr.status() == DATA_UNDEF, "memory allocation failed");
+    indptr.front() = 0;
+    size_type nz(0);
+    for (size_type i(0); i < m; ++i) {
+      auto last = find_sorted(ind_cbegin(i), ind_cend(i), m + OneBased).second;
+      indptr[i + 1] = last - _indices.cbegin();
+      nz += (last - ind_cbegin(i));
+    }
+    indices.resize(nz);
+    if (nz) {
+      psmilu_error_if(indices.status() == DATA_UNDEF,
+                      "memory allocation failed");
+      indptr.front() = OneBased;
+      auto itr       = indices.begin();
+      for (size_type i(0); i < m; ++i) {
+        auto last     = _indices.cbegin() + indptr[i + 1];
+        itr           = std::copy(ind_cbegin(i), last, itr);
+        indptr[i + 1] = indptr[i] + (last - ind_cbegin(i));
+      }
+    }
+  }
+
+  /// \brief extract leading block
+  /// \param[in] m leading block size
+  inline void _extract_leading(const size_type m, iarray_type &indptr,
+                               iarray_type &indices, array_type &vals) const {
+    _extract_leading_struct(m, indptr, indices);
+    vals.resize(indices.size());
+    psmilu_error_if(vals.status() == DATA_UNDEF, "memory allocation failed");
+    auto v_itr = vals.begin();
+    for (size_type i(0); i < m; ++i)
+      v_itr = std::copy_n(val_cbegin(i), indptr[i + 1] - indptr[i], v_itr);
+  }
+
  protected:
   iarray_type _ind_start;  ///< index pointer array, size of n+1
   iarray_type _indices;    ///< index array, size of nnz
@@ -1254,6 +1293,15 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
     return A;
   }
 
+  /// \brief extract leading block
+  /// \param[in] m leading size
+  inline CRS extract_leading(const size_type m) const {
+    CRS B;
+    B.resize(m, m);
+    _base::_extract_leading(m, B.row_start(), B.col_ind(), B.vals());
+    return B;
+  }
+
  protected:
   size_type _ncols;     ///< number of columns
   using _base::_psize;  ///< number of rows (primary entries)
@@ -1909,6 +1957,15 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
             q, pt, leading, A.col_start(), A.row_ind(), A.vals());
     }
     return A;
+  }
+
+  /// \brief extract leading block
+  /// \param[in] m leading block size
+  inline CCS extract_leading(const size_type m) const {
+    CCS B;
+    B.resize(m, m);
+    _base::_extract_leading(m, B.col_start(), B.row_ind(), B.vals());
+    return B;
   }
 
  protected:
