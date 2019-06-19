@@ -11,11 +11,6 @@
 #include <string>
 #include <tuple>
 
-// include hsl_mc64 before including psmilu headers!
-extern "C" {
-#include <hsl_mc64d.h>
-}
-
 #include "FGMRES.hpp"
 #include "PSMILU.hpp"
 
