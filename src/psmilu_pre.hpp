@@ -95,36 +95,36 @@ inline typename CcsType::size_type do_preprocessing(
 
     const auto &      B = match_res.first;
     Array<index_type> P;
-
+// The reordering should treat output as general systems
 #ifdef PSMILU_DISABLE_BGL
     if (opt.reorder != REORDER_AUTO && opt.reorder != REORDER_AMD)
       psmilu_warning(
           "%s ordering is only available in BGL, rebuild with Boost\n"
           "Ordering method fallback to AMD",
           get_reorder_name(opt).c_str());
-    P = run_amd<IsSymm>(B, opt);
+    P = run_amd<false>(B, opt);
 #else
     switch (opt.reorder) {
       case REORDER_AUTO: {
         if (IsSymm && level == 1u) {
-          P            = run_rcm<IsSymm>(B, opt);
+          P            = run_rcm<false>(B, opt);
           reorder_name = "RCM";
         } else {
-          P            = run_amd<IsSymm>(B, opt);
+          P            = run_amd<false>(B, opt);
           reorder_name = "AMD";
         }
       } break;
       case REORDER_AMD:
-        P = run_amd<IsSymm>(B, opt);
+        P = run_amd<false>(B, opt);
         break;
       case REORDER_RCM:
-        P = run_rcm<IsSymm>(B, opt);
+        P = run_rcm<false>(B, opt);
         break;
       case REORDER_KING:
-        P = run_king<IsSymm>(B, opt);
+        P = run_king<false>(B, opt);
         break;
       default:
-        P = run_sloan<IsSymm>(B, opt);
+        P = run_sloan<false>(B, opt);
         break;
     }
     if (opt.reorder != REORDER_AUTO) reorder_name = get_reorder_name(opt);
@@ -238,8 +238,8 @@ if (P.is_eye())
 P.inv().resize(n);
 psmilu_error_if(P.inv().status() == DATA_UNDEF, "memory allocation failed");
 P.build_inv();
-const CcsType AA = A.compute_perm(P.inv(), P());
-CrsType       AA_crs;  // dummy
+const CcsType AA     = A.compute_perm(P.inv(), P());
+const CrsType AA_crs = CrsType(AA);
 
 // do regular preprocessing
 const size_type m = do_preprocessing<false>(AA, AA_crs, n, opt, level, s, t, p,

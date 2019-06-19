@@ -11,12 +11,6 @@
 #ifndef _PSMILU_MATCHING_DRIVER_HPP
 #define _PSMILU_MATCHING_DRIVER_HPP
 
-#ifdef __PSMILU__DEV_MODE__
-extern "C" {
-#  include "hsl_mc64d.h"
-}
-#endif
-
 #include <type_traits>
 #include <utility>
 
@@ -27,13 +21,11 @@ extern "C" {
 #include "psmilu_log.hpp"
 #include "psmilu_utils.hpp"
 
-#include "MUMPS.hpp"
+#include "psmilu_matching/MUMPS.hpp"
 
-#ifdef mc64_matching
-
-#  include "mc64_driver.hpp"
-
-#endif
+#ifdef PSMILU_ENABLE_MC64
+#  include "psmilu_matching/MC64.hpp"
+#endif  // PSMILU_ENABLE_MC64
 
 namespace psmilu {
 namespace internal {
@@ -453,13 +445,10 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   using value_type                = typename CcsType::value_type;
   using index_type                = typename CcsType::index_type;
   constexpr static bool ONE_BASED = CcsType::ONE_BASED;
-  // using match_driver = MatchingDriver<value_type, index_type, ONE_BASED>;
-  // using input_type   = typename match_driver::input_type;
-  constexpr static bool INPUT_ONE_BASED = ONE_BASED;
-  using return_type                     = CCS<value_type, index_type>;
-  using size_type                       = typename CcsType::size_type;
-  constexpr static value_type ONE       = Const<value_type>::ONE;
-  using mumps_kernel = MUMPS<value_type, index_type, ONE_BASED>;
+  using return_type               = CCS<value_type, index_type>;
+  using size_type                 = typename CcsType::size_type;
+  constexpr static value_type ONE = Const<value_type>::ONE;
+  using mumps_kernel              = MUMPS<value_type, index_type, ONE_BASED>;
 
   const size_type M = A.nrows(), N = A.ncols();
   p.resize(M);
@@ -472,41 +461,75 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   psmilu_error_if(s.status() == DATA_UNDEF, "memory allocation failed for s");
   t.resize(N);
   psmilu_error_if(s.status() == DATA_UNDEF, "memory allocation failed for t");
-  // matching_control_type control;  // create control parameters for matching
-  return_type B;
-// first extract matching
-#ifdef mc64_matching
-  CcsType     B1;
-  std::string match_name = "MUMPS";
-  if (matching != MATCHING_MUMPS) {
-    B1         = internal::extract_leading_block4matching<IsSymm>(A, m0);
-    match_name = "MC64";
-  } else
-    B1 = internal::extract_leading_block4matching<false>(A, m0);
-#else
+
+  CrsType B;
+  if (m0 == M)
+    B = CrsType(A_crs, true);
+  else
+    B = A_crs.extract_leading(m0);
+
+#ifndef PSMILU_ENABLE_MC64
   if (matching == MATCHING_MC64)
     psmilu_warning("MC64 is not available, skip to use MUMPS");
-  const static match_name = "MUMPS";
-  auto B1 = internal::extract_leading_block4matching<false>(A, m0);
-#endif
-  // then compute matching
   do {
     DefaultTimer timer;
     timer.start();
-
-#ifndef mc64_matching
-    mumps_kernel::template do_matching<IsSymm>(B1, verbose, p(), q(), s, t);
+    mumps_kernel::template do_matching<IsSymm>(A, verbose, B, p(), q(), s, t);
+    timer.finish();
+    if (timing) psmilu_info("MUMPS matching took %gs.", (double)timer.time());
+  } while (false);
 #else
-    if (matching != MATCHING_MUMPS)
-      do_mc64<IsSymm>(B1, verbose, s, t, p(), q());
-    else
-      mumps_kernel::template do_matching<IsSymm>(B1, verbose, p(), q(), s, t);
-#endif
+  using mc64_kernel      = MC64<value_type, index_type, ONE_BASED>;
+  std::string match_name = "MUMPS";
+  do {
+    DefaultTimer timer;
+    timer.start();
+    if (matching != MATCHING_MUMPS) {
+      match_name = "MC64";
+      mc64_kernel::template do_matching<IsSymm>(A, verbose, B, p(), q(), s, t);
+    } else
+      mumps_kernel::template do_matching<IsSymm>(A, verbose, B, p(), q(), s, t);
     timer.finish();
     if (timing)
       psmilu_info("%s matching took %gs.", match_name.c_str(),
                   (double)timer.time());
   } while (false);
+#endif  // PSMILU_ENABLE_MC64
+        // // first extract matching
+        // #ifdef mc64_matching
+        //   CcsType     B1;
+        //   std::string match_name = "MUMPS";
+        //   if (matching != MATCHING_MUMPS) {
+  //     B1         = internal::extract_leading_block4matching<IsSymm>(A, m0);
+  //     match_name = "MC64";
+  //   } else
+  //     B1 = internal::extract_leading_block4matching<false>(A, m0);
+  // #else
+  //   if (matching == MATCHING_MC64)
+  //     psmilu_warning("MC64 is not available, skip to use MUMPS");
+  //   const static match_name = "MUMPS";
+  //   auto B1 = internal::extract_leading_block4matching<false>(A, m0);
+  // #endif
+  //   // then compute matching
+  //   do {
+  //     DefaultTimer timer;
+  //     timer.start();
+
+  // #ifndef mc64_matching
+  //     mumps_kernel::template do_matching<IsSymm>(B1, verbose, p(), q(), s,
+  //     t);
+  // #else
+  //     if (matching != MATCHING_MUMPS)
+  //       do_mc64<IsSymm>(B1, verbose, s, t, p(), q());
+  //     else
+  //       mumps_kernel::template do_matching<IsSymm>(B1, verbose, p(), q(), s,
+  //       t);
+  // #endif
+  //     timer.finish();
+  //     if (timing)
+  //       psmilu_info("%s matching took %gs.", match_name.c_str(),
+  //                   (double)timer.time());
+  //   } while (false);
   // fill identity mapping and add one to scaling vectors for offsets, if any
   for (size_type i = m0; i < M; ++i) {
     p[i] = i;
@@ -520,44 +543,34 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   // then determine zero diags
   // using the inverse mappings are buffers since we don't need them for now
   const size_type m = !hdl_zero_diags ? m0
-                                      : internal::defer_zero_diags<IsSymm>(
-                                            B1, m0, p, q, p.inv(), q.inv());
+                                      : internal::defer_zero_diags<false>(
+                                            A, m0, p, q, p.inv(), q.inv());
+  // #ifndef mc64_matching
+  //   const size_type m = !hdl_zero_diags ? m0
+  //                                       : internal::defer_zero_diags<false>(
+  //                                             B1, m0, p, q, p.inv(),
+  //                                             q.inv());
+  // #else
+  //   size_type m;
+  //   if (hdl_zero_diags) {
+  //     // NOTE for MUMPS we store all entries, thus we treat the static
+  //     deferals
+  //     // as nonsymmetric case
+  //     if (!IsSymm || matching != MATCHING_MC64)
+  //       m = internal::defer_zero_diags<false>(B1, m0, p, q, p.inv(),
+  //       q.inv());
+  //     else
+  //       m = internal::defer_zero_diags<true>(B1, m0, p, q, p.inv(), q.inv());
+  //   } else
+  //     m = m0;
+  // #endif
+  return_type BB;
   if (compute_perm) {
-    const bool is_eye_perm = p.is_eye() && q.is_eye();
-    if (!is_eye_perm) {
-      p.build_inv();
-      B = internal::compute_perm_leading_block<IsSymm, return_type>(B1, A_crs,
-                                                                    m, p, q);
-    } else {
-      psmilu_assert(
-          m0 == m,
-          "if no permutation occurred from matching, then the leading "
-          "sizes, at least, should match!!??");
-      if (!INPUT_ONE_BASED)
-        B = return_type(B1);  // shallow
-      else {
-        // if the input is Fortran index system
-        B.resize(B1.nrows(), B1.ncols());
-        auto &col_start = B.col_start();
-        col_start.resize(B1.ncols() + 1);
-        psmilu_error_if(col_start.status() == DATA_UNDEF,
-                        "memory callocation failed");
-        std::transform(B1.col_start().cbegin(), B1.col_start().cend(),
-                       col_start.begin(),
-                       [](const index_type i) { return i - 1; });
-        auto &row_ind = B.row_ind();
-        row_ind.resize(B1.nnz());
-        psmilu_error_if(row_ind.status() == DATA_UNDEF,
-                        "memory allocation failed");
-        std::transform(B1.row_ind().cbegin(), B1.row_ind().cend(),
-                       row_ind.begin(),
-                       [](const index_type i) { return i - 1; });
-        // shallow copy
-        B.vals() = B1.vals();
-      }
-    }
+    p.build_inv();
+    BB = internal::compute_perm_leading_block<false, return_type>(A, A_crs, m,
+                                                                  p, q);
   }
-  return std::make_pair(B, m);
+  return std::make_pair(BB, m);
 }
 }  // namespace psmilu
 
