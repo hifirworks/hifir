@@ -131,7 +131,7 @@ class MC64 {
       par_type info, icntl;
       set_default_controls(icntl, verbose);
       constexpr static bool must_be_fortran_index = true;
-      scale_extreme_values<IsSymm>(A, B, s, t, must_be_fortran_index);
+      scale_extreme_values<IsSymm>(B, s, t, must_be_fortran_index);
       int *indptr(nullptr), *indices(nullptr), *P(nullptr);
       indptr  = ensure_type_consistency<int>(B.row_start());
       indices = ensure_type_consistency<int>(B.col_ind());

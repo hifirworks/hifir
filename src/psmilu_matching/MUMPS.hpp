@@ -93,7 +93,7 @@ class MUMPS {
           buf_s.status() == DATA_UNDEF || buf_t.status() == DATA_UNDEF,
           "memory allocation failed");
       int *indptr(nullptr), *indices(nullptr), *P(nullptr);
-      scale_extreme_values<IsSymm>(A, B, s, t, must_be_fortran_index);
+      scale_extreme_values<IsSymm>(B, s, t, must_be_fortran_index);
       // TODO check integer overflows
       indptr  = ensure_type_consistency<int>(B.row_start());
       indices = ensure_type_consistency<int>(B.col_ind());

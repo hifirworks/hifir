@@ -24,13 +24,11 @@ namespace psmilu {
  * @{
  */
 
-template <bool IsSymm, class CrsType, class CcsType, class T = void>
-inline void scale_extreme_values(const CcsType &A, CrsType &B,
-                                 typename CrsType::array_type &rs,
+template <bool IsSymm, class CrsType, class T = void>
+inline void scale_extreme_values(CrsType &B, typename CrsType::array_type &rs,
                                  typename CrsType::array_type &cs,
                                  const bool ensure_fortran_index = true) {
   static_assert(CrsType::ROW_MAJOR, "must be CRS");
-  static_assert(!CcsType::ROW_MAJOR, "must be CCS");
   using value_type                      = typename CrsType::value_type;
   using size_type                       = typename CrsType::size_type;
   constexpr static value_type ZERO      = Const<value_type>::ZERO;
@@ -56,20 +54,23 @@ inline void scale_extreme_values(const CcsType &A, CrsType &B,
 
   if (IsSymm)
     std::copy_n(rs.cbegin(), n, cs.begin());
-  else
-    for (size_type col(0); col < n; ++col) {
-      // NOTE that B might be a leading block of A, but we just take the
-      // whole A into consideration. This may only happen with real PS systems
-      value_type tmp = A.nnz_in_col(col)
-                           ? std::abs(*std::max_element(
-                                 A.val_cbegin(col), A.val_cend(col),
-                                 [](const value_type l, const value_type r) {
-                                   return std::abs(l) < std::abs(r);
-                                 }))
-                           : ZERO;
-      if (tmp == ZERO) tmp = 1;
-      cs[col] = 1. / tmp;
+  else {
+    // set all values to be 0
+    std::fill_n(cs.begin(), n, value_type(0));
+    const size_type nnz     = B.nnz();
+    const auto &    indices = B.col_ind();
+    const auto &    vals    = B.vals();
+    for (size_type i(0); i < nnz; ++i) {
+      const auto j = indices[i] - ONE_BASED;
+      cs[j]        = std::max(std::abs(vals[i]), cs[j]);
     }
+    for (size_type i(0); i < n; ++i) {
+      if (cs[i] == ZERO)
+        cs[i] = 1;
+      else
+        cs[i] = 1. / cs[i];
+    }
+  }
 
   // scale B col-wise
   const size_type nz = B.nnz();
