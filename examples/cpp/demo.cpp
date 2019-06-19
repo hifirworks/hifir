@@ -69,6 +69,8 @@ const static char *help =
     "\tusing augmented data structure\n"
     " -P|--pre-order-all\n"
     "\tenable pre-reordering on all levels\n"
+    " -I|-iter-pre-scale\n"
+    "\tenable iteratively pre-scale the system\n"
     " -\n"
     "\tindicator for reading Options from stdin\n"
     "\n"
@@ -225,6 +227,8 @@ inline static std::tuple<Options, bool, int, double, bool> parse_args(
       opts.saddle = 0;
     } else if (arg == string("-P") || arg == string("--pre-reorder-all")) {
       opts.pre_reorder_lvl1 = 0;
+    } else if (arg == string("-I") || arg == string("-iter-pre-scale")) {
+      opts.iter_pre_scale = 1;
     } else if (arg == string("-")) {
       // read options from stdin
       std::cout << "read options from stdin" << std::endl;
