@@ -12,6 +12,7 @@
 #define _PSMILU_MATCHING_COMMON_HPP
 
 #include <algorithm>
+#include <cmath>
 #include <new>
 
 #include "psmilu_log.hpp"
@@ -82,6 +83,101 @@ inline void scale_extreme_values(CrsType &B, typename CrsType::array_type &rs,
     std::for_each(B.row_start().begin(), B.row_start().end(),
                   [](index_type &i) { ++i; });
     std::for_each(B.col_ind().begin(), B.col_ind().end(),
+                  [](index_type &i) { ++i; });
+  }
+}
+
+template <bool IsSymm, class CrsType>
+inline void iterative_scale(CrsType &A, typename CrsType::array_type &rs,
+                            typename CrsType::array_type &    cs,
+                            const double                      tol       = 1e-10,
+                            const typename CrsType::size_type max_iters = 5,
+                            const bool ensure_fortran_index = true) {
+  // This implementation is based on Scaling.h in Eigen
+  // see
+  // https://bitbucket.org/eigen/eigen/src/bc7e634886a41aa1808e9884446cfbbe3fc16c7b/unsupported/Eigen/src/IterativeSolvers/Scaling.h
+
+  using value_type                = typename CrsType::value_type;
+  using array_type                = typename CrsType::array_type;
+  using size_type                 = typename CrsType::size_type;
+  constexpr static bool ONE_BASED = CrsType::ONE_BASED;
+
+  const size_type m(A.nrows()), n(A.ncols());
+  array_type      res_rs(m), res_cs, local_rs(m), local_cs;
+  if (!IsSymm) {
+    res_cs.resize(n);
+    local_cs.resize(n);
+  }
+
+  // set all ones
+  std::fill_n(rs.begin(), m, 1);
+  if (!IsSymm) std::fill_n(cs.begin(), n, 1);
+  double    res_r(1.0), res_c(1.0);
+  size_type iters(0);
+  do {
+    // reset all local scaling
+    // std::fill(local_rs.begin(), local_rs.end(), 0);
+    if (!IsSymm) std::fill(local_cs.begin(), local_cs.end(), 0);
+    // loop through all entries
+    for (size_type row(0); row < m; ++row) {
+      value_type tmp(0);
+      auto       last  = A.col_ind_cend(row);
+      auto       v_itr = A.val_cbegin(row);
+      for (auto itr = A.col_ind_cbegin(row); itr != last; ++itr, ++v_itr) {
+        tmp = std::max(std::abs(*v_itr), tmp);
+        if (!IsSymm) {
+          const auto j = *itr - ONE_BASED;
+          local_cs[j]  = std::max(std::abs(*v_itr), local_cs[j]);
+        }
+      }
+      local_rs[row] = 1. / std::sqrt(tmp);
+    }
+    for (size_type i(0); i < m; ++i) rs[i] *= local_rs[i];
+    if (!IsSymm) {
+      for (size_type i(0); i < n; ++i) {
+        const auto tmp = 1. / std::sqrt(local_cs[i]);
+        local_cs[i]    = tmp;
+        cs[i] *= tmp;
+      }
+    }
+    if (!IsSymm) std::fill(res_cs.begin(), res_cs.end(), 0);
+    for (size_type row(0); row < m; ++row) {
+      value_type       tmp(0);
+      auto             last  = A.col_ind_cend(row);
+      auto             v_itr = A.val_begin(row);
+      const value_type r     = local_rs[row];
+      for (auto itr = A.col_ind_cbegin(row); itr != last; ++itr, ++v_itr) {
+        const auto j = *itr - ONE_BASED;
+        if (IsSymm)
+          *v_itr *= r * local_rs[j];
+        else
+          *v_itr *= r * local_cs[j];
+        tmp = std::max(std::abs(*v_itr), tmp);
+        if (!IsSymm) res_cs[j] = std::max(std::abs(*v_itr), res_cs[j]);
+      }
+      res_rs[row] = tmp;
+    }
+    value_type tmp(0);
+    for (size_type i(0); i < m; ++i)
+      tmp = std::max(std::abs(1 - res_rs[i]), tmp);
+    res_r = tmp;
+    if (!IsSymm) {
+      tmp = 0;
+      for (size_type i(0); i < n; ++i)
+        tmp = std::max(std::abs(1 - res_cs[i]), tmp);
+    }
+    res_c = tmp;
+    ++iters;
+    std::cout << iters << ':' << res_r << ' ' << res_c << ' ' << std::endl;
+  } while ((res_r > tol || res_c > tol) && iters < max_iters);
+
+  if (IsSymm) std::copy_n(rs.cbegin(), m, cs.begin());
+
+  if (!ONE_BASED && ensure_fortran_index) {
+    using index_type = typename CrsType::index_type;
+    std::for_each(A.row_start().begin(), A.row_start().end(),
+                  [](index_type &i) { ++i; });
+    std::for_each(A.col_ind().begin(), A.col_ind().end(),
                   [](index_type &i) { ++i; });
   }
 }
