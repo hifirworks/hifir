@@ -21,7 +21,7 @@
 
 /// \def PSMILU_STDOUT(__msg_wo_nl)
 /// \brief dump message string to "stdout"
-/// \ingroup util
+/// \ingroup macros
 #ifndef PSMILU_STDOUT
 #  include <iostream>
 #  define PSMILU_STDOUT(__msg_wo_nl) std::cout << __msg_wo_nl << '\n'
@@ -29,7 +29,7 @@
 
 /// \def PSMILU_STDERR(__msg_wo_nl)
 /// \brief dump message string to "stderr"
-/// \ingroup util
+/// \ingroup macros
 #ifndef PSMILU_STDERR
 #  include <iostream>
 #  define PSMILU_STDERR(__msg_wo_nl) std::cerr << __msg_wo_nl << '\n'

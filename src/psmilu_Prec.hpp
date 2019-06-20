@@ -16,8 +16,24 @@
 
 #include "psmilu_CompressedStorage.hpp"
 #include "psmilu_small_scale/solver.hpp"
+#ifdef PSMILU_ENABLE_MKL_PARDISO
+#  include "psmilu_direct/pardiso.hpp"
+#endif  // PSMILU_ENABLE_MKL_PARDISO
 
 namespace psmilu {
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+namespace internal {
+struct DummySparseSolver {
+  inline constexpr bool        empty() const { return true; }
+  inline constexpr std::size_t nnz() const { return 0; }
+  inline constexpr int         info() const { return 0; }
+  inline static const char *   backend() { return "DummySparse"; }
+  template <class ArrayType>
+  inline void solve(ArrayType &) {}
+};
+}  // namespace internal
+#endif  // DOXYGEN_SHOULD_SKIP_THIS
 
 /// \class Prec
 /// \brief A single level preconditioner
@@ -37,6 +53,11 @@ struct Prec {
   typedef typename ccs_type::size_type          size_type;   ///< size
   typedef typename ccs_type::array_type         array_type;  ///< array
   using mat_type = ccs_type;
+#ifdef PSMILU_ENABLE_MKL_PARDISO
+  using sparse_direct_type = Pardiso<crs_type>;
+#else
+  using sparse_direct_type = internal::DummySparseSolver;
+#endif  // PSMILU_ENABLE_MKL_PARDISO
 
   static constexpr bool ONE_BASED  = OneBased;  ///< c index flag
   static constexpr char EMPTY_PREC = '\0';      ///< empty prec
@@ -81,6 +102,14 @@ struct Prec {
         p(std::move(P)),
         q_inv(std::move(Q_inv)) {}
 
+  /// \brief get number of nonzeros
+  inline size_type nnz() const {
+    const size_type nz = m ? L_B.nnz() + U_B.nnz() + m : 0;
+    if (!dense_solver.empty()) return nz + (n - m) * (n - m);
+    if (!sparse_solver.empty()) return nz + sparse_solver.nnz();
+    return nz;
+  }
+
   /// \brief enable explicitly calling move
   /// \param[in,out] L_b lower part
   /// \param[in,out] d_b diagonal
@@ -119,20 +148,23 @@ struct Prec {
   /// is last level---if \ref m is equal to \ref n.
   ///
   /// \note Currently, we test m == n, which is fine for squared systems.
-  inline bool is_last_level() const { return !dense_solver.empty() || m == n; }
+  inline bool is_last_level() const {
+    return !sparse_solver.empty() || !dense_solver.empty() || m == n;
+  }
 
-  size_type       m;             ///< leading block size
-  size_type       n;             ///< system size
-  mat_type        L_B;           ///< lower part of leading block
-  array_type      d_B;           ///< diagonal block of leading block
-  mat_type        U_B;           ///< upper part of leading block
-  crs_type        E;             ///< scaled and permutated E part
-  mat_type        F;             ///< scaled and permutated F part
-  array_type      s;             ///< row scaling vector
-  array_type      t;             ///< column scaling vector
-  perm_type       p;             ///< row permutation matrix
-  perm_type       q_inv;         ///< column inverse permutation matrix
-  sss_solver_type dense_solver;  ///< dense decomposition
+  size_type                  m;      ///< leading block size
+  size_type                  n;      ///< system size
+  mat_type                   L_B;    ///< lower part of leading block
+  array_type                 d_B;    ///< diagonal block of leading block
+  mat_type                   U_B;    ///< upper part of leading block
+  crs_type                   E;      ///< scaled and permutated E part
+  mat_type                   F;      ///< scaled and permutated F part
+  array_type                 s;      ///< row scaling vector
+  array_type                 t;      ///< column scaling vector
+  perm_type                  p;      ///< row permutation matrix
+  perm_type                  q_inv;  ///< column inverse permutation matrix
+  sss_solver_type            dense_solver;   ///< dense decomposition
+  mutable sparse_direct_type sparse_solver;  ///< sparse solver
 
  private:
   /// \brief allow casting to \a char, this is needed to add an empty node

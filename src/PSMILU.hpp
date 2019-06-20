@@ -21,6 +21,7 @@
 
 #include <string>
 
+#include "psmilu_macros.hpp"
 #include "psmilu_version.h"
 
 namespace psmilu {
@@ -28,7 +29,12 @@ namespace psmilu {
 /// \brief get the version string representation during runtime
 /// \return string representation of version
 /// \ingroup cpp
-inline std::string version() { return std::to_string(PSMILU_VERSION); }
+inline std::string version() {
+  using std::to_string;
+  return to_string(PSMILU_GLOBAL_VERSION) + "." +
+         to_string(PSMILU_MAJOR_VERSION) + "." +
+         to_string(PSMILU_MINOR_VERSION);
+}
 }  // namespace psmilu
 
 // data structure
@@ -37,8 +43,8 @@ inline std::string version() { return std::to_string(PSMILU_VERSION); }
 #include "psmilu_DenseMatrix.hpp"
 
 // interfaces
+#include "psmilu_Builder.hpp"
 #include "psmilu_Options.h"
 #include "psmilu_Prec.hpp"
-#include "psmilu_Builder.hpp"
 
 #endif  // _PSMILU_HPP

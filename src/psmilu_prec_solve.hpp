@@ -150,18 +150,19 @@ inline void prec_solve_udl_inv(const CcsType &U, const DiagType &d,
   for (size_type i = 0u; i < m; ++i) y[i] /= d[i];
 
   // y = inv(U)*y, NOTE since U is unit diagonal, no need to handle j == 0
-  for (size_type j = m - 1; j != 0u; --j) {
-    const auto y_j = y[j];
-    auto       itr = rev_iterator(U.row_ind_cend(j));
+  if (m)
+    for (size_type j = m - 1; j != 0u; --j) {
+      const auto y_j = y[j];
+      auto       itr = rev_iterator(U.row_ind_cend(j));
 #  ifndef NDEBUG
-    if (itr != rev_iterator(U.row_ind_cbegin(j)))
-      psmilu_error_if(c_idx(*itr) >= j, "must be strictly upper part");
+      if (itr != rev_iterator(U.row_ind_cbegin(j)))
+        psmilu_error_if(c_idx(*itr) >= j, "must be strictly upper part");
 #  endif
-    auto v_itr = rev_v_iterator(U.val_cend(j));
-    for (auto last = rev_iterator(U.row_ind_cbegin(j)); itr != last;
-         ++itr, ++v_itr)
-      y[c_idx(*itr)] -= *v_itr * y_j;
-  }
+      auto v_itr = rev_v_iterator(U.val_cend(j));
+      for (auto last = rev_iterator(U.row_ind_cbegin(j)); itr != last;
+           ++itr, ++v_itr)
+        y[c_idx(*itr)] -= *v_itr * y_j;
+    }
 }
 
 #endif
@@ -234,7 +235,14 @@ inline void prec_solve(
     if (nm) {
       // create an array wrapper with size of n-m, of y(m+1:n)
       auto y_mn = array_type(nm, y.data() + m, WRAP);
-      prec.dense_solver.solve(y_mn);  // solve inplace!
+      if (prec.sparse_solver.empty())
+        prec.dense_solver.solve(y_mn);
+      else {
+        prec.sparse_solver.solve(y_mn);
+        psmilu_error_if(prec.sparse_solver.info(), "%s returned error %d",
+                        prec.sparse_solver.backend(),
+                        prec.sparse_solver.info());
+      }
     }
   } else {
     auto        y_mn      = array_type(nm, y.data() + m, WRAP);
