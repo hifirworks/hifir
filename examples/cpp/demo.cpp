@@ -133,8 +133,9 @@ int main(int argc, char *argv[]) {
   psmilu_info(
       "\nMLILU done!\n"
       "\tfill-in: %.2f%%\n"
+      "\tlevels: %zd\n"
       "\ttime: %.4gs\n",
-      100.0 * M.nnz() / A.nnz(), timer.time());
+      100.0 * M.nnz() / A.nnz(), M.levels(), timer.time());
 
   // solve
   timer.start();
