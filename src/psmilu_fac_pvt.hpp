@@ -144,8 +144,8 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
     for (size_type i(0); i < A.ncols(); ++i) col_sizes[i] = A_ccs.nnz_in_col(i);
   }
 
-  if (psmilu_verbose(INFO, opts))
-    psmilu_info("performing preprocessing with leading block size %zd...", m0);
+  const size_type must_symm_pre_lvls =
+      opts.symm_pre_lvls <= 0 ? 0 : opts.symm_pre_lvls;
 
   // preprocessing
   timer.start();
@@ -153,7 +153,10 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
   BiPermMatrix<index_type> p, q;
 #ifndef PSMILU_DISABLE_PRE
   size_type m;
-  if (!IsSymm) {
+  if (!IsSymm && cur_level > must_symm_pre_lvls) {
+    if (psmilu_verbose(INFO, opts))
+      psmilu_info(
+          "performing asymm preprocessing with leading block size %zd...", m0);
     if (opts.pre_reorder != REORDER_OFF && m0 == A.nrows()) {
       if (!opts.pre_reorder_lvl1 || cur_level == 1u)
         m = do_preprocessing2(A_ccs, A_crs, opts, cur_level, s, t, p, q,
@@ -167,10 +170,14 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
       m = do_preprocessing<false>(A_ccs, A_crs, m0, opts, cur_level, s, t, p, q,
                                   opts.saddle);
     }
-  } else
+  } else {
+    if (psmilu_verbose(INFO, opts))
+      psmilu_info(
+          "performing symm preprocessing with leading block size %zd...", m0);
     m = do_preprocessing<true>(A_ccs, A_crs, m0, opts, cur_level, s, t, p, q,
                                opts.saddle);
-    // m = defer_dense_tail(A_crs, A_ccs, p, q, m);
+  }
+  // m = defer_dense_tail(A_crs, A_ccs, p, q, m);
 #else
   s.resize(m0);
   psmilu_error_if(s.status() == DATA_UNDEF, "memory allocation failed");
