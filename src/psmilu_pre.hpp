@@ -104,15 +104,16 @@ inline typename CcsType::size_type do_preprocessing(
     P = run_amd<false>(B, opt);
 #else
     switch (opt.reorder) {
-      case REORDER_AUTO: {
-        if (IsSymm && level == 1u) {
-          P            = run_rcm<false>(B, opt);
-          reorder_name = "RCM";
-        } else {
-          P            = run_amd<false>(B, opt);
-          reorder_name = "AMD";
-        }
-      } break;
+      // case REORDER_AUTO: {
+      //   if (IsSymm && level == 1u) {
+      //     P            = run_rcm<false>(B, opt);
+      //     reorder_name = "RCM";
+      //   } else {
+      //     P            = run_amd<false>(B, opt);
+      //     reorder_name = "AMD";
+      //   }
+      // } break;
+      case REORDER_AUTO:
       case REORDER_AMD:
         P = run_amd<false>(B, opt);
         break;

@@ -20,6 +20,8 @@
 extern "C" {
 #endif
 
+#define PSMILU_TOTAL_OPTIONS 19
+
 /*!
  * \addtogroup c
  * @{
@@ -85,6 +87,8 @@ struct psmilu_Options {
   /*!< only do pre reorder on level 1 (default 1) */
   int matching;       /*!< matching method, default is auto */
   int iter_pre_scale; /*!< iterative prescale (default 0) */
+  int symm_pre_lvls;
+  /*!< levels to be applied with symm preprocessing (default is 1) */
 };
 
 /*!
@@ -115,7 +119,8 @@ static psmilu_Options psmilu_get_default_options(void) {
                           .pre_reorder      = PSMILU_REORDER_OFF,
                           .pre_reorder_lvl1 = 1,
                           .matching         = PSMILU_MATCHING_AUTO,
-                          .iter_pre_scale   = 0};
+                          .iter_pre_scale   = 0,
+                          .symm_pre_lvls    = 1};
 }
 
 /*!
@@ -324,7 +329,7 @@ inline InStream &operator>>(InStream &in_str, Options &opt) {
       opt.alpha_L >> opt.alpha_U >> opt.rho >> opt.c_d >> opt.c_h >> opt.N >>
       opt.verbose >> opt.rf_par >> opt.reorder >> opt.saddle >>
       opt.pre_reorder >> opt.pre_reorder_lvl1 >> opt.matching >>
-      opt.iter_pre_scale;
+      opt.iter_pre_scale >> opt.symm_pre_lvls;
   return in_str;
 }
 
@@ -385,7 +390,8 @@ inline std::string opt_repr(const Options &opt) {
                    }) +
          pack_int("pre_reorder_lvl1", opt.pre_reorder_lvl1) +
          pack_name("matching", get_matching_name) +
-         pack_int("iter_pre_scale", opt.iter_pre_scale);
+         pack_int("iter_pre_scale", opt.iter_pre_scale) +
+         pack_int("symm_pre_lvls", opt.symm_pre_lvls);
 }
 
 #  ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -394,7 +400,7 @@ namespace internal {
  * build a byte map, i.e. the value is the leading byte position of the attrs
  * in Options
  */
-const static std::size_t option_attr_pos[18] = {
+const static std::size_t option_attr_pos[PSMILU_TOTAL_OPTIONS] = {
     0,
     sizeof(double),
     option_attr_pos[1] + sizeof(double),
@@ -412,24 +418,26 @@ const static std::size_t option_attr_pos[18] = {
     option_attr_pos[13] + sizeof(int),
     option_attr_pos[14] + sizeof(int),
     option_attr_pos[15] + sizeof(int),
-    option_attr_pos[16] + sizeof(int)};
+    option_attr_pos[16] + sizeof(int),
+    option_attr_pos[17] + sizeof(int)};
 
 /* data type tags, true for double, false for int */
-const static bool option_dtypes[18] = {
+const static bool option_dtypes[PSMILU_TOTAL_OPTIONS] = {
     true,  true,  true,  true,  false, false, true,  true,  true,
     false, false, false, false, false, false, false, false, false};
 
 /* using unordered map to store the string to index map */
 const static std::unordered_map<std::string, int> option_tag2pos = {
-    {"tau_L", 0},        {"tau_U", 1},
-    {"tau_d", 2},        {"tau_kappa", 3},
-    {"alpha_L", 4},      {"alpha_U", 5},
-    {"rho", 6},          {"c_d", 7},
-    {"c_h", 8},          {"N", 9},
-    {"verbose", 10},     {"rf_par", 11},
-    {"reorder", 12},     {"saddle", 13},
-    {"pre_reorder", 14}, {"pre_reorder_lvl1", 15},
-    {"matching", 16},    {"iter_pre_scale", 17}};
+    {"tau_L", 0},         {"tau_U", 1},
+    {"tau_d", 2},         {"tau_kappa", 3},
+    {"alpha_L", 4},       {"alpha_U", 5},
+    {"rho", 6},           {"c_d", 7},
+    {"c_h", 8},           {"N", 9},
+    {"verbose", 10},      {"rf_par", 11},
+    {"reorder", 12},      {"saddle", 13},
+    {"pre_reorder", 14},  {"pre_reorder_lvl1", 15},
+    {"matching", 16},     {"iter_pre_scale", 17},
+    {"symm_pre_lvls", 18}};
 
 } /* namespace internal */
 #  endif /* DOXYGEN_SHOULD_SKIP_THIS */

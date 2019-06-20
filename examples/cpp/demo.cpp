@@ -37,19 +37,32 @@ const static char *help =
     "options:\n"
     "\n"
     " -t|--tau tau\n"
-    "\tdrop tolerance\n"
+    "\tdrop tolerance (1e-4)\n"
     " -k|--kappa kappa\n"
-    "\tinverse norm threshold\n"
+    "\tinverse norm threshold (3)\n"
     " -a|--alpha alpha\n"
-    "\tlocal space control parameter\n"
+    "\tlocal space control parameter (10)\n"
     " -v|--verbose level\n"
-    "\tverbose information printing level\n"
+    "\tverbose information printing level (0)\n"
     " -r|--reorder method\n"
-    "\treordering methods\n"
+    "\treordering methods:\n"
+    "\t\t0: off\n"
+    "\t\t1: auto (amd), default\n"
+    "\t\t2: amd\n"
+    "\t\t3: rcm (requires BGL)\n"
+    "\t\t4: king (requires BGL)\n"
+    "\t\t5: sloan (requires BGL)\n"
     " -p|--pre-reorder method\n"
-    "\treordering method used for general system before matching\n"
+    "\treordering method used for general system before matching, the values\n"
+    "\tare same as \'--reorder\', default is 0 (off)\n"
     " -m|--matching method\n"
-    "\tmatching method\n"
+    "\tmatching methods:\n"
+    "\t\t0: try to use MC64 if it is available, default\n"
+    "\t\t1: MUMPS\n"
+    "\t\t2: MC64 (requires F77 MC64)\n"
+    " -S|--symm-pre-lvls\n"
+    "\tlevels to apply symmetric preprocessing, nonpositive number indicates\n"
+    "\tapply symmetric preprocessing for all levels (1)\n"
     " -T|--rtol\n"
     "\trelative tolerance for FGMRES (1e-6) solver\n"
     " -R|--restart\n"
@@ -66,11 +79,11 @@ const static char *help =
     " -s|--symm\n"
     "\ttreat as symmetric problems\n"
     " -A|--aug\n"
-    "\tusing augmented data structure\n"
+    "\tusing augmented data structure (for testing purpose)\n"
     " -P|--pre-order-all\n"
-    "\tenable pre-reordering on all levels\n"
+    "\tenable pre-reordering on all levels for general systems\n"
     " -I|-iter-pre-scale\n"
-    "\tenable iteratively pre-scale the system\n"
+    "\tenable iteratively pre-scale the system (experimental)\n"
     " -\n"
     "\tindicator for reading Options from stdin\n"
     "\n"
@@ -227,6 +240,10 @@ inline static std::tuple<Options, bool, int, double, bool> parse_args(
       ++i;
       if (i >= argc) fatal_exit("missing matching method tag!");
       opts.matching = std::atoi(argv[i]);
+    } else if (arg == string("-S") || arg == string("--symm-pre-lvls")) {
+      ++i;
+      if (i >= argc) fatal_exit("missing number of symmetric pre levels!");
+      opts.symm_pre_lvls = std::atoi(argv[i]);
     } else if (arg == string("-n") || arg == string("--no-saddle")) {
       opts.saddle = 0;
     } else if (arg == string("-P") || arg == string("--pre-reorder-all")) {

@@ -87,12 +87,13 @@ inline void scale_extreme_values(CrsType &B, typename CrsType::array_type &rs,
   }
 }
 
-template <bool IsSymm, class CrsType>
-inline void iterative_scale(CrsType &A, typename CrsType::array_type &rs,
-                            typename CrsType::array_type &    cs,
-                            const double                      tol       = 1e-10,
-                            const typename CrsType::size_type max_iters = 5,
-                            const bool ensure_fortran_index = true) {
+template <bool IsSymm, class PermType, class CrsType>
+inline void iterative_scale_p(const PermType &p, CrsType &A,
+                              typename CrsType::array_type &    rs,
+                              typename CrsType::array_type &    cs,
+                              const double                      tol = 1e-10,
+                              const typename CrsType::size_type max_iters = 5,
+                              const bool ensure_fortran_index = true) {
   // This implementation is based on Scaling.h in Eigen
   // see
   // https://bitbucket.org/eigen/eigen/src/bc7e634886a41aa1808e9884446cfbbe3fc16c7b/unsupported/Eigen/src/IterativeSolvers/Scaling.h
@@ -121,16 +122,17 @@ inline void iterative_scale(CrsType &A, typename CrsType::array_type &rs,
     // loop through all entries
     for (size_type row(0); row < m; ++row) {
       value_type tmp(0);
-      auto       last  = A.col_ind_cend(row);
-      auto       v_itr = A.val_cbegin(row);
-      for (auto itr = A.col_ind_cbegin(row); itr != last; ++itr, ++v_itr) {
+      auto       last  = A.col_ind_cend(p[row]);
+      auto       v_itr = A.val_cbegin(p[row]);
+      for (auto itr = A.col_ind_cbegin(p[row]); itr != last; ++itr, ++v_itr) {
         tmp = std::max(std::abs(*v_itr), tmp);
         if (!IsSymm) {
+          // assume identity on the column
           const auto j = *itr - ONE_BASED;
           local_cs[j]  = std::max(std::abs(*v_itr), local_cs[j]);
         }
       }
-      local_rs[row] = 1. / std::sqrt(tmp);
+      local_rs[p[row]] = 1. / std::sqrt(tmp);
     }
     for (size_type i(0); i < m; ++i) rs[i] *= local_rs[i];
     if (!IsSymm) {
@@ -143,18 +145,19 @@ inline void iterative_scale(CrsType &A, typename CrsType::array_type &rs,
     if (!IsSymm) std::fill(res_cs.begin(), res_cs.end(), 0);
     for (size_type row(0); row < m; ++row) {
       value_type       tmp(0);
-      auto             last  = A.col_ind_cend(row);
-      auto             v_itr = A.val_begin(row);
-      const value_type r     = local_rs[row];
-      for (auto itr = A.col_ind_cbegin(row); itr != last; ++itr, ++v_itr) {
+      auto             last  = A.col_ind_cend(p[row]);
+      auto             v_itr = A.val_begin(p[row]);
+      const value_type r     = local_rs[p[row]];
+      for (auto itr = A.col_ind_cbegin(p[row]); itr != last; ++itr, ++v_itr) {
         const auto j = *itr - ONE_BASED;
         if (IsSymm)
-          *v_itr *= r * local_rs[j];
+          *v_itr *= r * local_rs[p[j]];
         else
           *v_itr *= r * local_cs[j];
         tmp = std::max(std::abs(*v_itr), tmp);
         if (!IsSymm) res_cs[j] = std::max(std::abs(*v_itr), res_cs[j]);
       }
+      // no need to permute residual array
       res_rs[row] = tmp;
     }
     value_type tmp(0);
@@ -183,6 +186,22 @@ inline void iterative_scale(CrsType &A, typename CrsType::array_type &rs,
     std::for_each(A.col_ind().begin(), A.col_ind().end(),
                   [](index_type &i) { ++i; });
   }
+}
+
+template <bool IsSymm, class CrsType>
+inline void iterative_scale(CrsType &A, typename CrsType::array_type &rs,
+                            typename CrsType::array_type &    cs,
+                            const double                      tol       = 1e-10,
+                            const typename CrsType::size_type max_iters = 5,
+                            const bool ensure_fortran_index = true) {
+  using index_type = typename CrsType::index_type;
+  static const struct {
+    inline constexpr index_type operator[](const index_type i) const {
+      return i;
+    }
+  } eye_p;
+  iterative_scale_p<IsSymm>(eye_p, A, rs, cs, tol, max_iters,
+                            ensure_fortran_index);
 }
 
 template <class T, class IndexArray>
