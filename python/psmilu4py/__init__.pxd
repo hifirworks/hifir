@@ -62,4 +62,4 @@ cdef extern from 'psmilu4py.hpp' namespace 'psmilu' nogil:
 cdef extern from 'psmilu4py.hpp' namespace 'psmilu::internal' nogil:
     # using an internal var to determine the data types of options
     # true for double, flase for int
-    bool option_dtypes[18]
+    bool option_dtypes[19]
