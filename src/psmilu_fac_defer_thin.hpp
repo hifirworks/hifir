@@ -663,9 +663,8 @@ inline CsType iludp_factor_defer_thin(const CsType &                   A,
   for (size_type i(m); i < n; ++i) AmB_nnz += row_sizes[p[i]] + col_sizes[q[i]];
 
   // compute S version of Schur complement
-  bool             use_h_ver = false;
-  const input_type S =
-      input_type(compute_Schur_simple(s, A_crs, t, p, q, m, L_E, d, U_F, l));
+  bool     use_h_ver = false;
+  crs_type S = compute_Schur_simple(s, A_crs, t, p, q, m, L_E, d, U_F, l);
 
   // compute L_B and U_B
   auto L_B = L.template split<false>(m, L_start);
@@ -673,9 +672,10 @@ inline CsType iludp_factor_defer_thin(const CsType &                   A,
 
   const size_type dense_thres1 = static_cast<size_type>(
                       std::max(opts.alpha_L, opts.alpha_U) * AmB_nnz),
-                  dense_thres2 = std::max(static_cast<size_type>(std::ceil(
-                                              opts.c_d * std::cbrt(N))),
-                                          size_type(1000));
+                  dense_thres2 =
+                      std::max(static_cast<size_type>(
+                                   std::ceil(opts.c_d * std::cbrt(N))),
+                               size_type(PSMILU_LASTLEVEL_DENSE_SIZE));
 
   if (psmilu_verbose(INFO, opts))
     psmilu_info(
@@ -726,6 +726,27 @@ inline CsType iludp_factor_defer_thin(const CsType &                   A,
     if (psmilu_verbose(INFO, opts))
       psmilu_info("successfully factorized the dense component...");
   }
+#ifdef PSMILU_ENABLE_MKL_PARDISO
+  else {
+    if (nm <= static_cast<size_type>(PSMILU_LASTLEVEL_SPARSE_SIZE)) {
+      DefaultTimer timer2;
+      auto &       last_level = precs.back().sparse_solver;
+      const double nnz_b4     = 0.01 * S.nnz();
+      last_level.move_matrix(std::move(S));
+      timer2.start();
+      last_level.factorize();
+      timer2.finish();
+      psmilu_error_if(last_level.info(), "%s returned error %d",
+                      last_level.backend(), last_level.info());
+      if (psmilu_verbose(INFO, opts))
+        psmilu_info(
+            "successfully factorized the sparse component with %s...\n"
+            "\tfill-ratio: %.2f%%\n"
+            "\ttime: %gs...",
+            last_level.backend(), last_level.nnz() / nnz_b4, timer2.time());
+    }
+  }
+#endif  // PSMILU_ENABLE_MKL_PARDISO
 
   timer.finish();  // profile post-processing
 
@@ -733,7 +754,8 @@ inline CsType iludp_factor_defer_thin(const CsType &                   A,
 
   if (psmilu_verbose(INFO, opts)) psmilu_info("\nfinish level %zd.", cur_level);
 
-  return S;
+  if (precs.back().is_last_level()) return input_type();
+  return input_type(S);
 }
 
 }  // namespace psmilu

@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
   } else if (!symm)
     m = 0;
   std::cout << "rtol=" << rtol << ", restart=" << restart << ", aug=" << (!thin)
-            << "\nNumberofUnknowns=" << A.nrows() << ", nnz(A)=" << A.nnz()
+            << "\nNumberOfUnknowns=" << A.nrows() << ", nnz(A)=" << A.nnz()
             << "\n"
             << "symmetric=" << symm << ", leading-block=" << m << "\n\n"
             << opt_repr(opts) << std::endl;
@@ -130,9 +130,12 @@ int main(int argc, char *argv[]) {
   prec_t M;
   M.factorize(A, m, opts, true, thin);
   timer.finish();
-  std::cout << "\nMLILU done, ratio: " << (double)M.nnz() / A.nnz()
-            << ", levels: " << M.levels() << ", time: " << timer.time()
-            << "s.\n\n";
+  psmilu_info(
+      "\nMLILU done!\n"
+      "\tfill-in: %.2f%%\n"
+      "\tlevels: %zd\n"
+      "\ttime: %.4gs\n",
+      100.0 * M.nnz() / A.nnz(), M.levels(), timer.time());
 
   // solve
   timer.start();
@@ -143,13 +146,14 @@ int main(int argc, char *argv[]) {
   solver_t::size_type iters;
   std::tie(flag, iters) = solver.solve_pre(A, b, x, opts.verbose);
   timer.finish();
-  std::cout << "\nSolver return flag: " << get_fgmres_flag(flag)
-            << ", iters: " << iters << ", ";
-  if (iters)
-    std::cout << "res: " << solver.resids().back();
-  else
-    std::cout << "res: N/A";
-  std::cout << ", time: " << timer.time() << "s.\n\n";
+  const double rs = iters ? solver.resids().back() : -1.0;
+  psmilu_info(
+      "\nFGMRES(%d,%.1e) done!\n"
+      "\tflag: %s\n"
+      "\titers: %zd\n"
+      "\tres: %.4g\n"
+      "\ttime: %.4gs\n",
+      restart, rtol, get_fgmres_flag(flag), iters, rs, timer.time());
   return flag;
 }
 

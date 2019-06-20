@@ -111,7 +111,9 @@ class PSMILU {
   /// \note This function takes \f$\mathcal{O}(1)\f$ since C++11
   inline size_type levels() const {
     const size_type lvls = _precs.size();
-    if (lvls) return lvls + !_precs.back().dense_solver.empty();
+    if (lvls)
+      return lvls + !_precs.back().dense_solver.empty() +
+             !_precs.back().sparse_solver.empty();
     return 0;
   }
 
@@ -124,14 +126,8 @@ class PSMILU {
   inline size_type nnz() const {
     if (empty()) return 0u;
     size_type n(0);
-    for (auto itr = _precs.cbegin(); itr != _precs.cend(); ++itr) {
-      n += itr->L_B.nnz() + itr->U_B.nnz() + itr->m;
-      // added dense (if we have) storage
-      if (itr->is_last_level()) {
-        const auto nm = itr->n - itr->m;
-        n += nm * nm;
-      }
-    }
+    for (auto itr = _precs.cbegin(); itr != _precs.cend(); ++itr)
+      n += itr->nnz();
     return n;
   }
 
@@ -216,15 +212,6 @@ class PSMILU {
     else
       _deferred_factorize_kernel(A, m0, opts, row_sizes, col_sizes,
                                  Crout_cout_dummy);
-    const size_type n1 = std::accumulate(
-                        _precs.cbegin(), _precs.cend(), size_type(0),
-                        [](const size_type i, const prec_type &p) -> size_type {
-                          const size_type s1 = i + p.m;
-                          if (p.dense_solver.empty()) return s1;
-                          return s1 + p.dense_solver.mat().nrows();
-                        }),
-                    n2(A.nrows());
-    psmilu_error_if(n1 != n2, "invalid prec/system sizes %zd/%zd", n1, n2);
     t.finish();
     if (psmilu_verbose(INFO, opts)) {
       const size_type Nnz = nnz();
@@ -295,15 +282,6 @@ class PSMILU {
     else
       _thin_deferred_factorize_kernel(A, m0, opts, row_sizes, col_sizes,
                                       Crout_cout_dummy);
-    const size_type n1 = std::accumulate(
-                        _precs.cbegin(), _precs.cend(), size_type(0),
-                        [](const size_type i, const prec_type &p) -> size_type {
-                          const size_type s1 = i + p.m;
-                          if (p.dense_solver.empty()) return s1;
-                          return s1 + p.dense_solver.mat().nrows();
-                        }),
-                    n2(A.nrows());
-    psmilu_error_if(n1 != n2, "invalid prec/system sizes %zd/%zd", n1, n2);
     t.finish();
     if (psmilu_verbose(INFO, opts)) {
       const size_type Nnz = nnz();
@@ -363,15 +341,6 @@ class PSMILU {
     else
       _pvt_factorize_kernel(A, m0, opts, row_sizes, col_sizes,
                             Crout_cout_dummy);
-    const size_type n1 = std::accumulate(
-                        _precs.cbegin(), _precs.cend(), size_type(0),
-                        [](const size_type i, const prec_type &p) -> size_type {
-                          const size_type s1 = i + p.m;
-                          if (p.dense_solver.empty()) return s1;
-                          return s1 + p.dense_solver.mat().nrows();
-                        }),
-                    n2(A.nrows());
-    psmilu_error_if(n1 != n2, "invalid prec/system sizes %zd/%zd", n1, n2);
     t.finish();
     if (psmilu_verbose(INFO, opts)) {
       const size_type Nnz = nnz();
