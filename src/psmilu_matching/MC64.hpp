@@ -108,7 +108,7 @@ class MC64 {
   inline static void do_matching(const int verbose, crs_type &B,
                                  Array<index_type> &p, Array<index_type> &q,
                                  Array<value_type> &s, Array<value_type> &t,
-                                 const bool do_iter = false) {
+                                 const int pre_scale = 0) {
     constexpr static bool consist_int = sizeof(index_type) == sizeof(int);
     const size_type       n = B.nrows(), nnz = B.nnz();
     psmilu_error_if(B.nrows() != n, "must be squared systems");
@@ -127,9 +127,17 @@ class MC64 {
       par_type info, icntl;
       set_default_controls(icntl, verbose);
       constexpr static bool must_be_fortran_index = true;
-      do_iter
-          ? iterative_scale<IsSymm>(B, s, t, 1e-10, 5, must_be_fortran_index)
-          : scale_extreme_values<IsSymm>(B, s, t, must_be_fortran_index);
+      switch (pre_scale) {
+        case 0:
+          scale_eye(B, s, t, must_be_fortran_index);
+          break;
+        case 1:
+          scale_extreme_values<IsSymm>(B, s, t, must_be_fortran_index);
+          break;
+        default:
+          iterative_scale<IsSymm>(B, s, t, 1e-10, 5, must_be_fortran_index);
+          break;
+      }
       int *indptr(nullptr), *indices(nullptr), *P(nullptr);
       indptr  = ensure_type_consistency<int>(B.row_start());
       indices = ensure_type_consistency<int>(B.col_ind());
