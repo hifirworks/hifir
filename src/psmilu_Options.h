@@ -85,8 +85,8 @@ struct psmilu_Options {
   int    pre_reorder; /*!< reordering before matching */
   int    pre_reorder_lvl1;
   /*!< only do pre reorder on level 1 (default 1) */
-  int matching;       /*!< matching method, default is auto */
-  int iter_pre_scale; /*!< iterative prescale (default 0) */
+  int matching;  /*!< matching method, default is auto */
+  int pre_scale; /*!< prescale (default 0 (off)) */
   int symm_pre_lvls;
   /*!< levels to be applied with symm preprocessing (default is 1) */
 };
@@ -119,7 +119,7 @@ static psmilu_Options psmilu_get_default_options(void) {
                           .pre_reorder      = PSMILU_REORDER_OFF,
                           .pre_reorder_lvl1 = 1,
                           .matching         = PSMILU_MATCHING_AUTO,
-                          .iter_pre_scale   = 0,
+                          .pre_scale        = 0,
                           .symm_pre_lvls    = 1};
 }
 
@@ -329,7 +329,7 @@ inline InStream &operator>>(InStream &in_str, Options &opt) {
       opt.alpha_L >> opt.alpha_U >> opt.rho >> opt.c_d >> opt.c_h >> opt.N >>
       opt.verbose >> opt.rf_par >> opt.reorder >> opt.saddle >>
       opt.pre_reorder >> opt.pre_reorder_lvl1 >> opt.matching >>
-      opt.iter_pre_scale >> opt.symm_pre_lvls;
+      opt.pre_scale >> opt.symm_pre_lvls;
   return in_str;
 }
 
@@ -390,7 +390,7 @@ inline std::string opt_repr(const Options &opt) {
                    }) +
          pack_int("pre_reorder_lvl1", opt.pre_reorder_lvl1) +
          pack_name("matching", get_matching_name) +
-         pack_int("iter_pre_scale", opt.iter_pre_scale) +
+         pack_int("pre_scale", opt.pre_scale) +
          pack_int("symm_pre_lvls", opt.symm_pre_lvls);
 }
 
@@ -436,7 +436,7 @@ const static std::unordered_map<std::string, int> option_tag2pos = {
     {"verbose", 10},      {"rf_par", 11},
     {"reorder", 12},      {"saddle", 13},
     {"pre_reorder", 14},  {"pre_reorder_lvl1", 15},
-    {"matching", 16},     {"iter_pre_scale", 17},
+    {"matching", 16},     {"pre_scale", 17},
     {"symm_pre_lvls", 18}};
 
 } /* namespace internal */

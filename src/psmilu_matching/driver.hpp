@@ -426,8 +426,6 @@ inline CCS<ValueType, IndexType, OneBased> extract_leading_block4matching(
 /// \param[out] q column permutation vector
 /// \param[in] hdl_zero_diags if \a false (default), the routine won't handle
 ///            zero diagonal entries.
-/// \param[in] compute_perm if \a true (default), will perform explicit
-///            computation for permutation matrix for further processing
 /// \return A \a pair of \ref CCS matrix in \b C-index and the actual leading
 ///         block size, which is no larger than \a m0.
 /// \ingroup pre
@@ -466,10 +464,35 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   const bool compute_perm = opts.reorder != REORDER_OFF;
 
   CrsType B;
-  if (m0 == M)
-    B = CrsType(A_crs, true);
-  else
-    B = A_crs.extract_leading(m0);
+  if (m0 == M) {
+    if (opts.pre_scale)
+      B = CrsType(A_crs, true);
+    else {
+      // for no pre scaling, we don't need to make deep copy of values
+      // thus, the vals array here is shallow copied
+      B.resize(M, M);
+      // in general, if the matrix is Fortran index base, we don't even make
+      // copy of integer arrays, but since we mainly focus on C...
+      B.row_start().resize(M + 1);
+      psmilu_error_if(B.row_start().status() == DATA_UNDEF,
+                      "memory allocation failed");
+      B.col_ind().resize(A_crs.nnz());
+      psmilu_error_if(B.col_ind().status() == DATA_UNDEF,
+                      "memory allocation failed");
+      std::copy(A_crs.row_start().cbegin(), A_crs.row_start().cend(),
+                B.row_start().begin());
+      std::copy(A_crs.col_ind().cbegin(), A_crs.col_ind().cend(),
+                B.col_ind().begin());
+      B.vals() = A_crs.vals();  // shallow copy
+    }
+  }
+  if (opts.pre_scale) {
+    if (m0 == M)
+      B = CrsType(A_crs, true);
+    else
+      B = A_crs.extract_leading(m0);
+  } else {
+  }
 
 #ifndef PSMILU_ENABLE_MC64
   if (matching == MATCHING_MC64)
@@ -478,7 +501,7 @@ do_maching(const CcsType &A, const CrsType &A_crs,
     DefaultTimer timer;
     timer.start();
     mumps_kernel::template do_matching<IsSymm>(verbose, B, p(), q(), s, t,
-                                               opts.iter_pre_scale);
+                                               opts.pre_scale);
     timer.finish();
     if (timing) psmilu_info("MUMPS matching took %gs.", (double)timer.time());
   } while (false);
@@ -491,10 +514,10 @@ do_maching(const CcsType &A, const CrsType &A_crs,
     if (matching != MATCHING_MUMPS) {
       match_name = "MC64";
       mc64_kernel::template do_matching<IsSymm>(verbose, B, p(), q(), s, t,
-                                                opts.iter_pre_scale);
+                                                opts.pre_scale);
     } else
       mumps_kernel::template do_matching<IsSymm>(verbose, B, p(), q(), s, t,
-                                                 opts.iter_pre_scale);
+                                                 opts.pre_scale);
     timer.finish();
     if (timing)
       psmilu_info("%s matching took %gs.", match_name.c_str(),

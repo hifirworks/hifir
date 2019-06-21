@@ -25,7 +25,25 @@ namespace psmilu {
  * @{
  */
 
-template <bool IsSymm, class CrsType, class T = void>
+template <class CrsType>
+inline void scale_eye(CrsType &B, typename CrsType::array_type &rs,
+                       typename CrsType::array_type &cs,
+                       const bool ensure_fortran_index = true) {
+  using value_type = typename CrsType::value_type;
+  using size_type  = typename CrsType::size_type;
+  using index_type = typename CrsType::index_type;
+
+  const size_type n = B.nrows();
+  for (size_type i(0); i < n; ++i) rs[i] = cs[i] = 1;
+  if (ensure_fortran_index && !CrsType::ONE_BASED) {
+    std::for_each(B.row_start().begin(), B.row_start().end(),
+                  [](index_type &i) { ++i; });
+    std::for_each(B.col_ind().begin(), B.col_ind().end(),
+                  [](index_type &i) { ++i; });
+  }
+}
+
+template <bool IsSymm, class CrsType>
 inline void scale_extreme_values(CrsType &B, typename CrsType::array_type &rs,
                                  typename CrsType::array_type &cs,
                                  const bool ensure_fortran_index = true) {

@@ -60,6 +60,11 @@ const static char *help =
     "\t\t0: try to use MC64 if it is available, default\n"
     "\t\t1: MUMPS\n"
     "\t\t2: MC64 (requires F77 MC64)\n"
+    " -I|-pre-scale\n"
+    "\ta priori scaling before calling matching/scaling\n"
+    "\t\t0: off (default)\n"
+    "\t\t1: local extreme scale\n"
+    "\t\t2: iterative scaling based on inf-norm (experimental)\n"
     " -S|--symm-pre-lvls\n"
     "\tlevels to apply symmetric preprocessing, nonpositive number indicates\n"
     "\tapply symmetric preprocessing for all levels (1)\n"
@@ -82,8 +87,6 @@ const static char *help =
     "\tusing augmented data structure (for testing purpose)\n"
     " -P|--pre-order-all\n"
     "\tenable pre-reordering on all levels for general systems\n"
-    " -I|-iter-pre-scale\n"
-    "\tenable iteratively pre-scale the system (experimental)\n"
     " -\n"
     "\tindicator for reading Options from stdin\n"
     "\n"
@@ -240,6 +243,10 @@ inline static std::tuple<Options, bool, int, double, bool> parse_args(
       ++i;
       if (i >= argc) fatal_exit("missing matching method tag!");
       opts.matching = std::atoi(argv[i]);
+    } else if (arg == string("-I") || arg == string("-pre-scale")) {
+      ++i;
+      if (i >= argc) fatal_exit("missing pre-scale type!");
+      opts.pre_scale = std::atoi(argv[i]);
     } else if (arg == string("-S") || arg == string("--symm-pre-lvls")) {
       ++i;
       if (i >= argc) fatal_exit("missing number of symmetric pre levels!");
@@ -248,8 +255,6 @@ inline static std::tuple<Options, bool, int, double, bool> parse_args(
       opts.saddle = 0;
     } else if (arg == string("-P") || arg == string("--pre-reorder-all")) {
       opts.pre_reorder_lvl1 = 0;
-    } else if (arg == string("-I") || arg == string("-iter-pre-scale")) {
-      opts.iter_pre_scale = 1;
     } else if (arg == string("-")) {
       // read options from stdin
       std::cout << "read options from stdin" << std::endl;
