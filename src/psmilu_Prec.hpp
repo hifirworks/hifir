@@ -104,7 +104,8 @@ struct Prec {
 
   /// \brief get number of nonzeros
   inline size_type nnz() const {
-    const size_type nz = m ? L_B.nnz() + U_B.nnz() + m : 0;
+    size_type nz = m ? L_B.nnz() + U_B.nnz() + m : 0;
+    if (n - m) nz += E.nnz() + F.nnz();
     if (!dense_solver.empty()) return nz + (n - m) * (n - m);
     if (!sparse_solver.empty()) return nz + sparse_solver.nnz();
     return nz;
