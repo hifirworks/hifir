@@ -150,10 +150,11 @@ int main(int argc, char *argv[]) {
       "\nMLILU done!\n"
       "\tfill-in: %.2f%%\n"
       "\tfill-in (E and F): %.2f%%\n"
+      "\tnnz(E+F)/nnz(M)=%.2f%%\n"
       "\tlevels: %zd\n"
       "\ttime: %.4gs\n",
-      100.0 * M.nnz() / A.nnz(), 100.0 * M.nnz_EF() / A.nnz(), M.levels(),
-      timer.time());
+      100.0 * M.nnz() / A.nnz(), 100.0 * M.nnz_EF() / A.nnz(),
+      100.0 * M.nnz_EF() / M.nnz(), M.levels(), timer.time());
 
   // solve
   timer.start();
