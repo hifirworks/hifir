@@ -153,3 +153,8 @@ cdef class PSMILU:
     def nnz(self):
         """int: total number of nonzeros of all levels"""
         return deref(self.prec).nnz()
+
+    @property
+    def nnz_EF(self):
+        """int: total number of nonzeros in Es and Fs"""
+        return deref(self.prec).nnz_EF()

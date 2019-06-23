@@ -111,6 +111,12 @@ struct Prec {
     return nz;
   }
 
+  /// \brief get the number of nonzeros in \a E and \a F components
+  inline size_type nnz_EF() const {
+    if (n - m) return E.nnz() + F.nnz();
+    return 0;
+  }
+
   /// \brief enable explicitly calling move
   /// \param[in,out] L_b lower part
   /// \param[in,out] d_b diagonal

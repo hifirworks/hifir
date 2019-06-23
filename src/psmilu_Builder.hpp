@@ -131,6 +131,15 @@ class PSMILU {
     return n;
   }
 
+  /// \brief compute the nnz in \a E and \a F components
+  inline size_type nnz_EF() const {
+    if (empty()) return 0u;
+    size_type n(0);
+    for (auto itr = _precs.cbegin(); itr != _precs.cend(); ++itr)
+      n += itr->nnz_EF();
+    return n;
+  }
+
   /// \brief get constant reference to a specific level
   /// \note This function takes linear time complexity
   inline const prec_type &prec(const size_type level) const {
