@@ -625,6 +625,14 @@ class CompressedStorage {
       v_itr = std::copy_n(val_cbegin(i), indptr[i + 1] - indptr[i], v_itr);
   }
 
+  /// \brief destroy the memory explicitly
+  inline void _destroy() {
+    iarray_type().swap(_ind_start);
+    iarray_type().swap(_indices);
+    array_type().swap(_vals);
+    _psize = 0;
+  }
+
  protected:
   iarray_type _ind_start;  ///< index pointer array, size of n+1
   iarray_type _indices;    ///< index array, size of nnz
@@ -1302,6 +1310,12 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
     return B;
   }
 
+  /// \brief explicit destroy the memory
+  inline void destroy() {
+    _base::_destroy();
+    _ncols = 0;
+  }
+
  protected:
   size_type _ncols;     ///< number of columns
   using _base::_psize;  ///< number of rows (primary entries)
@@ -1966,6 +1980,12 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
     B.resize(m, m);
     _base::_extract_leading(m, B.col_start(), B.row_ind(), B.vals());
     return B;
+  }
+
+  /// \brief explicit destroy the data
+  inline void destroy() {
+    _base::_destroy();
+    _nrows = 0;
   }
 
  protected:
