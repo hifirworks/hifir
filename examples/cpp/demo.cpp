@@ -81,6 +81,8 @@ const static char *help =
     "\tshow version and exit\n"
     " -n|--no-saddle\n"
     "\tdisable static deferals for saddle point problems\n"
+    " -N|--no-par-refine\n"
+    "\tdisable parameter refinement from level to level\n"
     " -s|--symm\n"
     "\ttreat as symmetric problems\n"
     " -A|--aug\n"
@@ -256,6 +258,8 @@ inline static std::tuple<Options, bool, int, double, bool> parse_args(
       opts.symm_pre_lvls = std::atoi(argv[i]);
     } else if (arg == string("-n") || arg == string("--no-saddle")) {
       opts.saddle = 0;
+    } else if (arg == string("-N") || arg == string("--no-par-refine")) {
+      opts.rf_par = 0;
     } else if (arg == string("-P") || arg == string("--pre-reorder-all")) {
       opts.pre_reorder_lvl1 = 0;
     } else if (arg == string("-")) {
