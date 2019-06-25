@@ -677,7 +677,7 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
   timer.start();
 
   // drop
-  auto     E   = crs_type(internal::extract_E(s, A_crs, t, m, p, q));
+  auto     E   = internal::extract_E(s, A_crs, t, m, p, q);
   auto     F   = internal::extract_F(s, A_ccs, t, m, p, q, ut.vals());
   auto     L_E = L.template split_crs<true>(m, L_start);
   crs_type U_F;
@@ -690,24 +690,14 @@ inline CsType iludp_factor_pvt(const CsType &                   A,
       psmilu_info("applying dropping on L_E and U_F with alpha_{L,U}=%g,%g...",
                   a_L, a_U);
     if (m < n) {
-#  ifdef PSMILU_USE_CUR_SIZES
-      drop_L_E(E.row_start(), a_L, L_E, l.vals(), l.inds());
-      drop_U_F(F.col_start(), a_U, U_F2, ut.vals(), ut.inds());
-#  else
-      if (cur_level == 1u) {
-        drop_L_E(E.row_start(), a_L, L_E, l.vals(), l.inds());
-        drop_U_F(F.col_start(), a_U, U_F2, ut.vals(), ut.inds());
-      } else {
-        // use P and Q as buffers
-        P[0] = Q[0] = 0;
-        for (size_type i(m); i < n; ++i) {
-          P[i - m + 1] = P[i - m] + row_sizes[p[i]];
-          Q[i - m + 1] = Q[i - m] + col_sizes[q[i]];
-        }
-        drop_L_E(P, a_L, L_E, l.vals(), l.inds());
-        drop_U_F(Q, a_U, U_F2, ut.vals(), ut.inds());
+      // use P and Q as buffers
+      P[0] = Q[0] = 0;
+      for (size_type i(m); i < n; ++i) {
+        P[i - m + 1] = P[i - m] + row_sizes[p[i]];
+        Q[i - m + 1] = Q[i - m] + col_sizes[q[i]];
       }
-#  endif
+      drop_L_E(P, a_L, L_E, l.vals(), l.inds());
+      drop_U_F(Q, a_U, U_F2, ut.vals(), ut.inds());
     }
 #endif  // PSMILU_NO_DROP_LE_UF
     U_F = crs_type(U_F2);
