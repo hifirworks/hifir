@@ -61,11 +61,6 @@
 /// \note default is off
 // #define PSMILU_NO_DROP_LE_UF
 
-/// \def PSMILU_USE_CUR_SIZES
-/// \brief force psmilu uses current input sizes as thresholds for space control
-/// \note default is off
-// #define PSMILU_USE_CUR_SIZES
-
 /// \def PSMILU_DISABLE_SPACE_DROP
 /// \brief completely disable local space control
 /// \note default is off
@@ -159,6 +154,16 @@
 #ifndef PSMILU_FALLBACK_SPARSE_DIRECT_RATIO
 #  define PSMILU_FALLBACK_SPARSE_DIRECT_RATIO 85
 #endif  // PSMILU_FALLBACK_SPARSE_DIRECT_RATIO
+
+/// \def PSMILU_MIN_LOCAL_SIZE_PERCTG
+/// \brief minimum percentation of the local row and column sizes wrt the
+///        the averaged nnz per row/column for row and column, resp.
+///
+/// The default value is 85, i.e. 85% of averaged nnz is assigned as the
+/// the minimum value to the user input nnz per row and column
+#ifndef PSMILU_MIN_LOCAL_SIZE_PERCTG
+#  define PSMILU_MIN_LOCAL_SIZE_PERCTG 85
+#endif  // PSMILU_MIN_LOCAL_SIZE_PERCTG
 
 /*!
  * @}
