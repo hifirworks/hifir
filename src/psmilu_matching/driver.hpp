@@ -465,34 +465,41 @@ do_maching(const CcsType &A, const CrsType &A_crs,
 
   CrsType B;
   if (m0 == M) {
-    if (opts.pre_scale)
-      B = CrsType(A_crs, true);
+    // NOTE, A_crs is the input, if C index order, then the indices will be
+    // temporarily shifted to Fortran order!
+    if (!opts.pre_scale)
+      B = CrsType(A_crs);  // shallow!
     else {
-      // for no pre scaling, we don't need to make deep copy of values
-      // thus, the vals array here is shallow copied
       B.resize(M, M);
-      // in general, if the matrix is Fortran index base, we don't even make
-      // copy of integer arrays, but since we mainly focus on C...
-      B.row_start().resize(M + 1);
-      psmilu_error_if(B.row_start().status() == DATA_UNDEF,
+      B.row_start() = A_crs.row_start();
+      B.col_ind()   = A_crs.col_ind();
+      B.vals().resize(A_crs.nnz());
+      psmilu_error_if(B.vals().status() == DATA_UNDEF,
                       "memory allocation failed");
-      B.col_ind().resize(A_crs.nnz());
-      psmilu_error_if(B.col_ind().status() == DATA_UNDEF,
-                      "memory allocation failed");
-      std::copy(A_crs.row_start().cbegin(), A_crs.row_start().cend(),
-                B.row_start().begin());
-      std::copy(A_crs.col_ind().cbegin(), A_crs.col_ind().cend(),
-                B.col_ind().begin());
-      B.vals() = A_crs.vals();  // shallow copy
+      std::copy(A_crs.vals().cbegin(), A_crs.vals().cend(), B.vals().begin());
     }
-  }
-  if (opts.pre_scale) {
-    if (m0 == M)
-      B = CrsType(A_crs, true);
-    else
-      B = A_crs.extract_leading(m0);
-  } else {
-  }
+    // if (opts.pre_scale)
+    //   B = CrsType(A_crs, true);
+    // else {
+    //   // for no pre scaling, we don't need to make deep copy of values
+    //   // thus, the vals array here is shallow copied
+    //   B.resize(M, M);
+    //   // in general, if the matrix is Fortran index base, we don't even make
+    //   // copy of integer arrays, but since we mainly focus on C...
+    //   B.row_start().resize(M + 1);
+    //   psmilu_error_if(B.row_start().status() == DATA_UNDEF,
+    //                   "memory allocation failed");
+    //   B.col_ind().resize(A_crs.nnz());
+    //   psmilu_error_if(B.col_ind().status() == DATA_UNDEF,
+    //                   "memory allocation failed");
+    //   std::copy(A_crs.row_start().cbegin(), A_crs.row_start().cend(),
+    //             B.row_start().begin());
+    //   std::copy(A_crs.col_ind().cbegin(), A_crs.col_ind().cend(),
+    //             B.col_ind().begin());
+    //   B.vals() = A_crs.vals();  // shallow copy
+    // }
+  } else
+    B = A_crs.extract_leading(m0);
 
 #ifndef PSMILU_ENABLE_MC64
   if (matching == MATCHING_MC64)
@@ -532,6 +539,12 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   for (size_type i = m0; i < N; ++i) {
     q[i] = i;
     t[i] = ONE;
+  }
+
+  // revert indices
+  if (!CrsType::ONE_BASED && m0 == M) {
+    for (auto &v : B.row_start()) --v;
+    for (auto &v : B.col_ind()) --v;
   }
 
   // then determine zero diags
