@@ -398,11 +398,10 @@ class PSMILU {
     if (!sym) m = A.nrows();  // IMPORTANT! If asymmetric, set m = n
 
     // instantiate IsSymm here
-    const CsType S =
-        sym ? iludp_factor_defer<true>(A, m, N, opts, Crout_info, _precs,
-                                       row_sizes, col_sizes)
-            : iludp_factor_defer<false>(A, m, N, opts, Crout_info, _precs,
-                                        row_sizes, col_sizes);
+    CsType S = sym ? iludp_factor_defer<true>(A, m, N, opts, Crout_info, _precs,
+                                              row_sizes, col_sizes)
+                   : iludp_factor_defer<false>(A, m, N, opts, Crout_info,
+                                               _precs, row_sizes, col_sizes);
 
     // check last level
     if (!_precs.back().is_last_level())
@@ -434,7 +433,7 @@ class PSMILU {
     if (!sym) m = A.nrows();  // IMPORTANT! If asymmetric, set m = n
 
     // instantiate IsSymm here
-    const CsType S =
+    CsType S =
         sym ? iludp_factor_defer_thin<true>(A, m, N, opts, Crout_info, _precs,
                                             row_sizes, col_sizes)
             : iludp_factor_defer_thin<false>(A, m, N, opts, Crout_info, _precs,
@@ -463,8 +462,8 @@ class PSMILU {
       N = cur_level == 1u ? A.nrows() : _precs.front().n;
 
     // instantiate IsSymm here
-    const CsType S = iludp_factor_pvt<false>(A, A.nrows(), N, opts, Crout_info,
-                                             _precs, row_sizes, col_sizes);
+    CsType S = iludp_factor_pvt<false>(A, A.nrows(), N, opts, Crout_info,
+                                       _precs, row_sizes, col_sizes);
 
     // check last level
     if (!_precs.back().is_last_level())
