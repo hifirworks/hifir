@@ -182,6 +182,15 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   {
     for (size_type i(0); i < A.nrows(); ++i) row_sizes[i] = A_crs.nnz_in_row(i);
     for (size_type i(0); i < A.ncols(); ++i) col_sizes[i] = A_ccs.nnz_in_col(i);
+    // filter out too small terms
+    const size_type lower_row = std::ceil(A.nnz() / 2.0 / A.nrows());
+    const size_type lower_col = std::ceil(A.nnz() / 2.0 / A.ncols());
+    std::replace_if(row_sizes.begin(), row_sizes.begin() + A.nrows(),
+                    [=](const index_type i) { return i < lower_row; },
+                    lower_row);
+    std::replace_if(col_sizes.begin(), col_sizes.begin() + A.ncols(),
+                    [=](const index_type i) { return i < lower_col; },
+                    lower_col);
   }
 
   const size_type must_symm_pre_lvls =
