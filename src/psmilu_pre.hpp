@@ -94,6 +94,9 @@ inline typename CcsType::size_type do_preprocessing(
 
     auto &            B = match_res.first;
     Array<index_type> P;
+    // for auto reordering, we use rcm only if first level symmetry and
+    // have static deferrals
+    const bool try_use_rcm = IsSymm && level == 1u && B.nrows() != m0;
 // The reordering should treat output as general systems
 #ifdef PSMILU_DISABLE_BGL
     if (opt.reorder != REORDER_AUTO && opt.reorder != REORDER_AMD &&
@@ -101,8 +104,8 @@ inline typename CcsType::size_type do_preprocessing(
       psmilu_warning("%s ordering is only available in BGL, rebuild with Boost",
                      get_reorder_name(opt).c_str());
     if (opt.reorder == REORDER_AUTO) {
-      P = IsSymm ? run_rcm(B, opt) : run_amd<false>(B, opt);
-      if (IsSymm) reorder_name = "RCM";
+      P = try_use_rcm ? run_rcm(B, opt) : run_amd<false>(B, opt);
+      if (try_use_rcm) reorder_name = "RCM";
     } else if (opt.reorder == REORDER_AMD)
       P = run_amd<false>(B, opt);
     else {
@@ -112,7 +115,7 @@ inline typename CcsType::size_type do_preprocessing(
 #else
     switch (opt.reorder) {
       case REORDER_AUTO:
-        P = IsSymm ? run_rcm(B, opt) : run_amd<false>(B, opt);
+        P = try_use_rcm ? run_rcm(B, opt) : run_amd<false>(B, opt);
         break;
       case REORDER_AMD:
         P = run_amd<false>(B, opt);
@@ -129,7 +132,7 @@ inline typename CcsType::size_type do_preprocessing(
     }
     if (opt.reorder != REORDER_AUTO)
       reorder_name = get_reorder_name(opt);
-    else if (IsSymm)
+    else if (try_use_rcm)
       reorder_name = "RCM";
 #endif  // PSMILU_DISABLE_RCM
 
