@@ -48,6 +48,8 @@ cdef extern from 'psmilu4py.hpp' namespace 'psmilu' nogil:
         size_t levels()
         size_t nnz()
         size_t nnz_EF()
+        size_t nnz_LDU()
+        size_t stats(const size_t entry) except +
 
         # computing routine
         void factorize(const size_t nrows, const size_t ncols,
