@@ -173,13 +173,13 @@ class CompressedStorage {
     };
 
     if (status() != DATA_UNDEF) {
-      psmilu_error_if(_ind_start.size() != _psize + 1,
+      psmilu_error_if(_ind_start.size() < _psize + 1,
                       "invalid %s size and %s start array length", pname,
                       pname);
       psmilu_error_if(_ind_start.front() != static_cast<index_type>(OneBased),
                       "the leading entry in %s start should be %d", pname,
                       (int)OneBased);
-      if (nnz() != _indices.size() || nnz() != _vals.size())
+      if (nnz() > _indices.size() || nnz() > _vals.size())
         psmilu_error(
             "inconsistent between nnz (%s_start(end)-%s_start(first),%zd) and "
             "indices/values length %zd/%zd",
