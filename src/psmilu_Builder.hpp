@@ -140,6 +140,41 @@ class PSMILU {
     return n;
   }
 
+  /// \brief compute the nnz in \a L, \a D, and \a U
+  inline size_type nnz_LDU() const { return nnz() - nnz_EF(); }
+
+  /// \brief get the stats
+  /// \param[in] entry statistic entry
+  ///
+  /// Currently, the following stats are available:
+  ///   - 0: total deferrals
+  ///   - 1: dynamic deferrals
+  ///   - 2: dynamic deferrals due to bad diagonals
+  ///   - 3: dynamic deferrals due to bad conditioning
+  ///   - 4: total droppings
+  ///   - 5: droppings due to space-controling
+  /// Notice that entry \a 0 subtract entry \a 1 is the static deferrals, which
+  /// are due to zero diagonals that occurs when applying symmetric
+  /// preprocessing.
+  inline size_type stats(const size_type entry) const {
+    static const char *help =
+        "\t0: total deferrals\n"
+        "\t1: dynamic deferrals\n"
+        "\t2: dynamic deferrals due to bad diagonals\n"
+        "\t3: dynamic deferrals due to bad conditioning\n"
+        "\t4: total droppings\n"
+        "\t5: droppings due to space-controling\n";
+    psmilu_error_if(empty(), "no stats available for empty structure");
+    if (entry > 5u) {
+      // NOTE, we cannot pass the help information as variadic arguments due
+      // to the internal buffer may overflow thus causing segfault.
+      std::stringstream ss;
+      ss << entry << " exceeds maximum statistics entry (5)\nhelp:\n" << help;
+      psmilu_error(ss.str().c_str());
+    }
+    return _stats[entry];
+  }
+
   /// \brief get constant reference to a specific level
   /// \note This function takes linear time complexity
   inline const prec_type &prec(const size_type level) const {
@@ -283,6 +318,9 @@ class PSMILU {
       // also clear the previous buffer
       _prec_work.resize(0);
     }
+    // initialize statistics
+    for (size_type i(0); i < sizeof(_stats) / sizeof(size_type); ++i)
+      _stats[i] = 0;
     // create size references for dropping
     iarray_type row_sizes, col_sizes;
     if (psmilu_verbose(FAC, opts))
@@ -435,9 +473,9 @@ class PSMILU {
     // instantiate IsSymm here
     CsType S =
         sym ? iludp_factor_defer_thin<true>(A, m, N, opts, Crout_info, _precs,
-                                            row_sizes, col_sizes)
+                                            row_sizes, col_sizes, _stats)
             : iludp_factor_defer_thin<false>(A, m, N, opts, Crout_info, _precs,
-                                             row_sizes, col_sizes);
+                                             row_sizes, col_sizes, _stats);
 
     // check last level
     if (!_precs.back().is_last_level())
@@ -474,6 +512,7 @@ class PSMILU {
  protected:
   precs_type         _precs;      ///< multilevel preconditioners
   mutable array_type _prec_work;  ///< preconditioner work space for solving
+  size_type          _stats[6];   ///< statistics
 };
 
 /// \typedef C_PSMILU

@@ -18,13 +18,11 @@ namespace psmilu {
 
 template <bool IsSymm, class CsType, class CroutStreamer, class PrecsType,
           class IntArray>
-inline CsType iludp_factor_defer_thin(const CsType &                   A,
-                                      const typename CsType::size_type m0,
-                                      const typename CsType::size_type N,
-                                      const Options &                  opts,
-                                      const CroutStreamer &Crout_info,
-                                      PrecsType &precs, IntArray &row_sizes,
-                                      IntArray &col_sizes) {
+inline CsType iludp_factor_defer_thin(
+    const CsType &A, const typename CsType::size_type m0,
+    const typename CsType::size_type N, const Options &opts,
+    const CroutStreamer &Crout_info, PrecsType &precs, IntArray &row_sizes,
+    IntArray &col_sizes, typename CsType::size_type *stats) {
   typedef CsType                      input_type;
   typedef typename CsType::other_type other_type;
   using cs_trait = internal::CompressedTypeTrait<input_type, other_type>;
@@ -540,6 +538,16 @@ inline CsType iludp_factor_defer_thin(const CsType &                   A,
 
   timer.finish();  // profile Crout update
 
+  // collecting stats for deferrals
+  stats[0] += m0 - m;           // total deferals
+  stats[1] += step.defers();    // dynamic deferrals
+  stats[2] += info_counter[0];  // diagonal deferrals
+  stats[3] += info_counter[1];  // conditioning deferrals
+
+  // collecting stats for dropping
+  stats[4] += info_counter[5] + info_counter[6];  // total droppings
+  stats[5] += info_counter[3] + info_counter[4];  // space-based droppings
+
   // now we are done
   if (psmilu_verbose(INFO, opts)) {
     psmilu_info(
@@ -557,7 +565,8 @@ inline CsType iludp_factor_defer_thin(const CsType &                   A,
         "\tmin |kappa_u|=%g\n"
         "\tmax |kappa_u|=%g\n"
         "\tmin |kappa_l|=%g\n"
-        "\tmax |kappa_l|=%g"
+        "\tmax |kappa_l|=%g\n"
+        "\tmax |d|=%g"
 #ifdef PSMILU_DEFERREDFAC_VERBOSE_STAT
         "\n\tboth-inv-bad deferrals=%zd"
 #endif  // PSMILU_DEFERREDFAC_VERBOSE_STAT
@@ -583,6 +592,11 @@ inline CsType iludp_factor_defer_thin(const CsType &                   A,
                               })),
         (double)std::abs(
             *std::max_element(kappa_l.cbegin(), kappa_l.cbegin() + m,
+                              [](const value_type l, const value_type r) {
+                                return std::abs(l) < std::abs(r);
+                              })),
+        (double)std::abs(
+            *std::max_element(d.cbegin(), d.cbegin() + m,
                               [](const value_type l, const value_type r) {
                                 return std::abs(l) < std::abs(r);
                               }))
