@@ -223,12 +223,14 @@ class CompressedStorage {
         auto            i_itr = i_itr_first + pos;
         const auto      lnnz  = _ind_start[i + 1] - pos - OneBased;
         if (lnnz) {
-          auto             last   = v_itr + lnnz;
-          const value_type thres  = std::abs(*std::max_element(
-              v_itr, last, [](const value_type l, const value_type r) {
-                return std::abs(l) < std::abs(r);
-              }));
-          auto             i_itr2 = i_itr;
+          auto             last = v_itr + lnnz;
+          const value_type thres =
+              eps *
+              std::abs(*std::max_element(
+                  v_itr, last, [](const value_type l, const value_type r) {
+                    return std::abs(l) < std::abs(r);
+                  }));
+          auto i_itr2 = i_itr;
           for (auto itr = v_itr; itr != last; ++itr, ++i_itr2)
             if (std::abs(*itr) > thres) {
               _indices[j] = *i_itr2;
