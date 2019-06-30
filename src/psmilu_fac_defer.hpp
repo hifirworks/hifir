@@ -123,6 +123,7 @@ inline void search_back_start_symm(const L_AugCcsType &               L,
 /// \return Schur complement for next level (if needed), in the same type as
 ///         that of the input, i.e. \a CsType
 /// \ingroup fac
+/// \deprecated got efficient deferred factorization instead
 ///
 /// This is the core algorithm, which has been demonstrated in the paper, i.e.
 /// the algorithm 2, \b ilu_dp_factor. There are two modifications: 1) we put
