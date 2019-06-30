@@ -257,6 +257,9 @@ class CompressedStorage {
           std::copy_n(i_itr_first, nnz(), indices2.begin());
           _indices.swap(indices2);
         } while (false);
+      } else if (elms) {
+        _vals.resize(nnz());
+        _indices.resize(nnz());
       }
       return elms;
     } else
