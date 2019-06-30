@@ -145,7 +145,7 @@ int main(int argc, char *argv[]) {
   // build preconditioner
   timer.start();
   prec_t M;
-  M.factorize(A, m, opts, true);
+  M.factorize(A2, m, opts, true);
   timer.finish();
   psmilu_info(
       "\nMLILU done!\n"
