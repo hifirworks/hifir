@@ -158,3 +158,18 @@ cdef class PSMILU:
     def nnz_EF(self):
         """int: total number of nonzeros in Es and Fs"""
         return deref(self.prec).nnz_EF()
+
+    @property
+    def nnz_LDU(self):
+        """int: total number of nonzeros in LDU fators"""
+        return deref(self.prec).nnz_LDU()
+
+    def stats(self, int entry):
+        """Get the statistics information
+
+        Parameters
+        ----------
+        entry: int
+            entry field
+        """
+        return deref(self.prec).stats(entry)

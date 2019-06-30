@@ -7,6 +7,7 @@
 /// \file psmilu_BGL/rcm.hpp
 /// \brief Interface for calling BGL's reverse Cuthill Mckee (RCM)
 /// \authors Qiao,
+/// \deprecated got better code
 
 #ifndef _PSMILU_BGL_RCM_HPP
 #define _PSMILU_BGL_RCM_HPP

@@ -19,13 +19,13 @@
 #include "psmilu_Array.hpp"
 #include "psmilu_CompressedStorage.hpp"
 #include "psmilu_Options.h"
+#include "psmilu_RCM/driver.hpp"
 #include "psmilu_Timer.hpp"
 #include "psmilu_log.hpp"
 #include "psmilu_matching/driver.hpp"
 
 #ifndef PSMILU_DISABLE_BGL
 #  include "psmilu_BGL/king.hpp"
-#  include "psmilu_BGL/rcm.hpp"
 #  include "psmilu_BGL/sloan.hpp"
 #endif  // PSMILU_DISABLE_BGL
 
@@ -78,8 +78,8 @@ inline typename CcsType::size_type do_preprocessing(
 
   timer.start();
 
-  const auto match_res = do_maching<IsSymm>(A, A_crs, m0, opt.verbose, s, t, p,
-                                            q, opt, hdl_zero_diag);
+  auto match_res = do_maching<IsSymm>(A, A_crs, m0, opt.verbose, s, t, p, q,
+                                      opt, hdl_zero_diag);
 
   timer.finish();
   if (psmilu_verbose(PRE_TIME, opt))
@@ -92,33 +92,36 @@ inline typename CcsType::size_type do_preprocessing(
 
     std::string reorder_name = "AMD";
 
-    const auto &      B = match_res.first;
+    auto &            B = match_res.first;
     Array<index_type> P;
+    // for auto reordering, we use rcm only if first level symmetry and
+    // have static deferrals
+    const bool try_use_rcm = IsSymm && level == 1u && B.nrows() != m0;
 // The reordering should treat output as general systems
 #ifdef PSMILU_DISABLE_BGL
-    if (opt.reorder != REORDER_AUTO && opt.reorder != REORDER_AMD)
-      psmilu_warning(
-          "%s ordering is only available in BGL, rebuild with Boost\n"
-          "Ordering method fallback to AMD",
-          get_reorder_name(opt).c_str());
-    P = run_amd<false>(B, opt);
+    if (opt.reorder != REORDER_AUTO && opt.reorder != REORDER_AMD &&
+        opt.reorder != REORDER_RCM)
+      psmilu_warning("%s ordering is only available in BGL, rebuild with Boost",
+                     get_reorder_name(opt).c_str());
+    if (opt.reorder == REORDER_AUTO) {
+      P = try_use_rcm ? run_rcm(B, opt) : run_amd<false>(B, opt);
+      if (try_use_rcm) reorder_name = "RCM";
+    } else if (opt.reorder == REORDER_AMD)
+      P = run_amd<false>(B, opt);
+    else {
+      P            = run_rcm(B, opt);
+      reorder_name = "RCM";
+    }
 #else
     switch (opt.reorder) {
-      // case REORDER_AUTO: {
-      //   if (IsSymm && level == 1u) {
-      //     P            = run_rcm<false>(B, opt);
-      //     reorder_name = "RCM";
-      //   } else {
-      //     P            = run_amd<false>(B, opt);
-      //     reorder_name = "AMD";
-      //   }
-      // } break;
       case REORDER_AUTO:
+        P = try_use_rcm ? run_rcm(B, opt) : run_amd<false>(B, opt);
+        break;
       case REORDER_AMD:
         P = run_amd<false>(B, opt);
         break;
       case REORDER_RCM:
-        P = run_rcm<false>(B, opt);
+        P = run_rcm(B, opt);
         break;
       case REORDER_KING:
         P = run_king<false>(B, opt);
@@ -127,7 +130,10 @@ inline typename CcsType::size_type do_preprocessing(
         P = run_sloan<false>(B, opt);
         break;
     }
-    if (opt.reorder != REORDER_AUTO) reorder_name = get_reorder_name(opt);
+    if (opt.reorder != REORDER_AUTO)
+      reorder_name = get_reorder_name(opt);
+    else if (try_use_rcm)
+      reorder_name = "RCM";
 #endif  // PSMILU_DISABLE_RCM
 
     timer.finish();
@@ -213,7 +219,7 @@ inline typename CcsType::size_type do_preprocessing2(
 else {
   switch (opt.pre_reorder) {
     case REORDER_RCM:
-      P()          = run_rcm<false>(A, opt);
+      P()          = run_rcm(A, opt, true);
       reorder_name = "RCM";
       break;
     case REORDER_KING:

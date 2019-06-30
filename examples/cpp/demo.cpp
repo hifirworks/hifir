@@ -154,9 +154,11 @@ int main(int argc, char *argv[]) {
       "\tfill-in (E and F): %.2f%%\n"
       "\tnnz(E+F)/nnz(M)=%.2f%%\n"
       "\tlevels: %zd\n"
+      "\tspace-dropping ratio=%.2f%%\n"
       "\ttime: %.4gs\n",
       100.0 * M.nnz() / A.nnz(), 100.0 * M.nnz_EF() / A.nnz(),
-      100.0 * M.nnz_EF() / M.nnz(), M.levels(), timer.time());
+      100.0 * M.nnz_EF() / M.nnz(), M.levels(), 100.0 * M.stats(5) / M.stats(4),
+      timer.time());
 
   // solve
   timer.start();

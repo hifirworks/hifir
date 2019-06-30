@@ -24,6 +24,10 @@
 #  define PSMILU_LASTLEVEL_SPARSE_SIZE 15000
 #endif  // PSMILU_LASTLEVEL_SPARSE_SIZE
 
+#ifndef PSMILU_MIN_LOCAL_SIZE_PERCTG
+#  define PSMILU_MIN_LOCAL_SIZE_PERCTG 85
+#endif
+
 namespace psmilu {
 namespace internal {
 
@@ -180,8 +184,21 @@ inline CsType iludp_factor_defer(const CsType &                   A,
   if (cur_level == 1u)
 #endif  // PSMILU_USE_CUR_SIZES
   {
+    constexpr static double min_local_size_ratio =
+        PSMILU_MIN_LOCAL_SIZE_PERCTG / 100.0;
     for (size_type i(0); i < A.nrows(); ++i) row_sizes[i] = A_crs.nnz_in_row(i);
     for (size_type i(0); i < A.ncols(); ++i) col_sizes[i] = A_ccs.nnz_in_col(i);
+    // filter out too small terms
+    const size_type lower_row =
+        std::ceil(min_local_size_ratio * A.nnz() / A.nrows());
+    const size_type lower_col =
+        std::ceil(min_local_size_ratio * A.nnz() / A.ncols());
+    std::replace_if(row_sizes.begin(), row_sizes.begin() + A.nrows(),
+                    [=](const index_type i) { return i < lower_row; },
+                    lower_row);
+    std::replace_if(col_sizes.begin(), col_sizes.begin() + A.ncols(),
+                    [=](const index_type i) { return i < lower_col; },
+                    lower_col);
   }
 
   const size_type must_symm_pre_lvls =
