@@ -138,7 +138,7 @@ int main(int argc, char *argv[]) {
 
   array_t x(b.size());  // solution
   crs_t   A2(A, true);
-  std::cout << "elminated " << A2.eliminate(1e-12) << " small entries\n";
+  std::cout << "elminated " << A2.eliminate(1e-15) << " small entries\n";
 
   DefaultTimer timer;
 
