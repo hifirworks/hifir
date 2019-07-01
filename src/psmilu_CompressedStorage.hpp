@@ -173,13 +173,13 @@ class CompressedStorage {
     };
 
     if (status() != DATA_UNDEF) {
-      psmilu_error_if(_ind_start.size() != _psize + 1,
+      psmilu_error_if(_ind_start.size() < _psize + 1,
                       "invalid %s size and %s start array length", pname,
                       pname);
       psmilu_error_if(_ind_start.front() != static_cast<index_type>(OneBased),
                       "the leading entry in %s start should be %d", pname,
                       (int)OneBased);
-      if (nnz() != _indices.size() || nnz() != _vals.size())
+      if (nnz() > _indices.size() || nnz() > _vals.size())
         psmilu_error(
             "inconsistent between nnz (%s_start(end)-%s_start(first),%zd) and "
             "indices/values length %zd/%zd",
@@ -199,6 +199,71 @@ class CompressedStorage {
         }
       }
     }
+  }
+
+  /// \brief filter out small values
+  /// \param[in] eps eliminating threshold, default is 0
+  /// \param[in] shrink if \a false (default), then do not shrink memory
+  /// \return total elminated entries
+  ///
+  /// All \a mag(values) that are <= eps * max(abs(local value)) will be
+  /// eliminated, and the resulting matrix will be compressed.
+  inline size_type eliminate(value_type eps = 0, const bool shrink = false) {
+    if (_psize) {
+      const size_type psize = _psize;
+      eps                   = eps < 0.0 ? 0.0 : eps;
+      const size_type nz    = nnz();
+      size_type       j(0);
+      auto            v_itr_first = _vals.cbegin();
+      auto            i_itr_first = _indices.cbegin();
+      size_type       pos(0);
+      for (size_type i(0); i < psize; ++i) {
+        const size_type j_bak(j);
+        auto            v_itr = v_itr_first + pos;
+        auto            i_itr = i_itr_first + pos;
+        const auto      lnnz  = _ind_start[i + 1] - pos - OneBased;
+        if (lnnz) {
+          auto             last = v_itr + lnnz;
+          const value_type thres =
+              eps *
+              std::abs(*std::max_element(
+                  v_itr, last, [](const value_type l, const value_type r) {
+                    return std::abs(l) < std::abs(r);
+                  }));
+          auto i_itr2 = i_itr;
+          for (auto itr = v_itr; itr != last; ++itr, ++i_itr2)
+            if (std::abs(*itr) > thres) {
+              _indices[j] = *i_itr2;
+              _vals[j++]  = *itr;
+            }
+        }
+        // update position
+        pos               = _ind_start[i + 1];
+        _ind_start[i + 1] = _ind_start[i] + (j - j_bak);
+      }
+      const size_type elms = nz - j;
+      if (elms && shrink) {
+        do {
+          array_type vals2(nnz());
+          psmilu_error_if(nnz() && vals2.status() == DATA_UNDEF,
+                          "memory allocation failed");
+          std::copy_n(v_itr_first, nnz(), vals2.begin());
+          _vals.swap(vals2);
+        } while (false);
+        do {
+          iarray_type indices2(nnz());
+          psmilu_error_if(nnz() && indices2.status() == DATA_UNDEF,
+                          "memory allocation failed");
+          std::copy_n(i_itr_first, nnz(), indices2.begin());
+          _indices.swap(indices2);
+        } while (false);
+      } else if (elms) {
+        _vals.resize(nnz());
+        _indices.resize(nnz());
+      }
+      return elms;
+    } else
+      return 0;
   }
 
  protected:

@@ -85,8 +85,6 @@ const static char *help =
     "\tdisable parameter refinement from level to level\n"
     " -s|--symm\n"
     "\ttreat as symmetric problems\n"
-    " -A|--aug\n"
-    "\tusing augmented data structure (for testing purpose)\n"
     " -P|--pre-order-all\n"
     "\tenable pre-reordering on all levels for general systems\n"
     " -\n"
@@ -104,8 +102,8 @@ const static char *help =
 
 // parse input arguments:
 //  return (control parameters, thin or augmented, restart, tolerance, symm)
-inline static std::tuple<Options, bool, int, double, bool> parse_args(
-    int argc, char *argv[]);
+inline static std::tuple<Options, int, double, bool> parse_args(int   argc,
+                                                                char *argv[]);
 
 // get the input data, (A, b, m)
 inline static std::tuple<crs_t, array_t, array_t::size_type> get_inputs(
@@ -115,12 +113,11 @@ inline static const char *get_fgmres_flag(const int flag);
 
 int main(int argc, char *argv[]) {
   Options opts;
-  bool    thin;
   int     restart;
   double  rtol;
   bool    symm;
   // parse arguments
-  std::tie(opts, thin, restart, rtol, symm) = parse_args(argc, argv);
+  std::tie(opts, restart, rtol, symm) = parse_args(argc, argv);
   if (opts.verbose == VERBOSE_NONE) warn_flag(0);
   crs_t              A;
   array_t            b;
@@ -133,20 +130,22 @@ int main(int argc, char *argv[]) {
     m = A.nrows();
   } else if (!symm)
     m = 0;
-  std::cout << "rtol=" << rtol << ", restart=" << restart << ", aug=" << (!thin)
+  std::cout << "rtol=" << rtol << ", restart=" << restart
             << "\nNumberOfUnknowns=" << A.nrows() << ", nnz(A)=" << A.nnz()
             << "\n"
             << "symmetric=" << symm << ", leading-block=" << m << "\n\n"
             << opt_repr(opts) << std::endl;
 
   array_t x(b.size());  // solution
+  crs_t   A2(A, true);
+  std::cout << "elminated " << A2.eliminate(1e-15) << " small entries\n";
 
   DefaultTimer timer;
 
   // build preconditioner
   timer.start();
   prec_t M;
-  M.factorize(A, m, opts, true, thin);
+  M.factorize(A2, m, opts, true);
   timer.finish();
   psmilu_info(
       "\nMLILU done!\n"
@@ -180,10 +179,9 @@ int main(int argc, char *argv[]) {
   return flag;
 }
 
-inline static std::tuple<Options, bool, int, double, bool> parse_args(
-    int argc, char *argv[]) {
+inline static std::tuple<Options, int, double, bool> parse_args(int   argc,
+                                                                char *argv[]) {
   Options opts    = get_default_options();
-  bool    thin    = true;
   int     restart = 30;
   double  tol     = 1e-6;
   bool    symm    = false;
@@ -278,12 +276,10 @@ inline static std::tuple<Options, bool, int, double, bool> parse_args(
       ++i;
       if (i >= argc) fatal_exit("missing GMRES restart value!");
       restart = std::atoi(argv[i]);
-    } else if (arg == string("-A") || arg == string("--aug")) {
-      thin = false;
     }
     ++i;
   }
-  return std::make_tuple(opts, thin, restart, tol, symm);
+  return std::make_tuple(opts, restart, tol, symm);
 }
 
 inline static std::tuple<crs_t, array_t, array_t::size_type> get_inputs(

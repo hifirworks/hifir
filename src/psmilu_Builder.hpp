@@ -192,79 +192,12 @@ class PSMILU {
   ///               will assume an asymmetric leading block.
   /// \param[in] opts control parameters, using the default values in the paper.
   /// \param[in] check if \a true (default), will perform validity checking
-  /// \param[in] use_thin if \a true (default), then call single-list version
   /// \sa solve
   template <class CsType>
   inline void factorize(const CsType &A, const size_type m0 = 0u,
-                        const Options &opts = get_default_options(),
-                        const bool check = true, const bool use_thin = true) {
-    use_thin ? deferred_factorize_thin(A, m0, opts, check)
-             : deferred_factorize(A, m0, opts, check);
-  }
-
-  /// \brief deferred factorization
-  /// \tparam CsType compressed storage input, either \ref CRS or \ref CCS
-  /// \param[in] A input matrix
-  /// \param[in] m0 leading block size, if it's zero (default), then the routine
-  ///               will assume an asymmetric leading block.
-  /// \param[in] opts control parameters, using the default values in the paper.
-  /// \param[in] check if \a true (default), will perform validity checking
-  /// \sa _deferred_factorize_kernel
-  template <class CsType>
-  inline void deferred_factorize(const CsType &A, const size_type m0 = 0u,
-                                 const Options &opts  = get_default_options(),
-                                 const bool     check = true) {
-    static_assert(!(CsType::ONE_BASED ^ ONE_BASED), "inconsistent index base");
-
-    const static internal::StdoutStruct  Crout_cout;
-    const static internal::DummyStreamer Crout_cout_dummy;
-
-    // print introduction
-    if (psmilu_verbose(INFO, opts)) {
-      if (!internal::introduced) {
-        psmilu_info(internal::intro, PSMILU_GLOBAL_VERSION,
-                    PSMILU_MAJOR_VERSION, PSMILU_MINOR_VERSION, __TIME__,
-                    __DATE__);
-        internal::introduced = true;
-      }
-      psmilu_info("Options (control parameters) are:\n");
-      psmilu_info(opt_repr(opts).c_str());
-    }
-    const bool revert_warn = warn_flag();
-    if (psmilu_verbose(NONE, opts)) (void)warn_flag(0);
-
-    // check validity of the input system
-    if (check) {
-      if (psmilu_verbose(INFO, opts))
-        psmilu_info("perform input matrix validity checking");
-      A.check_validity();
-    }
-
-    DefaultTimer t;  // record overall time
-    t.start();
-    if (!empty()) {
-      psmilu_warning(
-          "multilevel precs are not empty, wipe previous results first");
-      _precs.clear();
-      // also clear the previous buffer
-      _prec_work.resize(0);
-    }
-    // create size references for dropping
-    iarray_type row_sizes, col_sizes;
-    if (psmilu_verbose(FAC, opts))
-      _deferred_factorize_kernel(A, m0, opts, row_sizes, col_sizes, Crout_cout);
-    else
-      _deferred_factorize_kernel(A, m0, opts, row_sizes, col_sizes,
-                                 Crout_cout_dummy);
-    t.finish();
-    if (psmilu_verbose(INFO, opts)) {
-      const size_type Nnz = nnz();
-      psmilu_info("\ninput nnz(A)=%zd, nnz(precs)=%zd, ratio=%g", A.nnz(), Nnz,
-                  (double)Nnz / A.nnz());
-      psmilu_info("\nmultilevel precs building time (overall) is %gs",
-                  t.time());
-    }
-    if (revert_warn) (void)warn_flag(1);
+                        const Options &opts  = get_default_options(),
+                        const bool     check = true) {
+    deferred_factorize_thin(A, m0, opts, check);
   }
 
   /// \brief deferred factorization using less memory
@@ -413,40 +346,6 @@ class PSMILU {
   }
 
  protected:
-  template <class CsType, class CroutStreamer>
-  inline void _deferred_factorize_kernel(const CsType &A, const size_type m0,
-                                         const Options &      opts,
-                                         iarray_type &        row_sizes,
-                                         iarray_type &        col_sizes,
-                                         const CroutStreamer &Crout_info) {
-    psmilu_error_if(A.nrows() != A.ncols(),
-                    "Currently only squared systems are supported");
-    size_type       m(m0);  // init m
-    size_type       N;      // reference size
-    const size_type cur_level = levels() + 1;
-
-    // determine the reference size
-    if (opts.N >= 0)
-      N = opts.N;
-    else
-      N = cur_level == 1u ? A.nrows() : _precs.front().n;
-
-    // check symmetry
-    const bool sym = cur_level == 1u && m > 0u;
-    if (!sym) m = A.nrows();  // IMPORTANT! If asymmetric, set m = n
-
-    // instantiate IsSymm here
-    CsType S = sym ? iludp_factor_defer<true>(A, m, N, opts, Crout_info, _precs,
-                                              row_sizes, col_sizes)
-                   : iludp_factor_defer<false>(A, m, N, opts, Crout_info,
-                                               _precs, row_sizes, col_sizes);
-
-    // check last level
-    if (!_precs.back().is_last_level())
-      this->_deferred_factorize_kernel(S, 0u, opts, row_sizes, col_sizes,
-                                       Crout_info);
-  }
-
   template <class CsType, class CroutStreamer>
   inline void _thin_deferred_factorize_kernel(const CsType &       A,
                                               const size_type      m0,
