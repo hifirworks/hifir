@@ -83,7 +83,7 @@ inline void apply_space_dropping(
                        std::max_element(
                            first, last,
                            [&](const index_type i, const index_type j) -> bool {
-                             return std::abs(vals[to_c(i)]) >
+                             return std::abs(vals[to_c(i)]) <
                                     std::abs(vals[to_c(j)]);
                            }));
       else
