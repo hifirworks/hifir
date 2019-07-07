@@ -264,7 +264,6 @@ inline CsType iludp_factor_defer_thin(
   int    alpha_L, alpha_U;
   std::tie(tau_d, tau_kappa, tau_L, tau_U, alpha_L, alpha_U) =
       determine_fac_pars(opts, cur_level);
-  const auto kappa_sq = tau_kappa * tau_kappa;
 
   // Removing bounding the large diagonal values
   const auto is_bad_diag = [=](const value_type a) -> bool {
@@ -380,10 +379,6 @@ inline CsType iludp_factor_defer_thin(
         "defers=%zd/%zd",
         m_prev, m, step.defers() - defers_prev, step.defers());
 
-#ifndef PSMILU_DISABLE_DYN_PVT_THRES
-    const auto kappa_sq = std::abs(k_ut * k_l);
-#endif  // PSMILU_DISABLE_DYN_PVT_THRES
-
     //------------------------
     // update start positions
     //------------------------
@@ -433,7 +428,7 @@ inline CsType iludp_factor_defer_thin(
     const size_type ori_ut_size = ut.size(), ori_l_size = l.size();
 
     // apply drop for U
-    apply_num_dropping(tau_U, kappa_sq, ut);
+    apply_num_dropping(tau_U, std::abs(k_ut) * tau_d, ut);
 #ifdef PSMILU_ENABLE_NORM_STAT
     ut_norm_ratios[step] = ut.norm1();
 #endif  // PSMILU_ENABLE_NORM_STAT
@@ -456,7 +451,7 @@ inline CsType iludp_factor_defer_thin(
                ori_ut_size, ut.size(), ori_ut_size - ut.size());
 
     // apply numerical dropping on L
-    apply_num_dropping(tau_L, kappa_sq, l);
+    apply_num_dropping(tau_L, std::abs(k_l) * tau_d, l);
 
 #ifdef PSMILU_ENABLE_NORM_STAT
     l_norm_ratios[step] = l.norm1();
