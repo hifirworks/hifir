@@ -1,6 +1,6 @@
 //@HEADER
 //----------------------------------------------------------------------------
-//                Copyright (C) 2019 The PSMILU AUTHORS
+//                Copyright (C) 2019 The HILUCSI AUTHORS
 //----------------------------------------------------------------------------
 //@HEADER
 
@@ -17,23 +17,23 @@
 #include <type_traits>
 #include <vector>
 
-#ifndef PSMILU_THROW
-#  define PSMILU_THROW
+#ifndef HILUCSI_THROW
+#  define HILUCSI_THROW
 #endif
 
 #ifdef NDEBUG
 #  undef NDEBUG
 #endif
 
-#ifndef PSMILU_MEMORY_DEBUG
-#  define PSMILU_MEMORY_DEBUG
+#ifndef HILUCSI_MEMORY_DEBUG
+#  define HILUCSI_MEMORY_DEBUG
 #endif
 
-#ifndef PSMILU_UNIT_TESTING
-#  define PSMILU_UNIT_TESTING
+#ifndef HILUCSI_UNIT_TESTING
+#  define HILUCSI_UNIT_TESTING
 #endif
 
-#include "psmilu_log.hpp"
+#include "hilucsi/utils/log.hpp"
 
 //----------------------
 // dense section

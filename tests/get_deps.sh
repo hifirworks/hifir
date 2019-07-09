@@ -17,13 +17,13 @@ for l in $lines; do
         if [[ $l =~ ^[\<\"]* ]]; then
              # remove first and last characters
              dep=`echo $l | sed 's/.//;s/.$//'`
-             [[ $dep == psmilu_* ]] && deps="$deps $dep"
+             [[ $dep == hilucsi* ]] && deps="$deps $dep"
         fi
         flag=0
     elif [[ $l =~ ^#include[\<\"]* ]]; then
         # case where there is not space between include and < or "
         dep=`echo $l | sed 's/[<">]//g' | sed 's/#include//g'`
-        [[ $dep == psmilu_* ]] && deps="$deps $dep"
+        [[ $dep == hilucsi* ]] && deps="$deps $dep"
     fi
 done
 echo $deps
