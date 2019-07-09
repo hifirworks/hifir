@@ -15,6 +15,7 @@
 #include <complex>
 #include <iterator>
 #include <limits>
+#include <new>
 #include <type_traits>
 #include <vector>
 
@@ -127,6 +128,28 @@ class Const {
   static_assert(!std::is_same<value_type, void>::value,
                 "not a support value type, instance ValueTypeTrait first");
 };
+
+/// \brief ensure consistent between data types of \a T and input array
+/// \tparam T desired data type
+/// \tparam ArrayType array container type, see \ref Array
+/// \param[in] v input array
+/// \param[in] copy_if_needed if \a true (default), then copy the values
+///
+/// This helper function simply checks if \a sizeof(T) equals to that of
+/// \a ArrayType::value_type, if not, then allocate new array with the same
+/// size of \a v. Notice that the above condition should be used to deallocate
+/// the memory.
+template <class T, class ArrayType>
+inline T *ensure_type_consistency(const ArrayType &v,
+                                  const bool       copy_if_needed = true) {
+  constexpr static bool consist =
+      sizeof(T) == sizeof(typename ArrayType::value_type);
+  if (consist) return (T *)v.data();
+  T *ptr = new (std::nothrow) T[v.size()];
+  psmilu_error_if(!ptr, "memory allocation failed");
+  if (copy_if_needed) std::copy(v.cbegin(), v.cend(), ptr);
+  return ptr;
+}
 
 /*!
  * @}
