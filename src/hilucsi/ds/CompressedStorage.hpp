@@ -26,9 +26,8 @@ namespace internal {
 /// \brief Core of the compressed storage, including data and interfaces
 /// \tparam ValueType value type, e.g. \a double, \a float, etc
 /// \tparam IndexType index used, e.g. \a int, \a long, etc
-/// \tparam OneBased if \a true, then Fortran based index is assumed
 /// \ingroup ds
-template <class ValueType, class IndexType, bool OneBased>
+template <class ValueType, class IndexType>
 class CompressedStorage {
  public:
   typedef ValueType                            value_type;   ///< value type
@@ -78,8 +77,7 @@ class CompressedStorage {
         _vals.resize(nnz);
       }
     }
-    std::fill(_ind_start.begin(), _ind_start.end(),
-              static_cast<index_type>(OneBased));
+    std::fill(_ind_start.begin(), _ind_start.end(), index_type(0));
     _psize = n;
   }
 
@@ -109,19 +107,19 @@ class CompressedStorage {
   // getting information for local value ranges
 
   inline v_iterator val_begin(const size_type i) {
-    return _vals.begin() + to_c_idx<size_type, OneBased>(_ind_start[i]);
+    return _vals.begin() + _ind_start[i];
   }
   inline v_iterator val_end(const size_type i) {
     return val_begin(i) + _nnz(i);
   }
   inline const_v_iterator val_begin(const size_type i) const {
-    return _vals.begin() + to_c_idx<size_type, OneBased>(_ind_start[i]);
+    return _vals.begin() + _ind_start[i];
   }
   inline const_v_iterator val_end(const size_type i) const {
     return val_begin(i) + _nnz(i);
   }
   inline const_v_iterator val_cbegin(const size_type i) const {
-    return _vals.begin() + to_c_idx<size_type, OneBased>(_ind_start[i]);
+    return _vals.begin() + _ind_start[i];
   }
   inline const_v_iterator val_cend(const size_type i) const {
     return val_cbegin(i) + _nnz(i);
@@ -162,17 +160,13 @@ class CompressedStorage {
   inline void check_validity(const size_type other_size) const {
     static const char *pname = IsRow ? "row" : "column";
     static const char *oname = IsRow ? "column" : "row";
-    const auto         c_idx = [](const size_type i) {
-      return to_c_idx<size_type, OneBased>(i);
-    };
 
     if (status() != DATA_UNDEF) {
       hilucsi_error_if(_ind_start.size() < _psize + 1,
                        "invalid %s size and %s start array length", pname,
                        pname);
-      hilucsi_error_if(_ind_start.front() != static_cast<index_type>(OneBased),
-                       "the leading entry in %s start should be %d", pname,
-                       (int)OneBased);
+      hilucsi_error_if(_ind_start.front() != 0,
+                       "the leading entry in %s start should be zero", pname);
       if (nnz() > _indices.size() || nnz() > _vals.size())
         hilucsi_error(
             "inconsistent between nnz (%s_start(end)-%s_start(first),%zd) and "
@@ -187,9 +181,9 @@ class CompressedStorage {
             "%s %zd (C-based) is not sorted", pname, i);
         for (auto itr = _ind_cbegin(i), last = _ind_cend(i); itr != last;
              ++itr) {
-          hilucsi_error_if(c_idx(*itr) >= other_size,
+          hilucsi_error_if(size_type(*itr) >= other_size,
                            "%zd (C-based) exceeds %s bound %zd in %s %zd",
-                           c_idx(*itr), oname, other_size, pname, i);
+                           size_type(*itr), oname, other_size, pname, i);
         }
       }
     }
@@ -215,7 +209,7 @@ class CompressedStorage {
         const size_type j_bak(j);
         auto            v_itr = v_itr_first + pos;
         auto            i_itr = i_itr_first + pos;
-        const auto      lnnz  = _ind_start[i + 1] - pos - OneBased;
+        const auto      lnnz  = _ind_start[i + 1] - pos;
         if (lnnz) {
           auto             last = v_itr + lnnz;
           const value_type thres =
@@ -267,7 +261,7 @@ class CompressedStorage {
   inline void _begin_assemble() {
     _ind_start.reserve(_psize + 1u);
     _ind_start.resize(1);
-    _ind_start.front() = static_cast<index_type>(OneBased);
+    _ind_start.front() = 0;
     _vals.resize(0u);
     _indices.resize(0u);
   }
@@ -323,9 +317,9 @@ class CompressedStorage {
     hilucsi_assert(_indices.size() == _vals.size(), "fatal error");
     const size_type n = _vals.size();
     for (auto i = start; i < n; ++i, ++first) {
-      const auto j = to_c_idx<size_type, OneBased>(*first);
-      hilucsi_assert(j < v.size(), "%zd exceeds the length of v", j);
-      _vals[i] = v[j];
+      hilucsi_assert(size_type(*first) < v.size(),
+                     "%zd exceeds the length of v", size_type(*first));
+      _vals[i] = v[*first];
     }
     // finally, push back ind start
     _ind_start.push_back(_ind_start.back() + nnz);
@@ -363,17 +357,17 @@ class CompressedStorage {
     _vals.resize(start + nnz1);
     const size_type n1 = _vals.size();
     for (; start < n1; ++start, ++first1) {
-      const auto j = to_c_idx<size_type, OneBased>(*first1);
-      hilucsi_assert(j < v1.size(), "%zd exceeds the length of v1", j);
-      _vals[start] = v1[j];
+      hilucsi_assert(size_type(*first1) < v1.size(),
+                     "%zd exceeds the length of v1", size_type(*first1));
+      _vals[start] = v1[*first1];
     }
     // second range
     _vals.resize(start + nnz2);
     const size_type n2 = _vals.size();
     for (; start < n2; ++start, ++first2) {
-      const auto j = to_c_idx<size_type, OneBased>(*first2);
-      hilucsi_assert(j < v2.size(), "%zd exceeds the length of v2", j);
-      _vals[start] = v2[j];
+      hilucsi_assert(size_type(*first2) < v2.size(),
+                     "%zd exceeds the length of v2", size_type(*first2));
+      _vals[start] = v2[*first2];
     }
     // finally, push back ind start
     _ind_start.push_back(_ind_start.back() + nnz1 + nnz2);
@@ -387,19 +381,19 @@ class CompressedStorage {
   // local index start ranges
 
   inline i_iterator _ind_begin(const size_type i) {
-    return _indices.begin() + to_c_idx<size_type, OneBased>(_ind_start[i]);
+    return _indices.begin() + _ind_start[i];
   }
   inline i_iterator _ind_end(const size_type i) {
     return _ind_begin(i) + _nnz(i);
   }
   inline const_i_iterator _ind_begin(const size_type i) const {
-    return _indices.begin() + to_c_idx<size_type, OneBased>(_ind_start[i]);
+    return _indices.begin() + _ind_start[i];
   }
   inline const_i_iterator _ind_end(const size_type i) const {
     return _ind_begin(i) + _nnz(i);
   }
   inline const_i_iterator _ind_cbegin(const size_type i) const {
-    return _indices.begin() + to_c_idx<size_type, OneBased>(_ind_start[i]);
+    return _indices.begin() + _ind_start[i];
   }
   inline const_i_iterator _ind_cend(const size_type i) const {
     return _ind_cbegin(i) + _nnz(i);
@@ -427,7 +421,7 @@ class CompressedStorage {
     }
     // if we have an empty matrix
     if (!nnz) {
-      std::fill(indptr.begin(), indptr.end(), OneBased);
+      std::fill(indptr.begin(), indptr.end(), index_type(0));
       return;
     }
     indices.resize(nnz);
@@ -442,7 +436,7 @@ class CompressedStorage {
     auto val_first = _vals.cbegin();
 
     // now set the indptr front
-    indptr.front() = OneBased;
+    indptr.front() = 0;
 
     for (size_type i = 0; i < _psize; ++i) {
       auto split_ind_itr = start[i] + ind_first;
@@ -477,8 +471,7 @@ class CompressedStorage {
     // size_type nnz(0);
     for (size_type i(0); i < _psize; ++i) {
       // store the position first
-      auto find_itr =
-          find_sorted(_ind_cbegin(i), _ind_cend(i), m + OneBased).second;
+      auto find_itr = find_sorted(_ind_cbegin(i), _ind_cend(i), m).second;
       // nnz += IsSecond ? _ind_cend(i) - find_itr : find_itr - _ind_cbegin(i);
       indptr[i + 1] = find_itr - ind_first;
     }
@@ -508,17 +501,16 @@ class CompressedStorage {
       auto find_itr = ind_first + start[i];
       if (IsSecond) {
         auto Itr = _ind_cend(i);
-        for (auto itr = find_itr; itr != Itr; ++itr)
-          ++indptr[*itr - m + !OneBased];
+        for (auto itr = find_itr; itr != Itr; ++itr) ++indptr[*itr - m + 1];
       } else
         for (auto itr = _ind_cbegin(i); itr != find_itr; ++itr)
-          ++indptr[*itr + !OneBased];
+          ++indptr[*itr + 1];
     }
     const size_type N2 = indptr.size() - 1;
     for (size_type i(0); i < N2; ++i) indptr[i + 1] += indptr[i];
 
     if (!indptr[N2]) {
-      std::fill(indptr.begin(), indptr.end(), OneBased);
+      std::fill(indptr.begin(), indptr.end(), index_type(0));
       return;
     }
 
@@ -536,16 +528,16 @@ class CompressedStorage {
         auto v_itr = start[i] + val_first;
         auto Itr   = _ind_cend(i);
         for (auto itr = split_ind_itr; itr != Itr; ++itr, ++v_itr) {
-          const auto idx       = *itr - m - OneBased;
-          indices[indptr[idx]] = i + OneBased;
+          const auto idx       = *itr - m;
+          indices[indptr[idx]] = i;
           vals[indptr[idx]]    = *v_itr;
           ++indptr[idx];
         }
       } else {
         auto v_itr = val_cbegin(i);
         for (auto itr = _ind_cbegin(i); itr != split_ind_itr; ++itr, ++v_itr) {
-          const auto idx       = *itr - OneBased;
-          indices[indptr[idx]] = i + OneBased;
+          const auto idx       = *itr;
+          indices[indptr[idx]] = i;
           vals[indptr[idx]]    = *v_itr;
           ++indptr[idx];
         }
@@ -556,9 +548,6 @@ class CompressedStorage {
 
     index_type tmp(0);
     for (size_type i(0); i < N2; ++i) std::swap(indptr[i], tmp);
-
-    if (OneBased)
-      std::for_each(indptr.begin(), indptr.end(), [](index_type &i) { ++i; });
   }
 
   /// \brief split and store to the counterpart type
@@ -577,8 +566,7 @@ class CompressedStorage {
     auto        ind_first = _indices.cbegin();
     hilucsi_error_if(buf.status() == DATA_UNDEF, "memory allocation failed");
     for (size_type i = 0; i < _psize; ++i)
-      buf[i] = find_sorted(_ind_cbegin(i), _ind_cend(i), m + OneBased).second -
-               ind_first;
+      buf[i] = find_sorted(_ind_cbegin(i), _ind_cend(i), m).second - ind_first;
     _split_dual<IsSecond>(m, n, buf.data(), indptr, indices, vals);
   }
 
@@ -591,10 +579,7 @@ class CompressedStorage {
                             iarray_type &indices, array_type &vals) const {
     const size_type m(p.size()), n(qt.size());
     hilucsi_error_if(m != _psize, "permutation out of bound");
-    array_type buf;
-    const auto c_idx = [](const size_type i) {
-      return to_c_idx<size_type, OneBased>(i);
-    };
+    array_type      buf;
     const size_type psize = OnlyLeading ? leading : m;
     if (DoValue) {
       buf.resize(OnlyLeading ? leading : n);
@@ -606,10 +591,10 @@ class CompressedStorage {
     size_type nnz(0);
     for (size_type i(0); i < psize; ++i) nnz += _nnz(p[i]);
     if (!nnz) {
-      std::fill(indptr.begin(), indptr.end(), OneBased);
+      std::fill(indptr.begin(), indptr.end(), index_type(0));
       return;
     }
-    indptr.front() = OneBased;
+    indptr.front() = 0;
     indices.resize(nnz);
     hilucsi_error_if(indices.status() == DATA_UNDEF,
                      "memory allocation failed");
@@ -625,10 +610,10 @@ class CompressedStorage {
       auto itr_bak = i_itr;
       for (auto itr = _ind_cbegin(p[i]); itr != last; ++itr, V_itr += DoValue) {
         if (!OnlyLeading) {
-          *i_itr++ = qt[c_idx(*itr)];
-          if (DoValue) buf[qt[c_idx(*itr)]] = *V_itr;
+          *i_itr++ = qt[*itr];
+          if (DoValue) buf[qt[*itr]] = *V_itr;
         } else {
-          const size_type inv_idx = qt[c_idx(*itr)];
+          const size_type inv_idx = qt[*itr];
           if (inv_idx < psize) {
             *i_itr++ = inv_idx;
             if (DoValue) buf[inv_idx] = *V_itr;
@@ -644,8 +629,6 @@ class CompressedStorage {
     }
     indices.resize(i_itr - indices.begin());
     if (DoValue) vals.resize(v_itr - vals.begin());
-    if (OneBased)
-      std::for_each(indices.begin(), indices.end(), [](index_type &i) { ++i; });
   }
 
   /// \brief extract leading block structure
@@ -657,7 +640,7 @@ class CompressedStorage {
     indptr.front() = 0;
     size_type nz(0);
     for (size_type i(0); i < m; ++i) {
-      auto last = find_sorted(ind_cbegin(i), ind_cend(i), m + OneBased).second;
+      auto last     = find_sorted(ind_cbegin(i), ind_cend(i), m).second;
       indptr[i + 1] = last - _indices.cbegin();
       nz += (last - ind_cbegin(i));
     }
@@ -665,7 +648,7 @@ class CompressedStorage {
     if (nz) {
       hilucsi_error_if(indices.status() == DATA_UNDEF,
                        "memory allocation failed");
-      indptr.front() = OneBased;
+      indptr.front() = 0;
       auto itr       = indices.begin();
       for (size_type i(0); i < m; ++i) {
         auto last     = _indices.cbegin() + indptr[i + 1];
@@ -705,7 +688,6 @@ class CompressedStorage {
 /// \brief convert from one type to another type, e.g. ccs->crs
 /// \tparam ValueArray numerical value array type
 /// \tparam IndexArray index array type
-/// \tparam OneBased Fortran of C based index
 /// \param[in] i_ind_start input index start array
 /// \param[in] i_indices input index array
 /// \param[in] i_vals input value array
@@ -716,20 +698,18 @@ class CompressedStorage {
 /// \warning Both o_{indices,vals} should be allocated properly
 /// \note Work with both Array and \a std::vector
 /// \ingroup ds
-template <class ValueArray, class IndexArray, bool OneBased>
+template <class ValueArray, class IndexArray>
 inline void convert_storage(const IndexArray &i_ind_start,
                             const IndexArray &i_indices,
                             const ValueArray &i_vals, IndexArray &o_ind_start,
                             IndexArray &o_indices, ValueArray &o_vals) {
   typedef typename ValueArray::size_type  size_type;
   typedef typename IndexArray::value_type index_type;
-  constexpr static size_type base = static_cast<size_type>(OneBased);
 
-  // o_ind_start is allocated and uniformly assigned to be OneBased
   // both o_{indices,vals} are uninitialized arrays with size of input nnz
-  hilucsi_error_if(i_indices.size() != i_ind_start.back() - base,
+  hilucsi_error_if(i_indices.size() != (size_type)i_ind_start.back(),
                    "nnz %zd does not match that in start array %zd",
-                   i_indices.size(), i_ind_start.back() - base);
+                   i_indices.size(), i_ind_start.back());
   hilucsi_error_if(i_indices.size() != i_vals.size(),
                    "nnz sizes (%zd,%zd) do not match between indices and vals",
                    i_indices.size(), i_vals.size());
@@ -744,15 +724,14 @@ inline void convert_storage(const IndexArray &i_ind_start,
   const size_type i_n = i_ind_start.size() - 1u;
 
   // step 1, counts nnz per secondary direction, O(nnz)
-  for (const auto &p : i_indices) {
-    const auto j = to_c_idx<size_type, OneBased>(p);
-    hilucsi_assert(j < o_n, "%zd exceeds the bound %zd", j, o_n);
-    ++o_ind_start[j + 1];
+  for (const auto p : i_indices) {
+    hilucsi_assert((size_type)p < o_n, "%zd exceeds the bound %zd",
+                   (size_type)p, o_n);
+    ++o_ind_start[p + 1];
   }
 
   // step 2, build o_ind_start, O(n)
-  for (size_type i = 0u; i < o_n; ++i)
-    o_ind_start[i + 1] += o_ind_start[i] - base;
+  for (size_type i = 0u; i < o_n; ++i) o_ind_start[i + 1] += o_ind_start[i];
   hilucsi_assert(o_ind_start.back() == i_ind_start.back(), "fatal issue");
 
   // step 3, build output indices and values, O(nnz)
@@ -762,10 +741,10 @@ inline void convert_storage(const IndexArray &i_ind_start,
     const auto lnnz = i_ind_start[i + 1] - i_ind_start[i];
     const auto lend = i_iiter + lnnz;
     for (; i_iiter != lend; ++i_iiter, ++i_viter) {
-      const auto j = to_c_idx<size_type, OneBased>(*i_iiter);
+      const auto j = *i_iiter;
       // get position
-      const auto jj = to_c_idx<size_type, OneBased>(o_ind_start[j]);
-      o_indices[jj] = i + base;
+      const auto jj = o_ind_start[j];
+      o_indices[jj] = i;
       o_vals[jj]    = *i_viter;
       // increment the counter
       ++o_ind_start[j];
@@ -774,7 +753,7 @@ inline void convert_storage(const IndexArray &i_ind_start,
   hilucsi_assert(o_ind_start[o_n] == o_ind_start[o_n - 1], "fatal issue");
 
   // final step, revert back to previous stage for output index start, O(n)
-  index_type temp(base);
+  index_type temp(0);
   for (size_type i = 0u; i < o_n; ++i) std::swap(temp, o_ind_start[i]);
 
   // NOTE we can create a buffer of size n, so that the last step will become
@@ -784,36 +763,33 @@ inline void convert_storage(const IndexArray &i_ind_start,
 }  // namespace internal
 
 // forward decl
-template <class ValueType, class IndexType, bool OneBased = false>
+template <class ValueType, class IndexType>
 class CCS;
 
 /// \class CRS
 /// \brief Compressed Row Storage (CRS) format for sparse matrices
 /// \tparam ValueType numerical value type, e.g. \a double, \a float, etc
 /// \tparam IndexType index type, e.g. \a int, \a long, etc
-/// \tparam OneBased if \a false (default), using C-based index
 /// \ingroup ds
-template <class ValueType, class IndexType, bool OneBased = false>
-class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
-  typedef internal::CompressedStorage<ValueType, IndexType, OneBased> _base;
+template <class ValueType, class IndexType>
+class CRS : public internal::CompressedStorage<ValueType, IndexType> {
+  typedef internal::CompressedStorage<ValueType, IndexType> _base;
 
  public:
-  typedef ValueType                           value_type;   ///< value type
-  typedef IndexType                           index_type;   ///< index type
-  typedef typename _base::array_type          array_type;   ///< value array
-  typedef typename _base::iarray_type         iarray_type;  ///< index array
-  typedef typename _base::size_type           size_type;    ///< size type
-  typedef typename _base::pointer             pointer;      ///< value pointer
-  typedef typename _base::ipointer            ipointer;     ///< index pointer
-  typedef CCS<ValueType, IndexType, OneBased> other_type;   ///< ccs type
-  typedef typename _base::i_iterator          i_iterator;   ///< index iterator
-  typedef typename _base::const_i_iterator    const_i_iterator;
+  typedef ValueType                        value_type;   ///< value type
+  typedef IndexType                        index_type;   ///< index type
+  typedef typename _base::array_type       array_type;   ///< value array
+  typedef typename _base::iarray_type      iarray_type;  ///< index array
+  typedef typename _base::size_type        size_type;    ///< size type
+  typedef typename _base::pointer          pointer;      ///< value pointer
+  typedef typename _base::ipointer         ipointer;     ///< index pointer
+  typedef CCS<ValueType, IndexType>        other_type;   ///< ccs type
+  typedef typename _base::i_iterator       i_iterator;   ///< index iterator
+  typedef typename _base::const_i_iterator const_i_iterator;
   ///< const index iterator
   typedef typename _base::v_iterator       v_iterator;  ///< value iterator
   typedef typename _base::const_v_iterator const_v_iterator;
-  ///< const value iterator
-  constexpr static bool ONE_BASED = OneBased;  ///< C or Fortran based
-  constexpr static bool ROW_MAJOR = true;      ///< row major
+  constexpr static bool                    ROW_MAJOR = true;  ///< row major
 
   /// \brief read a matrix from HILUCSI native binary file
   /// \param[in] filename file name
@@ -883,7 +859,7 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
     // NOTE that the constructor will allocate memory for each of the
     // three arrays before calling the following routine
     if (ccs.nnz())
-      internal::convert_storage<array_type, iarray_type, OneBased>(
+      internal::convert_storage<array_type, iarray_type>(
           ccs.col_start(), ccs.row_ind(), ccs.vals(), row_start(), col_ind(),
           vals());
   }
@@ -1039,7 +1015,7 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
     auto v_itr = vals().begin();
     auto i_itr = col_ind().cbegin();
     for (auto last = col_ind().cend(); i_itr != last; ++i_itr, ++v_itr)
-      *v_itr *= t[to_c_idx<size_type, ONE_BASED>(*i_itr)];
+      *v_itr *= t[*i_itr];
   }
 
   /// \brief scale by two diagonal matrices from both lh and rh sides
@@ -1067,9 +1043,9 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
       auto v_itr = _base::val_cbegin(i);
       auto i_itr = col_ind_cbegin(i);
       for (auto last = col_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
-        const size_type j = to_c_idx<size_type, ONE_BASED>(*i_itr);
-        hilucsi_assert(j < _ncols, "%zd exceeds column size", j);
-        y[i] += *v_itr * x[j];
+        hilucsi_assert(size_type(*i_itr) < _ncols, "%zd exceeds column size",
+                       size_type(*i_itr));
+        y[i] += *v_itr * x[*i_itr];
       }
     }
   }
@@ -1086,9 +1062,9 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
       auto v_itr = _base::val_cbegin(i);
       auto i_itr = col_ind_cbegin(i);
       for (auto last = col_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
-        const size_type j = to_c_idx<size_type, ONE_BASED>(*i_itr);
-        hilucsi_assert(j < _ncols, "%zd exceeds column size", j);
-        y[i] += *v_itr * x[j];
+        hilucsi_assert(size_type(*i_itr) < _ncols, "%zd exceeds column size",
+                       size_type(*i_itr));
+        y[i] += *v_itr * x[*i_itr];
       }
     }
   }
@@ -1138,7 +1114,7 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
       auto       v_itr = _base::val_cbegin(i);
       auto       i_itr = col_ind_cbegin(i);
       for (auto last = col_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
-        const size_type j = to_c_idx<size_type, ONE_BASED>(*i_itr);
+        const size_type j = *i_itr;
         hilucsi_assert(j < _ncols, "%zd exceeds column size", j);
         y[j] += *v_itr * temp;
       }
@@ -1189,8 +1165,8 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   /// \param[in] fname file name
   /// \param[in] m leading block size
   inline void write_ascii(const char *fname, const size_type m = 0) const {
-    hilucsi::write_ascii<true, ONE_BASED>(fname, row_start(), _ncols, col_ind(),
-                                          vals(), m);
+    hilucsi::write_ascii<true>(fname, row_start(), _ncols, col_ind(), vals(),
+                               m);
   }
 
   /// \brief read data from an ASCII file
@@ -1204,11 +1180,6 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
     array_type  vs;
     std::tie(is_row, is_c, dtype, row, col, Nnz, m) =
         hilucsi::read_ascii(fname, i_start, is, vs);
-    const int shift = ONE_BASED - !is_c;
-    if (shift) {
-      for (auto &v : i_start) v += shift;
-      for (auto &v : is) v += shift;
-    }
     if (is_row) {
       row_start() = std::move(i_start);
       col_ind()   = std::move(is);
@@ -1369,7 +1340,6 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
 };
 
 /// \brief wrap user data
-/// \tparam OneBased if \a true, then assume Fortran index system
 /// \tparam ValueType value type, e.g. \a double
 /// \tparam IndexType index type, e.g. \a int
 /// \param[in] nrows number of rows
@@ -1382,14 +1352,14 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
 /// \return a \ref CRS matrix wrapped around user data.
 /// \warning It's the user's responsibility to maintain the external data
 /// \ingroup ds
-template <bool OneBased, class ValueType, class IndexType>
-inline CRS<ValueType, IndexType, OneBased> wrap_crs(
-    const typename CRS<ValueType, IndexType, OneBased>::size_type nrows,
-    const typename CRS<ValueType, IndexType, OneBased>::size_type ncols,
+template <class ValueType, class IndexType>
+inline CRS<ValueType, IndexType> wrap_crs(
+    const typename CRS<ValueType, IndexType>::size_type nrows,
+    const typename CRS<ValueType, IndexType>::size_type ncols,
     IndexType *row_start, IndexType *col_ind, ValueType *vals,
     bool check = true, bool help_sort = false) {
-  using return_type = CRS<ValueType, IndexType, OneBased>;
-  using size_type   = typename CRS<ValueType, IndexType, OneBased>::size_type;
+  using return_type          = CRS<ValueType, IndexType>;
+  using size_type            = typename CRS<ValueType, IndexType>::size_type;
   constexpr static bool WRAP = true;
   static_assert(std::is_integral<IndexType>::value, "must be integer");
 
@@ -1400,8 +1370,8 @@ inline CRS<ValueType, IndexType, OneBased> wrap_crs(
                   const_cast<ValueType *>(vals), WRAP);
 
   if (check) {
-    if (row_start[0] != (IndexType)OneBased)
-      hilucsi_error("first entry of row_start does not agree with OneBased.");
+    if (row_start[0] != 0)
+      hilucsi_error("first entry of row_start does not agree with 0.");
     Array<ValueType> buf;
     for (size_type i = 0u; i < nrows; ++i) {
       if (!mat.nnz_in_row(i)) {
@@ -1419,16 +1389,16 @@ inline CRS<ValueType, IndexType, OneBased> wrap_crs(
               "with help_sort=true",
               i, itr - first);
         else {
-          buf.resize(mat.ncols() + OneBased);
+          buf.resize(mat.ncols());
           if (buf.status() == DATA_UNDEF)
             hilucsi_error("memory allocation failed!");
           // load values, note that we can just load [itr,last), but we want to
           // loop through all indices to ensure they are bounded
           auto v_itr = mat.val_cbegin(i);
           for (itr = first; itr != last; ++itr, ++v_itr) {
-            hilucsi_error_if(
-                *itr < OneBased || (size_type)*itr >= mat.ncols() + OneBased,
-                "%zd exceeds column size %zd", size_type(*itr), mat.ncols());
+            hilucsi_error_if(*itr < 0 || size_type(*itr) >= mat.ncols(),
+                             "%zd exceeds column size %zd", size_type(*itr),
+                             mat.ncols());
             buf[*itr] = *v_itr;
           }
           std::sort(mat.col_ind_begin(i), mat.col_ind_end(i));
@@ -1438,7 +1408,7 @@ inline CRS<ValueType, IndexType, OneBased> wrap_crs(
           for (itr = first; itr != last; ++itr, ++vv_itr) *vv_itr = buf[*itr];
         }
       } else
-        hilucsi_error_if(size_type(*(last - 1)) >= mat.ncols() + OneBased,
+        hilucsi_error_if(size_type(*(last - 1)) >= mat.ncols(),
                          "%zd exceeds column size %zd", size_type(*(last - 1)),
                          mat.ncols());
     }
@@ -1460,7 +1430,7 @@ inline CRS<ValueType, IndexType, OneBased> wrap_crs(
 /// \warning It's the user's responsibility to maintain the external data
 /// \ingroup ds
 template <class ValueType, class IndexType>
-inline CRS<ValueType, IndexType> wrap_crs_0(
+inline CRS<ValueType, IndexType> wrap_crs(
     const typename CRS<ValueType, IndexType>::size_type nrows,
     const typename CRS<ValueType, IndexType>::size_type ncols,
     const IndexType *row_start, const IndexType *col_ind, const ValueType *vals,
@@ -1469,56 +1439,31 @@ inline CRS<ValueType, IndexType> wrap_crs_0(
                          help_sort);
 }
 
-/// \brief wrap user data in Fortran index
-/// \tparam ValueType value type, e.g. \a double
-/// \tparam IndexType index type, e.g. \a int
-/// \param[in] nrows number of rows
-/// \param[in] ncols number of columns
-/// \param[in] row_start data for row pointer, size of \a nrows + 1
-/// \param[in] col_ind column indices
-/// \param[in] vals numerical data
-/// \param[in] check if \a true (default), then perform validation checking
-/// \param[in] help_sort help sort unsorted rows (if any), require \a check=1
-/// \return a \ref CRS matrix wrapped around user data.
-/// \warning It's the user's responsibility to maintain the external data
-/// \ingroup ds
-template <class ValueType, class IndexType>
-inline CRS<ValueType, IndexType, true> wrap_crs_1(
-    const typename CRS<ValueType, IndexType, true>::size_type nrows,
-    const typename CRS<ValueType, IndexType, true>::size_type ncols,
-    const IndexType *row_start, const IndexType *col_ind, const ValueType *vals,
-    bool check = true, bool help_sort = false) {
-  return wrap_crs<true>(nrows, ncols, row_start, col_ind, vals, check,
-                        help_sort);
-}
-
 /// \class CCS
 /// \brief Compressed Column Storage (CCS) format for sparse matrices
 /// \tparam ValueType numerical value type, e.g. \a double, \a float, etc
 /// \tparam IndexType index type, e.g. \a int, \a long, etc
-/// \tparam OneBased if \a false (default), using C-based index
 /// \ingroup ds
-template <class ValueType, class IndexType, bool OneBased>
-class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
-  typedef internal::CompressedStorage<ValueType, IndexType, OneBased> _base;
+template <class ValueType, class IndexType>
+class CCS : public internal::CompressedStorage<ValueType, IndexType> {
+  typedef internal::CompressedStorage<ValueType, IndexType> _base;
 
  public:
-  typedef ValueType                           value_type;   ///< value type
-  typedef IndexType                           index_type;   ///< index type
-  typedef typename _base::array_type          array_type;   ///< value array
-  typedef typename _base::iarray_type         iarray_type;  ///< index array
-  typedef typename _base::size_type           size_type;    ///< size type
-  typedef typename _base::pointer             pointer;      ///< value pointer
-  typedef typename _base::ipointer            ipointer;     ///< index pointer
-  typedef CRS<ValueType, IndexType, OneBased> other_type;   ///< crs type
-  typedef typename _base::i_iterator          i_iterator;   ///< index iterator
-  typedef typename _base::const_i_iterator    const_i_iterator;
+  typedef ValueType                        value_type;   ///< value type
+  typedef IndexType                        index_type;   ///< index type
+  typedef typename _base::array_type       array_type;   ///< value array
+  typedef typename _base::iarray_type      iarray_type;  ///< index array
+  typedef typename _base::size_type        size_type;    ///< size type
+  typedef typename _base::pointer          pointer;      ///< value pointer
+  typedef typename _base::ipointer         ipointer;     ///< index pointer
+  typedef CRS<ValueType, IndexType>        other_type;   ///< crs type
+  typedef typename _base::i_iterator       i_iterator;   ///< index iterator
+  typedef typename _base::const_i_iterator const_i_iterator;
   ///< const index iterator
   typedef typename _base::v_iterator       v_iterator;  ///< value iterator
   typedef typename _base::const_v_iterator const_v_iterator;
   ///< const value iterator
-  constexpr static bool ONE_BASED = OneBased;  ///< C or Fortran based
-  constexpr static bool ROW_MAJOR = false;     ///< column major
+  constexpr static bool ROW_MAJOR = false;  ///< column major
 
   /// \brief read from a native HILUCSI binary file
   /// \param[in] filename file name
@@ -1586,7 +1531,7 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   explicit CCS(const other_type &crs)
       : CCS(crs.nrows(), crs.ncols(), crs.nnz(), false) {
     if (crs.nnz())
-      internal::convert_storage<array_type, iarray_type, OneBased>(
+      internal::convert_storage<array_type, iarray_type>(
           crs.row_start(), crs.col_ind(), crs.vals(), col_start(), row_ind(),
           vals());
   }
@@ -1721,7 +1666,7 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
     auto v_itr = vals().begin();
     auto i_itr = row_ind().cbegin();
     for (auto last = row_ind().cend(); i_itr != last; ++i_itr, ++v_itr)
-      *v_itr *= s[to_c_idx<size_type, ONE_BASED>(*i_itr)];
+      *v_itr *= s[*i_itr];
   }
 
   /// \brief scale by a diagonal matrix from right
@@ -1772,9 +1717,9 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
       auto       v_itr = _base::val_cbegin(i);
       auto       i_itr = row_ind_cbegin(i);
       for (auto last = row_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
-        const size_type j = to_c_idx<size_type, ONE_BASED>(*i_itr);
-        hilucsi_assert(j < _nrows, "%zd exceeds the size bound", j);
-        y[j] += temp * *v_itr;
+        hilucsi_assert(size_type(*i_itr) < _nrows, "%zd exceeds the size bound",
+                       size_type(*i_itr));
+        y[*i_itr] += temp * *v_itr;
       }
     }
   }
@@ -1802,9 +1747,9 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
       auto v_itr = _base::val_cbegin(i);
       auto i_itr = row_ind_cbegin(i);
       for (auto last = row_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
-        const size_type j = to_c_idx<size_type, ONE_BASED>(*i_itr);
-        hilucsi_assert(j < _nrows, "%zd exceeds the size bound", j);
-        y[i] += x[j] * *v_itr;
+        hilucsi_assert(size_type(*i_itr) < _nrows, "%zd exceeds the size bound",
+                       size_type(*i_itr));
+        y[i] += x[*i_itr] * *v_itr;
       }
     }
   }
@@ -1852,8 +1797,8 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
   /// \param[in] fname file name
   /// \param[in] m leading block size
   inline void write_ascii(const char *fname, const size_type m = 0) const {
-    hilucsi::write_ascii<false, ONE_BASED>(fname, col_start(), _nrows,
-                                           row_ind(), vals(), m);
+    hilucsi::write_ascii<false>(fname, col_start(), _nrows, row_ind(), vals(),
+                                m);
   }
 
   /// \brief read data from an ASCII file
@@ -1867,11 +1812,6 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType, OneBased> {
     array_type  vs;
     std::tie(is_row, is_c, dtype, row, col, Nnz, m) =
         hilucsi::read_ascii(fname, i_start, is, vs);
-    const int shift = ONE_BASED - !is_c;
-    if (shift) {
-      for (auto &v : i_start) v += shift;
-      for (auto &v : is) v += shift;
-    }
     if (!is_row) {
       col_start() = std::move(i_start);
       row_ind()   = std::move(is);

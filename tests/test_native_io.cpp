@@ -30,17 +30,12 @@ TEST(IO, c) {
     m             = read_bin("foo.bin", C);
     const auto Cd = convert2dense(C);
     COMPARE_MATS(Cd, Ad);
-    using crs3_t = CRS<double, int, true>;
-    crs3_t D;
-    read_bin("foo.bin", D);
-    const auto Dd = convert2dense(D);
-    COMPARE_MATS(Dd, Ad);
     using ccs_t = CCS<double, int>;
     ccs_t E;
     read_bin("foo.bin", E);
     const auto Ed = convert2dense(E);
     COMPARE_MATS(Ed, Ad);
-    using ccs2_t = CCS<float, int, true>;
+    using ccs2_t = CCS<float, int>;
     ccs2_t F;
     read_bin("foo.bin", F);
     const auto Fd = convert2dense(F);

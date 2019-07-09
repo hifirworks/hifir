@@ -17,7 +17,7 @@
 /// are stored: 1) \a general \a information, which requires 7 bytes in total;
 /// sequentially, they are, byte by byte, platform endianness (1 for little,
 /// 0 for big), word size (8 for 64bit and 4 for 32bit), integer size, storage
-/// scheme (1 for CRS and 0 for CCS), boolean to indicate C index, floating
+/// scheme (1 for CRS and 0 for CCS), reserved, floating
 /// point precision flag (1 for \a double and 0 for \a float), and the value
 /// data type (1 for real and 0 for complex). 2) \a matrix \a sizes, the sizes
 /// are stored in \b fixed-size integers, which are type of \a uint64_t, thus
@@ -35,7 +35,7 @@
 /// cross-platform compatibility. Like the binary format, there are three
 /// data groups as well. For general information, three characters are stored
 /// in a single line, ?$%, where ? is the matrix storage scheme used, 'R' for
-/// CRS while 'C' for CCS; $ is for the index based---'C' and 'F', which are
+/// CRS while 'C' for CCS; $ is reserved, which are
 /// for C and Fortran based index systems, resp; finally, % is the data type,
 /// which adapts the naming scheme in BLAS, i.e. 'D' for double, 'S' for
 /// single, 'Z' for complex double, and 'C' for complex single. For instance,
@@ -303,8 +303,7 @@ inline typename std::enable_if<CsType::ROW_MAJOR>::type write_bin(
 
   std::ofstream f(filename, std::ios_base::binary);
   hilucsi_error_if(!f.is_open(), "failed to open file %s.", filename);
-  internal::write_general_info(f, int_size, true, !CsType::ONE_BASED, is_double,
-                               is_real);
+  internal::write_general_info(f, int_size, true, true, is_double, is_real);
   const std::uint64_t nrows(A.nrows()), ncols(A.ncols()), nnz(A.nnz());
   internal::write_matrix_sizes(f, nrows, ncols, nnz, m);
   const void *ind_start = reinterpret_cast<const void *>(A.row_start().data());
@@ -333,8 +332,7 @@ inline typename std::enable_if<!CsType::ROW_MAJOR>::type write_bin(
 
   std::ofstream f(filename, std::ios_base::binary);
   hilucsi_error_if(!f.is_open(), "failed to open file %s.", filename);
-  internal::write_general_info(f, int_size, false, !CsType::ONE_BASED,
-                               is_double, is_real);
+  internal::write_general_info(f, int_size, false, true, is_double, is_real);
   const std::uint64_t nrows(A.nrows()), ncols(A.ncols()), nnz(A.nnz());
   internal::write_matrix_sizes(f, nrows, ncols, nnz, m);
   const void *ind_start = reinterpret_cast<const void *>(A.col_start().data());
@@ -370,7 +368,7 @@ inline typename std::enable_if<CsType::ROW_MAJOR, T>::type read_bin(
   constexpr static bool is_real = std::is_floating_point<value_type>::value;
   constexpr static bool is_double =
       (is_real && sizeof(value_type) == 8u) || sizeof(value_type) == 16u;
-  constexpr static bool is_c = !CsType::ONE_BASED;
+  constexpr static bool is_c = true;
 
   std::ifstream f(filename, std::ios_base::binary);
   hilucsi_error_if(!f.is_open(), "failed to open file %s.", filename);
@@ -516,7 +514,7 @@ inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type read_bin(
   constexpr static bool is_real = std::is_floating_point<value_type>::value;
   constexpr static bool is_double =
       (is_real && sizeof(value_type) == 8u) || sizeof(value_type) == 16u;
-  constexpr static bool is_c = !CsType::ONE_BASED;
+  constexpr static bool is_c = true;
 
   std::ifstream f(filename, std::ios_base::binary);
   hilucsi_error_if(!f.is_open(), "failed to open file %s.", filename);
@@ -651,13 +649,13 @@ inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type read_bin(
   return m;
 }
 
-template <bool IsRowMajor, bool OneBased, class IndexArray, class ValueArray>
+template <bool IsRowMajor, class IndexArray, class ValueArray>
 inline void write_ascii(const char *fname, const IndexArray &ind_start,
                         const typename IndexArray::size_type other_size,
                         const IndexArray &indices, const ValueArray &vals,
                         const typename IndexArray::size_type m) {
   constexpr static char is_row    = IsRowMajor ? 'R' : 'C';
-  constexpr static char is_c      = !OneBased ? 'C' : 'F';
+  constexpr static char is_c      = 'C';
   using value_type                = typename ValueArray::value_type;
   constexpr static int  data_size = sizeof(value_type);
   constexpr static char dtype     = std::is_floating_point<value_type>::value
@@ -669,8 +667,6 @@ inline void write_ascii(const char *fname, const IndexArray &ind_start,
 
   if (!ind_start.size())
     hilucsi_error("cannot write matrix with empty ind_start");
-
-  hilucsi_error_if(ind_start.front() != OneBased, "inconsistent index system");
 
   decltype(other_size) nrows(IsRowMajor ? ind_start.size() - 1 : other_size),
       ncols(IsRowMajor ? other_size : ind_start.size() - 1),

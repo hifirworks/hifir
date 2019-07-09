@@ -22,7 +22,6 @@ namespace hilucsi {
 /// \class IndexValueArray
 /// \tparam ValueType value type, e.g. \a double, \a float, etc
 /// \tparam IndexType index type, e.g. \a int
-/// \tparam OneBased if \a true, then the array is assumed to be Fortran index
 /// \ingroup ds
 /// \note We use \a std::vector for internal data management
 ///
@@ -40,7 +39,7 @@ namespace hilucsi {
 /// For the efficiency purpose, we explicitly create an size counter,
 /// \ref _counts, to avoid calling the \a std::vector::push_back, which is
 /// quite expansive.
-template <class ValueType, class IndexType, bool OneBased = false>
+template <class ValueType, class IndexType>
 class IndexValueArray {
  public:
   typedef ValueType                      value_type;   ///< value type
@@ -49,7 +48,6 @@ class IndexValueArray {
   typedef std::vector<index_type>        iarray_type;  ///< index array
   typedef typename array_type::size_type size_type;    ///< size
   typedef IndexValueArray                this_type;    ///< handy type wrapper
-  constexpr static bool ONE_BASED = OneBased;          ///< C index flag
 
   /// \brief default constructor
   IndexValueArray() : _vals(), _inds(), _counts(0u) {}
@@ -94,29 +92,22 @@ class IndexValueArray {
   /// \brief push back an index
   /// \param[in] i index
   inline void push_back(const size_type i) {
-    hilucsi_assert((to_c_idx<size_type, OneBased>(i)) < _vals.size(),
-                   "%zd exceeds the value array size", i);
+    hilucsi_assert(i < _vals.size(), "%zd exceeds the value array size", i);
     hilucsi_assert(_inds.size(), "empty array, did you call resize?");
     _inds[_counts++] = i;
   }
 
   /// \brief get the index
-  /// \param[in] i local index in range of _counts (C-based)
+  /// \param[in] i local index in range of _counts
   inline size_type idx(const size_type i) const {
     hilucsi_assert(i < _counts, "%zd exceeds index array bound %zd", i,
                    _counts);
     return _inds[i];
   }
 
-  /// \brief get the \b C index
-  /// \param[in] i local index in range of _counts (C-based)
-  inline size_type c_idx(const size_type i) const {
-    return to_c_idx<size_type, OneBased>(idx(i));
-  }
-
   /// \brief get the value
-  /// \param[in] i local index in range of _counts (C-based)
-  inline value_type val(const size_type i) const { return _vals[c_idx(i)]; }
+  /// \param[in] i local index in range of _counts
+  inline value_type val(const size_type i) const { return _vals[idx(i)]; }
 
   /// \brief get the 1 norm of the vector
   inline value_type norm1() const {
@@ -136,19 +127,17 @@ class IndexValueArray {
   inline value_type norm2() const { return std::sqrt(norm2_sq()); }
 
   /// \brief operator access
-  /// \param[in] idx idx in range of dense size, one-based aware
-  inline value_type &operator[](const size_type idx) {
-    hilucsi_assert((to_c_idx<size_type, OneBased>(idx)) < _vals.size(),
-                   "%zd exceeds value size bound", idx - OneBased);
-    return _vals[to_c_idx<size_type, OneBased>(idx)];
+  /// \param[in] i index in range of dense size, one-based aware
+  inline value_type &operator[](const size_type i) {
+    hilucsi_assert(i < _vals.size(), "%zd exceeds value size bound", i);
+    return _vals[i];
   }
 
   /// \brief operator access, constant version
-  /// \param[in] idx idx in range of dense size, one-based aware
-  inline const value_type &operator[](const size_type idx) const {
-    hilucsi_assert((to_c_idx<size_type, OneBased>(idx)) < _vals.size(),
-                   "%zd exceeds value size bound", idx - OneBased);
-    return _vals[to_c_idx<size_type, OneBased>(idx)];
+  /// \param[in] i index in range of dense size, one-based aware
+  inline const value_type &operator[](const size_type i) const {
+    hilucsi_assert(i < _vals.size(), "%zd exceeds value size bound", i);
+    return _vals[i];
   }
 
   // utils
@@ -166,16 +155,15 @@ class IndexValueArray {
 /// \class SparseVector
 /// \tparam ValueType value type, e.g. \a double
 /// \tparam IndexType index type, e.g. \a int
-/// \tparam OneBased if \a false (default), then assume C index
 /// \ingroup ds
 ///
 /// This class is mainly used in Crout update. The total memory cost is linear
 /// with respect to the matrix system size and computation cost is bounded
 /// by \f$\mathcal{O}(\textrm{lnnz}\log \textrm{lnnz}\f$, where
 /// \f$\textrm{lnnz}\f$ is the local number of nonzeros.
-template <class ValueType, class IndexType, bool OneBased = false>
-class SparseVector : public IndexValueArray<ValueType, IndexType, OneBased> {
-  typedef IndexValueArray<ValueType, IndexType, OneBased> _base;  ///< base
+template <class ValueType, class IndexType>
+class SparseVector : public IndexValueArray<ValueType, IndexType> {
+  typedef IndexValueArray<ValueType, IndexType> _base;  ///< base
 
  public:
   typedef typename _base::value_type  value_type;   ///< value
@@ -248,11 +236,11 @@ class SparseVector : public IndexValueArray<ValueType, IndexType, OneBased> {
   /// \return if \a true, then a new value has been pushed back
   /// \note The tag array is for unsure the union of the indices
   inline bool push_back(const index_type i, const size_type step) {
-    const size_type j = to_c_idx<size_type, OneBased>(i);
-    hilucsi_assert(j < _dense_tags.size(), "%zd exceeds the dense size", j);
-    if (_dense_tags[j] != static_cast<index_type>(step)) {
+    hilucsi_assert((size_type)i < _dense_tags.size(),
+                   "%zd exceeds the dense size", (size_type)i);
+    if (_dense_tags[i] != static_cast<index_type>(step)) {
       _base::push_back(i);
-      _dense_tags[j] = step;
+      _dense_tags[i] = step;
       return true;  // got a new value
     }
     return false;  // not a new value
@@ -261,7 +249,7 @@ class SparseVector : public IndexValueArray<ValueType, IndexType, OneBased> {
   /// \brief reset current state
   inline void restore_cur_state() {
     const size_type n = _counts;
-    for (size_type i(0); i < n; ++i) _dense_tags[_base::c_idx(i)] = _EMPTY;
+    for (size_type i(0); i < n; ++i) _dense_tags[_base::idx(i)] = _EMPTY;
   }
 
  protected:

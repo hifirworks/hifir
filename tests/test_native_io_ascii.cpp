@@ -25,10 +25,6 @@ TEST(IO, crs) {
     const auto Ad = convert2dense(A);
     const auto Bd = convert2dense(B);
     COMPARE_MATS(Ad, Bd);
-    CRS<double, int, true> C;
-    C.read_ascii("foo1.hilucsi");
-    const auto Cd = convert2dense(C);
-    COMPARE_MATS(Ad, Cd);
     crs_t::other_type D;
     D.read_ascii("foo1.hilucsi");
     const auto Dd = convert2dense(D);
@@ -48,10 +44,6 @@ TEST(IO, ccs) {
     const auto Ad = convert2dense(A);
     const auto Bd = convert2dense(B);
     COMPARE_MATS(Ad, Bd);
-    CCS<double, int, true> C;
-    C.read_ascii("foo2.hilucsi");
-    const auto Cd = convert2dense(C);
-    COMPARE_MATS(Ad, Cd);
     ccs_t::other_type D;
 
     D.read_ascii("foo2.hilucsi");

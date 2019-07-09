@@ -50,8 +50,8 @@ static typename std::enable_if<CS::ROW_MAJOR,
 convert2dense(const CS &cs) {
   typedef typename CS::value_type v_t;
   typedef typename CS::size_type  i_t;
-  const auto c_idx = [](const i_t i) -> i_t { return i - CS::ONE_BASED; };
-  auto       mat(create_mat<v_t>(cs.nrows(), cs.ncols()));
+  const auto                      c_idx = [](const i_t i) -> i_t { return i; };
+  auto                            mat(create_mat<v_t>(cs.nrows(), cs.ncols()));
   for (i_t i = 0u; i < cs.nrows(); ++i) {
     auto col_itr = cs.col_ind_cbegin(i);
     for (auto val_itr = cs.val_cbegin(i), val_end = cs.val_cend(i);
@@ -68,8 +68,8 @@ static typename std::enable_if<!CS::ROW_MAJOR,
 convert2dense(const CS &cs) {
   typedef typename CS::value_type v_t;
   typedef typename CS::size_type  i_t;
-  const auto c_idx = [](const i_t i) -> i_t { return i - CS::ONE_BASED; };
-  auto       mat(create_mat<v_t>(cs.nrows(), cs.ncols()));
+  const auto                      c_idx = [](const i_t i) -> i_t { return i; };
+  auto                            mat(create_mat<v_t>(cs.nrows(), cs.ncols()));
   for (i_t j = 0u; j < cs.ncols(); ++j) {
     auto row_itr = cs.row_ind_cbegin(j);
     for (auto val_itr = cs.val_cbegin(j), val_end = cs.val_cend(j);
@@ -396,7 +396,7 @@ static typename std::enable_if<CsType::ROW_MAJOR, CsType>::type gen_rand_sparse(
     const int m, const int n, const bool ensure_diag = true) {
   using index_type                               = typename CsType::index_type;
   using value_type                               = typename CsType::value_type;
-  constexpr static bool                ONE_BASED = CsType::ONE_BASED;
+  constexpr static bool                ONE_BASED = false;
   const RandGen<index_type>            i_rand(0, n - 1);
   const RandGen<value_type>            v_rand;
   CsType                               A(m, n);
@@ -444,7 +444,7 @@ static typename std::enable_if<!CsType::ROW_MAJOR, CsType>::type
 gen_rand_sparse(const int m, const int n, const bool ensure_diag = true) {
   using index_type                               = typename CsType::index_type;
   using value_type                               = typename CsType::value_type;
-  constexpr static bool                ONE_BASED = CsType::ONE_BASED;
+  constexpr static bool                ONE_BASED = false;
   const RandGen<index_type>            i_rand(0, m - 1);
   const RandGen<value_type>            v_rand;
   CsType                               A(m, n);
@@ -510,7 +510,7 @@ static CssType gen_rand_strict_lower_sparse(
     const typename CssType::size_type n) {
   using index_type                = typename CssType::index_type;
   using value_type                = typename CssType::value_type;
-  constexpr static bool ONE_BASED = CssType::ONE_BASED;
+  constexpr static bool ONE_BASED = false;
   static_assert(!CssType::ROW_MAJOR, "must be CCS type");
   CssType                              A(n, n);
   std::vector<value_type>              buf(n);

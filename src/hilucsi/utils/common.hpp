@@ -79,25 +79,25 @@ inline void rotate_right(const typename ArrayType::size_type n,
   std::rotate(itr_first, itr_first + 1, itr_last);
 }
 
-/// \brief convert a given index to c-based index
-/// \tparam IndexType integer type
-/// \tparam OneBased if \a true not the index is Fortran based
-/// \param[in] i input index
-/// \return C-based index
-template <class IndexType, bool OneBased>
-inline constexpr IndexType to_c_idx(const IndexType i) {
-  return i - static_cast<IndexType>(OneBased);
-}
+// /// \brief convert a given index to c-based index
+// /// \tparam IndexType integer type
+// /// \tparam OneBased if \a true not the index is Fortran based
+// /// \param[in] i input index
+// /// \return C-based index
+// template <class IndexType, bool OneBased>
+// inline constexpr IndexType to_c_idx(const IndexType i) {
+//   return i - static_cast<IndexType>(OneBased);
+// }
 
-/// \brief convert a C-based index to original input index
-/// \tparam IndexType integer type
-/// \tparam OneBased if \a true not the index is Fortran based
-/// \param[in] i input index
-/// \return Original index
-template <class IndexType, bool OneBased>
-inline constexpr IndexType to_ori_idx(const IndexType i) {
-  return i + static_cast<IndexType>(OneBased);
-}
+// /// \brief convert a C-based index to original input index
+// /// \tparam IndexType integer type
+// /// \tparam OneBased if \a true not the index is Fortran based
+// /// \param[in] i input index
+// /// \return Original index
+// template <class IndexType, bool OneBased>
+// inline constexpr IndexType to_ori_idx(const IndexType i) {
+//   return i + static_cast<IndexType>(OneBased);
+// }
 
 /// \brief trait extract value type
 /// \tparam T value type
