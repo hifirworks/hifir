@@ -20,6 +20,7 @@ tmp
 *.tmp
 src/psmilu_matching/hsl_mc64*.h
 *.hilucsi
+*.psmilu
 *.bin
 *.mat
 internal_tests
