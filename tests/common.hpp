@@ -247,12 +247,12 @@ static matrix<T> compute_dense_Schur_c(const matrix<T> &A, const matrix<T> &L,
       for (int j = 0; j < n; ++j) temp[i][j] = A[i + m][j + m];
 
     for (int i = 0; i < n; ++i) {
-      const auto &l_i    = L[i + m];
+      const auto &l_i    = L[i];
       auto &      temp_i = temp[i];
       for (int k = 0; k < m; ++k) {
         const T     ld  = l_i[k] * d[k];
         const auto &u_k = U[k];
-        for (int j = 0; j < n; ++j) temp_i[j] -= ld * u_k[j + m];
+        for (int j = 0; j < n; ++j) temp_i[j] -= ld * u_k[j];
       }
     }
   }
