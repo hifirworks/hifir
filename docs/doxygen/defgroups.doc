@@ -9,18 +9,20 @@
 
 /// \defgroup util Utilities
 
-/// \defgroup alg Algorithms
-
 /// \defgroup pre Preprocessing
-/// \ingroup alg
+
+/// \defgroup alg Algorithms
 
 /// \defgroup crout Crout Update
 /// \ingroup alg
 
-/// \defgroup diag Diagonal Pivoting
+/// \defgroup defer Dynamic Deferring
 /// \ingroup alg
 
 /// \defgroup inv Inverse-based Threshold
+/// \ingroup alg
+
+/// \defgroup scl Scalability-oriented Threshold
 /// \ingroup alg
 
 /// \defgroup schur Schur Complements
