@@ -4,7 +4,7 @@
 *.so
 build
 config.hpp
-!src/psmilu_lapack/config.hpp
+!src/hilucsi/small_scale/config.hpp
 .ycm_extra_conf.py
 *.egg-info
 __pycache__
