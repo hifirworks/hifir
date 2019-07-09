@@ -25,10 +25,6 @@
 #  undef NDEBUG
 #endif
 
-#ifndef HILUCSI_MEMORY_DEBUG
-#  define HILUCSI_MEMORY_DEBUG
-#endif
-
 #ifndef HILUCSI_UNIT_TESTING
 #  define HILUCSI_UNIT_TESTING
 #endif
