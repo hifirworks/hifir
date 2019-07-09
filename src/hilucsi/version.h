@@ -7,13 +7,13 @@
 */
 
 /*!
- * \file HILUCSI hilucsi/utils/version.h
+ * \file HILUCSI hilucsi/version.h
  * \brief HILUCSI version header
  * \authors Qiao,
  */
 
-#ifndef _HILUCSI_UTILS_VERSION_H
-#define _HILUCSI_UTILS_VERSION_H
+#ifndef _HILUCSI_VERSION_H
+#define _HILUCSI_VERSION_H
 
 /// \def HILUCSI_GLOBAL_VERSION
 /// \brief HILUCSI global version
@@ -38,4 +38,4 @@
   (100 * HILUCSI_GLOBAL_VERSION + 10 * HILUCSI_MAJOR_VERSION + \
    HILUCSI_MINOR_VERSION)
 
-#endif /* _HILUCSI_UTILS_VERSION_H */
+#endif /* _HILUCSI_VERSION_H */
