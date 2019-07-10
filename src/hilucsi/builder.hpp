@@ -4,7 +4,7 @@
 //----------------------------------------------------------------------------
 //@HEADER
 
-/// \file hilucsi_Builder.hpp
+/// \file hilucsi/builder.hpp
 /// \brief Top level user class for building MILU preconditioner
 /// \authors Qiao,
 
@@ -59,7 +59,7 @@ static bool introduced = false;
 ///
 /// This is top user interface (C++); it is designed as a preconditioner that
 /// can be easily plugin other codes. There are two core member functions, 1)
-/// \ref compute a multilevel ILU preconditioner and 2) \ref solve the
+/// \ref factorize a multilevel ILU preconditioner and 2) \ref solve the
 /// preconditioner system. For computing preconditioner, the input can be either
 /// \ref CCS or \ref CRS, for solving, the input must be \ref Array. However,
 /// be aware that both CCS/CRS and Array can be used as external data wrappers,
@@ -75,7 +75,7 @@ static bool introduced = false;
 ///   int main() {
 ///     const auto A = wrap_crs<crs_t>(...);
 ///     builder_t builder;
-///     builder.compute(A);
+///     builder.factorize(A);
 ///     builder.solve(...);
 ///   }
 /// \endcode
@@ -293,7 +293,7 @@ class HILUCSI {
   size_type          _stats[6];   ///< statistics
 };
 
-/// \tyepdef DefaultHILUCSI
+/// \typepdef DefaultHILUCSI
 /// \brief default HILUCSI with \a double as value type and \a int as index
 typedef HILUCSI<double, int> DefaultHILUCSI;
 

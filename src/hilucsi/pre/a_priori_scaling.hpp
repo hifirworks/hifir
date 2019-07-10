@@ -27,7 +27,7 @@ namespace hilucsi {
 
 /// \brief do not perform a priori scaling
 /// \tparam CrsType crs matrix type, see \ref CRS
-/// \parma[in,out] B input and output matrix
+/// \param[in,out] B input and output matrix
 /// \param[out] rs row scaling
 /// \param[out] cs column scaling
 /// \param[in] ensure_fortran_index if \a true (default), then the index values
@@ -54,7 +54,7 @@ inline void scale_eye(CrsType &B, typename CrsType::array_type &rs,
 
 /// \brief scale based on extreme values, do it asynchronously
 /// \tparam IsSymm if \a true, then assume the input type is symmetric
-/// \tpara CrsType crs matrix type, see \ref CRS
+/// \tparam CrsType crs matrix type, see \ref CRS
 /// \param[in,out] B input and output matrix
 /// \param[out] rs row scaling
 /// \param[out] cs column scaling
@@ -126,7 +126,7 @@ inline void scale_extreme_values(CrsType &B, typename CrsType::array_type &rs,
 /// \tparam IsSymm if \a true, then assume the input type is symmetric
 /// \tparam PermType user-defined row permutation (or symmetric if \a IsSymm
 ///         is \a true.)
-/// \tpara CrsType crs matrix type, see \ref CRS
+/// \tparam CrsType crs matrix type, see \ref CRS
 /// \param[in] p user permutation with \a operator[] returns permutation
 /// \param[in,out] A input and output operator
 /// \param[out] rs row scaling
@@ -238,7 +238,7 @@ inline void iterative_scale_p(const PermType &p, CrsType &A,
 
 /// \brief iterative scaling based on Jacobi operation
 /// \tparam IsSymm if \a true, then assume the input type is symmetric
-/// \tpara CrsType crs matrix type, see \ref CRS
+/// \tparam CrsType crs matrix type, see \ref CRS
 /// \param[in,out] A input and output operator
 /// \param[out] rs row scaling
 /// \param[out] cs column scaling

@@ -4,7 +4,7 @@
 //----------------------------------------------------------------------------
 //@HEADER
 
-/// \file hilucsi_lapack/qrcp.hpp
+/// \file hilucsi/small_scale/qrcp.hpp
 /// \brief Interface wrappers for QR with column pivoting routines in LAPACK
 /// \authors Qiao,
 /// \todo add interfaces for complex types

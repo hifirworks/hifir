@@ -20,7 +20,7 @@
 #include "hilucsi/ds/CompressedStorage.hpp"
 #include "hilucsi/utils/Timer.hpp"
 
-#include "hilucsi/pre/matchingg_scaling.hpp"
+#include "hilucsi/pre/matching_scaling.hpp"
 #include "hilucsi/pre/reordering.hpp"
 
 namespace hilucsi {
@@ -31,6 +31,7 @@ namespace hilucsi {
 /// \tparam ScalingArray array type for scaling vectors, see \ref Array
 /// \tparam PermType permutation type, see \ref BiPermMatrix
 /// \param[in] A input matrix
+/// \param[in] A_crs \ref CRS format of input \a A
 /// \param[in] m0 leading block size
 /// \param[in] opt control parameters
 /// \param[in] level current factorization level
@@ -43,10 +44,8 @@ namespace hilucsi {
 /// \ingroup pre
 ///
 /// Notice that, in general, the preprocessing involves two steps: 1) perform
-/// matching to improve the diagonal domination, and 2) perform reordering
-/// to improve the sparsity of LU decomposition. Currently, the reorder step
-/// is done by calling AMD package, which is embedded in HILUCSI. The matching
-/// step uses HSL_MC64.
+/// matching/scaling to improve the diagonal dominance and conditioning, and 2)
+/// perform reordering to improve the sparsity of LU decomposition.
 template <bool IsSymm, class CcsType, class CrsType, class ScalingArray,
           class PermType>
 inline typename CcsType::size_type do_preprocessing(

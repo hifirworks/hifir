@@ -7,7 +7,7 @@
 */
 
 /*!
- * \file HILUCSI hilucsi/version.h
+ * \file hilucsi/version.h
  * \brief HILUCSI version header
  * \authors Qiao,
  */

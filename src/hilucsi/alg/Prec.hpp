@@ -177,7 +177,7 @@ struct Prec {
 /// \tparam ValueType value data type, e.g. \a double
 /// \tparam IndexType index data type, e.g. \a int
 /// \tparam SSSType default is LU with partial pivoting
-/// \ingroup itr
+/// \ingroup slv
 ///
 /// We choose to use STL list because adding new node is constant time without
 /// bothering copying. It's worth noting that querying the size of \a list has

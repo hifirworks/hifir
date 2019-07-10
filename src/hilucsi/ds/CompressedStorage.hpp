@@ -571,8 +571,14 @@ class CompressedStorage {
   }
 
   /// \brief construct permutated matrix
+  /// \tparam DoValue if \a true, then also compute the values
+  /// \tparam OnlyLeading if \a true, then will do a submatrix of leading block
   /// \param[in] p perm to origin mapping
   /// \param[in] qt origin to perm mapping
+  /// \param[in] leading leading block size
+  /// \param[out] indptr index pointer array
+  /// \param[out] indices index array
+  /// \param[out] vals numerical value array
   template <bool DoValue, bool OnlyLeading>
   inline void _compute_perm(const iarray_type &p, const iarray_type &qt,
                             const size_type leading, iarray_type &indptr,
@@ -633,6 +639,8 @@ class CompressedStorage {
 
   /// \brief extract leading block structure
   /// \param[in] m leading block size
+  /// \param[out] indptr index pointer array
+  /// \param[out] indices index array
   inline void _extract_leading_struct(const size_type m, iarray_type &indptr,
                                       iarray_type &indices) const {
     indptr.resize(m + 1);
@@ -660,6 +668,9 @@ class CompressedStorage {
 
   /// \brief extract leading block
   /// \param[in] m leading block size
+  /// \param[out] indptr index pointer array
+  /// \param[out] indices index array
+  /// \param[out] vals numerical value array
   inline void _extract_leading(const size_type m, iarray_type &indptr,
                                iarray_type &indices, array_type &vals) const {
     _extract_leading_struct(m, indptr, indices);

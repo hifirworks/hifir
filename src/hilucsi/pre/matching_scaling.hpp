@@ -175,12 +175,14 @@ inline CcsType compute_perm_leading_block(const CcsType &A, const CrsType &,
 /// \tparam ScalingArray scaling array for row and column, see \ref Array
 /// \tparam PermType permutation matrix, see \ref BiPermMatrix
 /// \param[in] A input matrix in \ref CCS order
+/// \param[in] A_crs the \ref CRS version of \a A
 /// \param[in] m0 leading block size
 /// \param[in] verbose message verbose flag from \ref Options
 /// \param[out] s row scaling vector
 /// \param[out] t column scaling vector
 /// \param[out] p row permutation vector
 /// \param[out] q column permutation vector
+/// \param[in] opts control parameters
 /// \param[in] hdl_zero_diags if \a false (default), the routine won't handle
 ///            zero diagonal entries.
 /// \return A \a pair of \ref CCS matrix in \b C-index and the actual leading
