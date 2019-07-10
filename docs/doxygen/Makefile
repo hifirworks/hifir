@@ -1,8 +1,7 @@
 DOXYGEN = doxygen
-LATEX_BATCHMODE = YES
 
 all:
-	@env LATEX_BATCHMODE=$(LATEX_BATCHMODE) $(DOXYGEN) Doxyfile
+	$(DOXYGEN) Doxyfile
 
 pdf: all
 	$(MAKE) -C latex
