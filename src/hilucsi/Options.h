@@ -35,21 +35,20 @@ enum {
   HILUCSI_VERBOSE_INFO = 1,                         /*!< general information */
   HILUCSI_VERBOSE_PRE  = HILUCSI_VERBOSE_INFO << 1, /*!< preprocessing */
   HILUCSI_VERBOSE_FAC  = HILUCSI_VERBOSE_PRE << 1,  /*!< factorization update */
-  HILUCSI_VERBOSE_PRE_TIME = HILUCSI_VERBOSE_FAC << 1,      /*! pre time */
-  HILUCSI_VERBOSE_MEM      = HILUCSI_VERBOSE_PRE_TIME << 1, /*!< memory debug */
+  HILUCSI_VERBOSE_PRE_TIME = HILUCSI_VERBOSE_FAC << 1, /*! pre time */
+  HILUCSI_VERBOSE_MEM      = HILUCSI_VERBOSE_PRE_TIME << 1,
+  /*!< memory debug */
 };
 
 /*!
  * \brief reordering method
  */
 enum {
-  HILUCSI_REORDER_OFF   = 0, /*!< turn reordering off */
-  HILUCSI_REORDER_AUTO  = 1, /*!< use automaticaly reordering (default) */
-  HILUCSI_REORDER_AMD   = 2, /*!< use AMD ordering */
-  HILUCSI_REORDER_RCM   = 3, /*!< use RCM ordering (require BGL) */
-  HILUCSI_REORDER_KING  = 4, /*!< use King ordering (require BGL) */
-  HILUCSI_REORDER_SLOAN = 5, /*!< use Sloan ordering (require BGL) */
-  HILUCSI_REORDER_NULL  = 6, /*!< ordering Null flag (internal checking) */
+  HILUCSI_REORDER_OFF  = 0, /*!< turn reordering off */
+  HILUCSI_REORDER_AUTO = 1, /*!< use automaticaly reordering (default) */
+  HILUCSI_REORDER_AMD  = 2, /*!< use AMD ordering */
+  HILUCSI_REORDER_RCM  = 3, /*!< use RCM ordering (require BGL) */
+  HILUCSI_REORDER_NULL = 6, /*!< ordering Null flag (internal checking) */
 };
 
 /*!
@@ -153,10 +152,6 @@ static const char *hilucsi_get_reorder_name(const hilucsi_Options *opt) {
         return "AMD";
       case HILUCSI_REORDER_RCM:
         return "RCM";
-      case HILUCSI_REORDER_KING:
-        return "King";
-      case HILUCSI_REORDER_SLOAN:
-        return "Sloan";
       default:
         return "Null";
     }
@@ -225,9 +220,6 @@ enum : int {
   /*!< use automaticaly reordering (default) */
   REORDER_AMD  = ::HILUCSI_REORDER_AMD,  /*!< use AMD ordering */
   REORDER_RCM  = ::HILUCSI_REORDER_RCM,  /*!< use RCM ordering (require BGL) */
-  REORDER_KING = ::HILUCSI_REORDER_KING, /*!< use King ordering (require BGL) */
-  REORDER_SLOAN = ::HILUCSI_REORDER_SLOAN,
-  /*!< use Sloan ordering (require BGL) */
   REORDER_NULL = ::HILUCSI_REORDER_NULL, /*!< ordering Null flag */
 };
 
@@ -380,10 +372,6 @@ inline std::string opt_repr(const Options &opt) {
                          return "AMD";
                        case HILUCSI_REORDER_RCM:
                          return "RCM";
-                       case HILUCSI_REORDER_KING:
-                         return "King";
-                       case HILUCSI_REORDER_SLOAN:
-                         return "Sloan";
                        default:
                          return "Null";
                      }
