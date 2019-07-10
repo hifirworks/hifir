@@ -66,8 +66,8 @@ inline typename CcsType::size_type defer_zero_diags(
       if (*A.val_cbegin(q_col) == ZERO) return false;
     } else {
       const auto p_diag = p[col];
-      auto info = find_sorted(A.row_ind_cbegin(q_col), A.row_ind_cend(q_col),
-                              ori_idx(p_diag));
+      auto       info =
+          find_sorted(A.row_ind_cbegin(q_col), A.row_ind_cend(q_col), p_diag);
       if (!info.first) return false;
       // test numerical value
       if (*(A.vals().cbegin() + (info.second - A.row_ind().cbegin())) == ZERO)

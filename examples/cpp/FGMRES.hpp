@@ -21,7 +21,7 @@
 #include <utility>
 #include <vector>
 
-namespace psmilu {
+namespace hilucsi {
 
 namespace internal {
 template <class T>
@@ -505,4 +505,4 @@ class FGMRES {
     }
   }
 };
-}  // namespace psmilu
+}  // namespace hilucsi

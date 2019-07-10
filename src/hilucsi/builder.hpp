@@ -277,10 +277,10 @@ class HILUCSI {
     if (!sym) m = A.nrows();  // IMPORTANT! If asymmetric, set m = n
 
     // instantiate IsSymm here
-    CsType S = sym ? factorize<true>(A, m, N, opts, Crout_info, _precs,
-                                     row_sizes, col_sizes, _stats)
-                   : factorize<false>(A, m, N, opts, Crout_info, _precs,
-                                      row_sizes, col_sizes, _stats);
+    CsType S = sym ? level_factorize<true>(A, m, N, opts, Crout_info, _precs,
+                                           row_sizes, col_sizes, _stats)
+                   : level_factorize<false>(A, m, N, opts, Crout_info, _precs,
+                                            row_sizes, col_sizes, _stats);
 
     // check last level
     if (!_precs.back().is_last_level())

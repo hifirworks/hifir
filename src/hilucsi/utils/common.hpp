@@ -146,7 +146,7 @@ inline T *ensure_type_consistency(const ArrayType &v,
       sizeof(T) == sizeof(typename ArrayType::value_type);
   if (consist) return (T *)v.data();
   T *ptr = new (std::nothrow) T[v.size()];
-  psmilu_error_if(!ptr, "memory allocation failed");
+  hilucsi_error_if(!ptr, "memory allocation failed");
   if (copy_if_needed) std::copy(v.cbegin(), v.cend(), ptr);
   return ptr;
 }

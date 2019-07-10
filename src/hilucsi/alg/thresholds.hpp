@@ -58,7 +58,7 @@ inline void apply_space_dropping(
     size_type N1 = alpha * nnz;
     if (start_size >= N1) N1 = start_size + 1;
     const size_type N = N1 - start_size;
-    psmilu_assert(N != 0u, "zero number of limitation!");
+    hilucsi_assert(N != 0u, "zero number of limitation!");
     const size_type n = v.size();
     if (n > N) {
       // we need to extract the N values with largest mag of values, in other

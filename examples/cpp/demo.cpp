@@ -1,10 +1,3 @@
-#ifdef PSMILU_UNIT_TESTING
-#  undef PSMILU_UNIT_TESTING
-#endif
-#ifdef PSMILU_MEMORY_DEBUG
-#  undef PSMILU_MEMORY_DEBUG
-#endif
-
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -12,12 +5,12 @@
 #include <tuple>
 
 #include "FGMRES.hpp"
-#include "PSMILU.hpp"
+#include "HILUCSI.hpp"
 
-using namespace psmilu;
+using namespace hilucsi;
 using std::string;
 
-using prec_t   = C_Default_PSMILU;  // use default C CRS with double and int
+using prec_t   = DefaultHILUCSI;  // use default C CRS with double and int
 using crs_t    = prec_t::crs_type;
 using array_t  = prec_t::array_type;
 using solver_t = FGMRES<prec_t>;
@@ -28,9 +21,10 @@ const static char *help =
     "\n"
     " ./demo case [options] [flags]\n"
     "\n"
-    "where the \"case\" is a PSMILU benchmark input directory that contains\n"
-    "a matrix file and an ASCII rhs file. The matrix file is in PSMILU\n"
-    "binary format and has name of \"A.psmilu\", while the rhs file is a list\n"
+    "where the \"case\" is an HILUCSI benchmark input directory that contains\n"
+    "a matrix file and an ASCII rhs file. The matrix file is in HILUCSI\n"
+    "binary format and has name of \"A.psmilu\", while the rhs file is a "
+    "list\n"
     "of rhs entries that are separated by native C++ separator, i.e. space or\n"
     "new line (the name is \"b.txt\".)\n"
     "\n"
@@ -52,9 +46,6 @@ const static char *help =
     "\t\t3: rcm (requires BGL)\n"
     "\t\t4: king (requires BGL)\n"
     "\t\t5: sloan (requires BGL)\n"
-    " -p|--pre-reorder method\n"
-    "\treordering method used for general system before matching, the values\n"
-    "\tare same as \'--reorder\', default is 0 (off)\n"
     " -m|--matching method\n"
     "\tmatching methods:\n"
     "\t\t0: try to use MC64 if it is available, default\n"
@@ -85,8 +76,6 @@ const static char *help =
     "\tdisable parameter refinement from level to level\n"
     " -s|--symm\n"
     "\ttreat as symmetric problems\n"
-    " -P|--pre-order-all\n"
-    "\tenable pre-reordering on all levels for general systems\n"
     " -\n"
     "\tindicator for reading Options from stdin\n"
     "\n"
@@ -147,7 +136,7 @@ int main(int argc, char *argv[]) {
   prec_t M;
   M.factorize(A2, m, opts, true);
   timer.finish();
-  psmilu_info(
+  hilucsi_info(
       "\nMLILU done!\n"
       "\tfill-in: %.2f%%\n"
       "\tfill-in (E and F): %.2f%%\n"
@@ -169,7 +158,7 @@ int main(int argc, char *argv[]) {
   std::tie(flag, iters) = solver.solve_pre(A, b, x, opts.verbose);
   timer.finish();
   const double rs = iters ? solver.resids().back() : -1.0;
-  psmilu_info(
+  hilucsi_info(
       "\nFGMRES(%d,%.1e) done!\n"
       "\tflag: %s\n"
       "\titers: %zd\n"
@@ -240,10 +229,6 @@ inline static std::tuple<Options, int, double, bool> parse_args(int   argc,
       ++i;
       if (i >= argc) fatal_exit("missing reorder method tag!");
       opts.reorder = std::atoi(argv[i]);
-    } else if (arg == string("-p") || arg == string("--pre-reorder")) {
-      ++i;
-      if (i >= argc) fatal_exit("missing pre-reorder method tag!");
-      opts.pre_reorder = std::atoi(argv[i]);
     } else if (arg == string("-m") || arg == string("--matching")) {
       ++i;
       if (i >= argc) fatal_exit("missing matching method tag!");
@@ -260,8 +245,6 @@ inline static std::tuple<Options, int, double, bool> parse_args(int   argc,
       opts.saddle = 0;
     } else if (arg == string("-N") || arg == string("--no-par-refine")) {
       opts.rf_par = 0;
-    } else if (arg == string("-P") || arg == string("--pre-reorder-all")) {
-      opts.pre_reorder_lvl1 = 0;
     } else if (arg == string("-")) {
       // read options from stdin
       std::cout << "read options from stdin" << std::endl;
@@ -287,7 +270,7 @@ inline static std::tuple<crs_t, array_t, array_t::size_type> get_inputs(
   if (dir.back() != '/') dir += "/";
   const std::string  A_file = dir + "A.psmilu", b_file = dir + "b.txt";
   array_t::size_type m(0);
-  crs_t              A = crs_t::from_native_bin(A_file.c_str(), &m);
+  crs_t              A = crs_t::from_bin(A_file.c_str(), &m);
   array_t            b(A.nrows());
   std::ifstream      f(b_file.c_str());
   if (!f.is_open()) {

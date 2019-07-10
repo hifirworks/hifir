@@ -449,11 +449,13 @@ inline void compress_tails(U_Type &U, L_Type &L, const PosArray &U_start,
 /// \ingroup fac
 template <bool IsSymm, class CsType, class CroutStreamer, class PrecsType,
           class IntArray>
-inline CsType factorize(const CsType &A, const typename CsType::size_type m0,
-                        const typename CsType::size_type N, const Options &opts,
-                        const CroutStreamer &Crout_info, PrecsType &precs,
-                        IntArray &row_sizes, IntArray &col_sizes,
-                        typename CsType::size_type *stats) {
+inline CsType level_factorize(const CsType &                   A,
+                              const typename CsType::size_type m0,
+                              const typename CsType::size_type N,
+                              const Options &                  opts,
+                              const CroutStreamer &Crout_info, PrecsType &precs,
+                              IntArray &row_sizes, IntArray &col_sizes,
+                              typename CsType::size_type *stats) {
   typedef CsType                      input_type;
   typedef typename CsType::other_type other_type;
   using cs_trait = internal::CompressedTypeTrait<input_type, other_type>;
