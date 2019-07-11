@@ -4,7 +4,6 @@
 #include <string>
 #include <tuple>
 
-#include "FGMRES.hpp"
 #include "HILUCSI.hpp"
 
 using namespace hilucsi;
@@ -13,7 +12,7 @@ using std::string;
 using prec_t   = DefaultHILUCSI;  // use default C CRS with double and int
 using crs_t    = prec_t::crs_type;
 using array_t  = prec_t::array_type;
-using solver_t = FGMRES<prec_t>;
+using solver_t = ksp::FGMRES<prec_t>;
 
 const static char *help =
     "\n"
@@ -98,8 +97,6 @@ inline static std::tuple<Options, int, double, bool> parse_args(int   argc,
 inline static std::tuple<crs_t, array_t, array_t::size_type> get_inputs(
     string dir);
 
-inline static const char *get_fgmres_flag(const int flag);
-
 int main(int argc, char *argv[]) {
   Options opts;
   int     restart;
@@ -127,13 +124,14 @@ int main(int argc, char *argv[]) {
 
   array_t x(b.size());  // solution
   crs_t   A2(A, true);
-  std::cout << "elminated " << A2.eliminate(1e-15) << " small entries\n";
+  std::cout << "eliminated " << A2.eliminate(1e-15) << " small entries\n";
 
   DefaultTimer timer;
 
   // build preconditioner
   timer.start();
-  prec_t M;
+  std::shared_ptr<prec_t> _M(new prec_t());
+  auto &                  M = *_M;
   M.factorize(A2, m, opts, true);
   timer.finish();
   hilucsi_info(
@@ -150,12 +148,13 @@ int main(int argc, char *argv[]) {
 
   // solve
   timer.start();
-  solver_t solver(M);
+  solver_t solver(_M);
   solver.rtol    = rtol;
   solver.restart = restart;
   int                 flag;
   solver_t::size_type iters;
-  std::tie(flag, iters) = solver.solve_pre(A, b, x, opts.verbose);
+  std::tie(flag, iters) =
+      solver.solve_precond(A, b, x, false, false, opts.verbose);
   timer.finish();
   const double rs = iters ? solver.resids().back() : -1.0;
   hilucsi_info(
@@ -164,7 +163,8 @@ int main(int argc, char *argv[]) {
       "\titers: %zd\n"
       "\tres: %.4g\n"
       "\ttime: %.4gs\n",
-      restart, rtol, get_fgmres_flag(flag), iters, rs, timer.time());
+      restart, rtol, ksp::flag_repr(solver_t::repr(), flag).c_str(), iters, rs,
+      timer.time());
   return flag;
 }
 
@@ -280,22 +280,4 @@ inline static std::tuple<crs_t, array_t, array_t::size_type> get_inputs(
   for (auto &v : b) f >> v;
   f.close();
   return std::make_tuple(A, b, m);
-}
-
-inline static const char *get_fgmres_flag(const int flag) {
-  switch (flag) {
-    case GMRES_SUCCESS:
-      return "GMRES_SUCCESS";
-    case GMRES_DIVERGED:
-      return "GMRES_DIVERGED";
-    case GMRES_STAGNATED:
-      return "GMRES_STAGNATED";
-    case GMRES_INVALID_PARS:
-      return "GMRES_INVALID_PARS";
-    case GMRES_INVALID_FUNC_PARS:
-      return "GMRES_INVALID_FUNC_PARS";
-
-    default:
-      return "GMRES_UNKNOWN_ERROR";
-  }
 }
