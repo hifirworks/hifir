@@ -134,6 +134,12 @@ class HILUCSI {
   /// \brief compute the nnz in \a L, \a D, and \a U
   inline size_type nnz_LDU() const { return nnz() - nnz_EF(); }
 
+  /// \brief get number of rows
+  inline size_type nrows() const { return _nrows; }
+
+  /// \brief get number of columns
+  inline size_type ncols() const { return _ncols; }
+
   /// \brief get the stats
   /// \param[in] entry statistic entry
   ///
@@ -211,6 +217,9 @@ class HILUCSI {
         hilucsi_info("perform input matrix validity checking");
       A.check_validity();
     }
+
+    _nrows = A.nrows();
+    _ncols = A.ncols();
 
     DefaultTimer t;  // record overall time
     t.start();
@@ -291,6 +300,8 @@ class HILUCSI {
   precs_type         _precs;      ///< multilevel preconditioners
   mutable array_type _prec_work;  ///< preconditioner work space for solving
   size_type          _stats[6];   ///< statistics
+  size_type          _nrows;      ///< number of rows from user input
+  size_type          _ncols;      ///< number of columns from user input
 };
 
 /// \typepdef DefaultHILUCSI
