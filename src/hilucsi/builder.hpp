@@ -304,7 +304,7 @@ class HILUCSI {
   size_type          _ncols;      ///< number of columns from user input
 };
 
-/// \typepdef DefaultHILUCSI
+/// \typedef DefaultHILUCSI
 /// \brief default HILUCSI with \a double as value type and \a int as index
 typedef HILUCSI<double, int> DefaultHILUCSI;
 
