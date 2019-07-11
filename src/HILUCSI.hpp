@@ -15,6 +15,8 @@
 
 #include "hilucsi/builder.hpp"
 
+#include "hilucsi/ksp/FGMRES.hpp"
+
 namespace hilucsi {
 
 /// \brief get the version string representation during runtime
