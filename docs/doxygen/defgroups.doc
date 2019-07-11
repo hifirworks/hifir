@@ -47,3 +47,8 @@
 
 /// \defgroup macros Preprocessor macros
 /// \ingroup itr
+
+/// \defgroup ksp Krylov Subspace Solvers
+
+/// \defgroup gmres Flexible GMRES
+/// \ingroup ksp
