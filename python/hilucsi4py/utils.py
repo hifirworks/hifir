@@ -57,7 +57,7 @@ def _as_value_array(v):
 
 
 def convert_to_crs(*args, shape=None):
-    rowptr, colind, vals, n = _convert_to_crs(args, shape=shape)
+    rowptr, colind, vals, n = _convert_to_crs(*args, shape=shape)
     rowptr = _as_index_array(rowptr)
     assert len(rowptr.shape) == 1
     assert rowptr.size == n + 1, 'invalid rowptr size'
