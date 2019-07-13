@@ -11,7 +11,7 @@ _hilucsi4py_debug = _hilucsi4py_debug is not None
 
 # configure include paths
 _hilucsi_inc_path = os.environ.get('HILUCSI_INCLUDE_PATH', '')
-if _hilucsi_inc_path:
+if not _hilucsi_inc_path:
     incs = ['.']
 elif _hilucsi_inc_path != os.getcwd() or _hilucsi_inc_path != '.':
     incs = ['.', _hilucsi_inc_path]
@@ -19,8 +19,8 @@ elif _hilucsi_inc_path != os.getcwd() or _hilucsi_inc_path != '.':
 # configure libraries
 _lapack_lib = os.environ.get('HILUCSI_LAPACK_LIB', '-llapack')
 _lapack_libs = _lapack_lib.split(' ')
-for _l in _lapack_libs:
-    _l = _l[2:]
+for i, _l in enumerate(_lapack_libs):
+    _lapack_libs[i] = _l[2:]
 libs = _lapack_libs + ['mc64', 'gfortran']  # shall we for fortran?
 
 # configure library paths
