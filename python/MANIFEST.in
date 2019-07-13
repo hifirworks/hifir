@@ -1,3 +1,3 @@
 include README.rst
 include requirements.txt
-recursive-include psmilu4py *.pyx *.pxd *.hpp *.h
+recursive-include hilucsi4py *.pyx *.pxd *.hpp *.h

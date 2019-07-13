@@ -6,38 +6,34 @@ from setuptools import Extension
 from setuptools.command.build_ext import build_ext
 from Cython.Build import cythonize
 
-_psmilu4py_debug = os.environ.get('PSMILU4PY_DEBUG', None)
-_psmilu4py_debug = _psmilu4py_debug is not None
+_hilucsi4py_debug = os.environ.get('HILUCSI4PY_DEBUG', None)
+_hilucsi4py_debug = _hilucsi4py_debug is not None
 
-PSMILU_INCLUDE = os.environ.get('PSMILU_INCLUDE', None)
-if PSMILU_INCLUDE is None:
-    raise RuntimeError('you must specify PSMILU_INCLUDE (path/to/PSMILU.hpp)')
-incs = ['.', PSMILU_INCLUDE]
-MUMPS_ROOT = os.environ.get('MUMPS_ROOT', None)
-if MUMPS_ROOT is None:
-    raise RuntimeError('you must specify MUMPS_ROOT')
-LAPACK_LIB = os.environ.get('LAPACK_LIB', '-llapack')
-_lapack_libs = LAPACK_LIB.split(' ')
-for i in range(len(_lapack_libs)):
-    _l = _lapack_libs[i]
-    _lapack_libs[i] = _l[2:]
-libs = []
-libs += _lapack_libs
-libs += ['mumps', 'gfortran']
-lib_dirs = [os.path.join(MUMPS_ROOT, 'lib')]
-MC64_ROOT = os.environ.get('MC64_ROOT', None)
-if MC64_ROOT is not None:
-    libs += ['mc64']
-    lib_dirs += [os.path.join(MC64_ROOT, 'lib')]
-    macros = [('PSMILU4PY_USE_MC64', '1')]
-else:
-    macros = [('PSMILU4PY_USE_MC64', '0')]
-LAPACK_LIB_ROOT = os.environ.get('LAPACK_LIB_ROOT', None)
-if LAPACK_LIB_ROOT is not None:
-    lib_dirs += [LAPACK_LIB_ROOT]
-    rpath = [LAPACK_LIB_ROOT]
-else:
-    rpath = None
+# configure include paths
+_hilucsi_inc_path = os.environ.get('HILUCSI_INCLUDE_PATH', '')
+if _hilucsi_inc_path:
+    incs = ['.']
+elif _hilucsi_inc_path != os.getcwd() or _hilucsi_inc_path != '.':
+    incs = ['.', _hilucsi_inc_path]
+
+# configure libraries
+_lapack_lib = os.environ.get('HILUCSI_LAPACK_LIB', '-llapack')
+_lapack_libs = _lapack_lib.split(' ')
+for _l in _lapack_libs:
+    _l = _l[2:]
+libs = _lapack_libs + ['mc64', 'gfortran']  # shall we for fortran?
+
+# configure library paths
+lib_dirs = None
+_lapack_path = os.environ.get('HILUCSI_LAPACK_LIB_PATH', '')
+if _lapack_path:
+    lib_dirs = [_lapack_path]
+_mc64_lib_path = os.environ.get('HILUCSI_MC64_LIB_PATH', '')
+if _mc64_lib_path:
+    if lib_dirs is None:
+        lib_dirs = []
+    lib_dirs += [_mc64_lib_path]
+rpath = None if lib_dirs is None else lib_dirs
 
 
 class BuildExt(build_ext):
@@ -49,7 +45,7 @@ class BuildExt(build_ext):
 
     def build_extensions(self):
         self._remove_flag('-Wstrict-prototypes')
-        if _psmilu4py_debug:
+        if _hilucsi4py_debug:
             self._remove_flag('-DNDEBUG')
 
         cpl_type = self.compiler.compiler_type
@@ -67,7 +63,10 @@ class BuildExt(build_ext):
         opts = []
         if cpl_type == 'unix':
             assert test_switch('-std=c++11'), 'must have C++11 support'
-            opts.append('-std=c++11')
+            if test_switch('-std=c++1z'):
+                opts.append('-std=c++1z')
+            else:
+                opts.append('-std=c++11')
             if test_switch('-rdynamic'):
                 opts.append('-rdynamic')
             if test_switch('-O3') and '-O3' not in self.compiler.compiler_so:
@@ -77,7 +76,7 @@ class BuildExt(build_ext):
         super().build_extensions()
 
 
-_pyx = glob.glob(os.path.join('psmilu4py', '*.pyx'))
+_pyx = glob.glob(os.path.join('hilucsi4py', '*.pyx'))
 exts = []
 
 for f in _pyx:
@@ -89,10 +88,9 @@ for f in _pyx:
                   include_dirs=incs,
                   libraries=libs,
                   library_dirs=lib_dirs,
-                  define_macros=macros,
                   runtime_library_dirs=rpath))
 
 _opts = {'language_level': 3, 'embedsignature': True}
-if not _psmilu4py_debug:
+if not _hilucsi4py_debug:
     _opts.update({'wraparound': False, 'boundscheck': False})
 exts = cythonize(exts, compiler_directives=_opts)

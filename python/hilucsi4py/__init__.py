@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 # ----------------------------------------------------------------------------
-#                Copyright (C) 2019 The PSMILU AUTHORS
+#                Copyright (C) 2019 The HILUCSI AUTHORS
 # ----------------------------------------------------------------------------
-from .Options import *
-from .utils import *
-
+from ._hilucsi import *
 
 __version__ = version()

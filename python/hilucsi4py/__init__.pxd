@@ -1,20 +1,22 @@
 # -*- coding: utf-8 -*-
 # ----------------------------------------------------------------------------
-#                Copyright (C) 2019 The PSMILU AUTHORS
+#                Copyright (C) 2019 The HILUCSI AUTHORS
 # ----------------------------------------------------------------------------
 
 # Authors:
 #   Qiao,
 
-# This is the core interface for psmilu4py
+# This is the core interface for hilucsi4py
 
 from libcpp cimport bool
 from libcpp.string cimport string as std_string
 from libc.stddef cimport size_t
 from libcpp.vector cimport vector
+from libcpp.memory cimport shared_ptr
+from libcpp.utility cimport pair
 
 
-cdef extern from 'psmilu4py.hpp' namespace 'psmilu' nogil:
+cdef extern from 'hilucsi4py.hpp' namespace 'hilucsi' nogil:
     # two necessary utilities
     std_string version()
     bool warn_flag(const int)
@@ -32,37 +34,71 @@ cdef extern from 'psmilu4py.hpp' namespace 'psmilu' nogil:
     std_string get_verbose(const Options &opts);
 
     # io
-    void read_native_psmilu(const std_string &fn, size_t &nrows, size_t &ncols,
-                            size_t &m, vector[int] &indptr,
-                            vector[int] &indices, vector[double] &vals,
-                            const bool is_crs, const bool is_bin) except +
-    void write_native_psmilu(const std_string &fn, const size_t nrows,
-                             const size_t ncols, const int *indptr,
-                             const int *indices, const double *vals,
-                             const size_t m0, const bool is_crs,
-                             const bool is_bin) except +
+    void read_hilucsi(const std_string &fn, size_t &nrows, size_t &ncols,
+                      size_t &m, vector[int] &indptr,
+                      vector[int] &indices, vector[double] &vals,
+                      const bool is_bin) except +
+    void write_hilucsi(const std_string &fn, const size_t nrows,
+                       const size_t ncols, const int *indptr,
+                       const int *indices, const double *vals,
+                       const size_t m0, const bool is_bin) except +
 
-    cdef cppclass PyPSMILU:
-        PyPSMILU()
+    cdef cppclass PyHILUCSI:
+        PyHILUCSI()
         bool empty()
         size_t levels()
         size_t nnz()
         size_t nnz_EF()
         size_t nnz_LDU()
+        size_t nrows()
+        size_t ncols()
         size_t stats(const size_t entry) except +
 
         # computing routine
-        void factorize(const size_t nrows, const size_t ncols,
-                       const int *indptr, const int *indices,
-                       const double *vals, const size_t m0,
-                       const Options &opts, const bool check,
-                       const bool is_crs) except +
+        void factorize(const size_t n, const int *indptr, const int *indices,
+                       const double *vals, const size_t m0, const Options &opts,
+                       const bool check) except +
 
         # solving routine
         void solve(const size_t n, const double *b, double *x) except +
 
+    cdef cppclass PyFGMRES:
+        PyFGMRES()
+        PyFGMRES(shared_ptr[PyHILUCSI] M, const double rel_tol, const int rs,
+                 const size_t max_iters, const size_t max_inner_steps) except +
+        double rtol
+        int restart
+        size_t maxit
+        size_t max_inners
+        double lamb1
+        double lamb2
+        void set_M(shared_ptr[PyHILUCSI] M) except +
+        shared_ptr[PyHILUCSI] get_M()
+        void check_pars()
+        int get_iters()
+        void get_resids(double *r)
+        pair[int, size_t] solve(const size_t n, const int *rowptr,
+                                const int *colind, const double *vals,
+                                const double *b, double *x, const int kernel,
+                                const bool with_init_guess, const bool trunc,
+                                const bool verbose) except +
 
-cdef extern from 'psmilu4py.hpp' namespace 'psmilu::internal' nogil:
+    cdef enum:
+        PyFGMRES_TRADITION
+        PyFGMRES_JACOBI
+        PyFGMRES_CHEBYSHEV_JACOBI
+
+
+cdef extern from 'hilucsi4py.hpp' namespace 'hilucsi::ksp' nogil:
+    cdef enum:
+        INVALID_ARGS
+        M_SOLVE_ERROR
+        SUCCESS
+        DIVERGED
+        STAGNATED
+
+
+cdef extern from 'hilucsi4py.hpp' namespace 'hilucsi::internal' nogil:
     # using an internal var to determine the data types of options
     # true for double, flase for int
     bool option_dtypes[19]
