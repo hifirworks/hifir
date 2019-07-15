@@ -23,6 +23,8 @@ src/psmilu_matching/hsl_mc64*.h
 *.psmilu
 *.bin
 *.mat
+!examples/demo_inputs/A.hilucsi
+!examples/demo_inputs/matlab.mat
 internal_tests
 bench/driver
 bench/cases
