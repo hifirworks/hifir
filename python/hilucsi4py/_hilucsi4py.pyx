@@ -336,7 +336,7 @@ cdef class HILUCSI:
             Options my_opts = Options()
             bool ck = check
         if opts is not None:
-            my_opts.opts = my_opts.opts
+            my_opts.opts = opts.opts
         deref(self.M).factorize(n, &rowptr[0], &colind[0], &vals[0], m0,
             my_opts.opts, ck)
 
