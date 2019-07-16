@@ -1071,28 +1071,27 @@ inline CsType level_factorize(const CsType &                   A,
     if (hilucsi_verbose(INFO, opts))
       hilucsi_info("successfully factorized the dense component...");
   }
-  // #ifdef HILUCSI_ENABLE_MKL_PARDISO
-  //   else {
-  //     if (nm <= static_cast<size_type>(HILUCSI_LASTLEVEL_SPARSE_SIZE)) {
-  //       DefaultTimer timer2;
-  //       auto &       last_level = precs.back().sparse_solver;
-  //       const double nnz_b4     = 0.01 * S.nnz();
-  //       last_level.move_matrix(std::move(S));
-  //       timer2.start();
-  //       last_level.factorize();
-  //       timer2.finish();
-  //       hilucsi_error_if(last_level.info(), "%s returned error %d",
-  //                        last_level.backend(), last_level.info());
-  //       if (hilucsi_verbose(INFO, opts))
-  //         hilucsi_info(
-  //             "successfully factorized the sparse component with %s...\n"
-  //             "\tfill-ratio: %.2f%%\n"
-  //             "\ttime: %gs...",
-  //             last_level.backend(), last_level.nnz() / nnz_b4,
-  //             timer2.time());
-  //     }
-  //   }
-  // #endif  // HILUCSI_ENABLE_MKL_PARDISO
+#ifdef HILUCSI_ENABLE_MUMPS
+  else {
+    if (nm <= static_cast<size_type>(HILUCSI_LASTLEVEL_SPARSE_SIZE)) {
+      DefaultTimer timer2;
+      auto &       last_level = precs.back().sparse_solver;
+      last_level.set_info(hilucsi_verbose(INFO, opts));
+      const double nnz_b4 = 0.01 * S.nnz();
+      timer2.start();
+      last_level.factorize(S);
+      timer2.finish();
+      hilucsi_error_if(last_level.info(), "%s returned error %d",
+                       last_level.backend(), last_level.info());
+      if (hilucsi_verbose(INFO, opts))
+        hilucsi_info(
+            "successfully factorized the sparse component with %s...\n"
+            "\tfill-ratio: %.2f%%\n"
+            "\ttime: %gs...",
+            last_level.backend(), last_level.nnz() / nnz_b4, timer2.time());
+    }
+  }
+#endif  // HILUCSI_ENABLE_MUMPS
 
   timer.finish();  // profile post-processing
 

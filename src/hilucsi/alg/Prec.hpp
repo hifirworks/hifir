@@ -16,6 +16,9 @@
 
 #include "hilucsi/ds/CompressedStorage.hpp"
 #include "hilucsi/small_scale/solver.hpp"
+#ifdef HILUCSI_ENABLE_MUMPS
+#  include "hilucsi/sparse_direct/mumps.hpp"
+#endif  // HILUCSI_ENABLE_MUMPS
 
 namespace hilucsi {
 
@@ -50,8 +53,12 @@ struct Prec {
   typedef Array<index_type>             perm_type;   ///< permutation
   typedef typename ccs_type::size_type  size_type;   ///< size
   typedef typename ccs_type::array_type array_type;  ///< array
-  using mat_type                   = ccs_type;
-  using sparse_direct_type         = internal::DummySparseSolver;
+  using mat_type = ccs_type;
+#ifdef HILUCSI_ENABLE_MUMPS
+  using sparse_direct_type = MUMPS<ValueType>;
+#else
+  using sparse_direct_type = internal::DummySparseSolver;
+#endif                                      // HILUCSI_ENABLE_MUMPS
   static constexpr char EMPTY_PREC = '\0';  ///< empty prec
 
  private:
