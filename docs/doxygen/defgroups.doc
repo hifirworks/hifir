@@ -37,6 +37,9 @@
 /// \defgroup fac Multilevel Factorization
 /// \ingroup alg
 
+/// \defgroup sparse Sparse Direct Solver
+/// \ingroup alg
+
 /// \defgroup itr HILUCSI User Interfaces
 
 /// \defgroup cpp C++ User Interfaces
