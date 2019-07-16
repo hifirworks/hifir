@@ -72,6 +72,11 @@
 ///          mechanism except this one.
 #  define HILUCSI_DISABLE_SPACE_DROP
 
+/// \def HILUCSI_ENABLE_MUMPS
+/// \brief enabling mumps for last level solver
+/// \note default is off
+#  define HILUCSI_ENABLE_MUMPS
+
 #endif  // ONLY_FOR_DOXYGEN
 
 /// \def HILUCSI_RESERVE_FAC
