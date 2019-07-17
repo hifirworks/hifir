@@ -343,6 +343,42 @@ inline typename std::enable_if<!CsType::ROW_MAJOR>::type write_bin(
   f.close();
 }
 
+/// \brief query information of a binary file
+/// \param[in] filename binary filename
+/// \return tuple of CRS/CCS order, C-index, double/float, is real, nrows,
+///         ncols, nnz, m
+/// \ingroup cpp
+/// \sa query_info_ascii
+inline std::tuple<bool, bool, bool, bool, std::uint64_t, std::uint64_t,
+                  std::uint64_t, std::uint64_t>
+query_info_bin(const char *filename) {
+  std::ifstream f(filename, std::ios_base::binary);
+  hilucsi_error_if(!f.is_open(), "failed to open file %s.", filename);
+
+  bool        f_is_little;
+  std::size_t f_word_size, f_int_size;
+  bool        f_is_row, f_is_c, f_is_double, f_is_real;
+
+  std::tie(f_is_little, f_word_size, f_int_size, f_is_row, f_is_c, f_is_double,
+           f_is_real) = internal::read_general_info(f);
+
+  const bool my_endianness  = internal::is_little_endian();
+  const bool bad_endianness = f_is_little ^ my_endianness;
+  hilucsi_error_if(bad_endianness,
+                   "current system endianness does not match that of the file "
+                   "%s. Endianness converting is not available for now..",
+                   filename);
+
+  // read sizes
+  std::uint64_t nrows, ncols, nnz, m;
+  std::tie(nrows, ncols, nnz, m) = internal::read_matrix_sizes(f);
+
+  f.close();
+
+  return std::make_tuple(f_is_row, f_is_c, f_is_double, f_is_real, nrows, ncols,
+                         nnz, m);
+}
+
 // function prototype for ccs case
 
 /// \brief read data from file to a \ref CCS matrix
@@ -368,7 +404,6 @@ inline typename std::enable_if<CsType::ROW_MAJOR, T>::type read_bin(
   constexpr static bool is_real = std::is_floating_point<value_type>::value;
   constexpr static bool is_double =
       (is_real && sizeof(value_type) == 8u) || sizeof(value_type) == 16u;
-  constexpr static bool is_c = true;
 
   std::ifstream f(filename, std::ios_base::binary);
   hilucsi_error_if(!f.is_open(), "failed to open file %s.", filename);
@@ -486,10 +521,9 @@ inline typename std::enable_if<CsType::ROW_MAJOR, T>::type read_bin(
         std::copy_n(reinterpret_cast<const value_type *>(vals.data()), nnz,
                     A.vals().begin());
     }
-    const int shift = f_is_c - is_c;
-    if (shift != 0) {
-      for (auto &v : A.row_start()) v += shift;
-      for (auto &v : A.col_ind()) v += shift;
+    if (!f_is_c) {
+      for (auto &v : A.row_start()) --v;
+      for (auto &v : A.col_ind()) --v;
     }
     f.close();  // not needed but I'd like to have it
     hilucsi_error_if(A.nnz() != nnz, "inconsistent nnz");
@@ -514,7 +548,6 @@ inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type read_bin(
   constexpr static bool is_real = std::is_floating_point<value_type>::value;
   constexpr static bool is_double =
       (is_real && sizeof(value_type) == 8u) || sizeof(value_type) == 16u;
-  constexpr static bool is_c = true;
 
   std::ifstream f(filename, std::ios_base::binary);
   hilucsi_error_if(!f.is_open(), "failed to open file %s.", filename);
@@ -632,10 +665,9 @@ inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type read_bin(
         std::copy_n(reinterpret_cast<const value_type *>(vals.data()), nnz,
                     A.vals().begin());
     }
-    const int shift = f_is_c - is_c;
-    if (shift != 0) {
-      for (auto &v : A.col_start()) v += shift;
-      for (auto &v : A.row_ind()) v += shift;
+    if (!f_is_c) {
+      for (auto &v : A.col_start()) --v;
+      for (auto &v : A.row_ind()) --v;
     }
     f.close();
     hilucsi_error_if(A.nnz() != nnz, "inconsistent nnz");
@@ -649,6 +681,16 @@ inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type read_bin(
   return m;
 }
 
+/// \brief write to ASCII file
+/// \tparam IsRowMajor flag to indicate \ref CRS or \ref CCS
+/// \tparam IndexArray index array type, see \ref Array
+/// \tparma ValueArray value array type, see \ref Array
+/// \param[in] fname file name for output
+/// \param[in] ind_start index start array
+/// \param[in] other_size column size for \ref CRS, row size for \ref CCS
+/// \param[in] indices index array
+/// \param[in] vals value array
+/// \param[in] m leading symmetric block size
 template <bool IsRowMajor, class IndexArray, class ValueArray>
 inline void write_ascii(const char *fname, const IndexArray &ind_start,
                         const typename IndexArray::size_type other_size,
@@ -691,6 +733,67 @@ inline void write_ascii(const char *fname, const IndexArray &ind_start,
   f.close();
 }
 
+/// \brief query information of an ASCII file
+/// \param[in] filename binary filename
+/// \return tuple of CRS/CCS order, C-index, double/float, is real, nrows,
+///         ncols, nnz, m
+/// \ingroup cpp
+/// \sa query_info_bin
+inline std::tuple<bool, bool, bool, bool, std::uint64_t, std::uint64_t,
+                  std::uint64_t, std::uint64_t>
+query_info_ascii(const char *filename) {
+  const static char dtypes[5] = {'D', 'S', 'Z', 'C', '\0'};
+
+  std::ifstream f(filename);
+  hilucsi_error_if(!f.is_open(), "cannot open file %s.", filename);
+
+  bool        is_row, is_c;
+  char        d;
+  std::size_t nrows, ncols, nnz, m;
+
+  std::string buf;
+  for (;;) {
+    buf.clear();
+    std::getline(f, buf);
+    if (!buf.size() || buf[0] == '#') continue;
+    break;
+  }
+
+  // buf should contain the information
+  if (buf.size() != 3u) hilucsi_error("not a valid native hilucsi ascii file");
+  if (buf[0] != 'R' && buf[0] != 'C')
+    hilucsi_error(
+        "the first char should be either R or C (row or column major)");
+
+  // skip comments
+  {
+    int i = 0;
+    for (; i < 4; ++i)
+      if (buf.back() == dtypes[i]) break;
+    if (i == 4) hilucsi_error("unknown data type");
+  }
+
+  is_row = buf.front() == 'R';
+  is_c   = buf[1] == 'C';
+  d      = buf.back();
+
+  const bool is_double = d == 'D' || d == 'Z';
+  const bool is_real   = d == 'D' || d == 'S';
+
+  // read sizes
+  f >> nrows >> ncols >> nnz >> m;
+
+  return std::make_tuple(is_row, is_c, is_double, is_real, nrows, ncols, nnz,
+                         m);
+}
+
+/// \brief read data from ASCII file
+/// \tparam IndexArray index array type, see \ref Array
+/// \tparma ValueArray value array type, see \ref Array
+/// \param[in] fname file name for output
+/// \param[in] ind_start index start array
+/// \param[in] indices index array
+/// \param[in] vals value array
 template <class IndexArray, class ValueArray>
 inline std::tuple<bool, bool, char, std::size_t, std::size_t, std::size_t,
                   std::size_t>
@@ -765,6 +868,11 @@ read_ascii(const char *fname, IndexArray &ind_start, IndexArray &indices,
   for (std::size_t i = 0u; i < primary_size; ++i) f >> ind_start[i];
   for (std::size_t i = 0u; i < nnz; ++i) f >> indices[i];
   for (std::size_t i = 0u; i < nnz; ++i) f >> vals[i];
+
+  if (!is_c) {
+    for (auto &v : ind_start) --v;
+    for (auto &v : indices) --v;
+  }
 
   f.close();
 
