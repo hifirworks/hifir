@@ -57,6 +57,38 @@ def _as_value_array(v):
 
 
 def convert_to_crs(*args, shape=None):
+    """Helper function to convert arbitrarily user inputs
+
+    In Python, a flexible user interface should not restrict what data types
+    the user must obey. At the same time, the code should also be efficient if
+    the user provides the correct data types. Luckily, this can be easily done
+    in numpy with the function ``asarray``.
+
+    We allow two types of user inputs
+
+    1. the user provides the typical three-array matrix representation
+    2. the user provides a class that follows scipy sparse design.
+
+    For the latter, we essentially just require the input matrix has a member
+    function of ``tocsr``, which returns an object that has attributes of
+    ``indptr``, ``indices``, and ``vals``, which can be further converted to
+    numpy arrays with data types ``int``, ``int``, and ``double``, resp.
+
+    Parameters
+    ----------
+    *args : input matrix
+        either three array of CRS or "scipy sparse matrix"-like
+    shape : ``None`` or tuple
+        if input is three array, then this must be given
+
+    Returns
+    -------
+    tuple of ``rowptr``, ``colind``, and ``vals`` with acceptable data types.
+
+    See Also
+    --------
+    :func:`convert_to_crs_and_b`
+    """
     rowptr, colind, vals, n = _convert_to_crs(*args, shape=shape)
     rowptr = _as_index_array(rowptr)
     assert len(rowptr.shape) == 1
@@ -71,6 +103,11 @@ def convert_to_crs(*args, shape=None):
 
 
 def convert_to_crs_and_b(*args, shape=None):
+    """Helper function to convert arbitrarily user inputs with rhs
+
+    Same functionality as :func:`convert_to_crs` with additional entry of rhs
+    vector `b`.
+    """
     last = len(args) - 1
     if not last:
         raise ValueError('invalid inputs')
