@@ -442,8 +442,8 @@ cdef class HILUCSI:
         r"""Core routine to use the preconditioner
 
         Essentailly, this routine is to perform
-        :math:`\boldsymbol{x}&=\boldsymbol{M}^{-1}\boldsymbol{b}`, where
-        :math:`\boldsymbool{M}` is our MILU preconditioner.
+        :math:`\boldsymbol{x}=\boldsymbol{M}^{-1}\boldsymbol{b}`, where
+        :math:`\boldsymbol{M}` is our MILU preconditioner.
 
         Parameters
         ----------
