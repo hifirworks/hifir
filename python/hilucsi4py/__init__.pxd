@@ -23,6 +23,17 @@ cdef extern from 'hilucsi4py.hpp' namespace 'hilucsi' nogil:
     bool warn_flag(const int)
 
     # wrap options, we don't care about the attibutes
+    cdef enum:
+        VERBOSE_NONE
+        VERBOSE_INFO
+        VERBOSE_PRE
+        VERBOSE_FAC
+        VERBOSE_PRE_TIME
+    cdef enum:
+        REORDER_OFF
+        REORDER_AUTO
+        REORDER_AMD
+        REORDER_RCM
     ctypedef struct Options:
         pass
     Options get_default_options()

@@ -37,6 +37,33 @@ import numpy as np
 from .utils import (convert_to_crs, convert_to_crs_and_b, _as_index_array, _as_value_array)
 
 
+__all__ = [
+    'version',
+    'is_warning',
+    'enable_warning',
+    'disable_warning',
+    'VERBOSE_NONE',
+    'VERBOSE_INFO',
+    'VERBOSE_PRE',
+    'VERBOSE_FAC',
+    'VERBOSE_PRE_TIME',
+    'REORDER_OFF',
+    'REORDER_AUTO',
+    'REORDER_AMD',
+    'REORDER_RCM',
+    'Options',
+    'read_hilucsi',
+    'write_hilucsi',
+    'query_hilucsi_info',
+    'HILUCSI',
+    'KSP_Error',
+    'KSP_InvalidArgumentsError',
+    'KSP_MSolveError',
+    'KSP_DivergedError',
+    'KSP_StagnatedError',
+    'FGMRES'
+]
+
 # utilities
 def version():
     """Check the backend HILUCSI version
@@ -64,17 +91,17 @@ def disable_warning():
 
 # Options
 # redefine the verbose options, not a good idea but okay for now
-VERBOSE_NONE = 0
-VERBOSE_INFO = 1
-VERBOSE_PRE = VERBOSE_INFO << 1
-VERBOSE_FAC = VERBOSE_PRE << 1
-
+VERBOSE_NONE = hilucsi.VERBOSE_NONE
+VERBOSE_INFO = hilucsi.VERBOSE_INFO
+VERBOSE_PRE = hilucsi.VERBOSE_PRE
+VERBOSE_FAC = hilucsi.VERBOSE_FAC
+VERBOSE_PRE_TIME = hilucsi.VERBOSE_PRE_TIME
 
 # reorderingoptions
-REORDER_OFF = 0
-REORDER_AUTO = 1
-REORDER_AMD = 2
-REORDER_RCM = 3
+REORDER_OFF = hilucsi.REORDER_OFF
+REORDER_AUTO = hilucsi.REORDER_AUTO
+REORDER_AMD = hilucsi.REORDER_AMD
+REORDER_RCM = hilucsi.REORDER_RCM
 
 # determine total number of parameters
 def _get_opt_info():
@@ -221,6 +248,37 @@ def _write_hilucsi(str filename, int[::1] rowptr not None,
         m, isbin)
 
 
+def write_hilucsi(str filename, *args, shape=None, m=0, is_bin=True):
+    """Write data to HILUCSI file formats
+
+    Parameters
+    ----------
+    filename : str
+        file name
+    *args : input matrix
+        either three array of CRS or scipy sparse matrix
+    shape : ``None`` or tuple
+        if input is three array, then this must be given
+    m : int (optional)
+        leading symmetric block
+    is_bin : bool (optional)
+        if ``True`` (default), then assume binary file format
+
+    See Also
+    --------
+    :func:`read_hilucsi` : read native formats
+    """
+    # essential checkings to avoid segfault
+    cdef:
+        size_t m0 = m
+        bool isbin = is_bin
+        size_t n
+    rowptr, colind, vals = convert_to_crs(*args, shape=shape)
+    assert len(rowptr), 'cannot write empty matrix'
+    n = len(rowptr) - 1
+    _write_hilucsi(filename, rowptr, colind, vals, n, n, m0, isbin)
+
+
 def query_hilucsi_info(str filename, *, is_bin=None):
     """Read a HILUCSI file and only query its information
 
@@ -265,37 +323,6 @@ def query_hilucsi_info(str filename, *, is_bin=None):
     hilucsi.query_hilucsi_info(fn, is_row, is_c, is_double, is_real, nrows,
         ncols, nnz, m, isbin)
     return is_row, is_c, is_double, is_real, nrows, ncols, nnz, m
-
-
-def write_hilucsi(str filename, *args, shape=None, m=0, is_bin=True):
-    """Write data to HILUCSI file formats
-
-    Parameters
-    ----------
-    filename : str
-        file name
-    *args : input matrix
-        either three array of CRS or scipy sparse matrix
-    shape : ``None`` or tuple
-        if input is three array, then this must be given
-    m : int (optional)
-        leading symmetric block
-    is_bin : bool (optional)
-        if ``True`` (default), then assume binary file format
-
-    See Also
-    --------
-    :func:`read_hilucsi` : read native formats
-    """
-    # essential checkings to avoid segfault
-    cdef:
-        size_t m0 = m
-        bool isbin = is_bin
-        size_t n
-    rowptr, colind, vals = convert_to_crs(*args, shape=shape)
-    assert len(rowptr), 'cannot write empty matrix'
-    n = len(rowptr) - 1
-    _write_hilucsi(filename, rowptr, colind, vals, n, n, m0, isbin)
 
 
 cdef class HILUCSI:
@@ -449,26 +476,73 @@ cdef class HILUCSI:
 
 
 class KSP_Error(RuntimeError):
+    """Base class of KSP error exceptions"""
     pass
 
 
 class KSP_InvalidArgumentsError(KSP_Error):
+    """Invalid input argument error"""
     pass
 
 
 class KSP_MSolveError(KSP_Error):
+    """preconditioner solve error"""
     pass
 
 
 class KSP_DivergedError(KSP_Error):
+    """Diverged error, i.e. maximum iterations exceeded"""
     pass
 
 
 class KSP_StagnatedError(KSP_Error):
+    """Stagnated error, i.e. no improvement amount two iterations in a row"""
     pass
 
 
 cdef class FGMRES:
+    r"""Flexible GMRES implementation with rhs preconditioner
+
+    The FMGRES implementation has three modes (kernels): the first one is the
+    ``traditional`` kernel by treating :math:`\boldsymbol{M}` as the rhs
+    preconditioner; the second one is ``jacobi`` fashion, where
+    :math:`\boldsymbol{M}` is treated as the "diagonal" term in Jacobi iteration
+    combining with the input matrix :math:`\boldsymbol{A}`; finally, the last
+    fashion is an extension to ``jacobi`` with Chebyshev acceleration, which
+    requires estimations of the largest and smallest eigenvalues.
+
+    Attributes
+    ----------
+    rtol : float
+        relative tolerance, default is 1e-6
+    maxit : int
+        maximum iterations, default is 500
+    restart : int
+        restart in GMRES, default is 30
+    max_inners : int
+        maximum inner iterations used in Jacobi style kernle, default is 4
+    lamb1 : float
+        largest eigenvalue estimation, only used in Chebyshev-Jacobi kernel
+    lamb2 : float
+        smallest eigenvalue estimation, only used in Chebyshev-Jacobi kernel
+
+    Parameters
+    ----------
+    M : :class:`HILUCSI` or ``None``
+        preconditioner
+    rtol : float
+        relative tolerance, default is 1e-6
+    maxit : int
+        maximum iterations, default is 500
+    restart : int
+        restart in GMRES, default is 30
+    max_inners : int
+        maximum inner iterations used in Jacobi style kernle, default is 4
+    lamb1 : float or ``None``
+        if given, then used as the largest eigenvalue estimation
+    lamb2 : float or ``None``
+        if given, then used as the smallest eigenvalue estimation
+    """
     cdef shared_ptr[hilucsi.PyFGMRES] solver
 
     def __init__(self, M=None, rtol=1e-6, restart=30, maxit=500, max_inners=4,
@@ -580,6 +654,41 @@ cdef class FGMRES:
 
     def solve(self, *args, shape=None, x=None, kernel='tradition',
         init_guess=False, trunc=False, verbose=True):
+        """Sovle the rhs solution
+
+        Parameters
+        ----------
+        *args : input matrix
+            either three array of CRS or scipy sparse matrix, and rhs b
+        shape : ``None`` or tuple (optional)
+            if input is three array, then this must be given
+        x : ``None`` or buffer of solution
+            for efficiency purpose, one can provide the buffer
+        kernel : str (optional)
+            kernel for preconditioning, either 'tradition', 'jacobi', or
+            'chebyshev-jacobi'
+        init_guess : bool (optional)
+            if ``False`` (default), then set initial state to be zeros
+        trunc : bool (optional)
+            if ``False`` (default), then do typical hard restart
+        verbose : bool (optional)
+            if `True`` (default), then enable verbose printing
+
+        Returns
+        -------
+        tuple of solutions and iterations used.
+
+        Raises
+        ------
+        KSP_InvalidArgumentsError
+            invalid input arguments
+        KSP_MSolveError
+            preconditioenr solver error, see :func:`HILUCSI.solve`
+        KSP_DivergedError
+            iterations diverge due to exceeding :attr:`maxit`
+        KSP_StagnatedError
+            iterations stagnate
+        """
         assert kernel in ('tradition', 'jacobi', 'chebyshev-jacobi')
         if init_guess and x is None:
             raise KSP_InvalidArgumentsError('init-guess missing x0')
