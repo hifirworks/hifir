@@ -87,6 +87,16 @@ inline void write_hilucsi(const std::string &fn, const std::size_t nrows,
     A.write_ascii(fn.c_str(), m0);
 }
 
+// query file information
+inline void query_hilucsi_info(const std::string &fn, bool &is_row, bool &is_c,
+                               bool &is_double, bool &is_real,
+                               std::uint64_t &nrows, std::uint64_t &ncols,
+                               std::uint64_t &nnz, std::uint64_t &m,
+                               const bool is_bin = true) {
+  std::tie(is_row, is_c, is_double, is_real, nrows, ncols, nnz, m) =
+      is_bin ? query_info_bin(fn.c_str()) : query_info_ascii(fn.c_str());
+}
+
 // In order to make things easier, we directly use the raw data types, thus
 // we need to create a child class.
 class PyHILUCSI : public DefaultHILUCSI {

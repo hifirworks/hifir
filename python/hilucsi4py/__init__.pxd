@@ -11,6 +11,7 @@
 from libcpp cimport bool
 from libcpp.string cimport string as std_string
 from libc.stddef cimport size_t
+from libc.stdint cimport uint64_t
 from libcpp.vector cimport vector
 from libcpp.memory cimport shared_ptr
 from libcpp.utility cimport pair
@@ -42,6 +43,11 @@ cdef extern from 'hilucsi4py.hpp' namespace 'hilucsi' nogil:
                        const size_t ncols, const int *indptr,
                        const int *indices, const double *vals,
                        const size_t m0, const bool is_bin) except +
+    void query_hilucsi_info(const std_string &fn, bool &is_row, bool &is_c,
+                            bool &is_double, bool &is_real,
+                            uint64_t &nrows, uint64_t &ncols,
+                            uint64_t &nnz, uint64_t &m,
+                            const bool is_bin) except +
 
     cdef cppclass PyHILUCSI:
         PyHILUCSI()

@@ -26,6 +26,7 @@ from cython.operator cimport dereference as deref
 from libcpp cimport bool
 from libcpp.string cimport string as std_string
 from libc.stddef cimport size_t
+from libc.stdint cimport uint64_t
 from libcpp.vector cimport vector
 from libcpp.memory cimport shared_ptr
 from libcpp.utility cimport pair
@@ -218,6 +219,52 @@ def _write_hilucsi(str filename, int[::1] rowptr not None,
         bool isbin = is_bin
     hilucsi.write_hilucsi(fn, nrows, ncols, &rowptr[0], &colind[0], &vals[0],
         m, isbin)
+
+
+def query_hilucsi_info(str filename, *, is_bin=None):
+    """Read a HILUCSI file and only query its information
+
+    Parameters
+    ----------
+    filename : str
+        file name
+    is_bin : ``None`` or bool (optional)
+        if ``None``, then will automatically detect
+
+    Returns
+    -------
+    `tuple` of `is_row`, `is_c`, `is_double`, `is_real`, `nrows`, `ncols`,
+    `nnz`, and `m`
+    """
+    if not os.path.isfile(filename):
+        raise FileNotFoundError
+    cdef:
+        std_string fn = filename.encode('utf-8')
+        bool isbin
+        bool is_row
+        bool is_c
+        bool is_double
+        bool is_real
+        uint64_t nrows
+        uint64_t ncols
+        uint64_t nnz
+        uint64_t m
+    
+    def is_binary():
+        textchars = \
+            bytearray({7,8,9,10,12,13,27} | set(range(0x20, 0x100)) - {0x7f})
+        fin = open(filename, 'rb')
+        flag = <bool> fin.read(1024).translate(None, textchars)
+        fin.close()
+        return flag
+
+    if is_bin is None:
+        isbin = is_binary()
+    else:
+        isbin = <bool> is_bin
+    hilucsi.query_hilucsi_info(fn, is_row, is_c, is_double, is_real, nrows,
+        ncols, nnz, m, isbin)
+    return is_row, is_c, is_double, is_real, nrows, ncols, nnz, m
 
 
 def write_hilucsi(str filename, *args, shape=None, m=0, is_bin=True):
