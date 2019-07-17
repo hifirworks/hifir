@@ -13,7 +13,6 @@ functions are
 Notice that we use ``int`` as index type and ``double`` as floating number type,
 thus the corresponding numpy dtypes are ``intc`` and ``float64``.
 
-.. module:: hilucsi4py.utils
 .. moduleauthor:: Qiao Chen, <qiao.chen@stonybrook.edu>
 """
 

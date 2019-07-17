@@ -18,7 +18,7 @@ them in Python3. This module includes:
 3. KSP solver(s)
 4. IO with native HILUCSI binary and ASCII files
 
-.. module:: hilucsi4py._hilucsi
+.. module:: hilucsi4py
 .. moduleauthor:: Qiao Chen, <qiao.chen@stonybrook.edu>
 """
 
@@ -326,8 +326,6 @@ def query_hilucsi_info(str filename, *, is_bin=None):
 
 
 cdef class HILUCSI:
-    cdef shared_ptr[hilucsi.PyHILUCSI] M
-
     """Python HILUCSI object
 
     The interfaces remain the same as the original user object, i.e.
@@ -339,23 +337,17 @@ cdef class HILUCSI:
     .. note::
 
         In addition, the only supported data types are ``int`` and ``double``.
-
-    Attributes
-    ----------
-    levels : int
-            number of levels
-    nnz : int
-        total number of nonzeros
-    nnz_EF : int
-        total number of nonzeros in E and F factors
-    nnz_LDU : int
-        total number of nonzeros in L, D, and U factors
-    size : int
-        system size
-
+    
     Examples
     --------
+
+    >>> from scipy.sparse import random
+    >>> from hilucsi4py import *
+    >>> A = random(10, 10, 0.5)
+    >>> M = HILUCSI()
+    >>> M.factorize(A)
     """
+    cdef shared_ptr[hilucsi.PyHILUCSI] M
 
     def __init__(self):
         # for docstring purpose
@@ -450,12 +442,8 @@ cdef class HILUCSI:
         r"""Core routine to use the preconditioner
 
         Essentailly, this routine is to perform
-
-        .. math::
-
-            \boldsymbol{x}&=\boldsymbol{M}^{-1}\boldsymbol{b}
-        
-        Where :math:`\boldsymbool{M}` is our MILU preconditioner.
+        :math:`\boldsymbol{x}&=\boldsymbol{M}^{-1}\boldsymbol{b}`, where
+        :math:`\boldsymbool{M}` is our MILU preconditioner.
 
         Parameters
         ----------
@@ -511,21 +499,6 @@ cdef class FGMRES:
     fashion is an extension to ``jacobi`` with Chebyshev acceleration, which
     requires estimations of the largest and smallest eigenvalues.
 
-    Attributes
-    ----------
-    rtol : float
-        relative tolerance, default is 1e-6
-    maxit : int
-        maximum iterations, default is 500
-    restart : int
-        restart in GMRES, default is 30
-    max_inners : int
-        maximum inner iterations used in Jacobi style kernle, default is 4
-    lamb1 : float
-        largest eigenvalue estimation, only used in Chebyshev-Jacobi kernel
-    lamb2 : float
-        smallest eigenvalue estimation, only used in Chebyshev-Jacobi kernel
-
     Parameters
     ----------
     M : :class:`HILUCSI` or ``None``
@@ -542,6 +515,18 @@ cdef class FGMRES:
         if given, then used as the largest eigenvalue estimation
     lamb2 : float or ``None``
         if given, then used as the smallest eigenvalue estimation
+
+    Examples
+    --------
+
+    >>> from scipy.sparse import random
+    >>> from hilucsi4py import *
+    >>> import numpy as np
+    >>> A = random(10,10,0.5)
+    >>> M = HILUCSI()
+    >>> M.factorize(A)
+    >>> solver = FGMRES(M)
+    >>> x = solver.solve(A, np.random.rand(10))
     """
     cdef shared_ptr[hilucsi.PyFGMRES] solver
 
