@@ -347,7 +347,7 @@ inline typename std::enable_if<!CsType::ROW_MAJOR>::type write_bin(
 /// \param[in] filename binary filename
 /// \return tuple of CRS/CCS order, C-index, double/float, is real, nrows,
 ///         ncols, nnz, m
-/// \ingroup cpp
+/// \ingroup itr
 /// \sa query_info_ascii
 inline std::tuple<bool, bool, bool, bool, std::uint64_t, std::uint64_t,
                   std::uint64_t, std::uint64_t>
@@ -684,7 +684,7 @@ inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type read_bin(
 /// \brief write to ASCII file
 /// \tparam IsRowMajor flag to indicate \ref CRS or \ref CCS
 /// \tparam IndexArray index array type, see \ref Array
-/// \tparma ValueArray value array type, see \ref Array
+/// \tparam ValueArray value array type, see \ref Array
 /// \param[in] fname file name for output
 /// \param[in] ind_start index start array
 /// \param[in] other_size column size for \ref CRS, row size for \ref CCS
@@ -737,7 +737,7 @@ inline void write_ascii(const char *fname, const IndexArray &ind_start,
 /// \param[in] filename binary filename
 /// \return tuple of CRS/CCS order, C-index, double/float, is real, nrows,
 ///         ncols, nnz, m
-/// \ingroup cpp
+/// \ingroup itr
 /// \sa query_info_bin
 inline std::tuple<bool, bool, bool, bool, std::uint64_t, std::uint64_t,
                   std::uint64_t, std::uint64_t>
@@ -789,7 +789,7 @@ query_info_ascii(const char *filename) {
 
 /// \brief read data from ASCII file
 /// \tparam IndexArray index array type, see \ref Array
-/// \tparma ValueArray value array type, see \ref Array
+/// \tparam ValueArray value array type, see \ref Array
 /// \param[in] fname file name for output
 /// \param[in] ind_start index start array
 /// \param[in] indices index array

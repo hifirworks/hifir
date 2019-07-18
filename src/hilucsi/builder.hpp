@@ -48,7 +48,7 @@ static bool introduced = false;
 #endif  // DOXYGEN_SHOULD_SKIP_THIS
 
 /*!
- * \addtogroup cpp
+ * \addtogroup itr
  * @{
  */
 
@@ -188,12 +188,10 @@ class HILUCSI {
   /// \param[in] m0 leading block size, if it's zero (default), then the routine
   ///               will assume an asymmetric leading block.
   /// \param[in] opts control parameters, using the default values in the paper.
-  /// \param[in] check if \a true (default), will perform validity checking
   /// \sa solve
   template <class CsType>
   inline void factorize(const CsType &A, const size_type m0 = 0u,
-                        const Options &opts  = get_default_options(),
-                        const bool     check = true) {
+                        const Options &opts = get_default_options()) {
     const static internal::StdoutStruct  Crout_cout;
     const static internal::DummyStreamer Crout_cout_dummy;
 
@@ -212,7 +210,7 @@ class HILUCSI {
     if (hilucsi_verbose(NONE, opts)) (void)warn_flag(0);
 
     // check validity of the input system
-    if (check) {
+    if (opts.check) {
       if (hilucsi_verbose(INFO, opts))
         hilucsi_info("perform input matrix validity checking");
       A.check_validity();
@@ -310,7 +308,7 @@ typedef HILUCSI<double, int> DefaultHILUCSI;
 
 /*!
  * @}
- */ // group cpp
+ */ // group itr
 
 }  // namespace hilucsi
 

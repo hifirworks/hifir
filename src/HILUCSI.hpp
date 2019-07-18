@@ -21,7 +21,7 @@ namespace hilucsi {
 
 /// \brief get the version string representation during runtime
 /// \return string representation of version
-/// \ingroup cpp
+/// \ingroup itr
 inline std::string version() {
   using std::to_string;
   return to_string(HILUCSI_GLOBAL_VERSION) + "." +

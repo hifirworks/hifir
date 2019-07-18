@@ -42,12 +42,6 @@
 
 /// \defgroup itr HILUCSI User Interfaces
 
-/// \defgroup cpp C++ User Interfaces
-/// \ingroup itr
-
-/// \defgroup c C User Interface
-/// \ingroup itr
-
 /// \defgroup macros Preprocessor macros
 /// \ingroup itr
 
