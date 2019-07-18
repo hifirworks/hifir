@@ -62,6 +62,39 @@ namespace internal {
  * @{
  */
 
+/// \brief adjust parameters based on levels
+/// \param[in] opts control parameters, i.e. Options
+/// \param[in] lvl levels
+/// \return refined parameters
+inline std::tuple<double, double, double, double, int, int> determine_fac_pars(
+    const Options &opts, const int lvl) {
+  double tau_d, tau_kappa, tau_U, tau_L;
+  int    alpha_L, alpha_U;
+  if (opts.rf_par) {
+    const int    fac  = std::min(lvl, 2);
+    const double fac2 = 1. / std::min(10.0, std::pow(10.0, lvl - 1));
+    tau_d             = std::max(2.0, std::pow(opts.tau_d, 1. / fac));
+    tau_kappa         = std::max(2.0, std::pow(opts.tau_kappa, 1. / fac));
+    tau_U             = opts.tau_U * fac2;
+    tau_L             = opts.tau_L * fac2;
+    if (lvl > 2) {
+      alpha_L = opts.alpha_L;
+      alpha_U = opts.alpha_U;
+    } else {
+      alpha_L = opts.alpha_L * fac;
+      alpha_U = opts.alpha_U * fac;
+    }
+  } else {
+    tau_d     = opts.tau_d;
+    tau_kappa = opts.tau_kappa;
+    tau_U     = opts.tau_U;
+    tau_L     = opts.tau_L;
+    alpha_L   = opts.alpha_L;
+    alpha_U   = opts.alpha_U;
+  }
+  return std::make_tuple(tau_d, tau_kappa, tau_U, tau_L, alpha_L, alpha_U);
+}
+
 /// \brief extract permutated diagonal
 /// \tparam CcsType input ccs matrix, see \ref CCS
 /// \tparam ScalingType scaling vector type, see \ref Array
@@ -636,7 +669,7 @@ inline CsType level_factorize(const CsType &                   A,
   double tau_d, tau_kappa, tau_L, tau_U;
   int    alpha_L, alpha_U;
   std::tie(tau_d, tau_kappa, tau_L, tau_U, alpha_L, alpha_U) =
-      determine_fac_pars(opts, cur_level);
+      internal::determine_fac_pars(opts, cur_level);
 
   // Removing bounding the large diagonal values
   const auto is_bad_diag = [=](const value_type a) -> bool {
