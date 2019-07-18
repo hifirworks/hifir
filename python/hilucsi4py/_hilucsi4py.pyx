@@ -182,9 +182,12 @@ cdef class Options:
             raise KeyError('unknown option name {}'.format(opt_name))
         cdef int idx = _OPT_LIST.index(opt_name)
         attr = list(filter(None, self.__str__().split('\n')))[idx]
+        v = list(filter(None, attr.split()))[1]
+        if opt_name in ('check', 'reorder', 'verbose'):
+            return v
         if hilucsi.option_dtypes[idx]:
-            return float(list(filter(None, attr.split()))[1])
-        return int(list(filter(None, attr.split()))[1])
+            return float(v)
+        return int(v)
 
 
 # I/O
@@ -396,17 +399,16 @@ cdef class HILUCSI:
         return deref(self.M).stats(entry)
 
     def _factorize(self, int[::1] rowptr not None, int[::1] colind not None,
-        double[::1] vals not None, size_t n, size_t m, Options opts, bool check):
+        double[::1] vals not None, size_t n, size_t m, Options opts):
         cdef:
             size_t m0 = m
             Options my_opts = Options()
-            bool ck = check
         if opts is not None:
             my_opts.opts = opts.opts
         deref(self.M).factorize(n, &rowptr[0], &colind[0], &vals[0], m0,
-            my_opts.opts, ck)
+            my_opts.opts)
 
-    def factorize(self, *args, shape=None, m=0, Options opts=None, check=True):
+    def factorize(self, *args, shape=None, m=0, Options opts=None):
         """Compute/build the preconditioner
 
         Parameters
@@ -419,8 +421,6 @@ cdef class HILUCSI:
             leading symmetric block
         opts : :py:class:`psmilu4py.Options` (optional)
             control parameters, if ``None``, then use the default values
-        check : bool (optional)
-            if ``True`` (default), then perform checking for the input system
 
         See Also
         --------
@@ -431,7 +431,7 @@ cdef class HILUCSI:
         rowptr, colind, vals = convert_to_crs(*args, shape=shape)
         assert len(rowptr), 'cannot deal with empty matrix'
         n = len(rowptr) - 1
-        self._factorize(rowptr, colind, vals, n, m, opts, check)
+        self._factorize(rowptr, colind, vals, n, m, opts)
 
     def _solve(self, double[::1] b not None, double[::1] x not None):
         cdef size_t n = len(b)

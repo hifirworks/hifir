@@ -73,8 +73,8 @@ cdef extern from 'hilucsi4py.hpp' namespace 'hilucsi' nogil:
 
         # computing routine
         void factorize(const size_t n, const int *indptr, const int *indices,
-                       const double *vals, const size_t m0, const Options &opts,
-                       const bool check) except +
+                       const double *vals, const size_t m0,
+                       const Options &opts) except +
 
         # solving routine
         void solve(const size_t n, const double *b, double *x) except +
@@ -118,4 +118,4 @@ cdef extern from 'hilucsi4py.hpp' namespace 'hilucsi::ksp' nogil:
 cdef extern from 'hilucsi4py.hpp' namespace 'hilucsi::internal' nogil:
     # using an internal var to determine the data types of options
     # true for double, flase for int
-    bool option_dtypes[19]
+    bool option_dtypes[17]

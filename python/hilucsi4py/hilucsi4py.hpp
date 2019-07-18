@@ -107,13 +107,13 @@ class PyHILUCSI : public DefaultHILUCSI {
   // factorize crs
   inline void factorize(const size_type n, const int *rowptr, const int *colind,
                         const double *vals, const size_type m0,
-                        const Options &opts, const bool check) {
+                        const Options &opts) {
     using crs_type             = base::crs_type;
     constexpr static bool WRAP = true;
 
     crs_type A(n, n, const_cast<int *>(rowptr), const_cast<int *>(colind),
                const_cast<double *>(vals), WRAP);
-    base::factorize(A, m0, opts, check);
+    base::factorize(A, m0, opts);
   }
 
   using base::solve;
