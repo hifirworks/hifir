@@ -10,7 +10,6 @@
  * \file hilucsi/Options.h
  * \brief HILUCSI algorithm parameter controls
  * \authors Qiao,
- * \note Compatible with C99, and must be \b C99 or higher!
  */
 
 #ifndef _HILUCSI_OPTIONS_H
@@ -20,10 +19,8 @@
 extern "C" {
 #endif
 
-#define HILUCSI_TOTAL_OPTIONS 19
-
 /*!
- * \addtogroup c
+ * \addtogroup itr
  * @{
  */
 
@@ -52,41 +49,28 @@ enum {
 };
 
 /*!
- * \brief matching backend
- */
-enum {
-  HILUCSI_MATCHING_AUTO  = 0, /*!< automatically determined */
-  HILUCSI_MATCHING_MUMPS = 1, /*!< using mumps */
-  HILUCSI_MATCHING_MC64  = 2,
-  /*!< using HSL_MC64, user needs to provide the package */
-};
-
-/*!
  * \struct hilucsi_Options
  * \brief POD parameter controls
  * \note Values in parentheses are default settings
  */
 struct hilucsi_Options {
-  double tau_L;       /*!< inverse-based threshold for L (0.001) */
-  double tau_U;       /*!< inverse-based threshold for U (0.001) */
-  double tau_d;       /*!< threshold for inverse-diagonal (3.) */
-  double tau_kappa;   /*!< inverse-norm threshold (3.) */
-  int    alpha_L;     /*!< growth factor of nnz per col (8) */
-  int    alpha_U;     /*!< growth factor of nnz per row (8) */
-  double rho;         /*!< density threshold for dense LU (0.5) */
-  double c_d;         /*!< size parameter for dense LU (10.0) */
-  double c_h;         /*!< size parameter for H-version (2.0) */
-  int    N;           /*!< reference size of matrix (-1, system size) */
-  int    verbose;     /*!< message output level (1, i.e. info) */
-  int    rf_par;      /*!< parameter refinement (default 1) */
-  int    reorder;     /*!< reordering method */
-  int    saddle;      /*!< enable saddle point static deferring (default 1) */
-  int    pre_reorder; /*!< reordering before matching */
-  int    pre_reorder_lvl1;
-  /*!< only do pre reorder on level 1 (default 1) */
-  int matching;  /*!< matching method, default is auto */
-  int pre_scale; /*!< prescale (default 0 (off)) */
-  int symm_pre_lvls;
+  double tau_L;     /*!< inverse-based threshold for L (0.001) */
+  double tau_U;     /*!< inverse-based threshold for U (0.001) */
+  double tau_d;     /*!< threshold for inverse-diagonal (3.) */
+  double tau_kappa; /*!< inverse-norm threshold (3.) */
+  int    alpha_L;   /*!< growth factor of nnz per col (8) */
+  int    alpha_U;   /*!< growth factor of nnz per row (8) */
+  double rho;       /*!< density threshold for dense LU (0.5) */
+  double c_d;       /*!< size parameter for dense LU (10.0) */
+  double c_h;       /*!< size parameter for H-version (2.0) */
+  int    N;         /*!< reference size of matrix (-1, system size) */
+  int    verbose;   /*!< message output level (1, i.e. info) */
+  int    rf_par;    /*!< parameter refinement (default 1) */
+  int    reorder;   /*!< reordering method */
+  int    saddle;    /*!< enable saddle point static deferring (default 1) */
+  int    check;     /*!< check user input (default is true (!=0)) */
+  int    pre_scale; /*!< prescale (default 0 (off)) */
+  int    symm_pre_lvls;
   /*!< levels to be applied with symm preprocessing (default is 1) */
 };
 
@@ -101,25 +85,23 @@ typedef struct hilucsi_Options hilucsi_Options;
  * \note See the values of attributes in parentheses
  */
 static hilucsi_Options hilucsi_get_default_options(void) {
-  return (hilucsi_Options){.tau_L            = 0.0001,
-                           .tau_U            = 0.0001,
-                           .tau_d            = 3.0,
-                           .tau_kappa        = 3.0,
-                           .alpha_L          = 10,
-                           .alpha_U          = 10,
-                           .rho              = 0.5,
-                           .c_d              = 10.0,
-                           .c_h              = 2.0,
-                           .N                = -1,
-                           .verbose          = HILUCSI_VERBOSE_INFO,
-                           .rf_par           = 1,
-                           .reorder          = HILUCSI_REORDER_AUTO,
-                           .saddle           = 1,
-                           .pre_reorder      = HILUCSI_REORDER_OFF,
-                           .pre_reorder_lvl1 = 1,
-                           .matching         = HILUCSI_MATCHING_AUTO,
-                           .pre_scale        = 0,
-                           .symm_pre_lvls    = 1};
+  return (hilucsi_Options){.tau_L         = 0.0001,
+                           .tau_U         = 0.0001,
+                           .tau_d         = 3.0,
+                           .tau_kappa     = 3.0,
+                           .alpha_L       = 10,
+                           .alpha_U       = 10,
+                           .rho           = 0.5,
+                           .c_d           = 10.0,
+                           .c_h           = 2.0,
+                           .N             = -1,
+                           .verbose       = HILUCSI_VERBOSE_INFO,
+                           .rf_par        = 1,
+                           .reorder       = HILUCSI_REORDER_AUTO,
+                           .saddle        = 1,
+                           .check         = 1,
+                           .pre_scale     = 0,
+                           .symm_pre_lvls = 1};
 }
 
 /*!
@@ -160,25 +142,6 @@ static const char *hilucsi_get_reorder_name(const hilucsi_Options *opt) {
 }
 
 /*!
- * \brief get the matching method name
- * \param[in] opt options
- * \return C-string of the matching method name
- */
-static const char *hilucsi_get_matching_name(const hilucsi_Options *opt) {
-  if (opt) {
-    switch (opt->matching) {
-      case HILUCSI_MATCHING_AUTO:
-        return "Auto";
-      case HILUCSI_MATCHING_MUMPS:
-        return "MUMPS";
-      default:
-        return "MC64";
-    }
-  }
-  return "Auto";
-}
-
-/*!
  * @}
  */ /* c interface group */
 
@@ -196,9 +159,13 @@ static const char *hilucsi_get_matching_name(const hilucsi_Options *opt) {
 namespace hilucsi {
 
 /*!
+ * \addtogroup itr
+ * @{
+ */
+
+/*!
  * \brief enum wrapper
  * \note The prefix of \a HILUCSI will be dropped
- * \ingroup cpp
  */
 enum : int {
   VERBOSE_NONE     = ::HILUCSI_VERBOSE_NONE,     /*!< mute */
@@ -212,7 +179,6 @@ enum : int {
 /*!
  * \brief enum wrapper for reordering methods
  * \note The prefix of \a HILUCSI will be dropped
- * \ingroup cpp
  */
 enum : int {
   REORDER_OFF  = ::HILUCSI_REORDER_OFF, /*!< turn reordering off */
@@ -224,21 +190,8 @@ enum : int {
 };
 
 /*!
- * \brief enum wrapper for matching methods
- * \note The prefix of \a HILUCSI will be dropped
- * \ingroup cpp
- */
-enum : int {
-  MATCHING_AUTO  = ::HILUCSI_MATCHING_AUTO,  /*!< automatically determined */
-  MATCHING_MUMPS = ::HILUCSI_MATCHING_MUMPS, /*!< using mumps */
-  MATCHING_MC64  = ::HILUCSI_MATCHING_MC64,
-  /*!< using HSL_MC64, user needs to provide the package */
-};
-
-/*!
  * \typedef Options
  * \brief type wrapper
- * \ingroup cpp
  */
 typedef hilucsi_Options Options;
 
@@ -247,14 +200,6 @@ typedef hilucsi_Options Options;
  */
 inline std::string get_reorder_name(const Options &opt) {
   return ::hilucsi_get_reorder_name(&opt);
-}
-
-/*!
- * \brief get the matching method name
- * \param[in] opt Options
- */
-inline std::string get_matching_name(const Options &opt) {
-  return ::hilucsi_get_matching_name(&opt);
 }
 
 /*!
@@ -272,62 +217,24 @@ inline void enable_verbose(const int flag, Options &opts) {
 inline std::string get_verbose(const Options &opt);
 
 /*!
- * \brief adjust parameters based on levels
- * \param[in] opts control parameters, i.e. Options
- * \param[in] lvl levels
- * \ingroup fac
- */
-inline std::tuple<double, double, double, double, int, int> determine_fac_pars(
-    const Options &opts, const int lvl) {
-  double tau_d, tau_kappa, tau_U, tau_L;
-  int    alpha_L, alpha_U;
-  if (opts.rf_par) {
-    const int    fac  = std::min(lvl, 2);
-    const double fac2 = 1. / std::min(10.0, std::pow(10.0, lvl - 1));
-    tau_d             = std::max(2.0, std::pow(opts.tau_d, 1. / fac));
-    tau_kappa         = std::max(2.0, std::pow(opts.tau_kappa, 1. / fac));
-    tau_U             = opts.tau_U * fac2;
-    tau_L             = opts.tau_L * fac2;
-    if (lvl > 2) {
-      alpha_L = opts.alpha_L;
-      alpha_U = opts.alpha_U;
-    } else {
-      alpha_L = opts.alpha_L * fac;
-      alpha_U = opts.alpha_U * fac;
-    }
-  } else {
-    tau_d     = opts.tau_d;
-    tau_kappa = opts.tau_kappa;
-    tau_U     = opts.tau_U;
-    tau_L     = opts.tau_L;
-    alpha_L   = opts.alpha_L;
-    alpha_U   = opts.alpha_U;
-  }
-  return std::make_tuple(tau_d, tau_kappa, tau_U, tau_L, alpha_L, alpha_U);
-}
-
-/*!
  * \brief read control parameters from a standard input streamer
  * \tparam InStream input streamer, i.e. with input operator
  * \param[in,out] in_str input streamer, e.g. \a std::cin
  * \param[out] opt control parameters
  * \return reference to \a in_str to enable chain reaction
- * \ingroup cpp
  * \note Read data in sequential order with default separators
  */
 template <class InStream>
 inline InStream &operator>>(InStream &in_str, Options &opt) {
   in_str >> opt.tau_L >> opt.tau_U >> opt.tau_d >> opt.tau_kappa >>
       opt.alpha_L >> opt.alpha_U >> opt.rho >> opt.c_d >> opt.c_h >> opt.N >>
-      opt.verbose >> opt.rf_par >> opt.reorder >> opt.saddle >>
-      opt.pre_reorder >> opt.pre_reorder_lvl1 >> opt.matching >>
+      opt.verbose >> opt.rf_par >> opt.reorder >> opt.saddle >> opt.check >>
       opt.pre_scale >> opt.symm_pre_lvls;
   return in_str;
 }
 
 /*!
  * \brief get the default configuration
- * \ingroup cpp
  */
 inline Options get_default_options() { return ::hilucsi_get_default_options(); }
 
@@ -335,7 +242,6 @@ inline Options get_default_options() { return ::hilucsi_get_default_options(); }
  * \brief represent an option control with C++ string
  * \param[in] opt input option controls
  * \return string representation of \a opt
- * \ingroup cpp
  */
 inline std::string opt_repr(const Options &opt) {
   using std::string;
@@ -361,34 +267,21 @@ inline std::string opt_repr(const Options &opt) {
          pack_name("verbose", get_verbose) + pack_int("rf_par", opt.rf_par) +
          pack_name("reorder", get_reorder_name) +
          pack_int("saddle", opt.saddle) +
-         pack_name("pre_reorder",
-                   [](const Options &opt_) {
-                     switch (opt_.pre_reorder) {
-                       case HILUCSI_REORDER_OFF:
-                         return "Off";
-                       case HILUCSI_REORDER_AUTO:
-                         return "Auto";
-                       case HILUCSI_REORDER_AMD:
-                         return "AMD";
-                       case HILUCSI_REORDER_RCM:
-                         return "RCM";
-                       default:
-                         return "Null";
-                     }
-                   }) +
-         pack_int("pre_reorder_lvl1", opt.pre_reorder_lvl1) +
-         pack_name("matching", get_matching_name) +
+         pack_name(
+             "check",
+             [](const Options &opt_) { return opt_.check ? "yes" : "no"; }) +
          pack_int("pre_scale", opt.pre_scale) +
          pack_int("symm_pre_lvls", opt.symm_pre_lvls);
 }
 
 #  ifndef DOXYGEN_SHOULD_SKIP_THIS
 namespace internal {
+#    define _HILUCSI_TOTAL_OPTIONS 17
 /*
  * build a byte map, i.e. the value is the leading byte position of the attrs
  * in Options
  */
-const static std::size_t option_attr_pos[HILUCSI_TOTAL_OPTIONS] = {
+const static std::size_t option_attr_pos[_HILUCSI_TOTAL_OPTIONS] = {
     0,
     sizeof(double),
     option_attr_pos[1] + sizeof(double),
@@ -405,27 +298,20 @@ const static std::size_t option_attr_pos[HILUCSI_TOTAL_OPTIONS] = {
     option_attr_pos[12] + sizeof(int),
     option_attr_pos[13] + sizeof(int),
     option_attr_pos[14] + sizeof(int),
-    option_attr_pos[15] + sizeof(int),
-    option_attr_pos[16] + sizeof(int),
-    option_attr_pos[17] + sizeof(int)};
+    option_attr_pos[15] + sizeof(int)};
 
 /* data type tags, true for double, false for int */
-const static bool option_dtypes[HILUCSI_TOTAL_OPTIONS] = {
-    true,  true,  true,  true,  false, false, true,  true,  true,
-    false, false, false, false, false, false, false, false, false};
+const static bool option_dtypes[_HILUCSI_TOTAL_OPTIONS] = {
+    true,  true,  true,  true,  false, false, true,  true, true,
+    false, false, false, false, false, false, false, false};
 
 /* using unordered map to store the string to index map */
 const static std::unordered_map<std::string, int> option_tag2pos = {
-    {"tau_L", 0},         {"tau_U", 1},
-    {"tau_d", 2},         {"tau_kappa", 3},
-    {"alpha_L", 4},       {"alpha_U", 5},
-    {"rho", 6},           {"c_d", 7},
-    {"c_h", 8},           {"N", 9},
-    {"verbose", 10},      {"rf_par", 11},
-    {"reorder", 12},      {"saddle", 13},
-    {"pre_reorder", 14},  {"pre_reorder_lvl1", 15},
-    {"matching", 16},     {"pre_scale", 17},
-    {"symm_pre_lvls", 18}};
+    {"tau_L", 0},         {"tau_U", 1},   {"tau_d", 2},    {"tau_kappa", 3},
+    {"alpha_L", 4},       {"alpha_U", 5}, {"rho", 6},      {"c_d", 7},
+    {"c_h", 8},           {"N", 9},       {"verbose", 10}, {"rf_par", 11},
+    {"reorder", 12},      {"saddle", 13}, {"check", 14},   {"pre_scale", 15},
+    {"symm_pre_lvls", 16}};
 
 } /* namespace internal */
 #  endif /* DOXYGEN_SHOULD_SKIP_THIS */
@@ -435,7 +321,6 @@ const static std::unordered_map<std::string, int> option_tag2pos = {
 /// \param[in] attr attribute/member name
 /// \param[in] v value
 /// \param[out] opt output options
-/// \ingroup cpp
 ///
 /// This function can be handy while initialing option parameters from string
 /// values. Notice that the keys (string values) are the same as the attribute
@@ -458,6 +343,10 @@ inline bool set_option_attr(const std::string &attr, const T v, Options &opt) {
     return failed;
   }
 }
+
+/*!
+ * @}
+ */
 
 } /* namespace hilucsi */
 
