@@ -45,11 +45,6 @@ const static char *help =
     "\t\t3: rcm (requires BGL)\n"
     "\t\t4: king (requires BGL)\n"
     "\t\t5: sloan (requires BGL)\n"
-    " -m|--matching method\n"
-    "\tmatching methods:\n"
-    "\t\t0: try to use MC64 if it is available, default\n"
-    "\t\t1: MUMPS\n"
-    "\t\t2: MC64 (requires F77 MC64)\n"
     " -I|-pre-scale\n"
     "\ta priori scaling before calling matching/scaling\n"
     "\t\t0: off (default)\n"
@@ -132,7 +127,7 @@ int main(int argc, char *argv[]) {
   timer.start();
   std::shared_ptr<prec_t> _M(new prec_t());
   auto &                  M = *_M;
-  M.factorize(A2, m, opts, true);
+  M.factorize(A2, m, opts);
   timer.finish();
   hilucsi_info(
       "\nMLILU done!\n"
@@ -229,10 +224,6 @@ inline static std::tuple<Options, int, double, bool> parse_args(int   argc,
       ++i;
       if (i >= argc) fatal_exit("missing reorder method tag!");
       opts.reorder = std::atoi(argv[i]);
-    } else if (arg == string("-m") || arg == string("--matching")) {
-      ++i;
-      if (i >= argc) fatal_exit("missing matching method tag!");
-      opts.matching = std::atoi(argv[i]);
     } else if (arg == string("-I") || arg == string("-pre-scale")) {
       ++i;
       if (i >= argc) fatal_exit("missing pre-scale type!");
