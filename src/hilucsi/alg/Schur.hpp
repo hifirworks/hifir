@@ -18,6 +18,7 @@
 #include "hilucsi/ds/Array.hpp"
 #include "hilucsi/utils/common.hpp"
 #include "hilucsi/utils/log.hpp"
+#include "hilucsi/utils/mt.hpp"
 
 namespace hilucsi {
 namespace internal {
@@ -66,7 +67,7 @@ inline void drop_offsets_kernel(const IntArray &ref_indptr, const double alpha,
           return std::abs(buf[i]) > std::abs(buf[j]);
         });
     // sort
-    std::sort(indices.begin() + first, indices.begin() + first + sz_thres);
+    // std::sort(indices.begin() + first, indices.begin() + first + sz_thres);
     // fetch back the value
     for (size_type j(first); j < first + sz_thres; ++j)
       vals[j] = buf[indices[j]];
@@ -357,6 +358,352 @@ inline CrsType compute_Schur_simple(const ScaleArray &s, const CrsType &A,
  * @}
  */
 
+namespace mt {
+
+/*!
+ * \addtogroup schur
+ * @{
+ */
+
+/// \brief drop \a L_E and \a U_F
+/// \tparam CrsType crs storage type, see \ref CRS
+/// \tparam CcsType ccs storage type, see \ref CCS
+/// \tparam BufArray value buffer type
+/// \tparam IntBufArray integer buffer type
+/// \param[in] ref_indptr_L reference starting array for \a L_E
+/// \param[in] alpha_L drop space limiter threshold for \a L_E
+/// \param[in] ref_indptr_U reference starting array for \a U_F
+/// \param[in] alpha_U drop space limiter threshold for \a U_F
+/// \param[in,out] L_E in and out puts of L offset
+/// \param[in,out] U_F in and out puts of U offset
+/// \param[out] buf_L work space for \a L_E
+/// \param[out] ibuf_L integer work space for \a L_E
+/// \param[out] buf_U work space for \a U_F
+/// \param[out] ibuf_U workspace for \a U_F
+/// \param[in] threads total threads used, must be at least 1, not alerted
+/// \note buffers can be got from Crout work spaces
+template <class CrsType, class CcsType, class BufArray, class IntBufArray>
+inline void drop_L_E_and_U_F(const typename CrsType::iarray_type &ref_indptr_L,
+                             const double                         alpha_L,
+                             const typename CcsType::iarray_type &ref_indptr_U,
+                             const double alpha_U, CrsType &L_E, CcsType &U_F,
+                             BufArray &buf_L, IntBufArray &ibuf_L,
+                             BufArray &buf_U, IntBufArray &ibuf_U,
+                             const int threads) {
+  using size_type  = typename CrsType::size_type;
+  using index_type = typename CrsType::index_type;
+
+  const size_type n = L_E.nrows();
+  hilucsi_assert(n == U_F.ncols(), "mismatched sizes between L_E and U_F");
+  if (threads == 1 || n <= 200u) {
+    drop_L_E(ref_indptr_L, alpha_L, L_E, buf_L, ibuf_L);
+    drop_U_F(ref_indptr_U, alpha_U, U_F, buf_U, ibuf_U);
+    return;
+  }
+
+  // parallel
+  hilucsi_assert(threads > 1, "thread number %d must be no smaller than 1",
+                 threads);
+
+  if (threads <= 3) {
+#pragma omp parallel num_threads(2) default(shared)
+    do {
+      const int thread = get_thread();
+      if (thread)
+        drop_L_E(ref_indptr_L, alpha_L, L_E, buf_L, ibuf_L);
+      else
+        drop_U_F(ref_indptr_U, alpha_U, U_F, buf_U, ibuf_U);
+    } while (false);  // end of parallel region for 2
+    return;
+  }
+
+  auto &gaps_L = ibuf_L, &gaps_U = ibuf_U;
+#pragma omp parallel num_threads(threads) default(shared)
+  do {
+    // determine thread id and work of partition
+    const int       thread    = get_thread();
+    const auto      part      = uniform_partition(n, threads, thread);
+    const size_type start_idx = part.first, poe_idx = part.second;
+
+    // create additional work buffer
+    BufArray buf_;
+    if (thread > 1) buf_.resize(L_E.ncols());
+    BufArray &buf = thread < 2 ? (thread ? buf_U : buf_L) : buf_;
+
+    // actual loop begins
+    for (size_type i(start_idx); i < poe_idx; ++i) {
+      // L_E part
+      const size_type sz_thres_L =
+          std::ceil(alpha_L * (ref_indptr_L[i + 1] - ref_indptr_L[i]));
+      if (sz_thres_L >= L_E.nnz_in_row(i))
+        gaps_L[i] = 0;
+      else {
+        gaps_L[i] = L_E.nnz_in_row(i) - sz_thres_L;
+        // fetch values to buffer
+        const size_type first = L_E.row_start()[i],
+                        last  = L_E.row_start()[i + 1];
+        for (size_type j(first); j < last; ++j)
+          buf[L_E.col_ind()[j]] = L_E.vals()[j];
+        // quickselect
+        std::nth_element(L_E.col_ind_begin(i),
+                         L_E.col_ind().begin() + first + sz_thres_L - 1,
+                         L_E.col_ind_end(i),
+                         [&](const index_type i, const index_type j) {
+                           return std::abs(buf[i]) > std::abs(buf[j]);
+                         });
+        // fetch back
+        for (size_type j(first); j < first + sz_thres_L; ++j)
+          L_E.vals()[j] = buf[L_E.col_ind()[j]];
+      }
+
+      // U_F part
+      const size_type sz_thres_U =
+          std::ceil(alpha_U * (ref_indptr_U[i + 1] - ref_indptr_U[i]));
+      if (sz_thres_U >= U_F.nnz_in_col(i))
+        gaps_U[i] = 0;
+      else {
+        gaps_U[i] = U_F.nnz_in_col(i) - sz_thres_U;
+        // fetch values to buffer
+        const size_type first = U_F.col_start()[i],
+                        last  = U_F.col_start()[i + 1];
+        for (size_type j(first); j < last; ++j)
+          buf[U_F.row_ind()[j]] = U_F.vals()[j];
+        // quickselect
+        std::nth_element(U_F.row_ind_begin(i),
+                         U_F.row_ind().begin() + first + sz_thres_U - 1,
+                         U_F.row_ind_end(i),
+                         [&](const index_type i, const index_type j) {
+                           return std::abs(buf[i]) > std::abs(buf[j]);
+                         });
+        // fetch back
+        for (size_type j(first); j < first + sz_thres_L; ++j)
+          U_F.vals()[j] = buf[U_F.row_ind()[j]];
+      }
+    }
+
+#pragma omp barrier
+
+    // compress
+    if (thread == 0) {
+      // L part
+      auto i_itr = L_E.col_ind().begin();
+      auto v_itr = L_E.vals().begin();
+      auto prev  = L_E.row_start()[0];
+      for (size_type i(0); i < n; ++i) {
+        const size_type first = prev, last = L_E.row_start()[i + 1];
+        auto            itr_bak = i_itr;
+        i_itr                   = std::copy(L_E.col_ind().cbegin() + first,
+                          L_E.col_ind().cbegin() + last - gaps_L[i], i_itr);
+        v_itr                   = std::copy(L_E.vals().cbegin() + first,
+                          L_E.vals().cbegin() + last - gaps_L[i], v_itr);
+        prev                    = L_E.row_start()[i + 1];
+        L_E.row_start()[i + 1]  = L_E.row_start()[i] + (i_itr - itr_bak);
+      }
+      // resize nnz arrays
+      L_E.col_ind().resize(L_E.nnz());
+      L_E.vals().resize(L_E.nnz());
+    } else if (thread == 1) {
+      // U part
+      auto i_itr = U_F.row_ind().begin();
+      auto v_itr = U_F.vals().begin();
+      auto prev  = U_F.col_start()[0];
+      for (size_type i(0); i < n; ++i) {
+        const size_type first = prev, last = U_F.col_start()[i + 1];
+        auto            itr_bak = i_itr;
+        i_itr                   = std::copy(U_F.row_ind().cbegin() + first,
+                          U_F.row_ind().cbegin() + last - gaps_U[i], i_itr);
+        v_itr                   = std::copy(U_F.vals().cbegin() + first,
+                          U_F.vals().cbegin() + last - gaps_U[i], v_itr);
+        prev                    = U_F.col_start()[i + 1];
+        U_F.col_start()[i + 1]  = U_F.col_start()[i] + (i_itr - itr_bak);
+      }
+      // resize nnz arrays
+      U_F.row_ind().resize(U_F.nnz());
+      U_F.vals().resize(U_F.nnz());
+    }
+  } while (false);  // end of parallel region
+
+#ifndef NDEBUG
+  L_E.check_validity();
+  U_F.check_validity();
+#endif
+}
+
+/// \brief compute the simple version of Schur complement in MT setting
+/// \tparam ScaleArray row/column scaling vector type, see \ref Array
+/// \tparam CrsType crs matrix used for input, see \ref CRS
+/// \tparam PermType permutation vector type, see \ref BiPermMatrix
+/// \tparam DiagArray diagonal vector type, see \ref Array
+/// \tparam SpVecType sparse vector buffer type, see \ref SparseVector
+/// \param[in] s row scaling vector
+/// \param[in] A input crs matrix
+/// \param[in] t column scaling vector
+/// \param[in] p row permutation vector
+/// \param[in] q column permutation vector
+/// \param[in] m leading block size of current level
+/// \param[in] L_E lower part after \ref Crout update
+/// \param[in] d diagonal entry that contains the leading block
+/// \param[in] U_F upper part after \ref Crout update
+/// \param[out] buf0 work space, can use directly passed in as from Crout bufs
+/// \param[in] threads number of threads used, must be at least 1, not alerted
+/// \return simple version of Schur complement
+template <class ScaleArray, class CrsType, class PermType, class DiagArray,
+          class SpVecType>
+inline CrsType compute_Schur_simple(const ScaleArray &s, const CrsType &A,
+                                    const ScaleArray &t, const PermType &p,
+                                    const PermType &                  q,
+                                    const typename CrsType::size_type m,
+                                    const CrsType &L_E, const DiagArray &d,
+                                    const CrsType &U_F, SpVecType &buf0,
+                                    const int threads) {
+  if (threads == 1)
+    return hilucsi::compute_Schur_simple(s, A, t, p, q, m, L_E, d, U_F, buf0);
+
+  hilucsi_assert(threads > 1, "thread number %d must be no smaller than 1",
+                 threads);
+
+  using size_type = typename CrsType::size_type;
+
+  const size_type n = A.nrows();
+  if (m == n) return CrsType();
+
+  const size_type N(n - m);
+  // if running in parallel is efficient?
+  if (N <= 200u || L_E.nnz() <= 10000u || U_F.nnz() <= 10000u)
+    return hilucsi::compute_Schur_simple(s, A, t, p, q, m, L_E, d, U_F, buf0);
+
+  // parallel part
+  CrsType SC;
+  SC.resize(N, N);
+  auto &row_start = SC.row_start();
+  row_start.resize(N + 1);
+  row_start.front() = 0;
+
+#pragma omp parallel num_threads(threads) default(shared)
+  do {
+    const int       thread    = get_thread();
+    const auto      part      = uniform_partition(N, threads, thread);
+    const size_type start_idx = part.first, poe_idx = part.second;
+
+    // create local sparse buffer
+    SpVecType buf_;
+    if (thread) buf_.resize(N);
+    SpVecType &buf = thread ? buf_ : buf0;
+    size_type  tag(n);
+
+    // step 1, determine the overall nnz
+    for (size_type i(start_idx); i < poe_idx; ++i, ++tag) {
+      buf.reset_counter();  // reset buffer counter
+      auto L_last = L_E.col_ind_cend(i);
+      for (auto L_itr = L_E.col_ind_cbegin(i); L_itr != L_last; ++L_itr) {
+        auto U_last = U_F.col_ind_cend(*L_itr);
+        for (auto U_itr = U_F.col_ind_cbegin(*L_itr); U_itr != U_last; ++U_itr)
+          buf.push_back(*U_itr, tag);
+      }
+      // now add the C contribution
+      const size_type pi = p[m + i];
+      // since A is permutated, we must loop through all entries in this row
+      for (auto itr = A.col_ind_cbegin(pi), last = A.col_ind_cend(pi);
+           itr != last; ++itr) {
+        const size_type inv_q = q.inv(*itr);
+        if (inv_q >= m) buf.push_back(inv_q - m, tag);
+      }
+      // assemble row_start
+      // NOTE we only get the local value here
+      row_start[i + 1] = buf.size();
+    }
+
+    // bottleneck
+
+#pragma omp barrier
+#pragma omp master
+    do {
+      for (size_type i(0); i < N; ++i) row_start[i + 1] += row_start[i];
+      if (row_start[N]) {
+        SC.reserve(row_start[N]);
+        SC.col_ind().resize(row_start[N]);
+        SC.vals().resize(row_start[N]);
+      }
+    } while (false);
+#pragma omp barrier
+    if (row_start[N] == 0) break;
+
+    // step 2, fill in the indices
+    for (size_type i(start_idx); i < poe_idx; ++i, ++tag) {
+      buf.reset_counter();  // reset buffer counter
+      auto L_last = L_E.col_ind_cend(i);
+      for (auto L_itr = L_E.col_ind_cbegin(i); L_itr != L_last; ++L_itr) {
+        // get the U iter
+        auto U_last = U_F.col_ind_cend(*L_itr);
+        for (auto U_itr = U_F.col_ind_cbegin(*L_itr); U_itr != U_last; ++U_itr)
+          buf.push_back(*U_itr, tag);
+      }
+      // now add the C contribution
+      const size_type pi = p[m + i];
+      // since A is permutated, we must loop through all entries in this row
+      for (auto itr = A.col_ind_cbegin(pi), last = A.col_ind_cend(pi);
+           itr != last; ++itr) {
+        const size_type inv_q = q.inv(*itr);
+        if (inv_q >= m) buf.push_back(inv_q - m, tag);
+      }
+      // we need the ensure that the indices are sorted, because it will be the
+      // input for next level
+      buf.sort_indices();
+      std::copy_n(buf.inds().cbegin(), buf.size(), SC.col_ind_begin(i));
+    }
+
+    // step 3, fill in the numerical values
+    auto &buf_vals = buf.vals();
+    for (size_type i(start_idx); i < poe_idx; ++i) {
+      // first, assign values to zero
+      auto sc_ind_first = SC.col_ind_cbegin(i);
+      for (auto itr = sc_ind_first, ind_last = SC.col_ind_cend(i);
+           itr != ind_last; ++itr)
+        buf_vals[*itr] = 0.0;
+
+      // second, fetch C into the buffer
+      const size_type pi        = p[m + i];
+      auto            a_val_itr = A.val_cbegin(pi);
+      const auto      s_pi      = s[pi];  // row scaling
+      for (auto itr = A.col_ind_cbegin(pi), last = A.col_ind_cend(pi);
+           itr != last; ++itr, ++a_val_itr) {
+        const size_type A_idx = *itr;
+        const size_type inv_q = q.inv(A_idx);
+        // load and scale
+        if (inv_q >= m) buf_vals[inv_q - m] = s_pi * *a_val_itr * t[A_idx];
+      }
+
+      // third, compute -L_E*D*U_F
+      auto L_last  = L_E.col_ind_cend(i);
+      auto L_v_itr = L_E.val_cbegin(i);
+      for (auto L_itr = L_E.col_ind_cbegin(i); L_itr != L_last;
+           ++L_itr, ++L_v_itr) {
+        const auto idx = *L_itr;
+        const auto ld  = *L_v_itr * d[idx];
+        // get the U iter
+        auto U_last  = U_F.col_ind_cend(idx);
+        auto U_v_itr = U_F.val_cbegin(idx);
+        for (auto U_itr = U_F.col_ind_cbegin(idx); U_itr != U_last;
+             ++U_itr, ++U_v_itr)
+          buf_vals[*U_itr] -= ld * *U_v_itr;
+      }
+
+      // finally, assign values directly to SC
+      auto sc_val_itr = SC.val_begin(i);
+      for (auto itr = sc_ind_first, ind_last = SC.col_ind_cend(i);
+           itr != ind_last; ++itr, ++sc_val_itr)
+        *sc_val_itr = buf_vals[*itr];
+    }
+  } while (false);  // end of parallel region
+
+  return SC;
+}
+
+/*!
+ * @}
+ */
+
+}  // namespace mt
 }  // namespace hilucsi
 
 #endif  // HILUCSI_ALG_SCHUR_HPP
