@@ -476,7 +476,7 @@ inline void drop_L_E_and_U_F(const typename CrsType::iarray_type &ref_indptr_L,
                            return std::abs(buf[ii]) > std::abs(buf[jj]);
                          });
         // fetch back
-        for (size_type j(first); j < first + sz_thres_L; ++j)
+        for (size_type j(first); j < first + sz_thres_U; ++j)
           U_F.vals()[j] = buf[U_F.row_ind()[j]];
       }
     }
