@@ -488,7 +488,8 @@ inline CsType level_factorize(const CsType &                   A,
                               const Options &                  opts,
                               const CroutStreamer &Crout_info, PrecsType &precs,
                               IntArray &row_sizes, IntArray &col_sizes,
-                              typename CsType::size_type *stats) {
+                              typename CsType::size_type *stats,
+                              const int                   schur_threads = 1) {
   typedef CsType                      input_type;
   typedef typename CsType::other_type other_type;
   using cs_trait = internal::CompressedTypeTrait<input_type, other_type>;
@@ -990,17 +991,26 @@ inline CsType level_factorize(const CsType &                   A,
   crs_type S;
 
   const auto L_nnz = L.nnz(), U_nnz = U.nnz();
-  size_type  AmB_nnz(0);
   ccs_type   L_B, U_B;
   do {
+    DefaultTimer timer2;
+    timer2.start();
     auto L_E = L.template split_crs<true>(m, L_start);
     L_B      = L.template split<false>(m, L_start);
     L.destroy();
+    timer2.finish();
+    if (hilucsi_verbose(INFO, opts))
+      hilucsi_info("splitting LB and freeing L took %gs.", timer2.time());
     crs_type U_F;
     do {
+      timer2.start();
       auto U_F2 = U.template split_ccs<true>(m, U_start);
       U_B       = U.template split_ccs<false>(m, U_start);
       U.destroy();
+      timer2.finish();
+      if (hilucsi_verbose(INFO, opts))
+        hilucsi_info("splitting UB and freeing U took %gs.", timer2.time());
+      timer2.start();
       const size_type nnz1 = L_E.nnz(), nnz2 = U_F2.nnz();
 #ifndef HILUCSI_NO_DROP_LE_UF
       const double a_L = opts.alpha_L, a_U = opts.alpha_U;
@@ -1015,24 +1025,40 @@ inline CsType level_factorize(const CsType &                   A,
           P[i - m + 1] = P[i - m] + row_sizes[p[i]];
           Q[i - m + 1] = Q[i - m] + col_sizes[q[i]];
         }
+#  ifndef _OPENMP
         drop_L_E(P, a_L, L_E, l.vals(), l.inds());
         drop_U_F(Q, a_U, U_F2, ut.vals(), ut.inds());
+#  else
+        mt::drop_L_E_and_U_F(P, a_L, Q, a_U, L_E, U_F2, l.vals(), l.inds(),
+                             ut.vals(), ut.inds(), schur_threads);
+#  endif
       }
 #endif  // HILUCSI_NO_DROP_LE_UF
+      timer2.finish();
       U_F = crs_type(U_F2);
       if (hilucsi_verbose(INFO, opts))
-        hilucsi_info("nnz(L_E)=%zd/%zd, nnz(U_F)=%zd/%zd...", nnz1, L_E.nnz(),
-                     nnz2, U_F.nnz());
+        hilucsi_info("nnz(L_E)=%zd/%zd, nnz(U_F)=%zd/%zd, time: %gs...", nnz1,
+                     L_E.nnz(), nnz2, U_F.nnz(), timer2.time());
     } while (false);  // U_F2 got freed
 
-    // compute the nnz(A)-nnz(B) for first level
-
-    for (size_type i(m); i < n; ++i)
-      AmB_nnz += row_sizes[p[i]] + col_sizes[q[i]];
-
-    // compute S version of Schur complement
+    timer2.start();
+// compute S version of Schur complement
+#ifndef _OPENMP
     S = compute_Schur_simple(s, A_crs, t, p, q, m, L_E, d, U_F, l);
+#else
+    if (hilucsi_verbose(INFO, opts))
+      hilucsi_info("using %d for Schur computation...", schur_threads);
+    S = mt::compute_Schur_simple(s, A_crs, t, p, q, m, L_E, d, U_F, l,
+                                 schur_threads);
+#endif
+    timer2.finish();
+    if (hilucsi_verbose(INFO, opts))
+      hilucsi_info("pure Schur computation time: %gs...", timer2.time());
   } while (false);
+
+  // compute the nnz(A)-nnz(B) from the first level
+  size_type AmB_nnz(0);
+  for (size_type i(m); i < n; ++i) AmB_nnz += row_sizes[p[i]] + col_sizes[q[i]];
 
   // L and U got freed, only L_B and U_B exist
 
