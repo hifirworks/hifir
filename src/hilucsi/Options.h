@@ -72,6 +72,7 @@ struct hilucsi_Options {
   int    pre_scale; /*!< prescale (default 0 (off)) */
   int    symm_pre_lvls;
   /*!< levels to be applied with symm preprocessing (default is 1) */
+  int threads; /*!< user specified threads (default 0) */
 };
 
 /*!
@@ -101,7 +102,8 @@ static hilucsi_Options hilucsi_get_default_options(void) {
                            .saddle        = 1,
                            .check         = 1,
                            .pre_scale     = 0,
-                           .symm_pre_lvls = 1};
+                           .symm_pre_lvls = 1,
+                           .threads       = 0};
 }
 
 /*!
@@ -229,7 +231,7 @@ inline InStream &operator>>(InStream &in_str, Options &opt) {
   in_str >> opt.tau_L >> opt.tau_U >> opt.tau_d >> opt.tau_kappa >>
       opt.alpha_L >> opt.alpha_U >> opt.rho >> opt.c_d >> opt.c_h >> opt.N >>
       opt.verbose >> opt.rf_par >> opt.reorder >> opt.saddle >> opt.check >>
-      opt.pre_scale >> opt.symm_pre_lvls;
+      opt.pre_scale >> opt.symm_pre_lvls >> opt.threads;
   return in_str;
 }
 
@@ -271,12 +273,13 @@ inline std::string opt_repr(const Options &opt) {
              "check",
              [](const Options &opt_) { return opt_.check ? "yes" : "no"; }) +
          pack_int("pre_scale", opt.pre_scale) +
-         pack_int("symm_pre_lvls", opt.symm_pre_lvls);
+         pack_int("symm_pre_lvls", opt.symm_pre_lvls) +
+         pack_int("threads", opt.threads);
 }
 
 #  ifndef DOXYGEN_SHOULD_SKIP_THIS
 namespace internal {
-#    define _HILUCSI_TOTAL_OPTIONS 17
+#    define _HILUCSI_TOTAL_OPTIONS 18
 /*
  * build a byte map, i.e. the value is the leading byte position of the attrs
  * in Options
@@ -298,20 +301,34 @@ const static std::size_t option_attr_pos[_HILUCSI_TOTAL_OPTIONS] = {
     option_attr_pos[12] + sizeof(int),
     option_attr_pos[13] + sizeof(int),
     option_attr_pos[14] + sizeof(int),
-    option_attr_pos[15] + sizeof(int)};
+    option_attr_pos[15] + sizeof(int),
+    option_attr_pos[16] + sizeof(int)};
 
 /* data type tags, true for double, false for int */
 const static bool option_dtypes[_HILUCSI_TOTAL_OPTIONS] = {
-    true,  true,  true,  true,  false, false, true,  true, true,
-    false, false, false, false, false, false, false, false};
+    true,  true,  true,  true,  false, false, true,  true,  true,
+    false, false, false, false, false, false, false, false, false};
 
 /* using unordered map to store the string to index map */
 const static std::unordered_map<std::string, int> option_tag2pos = {
-    {"tau_L", 0},         {"tau_U", 1},   {"tau_d", 2},    {"tau_kappa", 3},
-    {"alpha_L", 4},       {"alpha_U", 5}, {"rho", 6},      {"c_d", 7},
-    {"c_h", 8},           {"N", 9},       {"verbose", 10}, {"rf_par", 11},
-    {"reorder", 12},      {"saddle", 13}, {"check", 14},   {"pre_scale", 15},
-    {"symm_pre_lvls", 16}};
+    {"tau_L", 0},
+    {"tau_U", 1},
+    {"tau_d", 2},
+    {"tau_kappa", 3},
+    {"alpha_L", 4},
+    {"alpha_U", 5},
+    {"rho", 6},
+    {"c_d", 7},
+    {"c_h", 8},
+    {"N", 9},
+    {"verbose", 10},
+    {"rf_par", 11},
+    {"reorder", 12},
+    {"saddle", 13},
+    {"check", 14},
+    {"pre_scale", 15},
+    {"symm_pre_lvls", 16},
+    {"threads", 17}};
 
 } /* namespace internal */
 #  endif /* DOXYGEN_SHOULD_SKIP_THIS */
