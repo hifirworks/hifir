@@ -63,8 +63,8 @@ inline void drop_offsets_kernel(const IntArray &ref_indptr, const double alpha,
     for (size_type j(first); j < last; ++j) buf[indices[j]] = vals[j];
     std::nth_element(
         indices.begin() + first, indices.begin() + first + sz_thres - 1,
-        indices.begin() + last, [&](const index_type i, const index_type j) {
-          return std::abs(buf[i]) > std::abs(buf[j]);
+        indices.begin() + last, [&](const index_type ii, const index_type jj) {
+          return std::abs(buf[ii]) > std::abs(buf[jj]);
         });
     // sort
     // std::sort(indices.begin() + first, indices.begin() + first + sz_thres);
@@ -448,8 +448,8 @@ inline void drop_L_E_and_U_F(const typename CrsType::iarray_type &ref_indptr_L,
         std::nth_element(L_E.col_ind_begin(i),
                          L_E.col_ind().begin() + first + sz_thres_L - 1,
                          L_E.col_ind_end(i),
-                         [&](const index_type i, const index_type j) {
-                           return std::abs(buf[i]) > std::abs(buf[j]);
+                         [&](const index_type ii, const index_type jj) {
+                           return std::abs(buf[ii]) > std::abs(buf[jj]);
                          });
         // fetch back
         for (size_type j(first); j < first + sz_thres_L; ++j)
@@ -472,8 +472,8 @@ inline void drop_L_E_and_U_F(const typename CrsType::iarray_type &ref_indptr_L,
         std::nth_element(U_F.row_ind_begin(i),
                          U_F.row_ind().begin() + first + sz_thres_U - 1,
                          U_F.row_ind_end(i),
-                         [&](const index_type i, const index_type j) {
-                           return std::abs(buf[i]) > std::abs(buf[j]);
+                         [&](const index_type ii, const index_type jj) {
+                           return std::abs(buf[ii]) > std::abs(buf[jj]);
                          });
         // fetch back
         for (size_type j(first); j < first + sz_thres_L; ++j)
