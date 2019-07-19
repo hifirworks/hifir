@@ -19,6 +19,7 @@
 #include "hilucsi/alg/Prec.hpp"
 #include "hilucsi/alg/factor.hpp"
 #include "hilucsi/alg/prec_solve.hpp"
+#include "hilucsi/utils/mt.hpp"
 
 #include "hilucsi/version.h"
 
@@ -228,15 +229,18 @@ class HILUCSI {
       // also clear the previous buffer
       _prec_work.resize(0);
     }
+    const int schur_threads = mt::get_nthreads(opts.threads);
     // initialize statistics
     for (size_type i(0); i < sizeof(_stats) / sizeof(size_type); ++i)
       _stats[i] = 0;
     // create size references for dropping
     iarray_type row_sizes, col_sizes;
     if (hilucsi_verbose(FAC, opts))
-      _factorize_kernel(A, m0, opts, row_sizes, col_sizes, Crout_cout);
+      _factorize_kernel(A, m0, opts, row_sizes, col_sizes, Crout_cout,
+                        schur_threads);
     else
-      _factorize_kernel(A, m0, opts, row_sizes, col_sizes, Crout_cout_dummy);
+      _factorize_kernel(A, m0, opts, row_sizes, col_sizes, Crout_cout_dummy,
+                        schur_threads);
     t.finish();
     if (hilucsi_verbose(INFO, opts)) {
       const size_type Nnz = nnz();
@@ -266,7 +270,8 @@ class HILUCSI {
   inline void _factorize_kernel(const CsType &A, const size_type m0,
                                 const Options &opts, iarray_type &row_sizes,
                                 iarray_type &        col_sizes,
-                                const CroutStreamer &Crout_info) {
+                                const CroutStreamer &Crout_info,
+                                const int            schur_threads = 1) {
     hilucsi_error_if(A.nrows() != A.ncols(),
                      "Currently only squared systems are supported");
     size_type       m(m0);  // init m
@@ -284,14 +289,17 @@ class HILUCSI {
     if (!sym) m = A.nrows();  // IMPORTANT! If asymmetric, set m = n
 
     // instantiate IsSymm here
-    CsType S = sym ? level_factorize<true>(A, m, N, opts, Crout_info, _precs,
-                                           row_sizes, col_sizes, _stats)
-                   : level_factorize<false>(A, m, N, opts, Crout_info, _precs,
-                                            row_sizes, col_sizes, _stats);
+    CsType S =
+        sym ? level_factorize<true>(A, m, N, opts, Crout_info, _precs,
+                                    row_sizes, col_sizes, _stats, schur_threads)
+            : level_factorize<false>(A, m, N, opts, Crout_info, _precs,
+                                     row_sizes, col_sizes, _stats,
+                                     schur_threads);
 
     // check last level
     if (!_precs.back().is_last_level())
-      this->_factorize_kernel(S, 0u, opts, row_sizes, col_sizes, Crout_info);
+      this->_factorize_kernel(S, 0u, opts, row_sizes, col_sizes, Crout_info,
+                              schur_threads);
   }
 
  protected:
