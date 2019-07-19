@@ -50,6 +50,7 @@ inline int get_nthreads(const int threads = std::numeric_limits<int>::max()) {
       else
         _nthreads = omp_get_max_threads();
     }
+    if (_nthreads < 1) _nthreads = 1;
   } else
     _nthreads = threads;
   return _nthreads;
