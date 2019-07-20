@@ -148,8 +148,7 @@ int main(int argc, char *argv[]) {
   solver.restart = restart;
   int                 flag;
   solver_t::size_type iters;
-  std::tie(flag, iters) =
-      solver.solve_precond(A, b, x, false, false, opts.verbose);
+  std::tie(flag, iters) = solver.solve_precond(A, b, x, false, opts.verbose);
   timer.finish();
   const double rs = iters ? solver.resids().back() : -1.0;
   hilucsi_info(
