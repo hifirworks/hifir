@@ -141,7 +141,7 @@ class QMRCGSTAB {
     _d2.resize(n);
     _x2.resize(n);
     _sh.resize(n);
-    _resids.reserve(maxit);
+    _resids.reserve(maxit + 1);
     _resids.resize(1);
   }
 
@@ -179,11 +179,6 @@ class QMRCGSTAB {
                                    const bool zero_start, array_type &x0,
                                    const StreamerCout &Cout,
                                    const StreamerCerr &Cerr) const {
-    // constexpr static int _D =
-    //     std::numeric_limits<scalar_type>::digits10 / 2 + 1;
-    // const static scalar_type _stag_eps =
-    //     std::pow(scalar_type(10), -(scalar_type)_D);
-
     const size_type n = b.size();
     // record  time after preconditioner
     _ensure_data_capacities(n);
@@ -203,17 +198,17 @@ class QMRCGSTAB {
     const auto &r0  = _r0;
     auto        tau = norm2(r0);
     _resids[0]      = tau / normb;  // starting with size 1
-    Cout("  At iteration %d, relative residual is %g.", 1, _resids[0]);
-    if (_resids[0] <= rtol) return std::make_pair(flag, size_type(1));
+    if (_resids[0] <= rtol) return std::make_pair(flag, size_type(0));
     std::copy(r0.cbegin(), r0.cend(), _p.begin());
     const auto &M = *_M;
     M.solve(_p, _ph);
     A.mv(_ph, _v);
     std::copy(r0.cbegin(), r0.cend(), _r.begin());
-    std::fill_n(_d.begin(), n, value_type(0));
+    // comment out, implicitly handled in the loop
+    // std::fill_n(_d.begin(), n, value_type(0));
     value_type eta(0), theta(0), rho1 = tau * tau;
 
-    size_type iter(2);
+    size_type iter(1);
 
     // main loop
     for (; iter <= maxit; ++iter) {
@@ -236,7 +231,7 @@ class QMRCGSTAB {
       auto       c      = 1. / std::sqrt(1.0 + theta2 * theta2);
       const auto tau2   = tau * theta2 * c;
       const auto eta2   = c * c * alpha;
-      if (iter == 2u)
+      if (iter == 1u)
         std::copy(_ph.cbegin(), _ph.cend(), _d2.begin());
       else {
         const auto coeff = theta * theta * eta / alpha;
@@ -283,11 +278,6 @@ class QMRCGSTAB {
         flag = BREAK_DOWN;
         break;
       }
-      // if (_resids.back() >= resid_prev * (1.0 - _stag_eps)) {
-      //   Cerr("Stagnated detected at iteration %zd.", iter);
-      //   flag = STAGNATED;
-      //   break;
-      // }
       rho2 = inner(_r, r0);
       if (rho2 == 0) {
         Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
