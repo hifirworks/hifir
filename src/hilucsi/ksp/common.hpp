@@ -32,6 +32,7 @@ enum {
   SUCCESS       = 0,   ///< successful converged
   DIVERGED      = 1,   ///< iteration diverged
   STAGNATED     = 2,   ///< iteration stagnated
+  BREAK_DOWN    = 3,   ///< solver break down
 };
 
 /// \brief get flag representation
@@ -49,27 +50,11 @@ inline std::string flag_repr(const std::string &solver, const int flag) {
       return solver + "_" + "DIVERGED";
     case STAGNATED:
       return solver + "_" + "STAGNATED";
+    case BREAK_DOWN:
+      return solver + "_" + "BREAK_DOWN";
     default:
       return solver + "_" + "UNKNOWN";
   }
-}
-
-/// \brief conjugate helper function
-template <class T>
-inline T conj(const T &v) {
-  return std::conj(v);
-}
-
-/// \brief instantiate for \a double
-template <>
-inline double conj(const double &v) {
-  return v;
-}
-
-/// \brief instantiate for \a flag
-template <>
-inline float conj(const float &v) {
-  return v;
 }
 
 /// \class DefaultSettings
