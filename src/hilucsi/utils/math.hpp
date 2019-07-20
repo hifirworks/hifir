@@ -86,9 +86,10 @@ norm2(const ArrayType &v) {
   const auto  n = v.size();
   if (!n) return scalar_type(0);
   // get the max mag
-  const scalar_type max_mag = *std::max_element(
-      v.cbegin(), v.cend(),
-      [](const value_type &l, const value_type &r) { return abs(l) < abs(r); });
+  const scalar_type max_mag = abs(*std::max_element(
+      v.cbegin(), v.cend(), [](const value_type &l, const value_type &r) {
+        return abs(l) < abs(r);
+      }));
 
   if (max_mag == Const<scalar_type>::ZERO)
     for (auto i = 0ul; i < n; ++i) tmp += abs(v[i]);
