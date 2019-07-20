@@ -444,8 +444,8 @@ class FGMRES {
     _Z.resize(_Q.size());
     _J.resize(2 * restart);
     _v.resize(n);
-    _resids.reserve(maxit);
-    _resids.resize(0);
+    _resids.reserve(maxit + 1);
+    _resids.resize(1);
     _w.resize(std::max(n, size_type(restart)));
   }
 
@@ -506,6 +506,10 @@ class FGMRES {
     size_type       iter(0);
     const size_type n     = b.size();
     const auto      beta0 = norm2(b);
+    if (beta0 == 0) {
+      std::fill_n(x0.begin(), n, value_type(0));
+      return std::make_pair((int)SUCCESS, size_type(0));
+    }
     // record  time after preconditioner
     _ensure_data_capacities(n);
     const size_type max_outer_iters =
@@ -527,6 +531,7 @@ class FGMRES {
       const auto beta     = norm2(_v);
       _y[0]               = beta;
       const auto inv_beta = 1. / beta;
+      if (!it_outer) _resids[0] = beta / beta0;
       for (size_type i = 0u; i < n; ++i) _Q[i] = _v[i] * inv_beta;
       size_type       j(0);
       auto            R_itr     = _R.begin();
