@@ -11,15 +11,14 @@
 #ifndef _HILUCSI_KSP_FGMRES_HPP
 #define _HILUCSI_KSP_FGMRES_HPP
 
-#include <algorithm>
 #include <cmath>
 #include <limits>
 #include <memory>
-#include <numeric>
 #include <utility>
 
 #include "hilucsi/ksp/common.hpp"
 #include "hilucsi/utils/log.hpp"
+#include "hilucsi/utils/math.hpp"
 
 namespace hilucsi {
 namespace ksp {
@@ -319,9 +318,8 @@ class FGMRES {
     const static hilucsi::internal::StderrStruct  Cerr;
     const static hilucsi::internal::DummyStreamer Dummy_streamer;
 
-    if (_validate(A, b)) return std::make_pair(INVALID_ARGS, size_type(0));
+    if (_validate(A, b, x)) return std::make_pair(INVALID_ARGS, size_type(0));
     if (verbose) _show("tradition", with_init_guess, trunc);
-    x.resize(b.size());
     if (!with_init_guess) std::fill(x.begin(), x.end(), value_type(0));
     const internal::DummyJacobi<M_type> M(*_M);
     if (verbose) hilucsi_info("Calling traditional GMRES kernel...");
@@ -348,10 +346,9 @@ class FGMRES {
     const static hilucsi::internal::StderrStruct  Cerr;
     const static hilucsi::internal::DummyStreamer Dummy_streamer;
 
-    if (_validate(A, b)) return std::make_pair(INVALID_ARGS, size_type(0));
+    if (_validate(A, b, x)) return std::make_pair(INVALID_ARGS, size_type(0));
     if (verbose) _show("Jacobi", with_init_guess, trunc);
     const internal::Jacobi<M_type> M(*_M);
-    x.resize(b.size());
     if (!with_init_guess) std::fill(x.begin(), x.end(), value_type(0));
     return verbose ? _solve(A, M, b, max_inners, trunc, x, Cout, Cerr)
                    : _solve(A, M, b, max_inners, trunc, x, Dummy_streamer,
@@ -376,13 +373,12 @@ class FGMRES {
     const static hilucsi::internal::StderrStruct  Cerr;
     const static hilucsi::internal::DummyStreamer Dummy_streamer;
 
-    if (_validate(A, b)) return std::make_pair(INVALID_ARGS, size_type(0));
+    if (_validate(A, b, x)) return std::make_pair(INVALID_ARGS, size_type(0));
     if (verbose) {
       _show("Chebyshev", with_init_guess, trunc);
       hilucsi_warning("Chebyshev Jacobi with GMRES is experiemental...");
     }
     const internal::ChebyshevJacobi<M_type> M(*_M, lamb1, lamb2);
-    x.resize(b.size());
     if (!with_init_guess) std::fill(x.begin(), x.end(), value_type(0));
     return verbose ? _solve(A, M, b, max_inners, trunc, x, Cout, Cerr)
                    : _solve(A, M, b, max_inners, trunc, x, Dummy_streamer,
@@ -448,18 +444,19 @@ class FGMRES {
     _Z.resize(_Q.size());
     _J.resize(2 * restart);
     _v.resize(n);
-    _resids.reserve(maxit + 1);
-    _resids.resize(1);
-    _resids.front() = 1;
+    _resids.reserve(maxit);
+    _resids.resize(0);
     _w.resize(n);
   }
 
   /// \brief validation checking
   template <class Matrix>
-  inline bool _validate(const Matrix &A, const array_type &b) const {
+  inline bool _validate(const Matrix &A, const array_type &b,
+                        const array_type &x) const {
     if (!_M || _M->empty()) return true;
     if (_M->nrows() != A.nrows()) return true;
     if (b.size() != A.nrows()) return true;
+    if (b.size() != x.size()) return true;
     if (rtol <= 0.0) return true;
     if (restart <= 0) return true;
     if (maxit == 0u) return true;
@@ -511,8 +508,7 @@ class FGMRES {
 
     size_type       iter(0);
     const size_type n     = b.size();
-    const auto      beta0 = std::sqrt(
-        std::inner_product(b.cbegin(), b.cend(), b.cbegin(), value_type()));
+    const auto      beta0 = norm2(b);
     // record  time after preconditioner
     _ensure_data_capacities(n);
     const size_type max_outer_iters =
@@ -527,8 +523,7 @@ class FGMRES {
       // initial residual
       A.mv(x, _v);
       for (size_type i = 0u; i < n; ++i) _v[i] = b[i] - _v[i];
-      const auto beta = std::sqrt(std::inner_product(
-          _v.cbegin(), _v.cend(), _v.cbegin(), value_type(0)));
+      const auto beta = norm2(_v);
       _y[0]           = beta;
       if (!trunc || it_outer == 0u) {
         const auto inv_beta = 1. / beta;
@@ -549,14 +544,12 @@ class FGMRES {
         std::copy(_w.cbegin(), _w.cend(), _Z.begin() + jn);
         A.mv(_w, _v);
         for (size_type k = 0u; k <= j; ++k) {
-          auto itr = _Q.cbegin() + k * n;
-          _w[k] =
-              std::inner_product(_v.cbegin(), _v.cend(), itr, value_type(0));
+          auto itr       = _Q.cbegin() + k * n;
+          _w[k]          = inner(_v, itr);
           const auto tmp = _w[k];
           for (size_type i = 0u; i < n; ++i) _v[i] -= tmp * itr[i];
         }
-        const auto v_norm2 = std::inner_product(_v.cbegin(), _v.cend(),
-                                                _v.cbegin(), value_type(0));
+        const auto v_norm2 = norm2_sq(_v);
         const auto v_norm  = std::sqrt(v_norm2);
         if (j + 1 < (size_type)restart) {
           auto       itr      = _Q.begin() + jn + n;
@@ -577,8 +570,13 @@ class FGMRES {
         _w[j]                 = rho;
         R_itr                 = std::copy_n(_w.cbegin(), j + 1, R_itr);
         const auto resid_prev = resid;
-        resid                 = std::abs(_y[j + 1]) / beta0;
+        resid                 = abs(_y[j + 1]) / beta0;
         _resids.push_back(resid);
+        if (std::isnan(resid) || std::isinf(resid)) {
+          Cerr("Solver break-down detected at iteration %zd.", iter);
+          flag = BREAK_DOWN;
+          break;
+        }
         if (resid >= resid_prev * (1 - _stag_eps)) {
           Cerr("Stagnated detected at iteration %zd.", iter);
           flag = STAGNATED;
