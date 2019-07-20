@@ -86,10 +86,13 @@ class JacobiBase {
     for (; iters < N; ++iters) {
       // copy rhs to x
       std::copy(x.cbegin(), x.cend(), _xk.begin());
-      // compute A*xk=x
-      A.mv(_xk, x);
-      // compute residual x=b-x
-      for (size_type i(0); i < n; ++i) x[i] = b[i] - x[i];
+      if (iters) {
+        // compute A*xk=x
+        A.mv(_xk, x);
+        // compute residual x=b-x
+        for (size_type i(0); i < n; ++i) x[i] = b[i] - x[i];
+      } else
+        std::copy_n(b.cbegin(), n, x.begin());
       // compute inv(M)*x=r
       _M.solve(x, _r);
       // call child's post process to update to current solution
@@ -307,25 +310,24 @@ class FGMRES {
   /// \param[in,out] x solution
   /// \param[in] with_init_guess if \a false (default), then assign zero to
   ///             \a x as starting values
-  /// \param[in] trunc using truncating style instead hard restart
   /// \param[in] verbose if \a true (default), enable verbose printing
   template <class Matrix>
   inline std::pair<int, size_type> solve_precond(
       const Matrix &A, const array_type &b, array_type &x,
-      const bool with_init_guess = false, const bool trunc = false,
-      const bool verbose = true) const {
-    const static hilucsi::internal::StdoutStruct  Cout;
-    const static hilucsi::internal::StderrStruct  Cerr;
-    const static hilucsi::internal::DummyStreamer Dummy_streamer;
+      const bool with_init_guess = false, const bool verbose = true) const {
+    const static hilucsi::internal::StdoutStruct       Cout;
+    const static hilucsi::internal::StderrStruct       Cerr;
+    const static hilucsi::internal::DummyStreamer      Dummy_streamer;
+    const static hilucsi::internal::DummyErrorStreamer Dummy_cerr;
 
     if (_validate(A, b, x)) return std::make_pair(INVALID_ARGS, size_type(0));
-    if (verbose) _show("tradition", with_init_guess, trunc);
+    if (verbose) _show("tradition", with_init_guess);
     if (!with_init_guess) std::fill(x.begin(), x.end(), value_type(0));
     const internal::DummyJacobi<M_type> M(*_M);
     if (verbose) hilucsi_info("Calling traditional GMRES kernel...");
-    return verbose
-               ? _solve(A, M, b, 1u, trunc, x, Cout, Cerr)
-               : _solve(A, M, b, 1u, trunc, x, Dummy_streamer, Dummy_streamer);
+    return verbose ? _solve(A, M, b, 1u, !with_init_guess, x, Cout, Cerr)
+                   : _solve(A, M, b, 1u, !with_init_guess, x, Dummy_streamer,
+                            Dummy_cerr);
   }
 
   /// \brief solve with \ref _M as Jacobi operator
@@ -335,24 +337,24 @@ class FGMRES {
   /// \param[in,out] x solution
   /// \param[in] with_init_guess if \a false (default), then assign zero to
   ///             \a x as starting values
-  /// \param[in] trunc using truncating style instead hard restart
   /// \param[in] verbose if \a true (default), enable verbose printing
   template <class Matrix>
   inline std::pair<int, size_type> solve_jacobi(
       const Matrix &A, const array_type &b, array_type &x,
-      const bool with_init_guess = false, const bool trunc = false,
-      const bool verbose = true) const {
-    const static hilucsi::internal::StdoutStruct  Cout;
-    const static hilucsi::internal::StderrStruct  Cerr;
-    const static hilucsi::internal::DummyStreamer Dummy_streamer;
+      const bool with_init_guess = false, const bool verbose = true) const {
+    const static hilucsi::internal::StdoutStruct       Cout;
+    const static hilucsi::internal::StderrStruct       Cerr;
+    const static hilucsi::internal::DummyStreamer      Dummy_streamer;
+    const static hilucsi::internal::DummyErrorStreamer Dummy_cerr;
 
     if (_validate(A, b, x)) return std::make_pair(INVALID_ARGS, size_type(0));
-    if (verbose) _show("Jacobi", with_init_guess, trunc);
+    if (verbose) _show("Jacobi", with_init_guess);
     const internal::Jacobi<M_type> M(*_M);
     if (!with_init_guess) std::fill(x.begin(), x.end(), value_type(0));
-    return verbose ? _solve(A, M, b, max_inners, trunc, x, Cout, Cerr)
-                   : _solve(A, M, b, max_inners, trunc, x, Dummy_streamer,
-                            Dummy_streamer);
+    return verbose
+               ? _solve(A, M, b, max_inners, !with_init_guess, x, Cout, Cerr)
+               : _solve(A, M, b, max_inners, !with_init_guess, x,
+                        Dummy_streamer, Dummy_cerr);
   }
 
   /// \brief solve with \ref _M as Jacobi operator plus Chebyshev acceleration
@@ -362,27 +364,27 @@ class FGMRES {
   /// \param[in,out] x solution
   /// \param[in] with_init_guess if \a false (default), then assign zero to
   ///             \a x as starting values
-  /// \param[in] trunc using truncating style instead hard restart
   /// \param[in] verbose if \a true (default), enable verbose printing
   template <class Matrix>
   inline std::pair<int, size_type> solve_chebyshev(
       const Matrix &A, const array_type &b, array_type &x,
-      const bool with_init_guess = false, const bool trunc = false,
-      const bool verbose = true) const {
-    const static hilucsi::internal::StdoutStruct  Cout;
-    const static hilucsi::internal::StderrStruct  Cerr;
-    const static hilucsi::internal::DummyStreamer Dummy_streamer;
+      const bool with_init_guess = false, const bool verbose = true) const {
+    const static hilucsi::internal::StdoutStruct       Cout;
+    const static hilucsi::internal::StderrStruct       Cerr;
+    const static hilucsi::internal::DummyStreamer      Dummy_streamer;
+    const static hilucsi::internal::DummyErrorStreamer Dummy_cerr;
 
     if (_validate(A, b, x)) return std::make_pair(INVALID_ARGS, size_type(0));
     if (verbose) {
-      _show("Chebyshev", with_init_guess, trunc);
+      _show("Chebyshev", with_init_guess);
       hilucsi_warning("Chebyshev Jacobi with GMRES is experiemental...");
     }
     const internal::ChebyshevJacobi<M_type> M(*_M, lamb1, lamb2);
     if (!with_init_guess) std::fill(x.begin(), x.end(), value_type(0));
-    return verbose ? _solve(A, M, b, max_inners, trunc, x, Cout, Cerr)
-                   : _solve(A, M, b, max_inners, trunc, x, Dummy_streamer,
-                            Dummy_streamer);
+    return verbose
+               ? _solve(A, M, b, max_inners, !with_init_guess, x, Cout, Cerr)
+               : _solve(A, M, b, max_inners, !with_init_guess, x,
+                        Dummy_streamer, Dummy_cerr);
   }
 
   /// \brief solve for solution
@@ -393,22 +395,20 @@ class FGMRES {
   /// \param[in] kernel default is TRADITION, i.e. \ref solve_precond
   /// \param[in] with_init_guess if \a false (default), then assign zero to
   ///             \a x as starting values
-  /// \param[in] trunc using truncating style instead hard restart
   /// \param[in] verbose if \a true (default), enable verbose printing
   template <class Matrix>
   inline std::pair<int, size_type> solve(const Matrix &A, const array_type &b,
                                          array_type &x,
                                          const int   kernel = TRADITION,
                                          const bool  with_init_guess = false,
-                                         const bool  trunc           = false,
                                          const bool  verbose = true) const {
     switch (kernel) {
       case TRADITION:
-        return solve_precond(A, b, x, with_init_guess, trunc, verbose);
+        return solve_precond(A, b, x, with_init_guess, verbose);
       case JACOBI:
-        return solve_jacobi(A, b, x, with_init_guess, trunc, verbose);
+        return solve_jacobi(A, b, x, with_init_guess, verbose);
       case CHEBYSHEV_JACOBI:
-        return solve_chebyshev(A, b, x, with_init_guess, trunc, verbose);
+        return solve_chebyshev(A, b, x, with_init_guess, verbose);
       default:
         hilucsi_warning("Unknown choice of FGMRES kernel %d", kernel);
         return std::make_pair(-99, size_type(0));
@@ -446,7 +446,7 @@ class FGMRES {
     _v.resize(n);
     _resids.reserve(maxit);
     _resids.resize(0);
-    _w.resize(n);
+    _w.resize(std::max(n, size_type(restart)));
   }
 
   /// \brief validation checking
@@ -467,14 +467,11 @@ class FGMRES {
   /// \brief show information
   /// \param[in] kernel kernel name
   /// \param[in] with_init_guess solve with initial guess flag
-  /// \param[in] trunc using truncation flag
-  inline void _show(const char *kernel, const bool with_init_guess,
-                    const bool trunc) const {
+  inline void _show(const char *kernel, const bool with_init_guess) const {
     hilucsi_info(
         "- FGMRES -\nrtol=%g\nrestart=%d\nmaxiter=%zd\nkernel: %s\ninit-guess: "
-        "%s\ntrunc: %s\n",
-        rtol, restart, maxit, kernel, (with_init_guess ? "yes" : "no"),
-        (trunc ? "yes" : "no"));
+        "%s\n",
+        rtol, restart, maxit, kernel, (with_init_guess ? "yes" : "no"));
   }
 
   /// \brief low level solve kernel
@@ -489,7 +486,7 @@ class FGMRES {
   /// \param[in] M "preconditioner" operator
   /// \param[in] b right hard size
   /// \param[in] max_inner_steps maximum inner steps for jacobi-style kernels
-  /// \param[in] trunc trucation flag
+  /// \param[in] zero_start trucation flag
   /// \param[in,out] x0 initial guess and solution on output
   /// \param[in] Cout "stdout" streamer
   /// \param[in] Cerr "stderr" streamer
@@ -498,7 +495,7 @@ class FGMRES {
   std::pair<int, size_type> _solve(const Matrix &A, const Operator &M,
                                    const array_type &b,
                                    const size_type   max_inner_steps,
-                                   const bool trunc, array_type &x0,
+                                   const bool zero_start, array_type &x0,
                                    const StreamerCout &Cout,
                                    const StreamerCerr &Cerr) const {
     constexpr static int _D =
@@ -513,36 +510,40 @@ class FGMRES {
     _ensure_data_capacities(n);
     const size_type max_outer_iters =
         (size_type)std::ceil((scalar_type)maxit / restart);
-    auto &          x    = x0;
-    int             flag = SUCCESS;
-    scalar_type     resid(1);
-    const size_type last_Q_pos = n * (restart - 1);
+    auto &      x    = x0;
+    int         flag = SUCCESS;
+    scalar_type resid(1);
     for (size_type it_outer = 0u; it_outer < max_outer_iters; ++it_outer) {
       Cout("Enter outer iteration %zd...", it_outer + 1);
-      if (it_outer) Cerr("Couldn\'t solve with %d restarts.", restart);
+      if (it_outer)
+        Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+             "Couldn\'t solve with %d restarts.", restart);
       // initial residual
-      A.mv(x, _v);
-      for (size_type i = 0u; i < n; ++i) _v[i] = b[i] - _v[i];
-      const auto beta = norm2(_v);
-      _y[0]           = beta;
-      if (!trunc || it_outer == 0u) {
-        const auto inv_beta = 1. / beta;
-        for (size_type i = 0u; i < n; ++i) _Q[i] = _v[i] * inv_beta;
+      if (iter || !zero_start) {
+        A.mv(x, _v);
+        for (size_type i = 0u; i < n; ++i) _v[i] = b[i] - _v[i];
       } else
-        std::copy_n(_Q.cbegin() + last_Q_pos, n, _Q.begin());
+        std::copy_n(b.cbegin(), n, _v.begin());
+      const auto beta     = norm2(_v);
+      _y[0]               = beta;
+      const auto inv_beta = 1. / beta;
+      for (size_type i = 0u; i < n; ++i) _Q[i] = _v[i] * inv_beta;
       size_type       j(0);
       auto            R_itr     = _R.begin();
       const size_type exp_steps = std::min(it_outer + 1, max_inner_steps);
       for (;;) {
         const auto jn = j * n;
         std::copy(_Q.cbegin() + jn, _Q.cbegin() + jn + n, _v.begin());
+        if (n < (size_type)restart) _w.resize(n);
         if (M.solve(A, _v, exp_steps, _w)) {
-          Cerr("Failed to call M operator at iteration %zd.", iter);
+          Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+               "Failed to call M operator at iteration %zd.", iter);
           flag = M_SOLVE_ERROR;
           break;
         }
         std::copy(_w.cbegin(), _w.cend(), _Z.begin() + jn);
         A.mv(_w, _v);
+        if (n < (size_type)restart) _w.resize(restart);
         for (size_type k = 0u; k <= j; ++k) {
           auto itr       = _Q.cbegin() + k * n;
           _w[k]          = inner(_v, itr);
@@ -573,16 +574,19 @@ class FGMRES {
         resid                 = abs(_y[j + 1]) / beta0;
         _resids.push_back(resid);
         if (std::isnan(resid) || std::isinf(resid)) {
-          Cerr("Solver break-down detected at iteration %zd.", iter);
+          Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+               "Solver break-down detected at iteration %zd.", iter);
           flag = BREAK_DOWN;
           break;
         }
         if (resid >= resid_prev * (1 - _stag_eps)) {
-          Cerr("Stagnated detected at iteration %zd.", iter);
+          Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+               "Stagnated detected at iteration %zd.", iter);
           flag = STAGNATED;
           break;
         } else if (iter >= maxit) {
-          Cerr("Reached maxit iteration limit %zd.", maxit);
+          Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+               "Reached maxit iteration limit %zd.", maxit);
           flag = DIVERGED;
           break;
         }
