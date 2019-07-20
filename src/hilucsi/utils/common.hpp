@@ -179,6 +179,11 @@ struct ValueTypeTrait<std::complex<T>> {
 
 namespace internal {
 
+/*!
+ * \addtogroup util
+ * @{
+ */
+
 /// \class SpVInternalExtractor
 /// \brief advanced helper class for extract internal data attributes from
 ///        \ref SparseVector
@@ -204,7 +209,6 @@ class SpVInternalExtractor : public SpVecType {
 
 /// \struct StdoutStruct
 /// \brief struct wrapped around \a stdout
-/// \ingroup util
 struct StdoutStruct {
   template <class... Args>
   inline void operator()(const char *f, Args... args) const {
@@ -214,21 +218,33 @@ struct StdoutStruct {
 
 /// \struct StderrStruct
 /// \brief struct wrapped around \a stderr
-/// \ingroup util
 struct StderrStruct {
   template <class... Args>
-  inline void operator()(const char *f, Args... args) const {
-    hilucsi_warning(f, args...);
+  inline void operator()(const char *file, const char *func,
+                         const unsigned line, const char *f,
+                         Args... args) const {
+    if (warn_flag()) warning(nullptr, file, func, line, f, args...);
   }
 };
 
 /// \struct DummyStreamer
 /// \brief dummy streamer (empty functor)
-/// \ingroup util
 struct DummyStreamer {
   template <class... Args>
   inline void operator()(const char *, Args...) const {}
 };
+
+/// \struct DummyErrorStreamer
+/// \brief streamer with error/warning information for dummy usage
+struct DummyErrorStreamer {
+  template <class... Args>
+  inline void operator()(const char *, const char *, const unsigned,
+                         const char *, Args...) const {}
+};
+
+/*!
+ * @}
+ */
 
 }  // namespace internal
 }  // namespace hilucsi
