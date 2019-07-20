@@ -1,67 +1,43 @@
 //@HEADER
 //----------------------------------------------------------------------------
-//                Copyright (C) 2019 The PSMILU AUTHORS
+//                Copyright (C) 2019 The HILUCSI AUTHORS
 //----------------------------------------------------------------------------
 //@HEADER
 
 #include "common.hpp"
 // line break to avoid sorting
-#include "psmilu_Array.hpp"
-#include "psmilu_CompressedStorage.hpp"
-#include "psmilu_Schur2.hpp"
+#include "hilucsi/alg/Schur.hpp"
+#include "hilucsi/ds/Array.hpp"
+#include "hilucsi/ds/CompressedStorage.hpp"
 
 #include <gtest/gtest.h>
 
-using namespace psmilu;
+using namespace hilucsi;
 
-TEST(L_E, c) {
-  Array<int> p(100);
-  for (int i = 0; i < 100; ++i) p[i] = i;
-  using mat_t        = CRS<double, int>;
-  const auto    A    = gen_rand_sparse<mat_t>(100, 100);
-  auto          L    = gen_rand_sparse<mat_t>(20, 90);
-  const auto    nnz1 = L.nnz();
-  Array<double> buf(100);
-  Array<int>    ibuf(100);
-  drop_L_E(p, A, 80, 2, L, buf, ibuf);
-  ASSERT_LE(L.nnz(), nnz1);
-}
+TEST(drop_LE_UF, core) {
+  do {
+    using mat_t        = CRS<double, int>;
+    const auto    A    = gen_rand_sparse<mat_t>(100, 100);
+    auto          L    = gen_rand_sparse<mat_t>(20, 90);
+    const auto    nnz1 = L.nnz();
+    Array<double> buf(100);
+    Array<int>    ibuf(100);
+    drop_L_E(A.row_start(), 2, L, buf, ibuf);
+    ASSERT_LE(L.nnz(), nnz1);
+    std::cout << "nnz(LE)-b4: " << nnz1 << ", nnz(LE)-after: " << L.nnz()
+              << std::endl;
+  } while (false);
 
-TEST(L_E, fortran) {
-  Array<int> p(100);
-  for (int i = 0; i < 100; ++i) p[i] = i;
-  using mat_t        = CRS<double, int, true>;
-  const auto    A    = gen_rand_sparse<mat_t>(100, 100);
-  auto          L    = gen_rand_sparse<mat_t>(20, 90);
-  const auto    nnz1 = L.nnz();
-  Array<double> buf(100);
-  Array<int>    ibuf(100);
-  drop_L_E(p, A, 80, 2, L, buf, ibuf);
-  ASSERT_LE(L.nnz(), nnz1);
-}
-
-TEST(U_F, c) {
-  Array<int> p(100);
-  for (int i = 0; i < 100; ++i) p[i] = i;
-  using mat_t        = CCS<double, int>;
-  const auto    A    = gen_rand_sparse<mat_t>(100, 100);
-  auto          U    = gen_rand_sparse<mat_t>(90, 20);
-  const auto    nnz1 = U.nnz();
-  Array<double> buf(100);
-  Array<int>    ibuf(100);
-  drop_U_F(p, A, 80, 2, U, buf, ibuf);
-  ASSERT_LE(U.nnz(), nnz1);
-}
-
-TEST(U_F, fortran) {
-  Array<int> p(100);
-  for (int i = 0; i < 100; ++i) p[i] = i;
-  using mat_t        = CCS<double, int, true>;
-  const auto    A    = gen_rand_sparse<mat_t>(100, 100);
-  auto          U    = gen_rand_sparse<mat_t>(90, 20);
-  const auto    nnz1 = U.nnz();
-  Array<double> buf(100);
-  Array<int>    ibuf(100);
-  drop_U_F(p, A, 80, 2, U, buf, ibuf);
-  ASSERT_LE(U.nnz(), nnz1);
+  do {
+    using mat_t        = CCS<double, int>;
+    const auto    A    = gen_rand_sparse<mat_t>(100, 100);
+    auto          U    = gen_rand_sparse<mat_t>(90, 20);
+    const auto    nnz1 = U.nnz();
+    Array<double> buf(100);
+    Array<int>    ibuf(100);
+    drop_U_F(A.col_start(), 2, U, buf, ibuf);
+    ASSERT_LE(U.nnz(), nnz1);
+    std::cout << "nnz(UF)-b4: " << nnz1 << ", nnz(UF)-after: " << U.nnz()
+              << std::endl;
+  } while (false);
 }

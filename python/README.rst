@@ -1,7 +1,7 @@
-Python3 Interface for PS-MILU
+Python3 Interface for HILUCSI
 =============================
 
-Welcome to the Python3 interface of PSMILU package--- *psmilu4py*. The Python
+Welcome to the Python3 interface of HILUCSI package--- *hilucsi4py*. The Python
 interface is implemented with Cython, and the Cython interface is also
 available to use.
 
@@ -9,54 +9,70 @@ Dependencies
 ------------
 
 *psmilu4py* requires *Cython* and *setuptools* during installation and
-complilation. The must-have runtime package is *numpy*. If you plan to use the
-*scipy* hooks, then you need to make sure *scipy* is available as well.
-
-Roughly speaking, *psmilu4py* enables three core components in PSMILU:
-
-1. building multilevel ILU preconditioner,
-2. solving preconditiner system, and
-3. configuring preconditiner parameters.
+compilation. The must-have runtime package is *numpy*. It implicitly supports
+*scipy* sparse matrices as well as the `LinearOperator` interface for using
+as its built-in KSP's preconditioners.
 
 Installation
 -------------
 
-Notice that since PSMILU is template-based package, you need to specify
-the include path (path to ``PSMILU.hpp``) as environment variable.
-In addition, you need to configure the LAPACK/BLAS linking, the default
-is ``-llapack`` ; you can also modify the library path to them.
-Finally, HSL_MC64 can be automatically enabled by specifying the root
-to the package.
+Notice that since HILUCSI is template-based package, you need to specify
+the include path (path to ``HILUCSI.hpp``) as environment variable (this is
+only needed if the header files cannot be found in standard include path or
+current working directory.) In addition, you need to configure linking against
+LAPACK by setting the environment variable ``HILUCSI_LAPACK_LIB``, and the
+default is ``-llapack``. If you have a specific library path to LAPACK, you
+then need to set the environment variable ``HILUCSI_LAPACK_LIB_PATH``. Finally,
+the current version depends on MC64 package, which we assume you should have
+it built with flag ``-fPIC``, and the environment variable
+``HILUCSI_MC64_LIB_PATH`` needs to be set.
 
-Overall, the following envrionment variables can be configured
+To sum up, the following environment variables can be configured
 
-1. ``PSMILU_INCLUDE``, **must be specified!**
-2. ``LAPACK_LIB``, default is ``-llapack``
-3. ``LAPACK_LIB_ROOT``, default is empty
-4. ``MC64_ROOT``, path contains the header/lib in ``include``/``lib``.
+1. ``HILUCSI_INCLUDE_PATH``, default is empty
+2. ``HILUCSI_LAPACK_LIB``, default is ``-llapack``
+3. ``HILUCSI_LAPACK_LIB_PATH``, default is empty
+4. ``HILUCSI_MC64_LIB_PATH``, default is empty
 
-It's worth noting that ``PSMILU_INCLUDE`` is also needed if you plan to use
-Cython interface of *psmilu4py* due to the need of recompilation.
+It's worth noting that the C++ interface of HILUCSI is needed if you plan to
+use the Cython interface of *hilucsi4py*.
 
-Examples
+The default installation
+````````````````````````
+
+The following command assumes ``HILUCSI.hpp`` is located in system include
+path or current directory. In addition, ``liblapack.so`` and ``libmc64.a`` can
+be found in system library path or under ``LIBRARY_PATH``.
 
 .. code:: console
 
-    # specify psmilu code generator
-    env PSMILU_INCLUDE=/usr/local/include pip install . --user
+    pip3 install . --user
 
-    # user alternative blas, bulid in $PWD
-    env \
-        PSMILU_INCLUDE=$HOME/.local/include \
-        LAPACK_LIB=-lopenblas \
-        LAPACK_LIB_ROOT=/opt/OpenBLAS/lib \
-        pip3 install . --user
 
-    # using mc64
-    env \
-        PSMILU_INCLUDE=./my_local/include \
-        MC64_ROOT=./my_local/mc64 \
-        pip3 install . --user
+Installation with customized HILUCSI installation
+`````````````````````````````````````````````````
+
+The following command let Python search different path for ``HILUCSI.hpp``
+during compilation.
+
+.. code:: console
+
+    export HILUCSI_INCLUDE_PATH=$HOME/.local/include
+    pip3 install . --user
+
+Installation with customized third-party libraries
+``````````````````````````````````````````````````
+
+Sometimes, it's helpful to have optimized LAPACK and/or your MC64 is installed
+in nonstandard locations. The following command shows how to link MKL (on
+Ubuntu) as well as linking to MC64 in a nonstandard library path.
+
+.. code:: console
+
+    export HILUCSI_LAPACK_LIB="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core"
+    export HILUCSI_LAPACK_LIB_PATH=/opt/intel/mkl/lib/intel64
+    export HILUCSI_MC64_LIB_PATH=$HOME/.local/lib
+    pip3 install . --user
 
 Contacts
 --------

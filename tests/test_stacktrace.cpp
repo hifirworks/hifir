@@ -1,23 +1,21 @@
-// psmilu_log.hpp psmilu_stacktrace.hpp
-
 //@HEADER
 //----------------------------------------------------------------------------
-//                Copyright (C) 2019 The PSMILU AUTHORS
+//                Copyright (C) 2019 The HILUCSI AUTHORS
 //----------------------------------------------------------------------------
 //@HEADER
 
 #include "common.hpp"
 // line break to avoid sorting
-#include "psmilu_Array.hpp"
-#include "psmilu_log.hpp"
-#include "psmilu_stacktrace.hpp"
+#include "hilucsi/ds/Array.hpp"
+#include "hilucsi/utils/log.hpp"
+#include "hilucsi/utils/stacktrace.hpp"
 
 #include <gtest/gtest.h>
 #include <regex>
 
 #define TAG "stack trace:"
 
-using namespace psmilu;
+using namespace hilucsi;
 
 template <typename T>
 void bad_func(const Array<T> &v) {

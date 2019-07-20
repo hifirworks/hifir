@@ -1,18 +1,18 @@
 //@HEADER
 //----------------------------------------------------------------------------
-//                Copyright (C) 2019 The PSMILU AUTHORS
+//                Copyright (C) 2019 The HILUCSI AUTHORS
 //----------------------------------------------------------------------------
 //@HEADER
 
 #include "common.hpp"
 // line break to avoid sorting
-#include "psmilu_CompressedStorage.hpp"
-#include "psmilu_DenseMatrix.hpp"
-#include "psmilu_small_scale/solver.hpp"
+#include "hilucsi/ds/CompressedStorage.hpp"
+#include "hilucsi/ds/DenseMatrix.hpp"
+#include "hilucsi/small_scale/solver.hpp"
 
 #include <gtest/gtest.h>
 
-using namespace psmilu;
+using namespace hilucsi;
 
 constexpr static double tol(1e-12);
 

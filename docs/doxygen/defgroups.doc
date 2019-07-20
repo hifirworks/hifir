@@ -1,7 +1,7 @@
 // -*-C++-*-
 //@HEADER
 //----------------------------------------------------------------------------
-//                Copyright (C) 2019 The PSMILU AUTHORS
+//                Copyright (C) 2019 The HILUCSI AUTHORS
 //----------------------------------------------------------------------------
 //@HEADER
 
@@ -9,18 +9,20 @@
 
 /// \defgroup util Utilities
 
-/// \defgroup alg Algorithms
-
 /// \defgroup pre Preprocessing
-/// \ingroup alg
+
+/// \defgroup alg Algorithms
 
 /// \defgroup crout Crout Update
 /// \ingroup alg
 
-/// \defgroup diag Diagonal Pivoting
+/// \defgroup defer Dynamic Deferring
 /// \ingroup alg
 
 /// \defgroup inv Inverse-based Threshold
+/// \ingroup alg
+
+/// \defgroup scl Scalability-oriented Threshold
 /// \ingroup alg
 
 /// \defgroup schur Schur Complements
@@ -35,13 +37,15 @@
 /// \defgroup fac Multilevel Factorization
 /// \ingroup alg
 
-/// \defgroup itr PSMILU User Interfaces
+/// \defgroup sparse Sparse Direct Solver
+/// \ingroup alg
 
-/// \defgroup cpp C++ User Interfaces
-/// \ingroup itr
-
-/// \defgroup c C User Interface
-/// \ingroup itr
+/// \defgroup itr HILUCSI User Interfaces
 
 /// \defgroup macros Preprocessor macros
 /// \ingroup itr
+
+/// \defgroup ksp Krylov Subspace Solvers
+
+/// \defgroup gmres Flexible GMRES
+/// \ingroup ksp

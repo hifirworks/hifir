@@ -1,20 +1,20 @@
 //@HEADER
 //----------------------------------------------------------------------------
-//                Copyright (C) 2019 The PSMILU AUTHORS
+//                Copyright (C) 2019 The HILUCSI AUTHORS
 //----------------------------------------------------------------------------
 //@HEADER
 
 #include "common.hpp"
 // line break to avoid sorting
-#include "psmilu_Array.hpp"
-#include "psmilu_utils.hpp"
+#include "hilucsi/ds/Array.hpp"
+#include "hilucsi/utils/common.hpp"
 
 #include <gtest/gtest.h>
 
 #include <cstdlib>
 #include <ctime>
 
-using namespace psmilu;
+using namespace hilucsi;
 
 TEST(ROTATE, left) {
   std::srand(std::time(0));

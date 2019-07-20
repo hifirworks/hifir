@@ -31,4 +31,4 @@ endef
 $(foreach test,$(TESTS),$(eval $(call MAKE_EXE_RULE, $(test))))
 
 clean:
-	@rm -f $(EXECS) *.dSYM
+	@rm -f $(EXECS) *.dSYM foo.bin foo?.hilucsi

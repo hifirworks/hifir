@@ -1,12 +1,12 @@
-# Multilevel ILU for Pre-dominantly Symmetric Systems (*PS-MILU*) #
+# Welcome to *HILUCSI* Project #
 
 ## Introduction ##
 
-Welcome to `PSMILU` package! The *pre-dominantly symmetric multilevel ILU* is an efficient yet robust and powerful preconditioner method for linear solvers. With the optimal time complexity, it can solve large scale problems with ease.
+Welcome to the `HILUCSI` package! `HILUCSI` stands for `H`ierarchical `I`ncomplete `LU-C`rount with `S`calability-oriented and `I`nverse-based dropping, which is a new *multilevel ILU* software framework based on (near) linear time complexity and robust dropping strategy. Yup, you read it right, we have both!
 
 ## License ##
 
-Please refer to [`LICENSE`](./LICENSE) and [`AUTHORS`](./AUTHORS) files for the more information.
+Please refer to [`LICENSE`](./LICENSE) and [`AUTHORS`](./AUTHORS) files for more information regarding copyright.
 
 ## Contact ##
 

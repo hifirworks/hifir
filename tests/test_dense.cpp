@@ -1,17 +1,17 @@
 //@HEADER
 //----------------------------------------------------------------------------
-//                Copyright (C) 2019 The PSMILU AUTHORS
+//                Copyright (C) 2019 The HILUCSI AUTHORS
 //----------------------------------------------------------------------------
 //@HEADER
 
 #include "common.hpp"
 // line break to avoid sorting
-#include "psmilu_Array.hpp"
-#include "psmilu_DenseMatrix.hpp"
+#include "hilucsi/ds/Array.hpp"
+#include "hilucsi/ds/DenseMatrix.hpp"
 
 #include <gtest/gtest.h>
 
-using namespace psmilu;
+using namespace hilucsi;
 
 const static RandIntGen  i_rand(0, 100);
 const static RandRealGen r_rand(1.0, 2.0);

@@ -1,21 +1,19 @@
-// psmilu_Array.hpp psmilu_log.hpp
-
 //@HEADER
 //----------------------------------------------------------------------------
-//                Copyright (C) 2019 The PSMILU AUTHORS
+//                Copyright (C) 2019 The HILUCSI AUTHORS
 //----------------------------------------------------------------------------
 //@HEADER
 
 #include "common.hpp"
 // line break to avoid sorting
-#include "psmilu_Array.hpp"
+#include "hilucsi/ds/Array.hpp"
 
 #include <gtest/gtest.h>
 #include <list>
 #include <utility>
 #include <vector>
 
-using namespace psmilu;
+using namespace hilucsi;
 
 TEST(Array_api, test_core) {
   Array<double> v;
@@ -26,7 +24,7 @@ TEST(Array_api, test_core) {
   for (auto &i : v) i = 1.0;
   for (const auto i : v) ASSERT_EQ(i, 1.0);
   v.resize(0);
-  ASSERT_GT(v.capacity(), 100u);
+  ASSERT_GE(v.capacity(), 100u);
   // test shallow
   {
     Array<double> b(200u, 0.0);

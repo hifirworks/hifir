@@ -1,16 +1,16 @@
 //@HEADER
 //----------------------------------------------------------------------------
-//                Copyright (C) 2019 The PSMILU AUTHORS
+//                Copyright (C) 2019 The HILUCSI AUTHORS
 //----------------------------------------------------------------------------
 //@HEADER
 
 #include "common.hpp"
 // line break to avoid sorting
-#include "psmilu_Options.h"
+#include "hilucsi/Options.h"
 
 #include <gtest/gtest.h>
 
-using namespace psmilu;
+using namespace hilucsi;
 
 const RandIntGen  i_rand(0, 100);
 const RandRealGen r_rand(0.0, 100.0);

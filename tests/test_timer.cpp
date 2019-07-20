@@ -1,18 +1,18 @@
 //@HEADER
 //----------------------------------------------------------------------------
-//                Copyright (C) 2019 The PSMILU AUTHORS
+//                Copyright (C) 2019 The HILUCSI AUTHORS
 //----------------------------------------------------------------------------
 //@HEADER
 
 #include "common.hpp"
 // line break to avoid sorting
-#include "psmilu_Timer.hpp"
+#include "hilucsi/utils/Timer.hpp"
 
 #include <gtest/gtest.h>
 #include <cmath>
 #include <thread>
 
-using namespace psmilu;
+using namespace hilucsi;
 
 // takes about 300ms
 TEST(Timer, serial) {
