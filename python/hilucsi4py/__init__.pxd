@@ -113,6 +113,7 @@ cdef extern from 'hilucsi4py.hpp' namespace 'hilucsi::ksp' nogil:
         SUCCESS
         DIVERGED
         STAGNATED
+        BREAK_DOWN
 
 
 cdef extern from 'hilucsi4py.hpp' namespace 'hilucsi::internal' nogil:

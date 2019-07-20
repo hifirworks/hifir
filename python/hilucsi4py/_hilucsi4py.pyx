@@ -488,6 +488,25 @@ class KSP_StagnatedError(KSP_Error):
     pass
 
 
+class KSP_BreakDownError(KSP_Error):
+    """Solver breaks down error"""
+    pass
+
+
+def _handle_flag(int flag):
+    """handle KSP returned flag value"""
+    if flag != hilucsi.SUCCESS:
+        if flag == hilucsi.INVALID_ARGS:
+            raise KSP_InvalidArgumentsError
+        if flag == hilucsi.M_SOLVE_ERROR:
+            raise KSP_MSolveError
+        if flag == hilucsi.DIVERGED:
+            raise KSP_DivergedError
+        if flag == hilucsi.STAGNATED:
+            raise KSP_StagnatedError
+        raise KSP_BreakDownError
+
+
 cdef class FGMRES:
     r"""Flexible GMRES implementation with rhs preconditioner
 
@@ -673,6 +692,8 @@ cdef class FGMRES:
             iterations diverge due to exceeding :attr:`maxit`
         KSP_StagnatedError
             iterations stagnate
+        KSP_BreakDownError
+            solver breaks down
         """
         assert kernel in ('tradition', 'jacobi', 'chebyshev-jacobi')
         if init_guess and x is None:
@@ -694,12 +715,5 @@ cdef class FGMRES:
             raise ValueError('inconsistent x and b')
         flag, iters = self._solve(rowptr, colind, vals, b, xx, kn, init_guess,
             trunc, verbose)
-        if flag != hilucsi.SUCCESS:
-            if flag == hilucsi.INVALID_ARGS:
-                raise KSP_InvalidArgumentsError
-            if flag == hilucsi.M_SOLVE_ERROR:
-                raise KSP_MSolveError
-            if flag == hilucsi.DIVERGED:
-                raise KSP_DivergedError
-            raise KSP_StagnatedError
+        _handle_flag(flag)
         return xx, iters
