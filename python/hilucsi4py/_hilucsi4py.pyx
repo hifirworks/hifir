@@ -645,19 +645,18 @@ cdef class FGMRES:
 
     def _solve(self, int[::1] rowptr, int[::1] colind, double[::1] vals,
         double[::1] b, double[::1] x, int kernel, bool with_init_guess,
-        bool trunc, bool verbose):
+        bool verbose):
         cdef:
             size_t n = b.size
             bool wg = with_init_guess
-            bool tr = trunc
             bool v = verbose
             pair[int, size_t] info
         info = deref(self.solver).solve(n, &rowptr[0], &colind[0], &vals[0],
-            &b[0], &x[0], kernel, wg, tr, v)
+            &b[0], &x[0], kernel, wg, v)
         return info.first, info.second
 
     def solve(self, *args, shape=None, x=None, kernel='tradition',
-        init_guess=False, trunc=False, verbose=True):
+        init_guess=False, verbose=True):
         """Sovle the rhs solution
 
         Parameters
@@ -673,8 +672,6 @@ cdef class FGMRES:
             'chebyshev-jacobi'
         init_guess : bool (optional)
             if ``False`` (default), then set initial state to be zeros
-        trunc : bool (optional)
-            if ``False`` (default), then do typical hard restart
         verbose : bool (optional)
             if `True`` (default), then enable verbose printing
 
@@ -714,6 +711,6 @@ cdef class FGMRES:
         if xx.shape != b.shape:
             raise ValueError('inconsistent x and b')
         flag, iters = self._solve(rowptr, colind, vals, b, xx, kn, init_guess,
-            trunc, verbose)
+            verbose)
         _handle_flag(flag)
         return xx, iters

@@ -97,7 +97,7 @@ cdef extern from 'hilucsi4py.hpp' namespace 'hilucsi' nogil:
         pair[int, size_t] solve(const size_t n, const int *rowptr,
                                 const int *colind, const double *vals,
                                 const double *b, double *x, const int kernel,
-                                const bool with_init_guess, const bool trunc,
+                                const bool with_init_guess,
                                 const bool verbose) except +
 
     cdef enum:

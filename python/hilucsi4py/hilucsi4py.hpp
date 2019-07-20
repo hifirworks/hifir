@@ -146,7 +146,6 @@ class PyFGMRES : public ksp::FGMRES<PyHILUCSI> {
                                          const double *b, double *x,
                                          const int kernel = PyFGMRES::TRADITION,
                                          const bool with_init_guess = false,
-                                         const bool trunc           = false,
                                          const bool verbose = true) const {
     using crs_type             = base::M_type::crs_type;
     using array_type           = crs_type::array_type;
@@ -157,7 +156,7 @@ class PyFGMRES : public ksp::FGMRES<PyHILUCSI> {
     A.check_validity();
     const array_type bb(n, const_cast<double *>(b), WRAP);
     array_type       xx(n, x, WRAP);
-    return base::solve(A, bb, xx, kernel, with_init_guess, trunc, verbose);
+    return base::solve(A, bb, xx, kernel, with_init_guess, verbose);
   }
 };
 
