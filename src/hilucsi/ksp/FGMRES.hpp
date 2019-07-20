@@ -448,12 +448,13 @@ class FGMRES {
     _Z.resize(_Q.size());
     _J.resize(2 * restart);
     _v.resize(n);
-    _resids.reserve(maxit);
-    _resids.resize(0);
+    _resids.reserve(maxit + 1);
+    _resids.resize(1);
+    _resids.front() = 1;
     _w.resize(n);
   }
 
-  /// \brief validation checkings
+  /// \brief validation checking
   template <class Matrix>
   inline bool _validate(const Matrix &A, const array_type &b) const {
     if (!_M || _M->empty()) return true;
