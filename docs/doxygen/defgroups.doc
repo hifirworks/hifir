@@ -49,3 +49,6 @@
 
 /// \defgroup gmres Flexible GMRES
 /// \ingroup ksp
+
+/// \defgroup qmrcgstab Flexible QMRCGSTAB
+/// \ingroup ksp

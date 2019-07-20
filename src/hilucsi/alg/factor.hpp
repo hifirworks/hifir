@@ -477,6 +477,7 @@ inline void compress_tails(U_Type &U, L_Type &L, const PosArray &U_start,
 /// \param[in,out] row_sizes local row nnz of user input
 /// \param[in,out] col_sizes local column nnz of user input
 /// \param[in,out] stats hierarchical stats
+/// \param[in] schur_threads threads usedin Schur-related computations
 /// \return Schur complement for next level (if needed), in the same type as
 ///         that of the input, i.e. \a CsType
 /// \ingroup fac
@@ -1044,6 +1045,7 @@ inline CsType level_factorize(const CsType &                   A,
     timer2.start();
 // compute S version of Schur complement
 #ifndef _OPENMP
+    (void)schur_threads;
     S = compute_Schur_simple(s, A_crs, t, p, q, m, L_E, d, U_F, l);
 #else
     if (hilucsi_verbose(INFO, opts))

@@ -486,7 +486,7 @@ class FGMRES {
   /// \param[in] M "preconditioner" operator
   /// \param[in] b right hard size
   /// \param[in] max_inner_steps maximum inner steps for jacobi-style kernels
-  /// \param[in] zero_start trucation flag
+  /// \param[in] zero_start flag to indicate \x0 starts with all zeros
   /// \param[in,out] x0 initial guess and solution on output
   /// \param[in] Cout "stdout" streamer
   /// \param[in] Cerr "stderr" streamer

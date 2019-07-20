@@ -171,6 +171,7 @@ class QMRCGSTAB {
   /// \tparam StreamerCerr cerr streamer type
   /// \param[in] A user matrix
   /// \param[in] b right hard size
+  /// \param[in] zero_start flag to indicate \a x0 starts with all zeros
   /// \param[in,out] x0 initial guess and solution on output
   /// \param[in] Cout "stdout" streamer
   /// \param[in] Cerr "stderr" streamer
