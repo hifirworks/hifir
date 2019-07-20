@@ -90,16 +90,17 @@ class QMRCGSTAB {
                                          array_type &x,
                                          const bool  with_init_guess = false,
                                          const bool  verbose = true) const {
-    const static hilucsi::internal::StdoutStruct  Cout;
-    const static hilucsi::internal::StderrStruct  Cerr;
-    const static hilucsi::internal::DummyStreamer Dummy_streamer;
+    const static hilucsi::internal::StdoutStruct       Cout;
+    const static hilucsi::internal::StderrStruct       Cerr;
+    const static hilucsi::internal::DummyStreamer      Dummy_streamer;
+    const static hilucsi::internal::DummyErrorStreamer Dummy_cerr;
 
     if (_validate(A, b, x)) return std::make_pair(INVALID_ARGS, size_type(0));
     if (verbose) _show(with_init_guess);
     if (!with_init_guess) std::fill(x.begin(), x.end(), value_type(0));
-    return verbose ? _solve(A, b, !with_init_guess, x, Cout, Cerr)
-                   : _solve(A, b, !with_init_guess, x, Dummy_streamer,
-                            Dummy_streamer);
+    return verbose
+               ? _solve(A, b, !with_init_guess, x, Cout, Cerr)
+               : _solve(A, b, !with_init_guess, x, Dummy_streamer, Dummy_cerr);
   }
 
  protected:
@@ -218,12 +219,14 @@ class QMRCGSTAB {
     for (; iter <= maxit; ++iter) {
       auto rho2 = inner(r0, _v);
       if (rho2 == 0) {
-        Cerr("Solver break-down detected at iteration %zd.", iter);
+        Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+             "Solver break-down detected at iteration %zd.", iter);
         flag = BREAK_DOWN;
         break;
       }
       if (rho1 == 0) {
-        Cerr("Stagnated detected at iteration %zd.", iter);
+        Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+             "Stagnated detected at iteration %zd.", iter);
         flag = STAGNATED;
         break;
       }
@@ -247,7 +250,8 @@ class QMRCGSTAB {
       const auto uu = inner(_s, _t), vv = norm2_sq(_t);
       const auto omega = uu / vv;
       if (omega == 0) {
-        Cerr("Stagnated detected at iteration %zd.", iter);
+        Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+             "Stagnated detected at iteration %zd.", iter);
         flag = STAGNATED;
         break;
       }
@@ -274,7 +278,8 @@ class QMRCGSTAB {
       if (_resids.back() <= rtol) break;
 
       if (std::isnan(_resids.back()) || std::isinf(_resids.back())) {
-        Cerr("Solver break-down detected at iteration %zd.", iter);
+        Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+             "Solver break-down detected at iteration %zd.", iter);
         flag = BREAK_DOWN;
         break;
       }
@@ -285,7 +290,8 @@ class QMRCGSTAB {
       // }
       rho2 = inner(_r, r0);
       if (rho2 == 0) {
-        Cerr("Stagnated detected at iteration %zd.", iter);
+        Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+             "Stagnated detected at iteration %zd.", iter);
         flag = STAGNATED;
         break;
       }
@@ -299,7 +305,8 @@ class QMRCGSTAB {
     }  // for
 
     if (flag == SUCCESS && _resids.back() > rtol) {
-      Cerr("Reached maxit iteration limit %zd.", maxit);
+      Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+           "Reached maxit iteration limit %zd.", maxit);
       flag = DIVERGED;
       iter = maxit;
     }
