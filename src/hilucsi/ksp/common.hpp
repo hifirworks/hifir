@@ -91,121 +91,6 @@ namespace internal {
  * @{
  */
 
-/// \class KSP
-/// \brief Krylov subspace method base
-/// \tparam ChildSolver child solver type
-/// \tparam MType preconditioner type, see \ref HILUCSI
-template <class ChildSolver, class MType>
-class KSP {
-  /// \brief cast to child solver
-  inline ChildSolver &_this() { return static_cast<ChildSolver &>(*this); }
-
-  /// \brief cast to child solver with constant specifier
-  inline const ChildSolver &_this() const {
-    return static_cast<const ChildSolver &>(*this);
-  }
-
- public:
-  typedef MType                           M_type;      ///< preconditioner
-  typedef typename M_type::array_type     array_type;  ///< value array
-  typedef typename array_type::size_type  size_type;   ///< size type
-  typedef typename array_type::value_type value_type;  ///< value type
-  typedef typename DefaultSettings<value_type>::scalar_type scalar_type;
-  ///< scalar type from value_type
-
-  static_assert(std::is_floating_point<scalar_type>::value,
-                "must be floating point type");
-
-  scalar_type rtol = DefaultSettings<value_type>::rtol;
-  ///< relative convergence tolerance
-  size_type maxit = DefaultSettings<value_type>::max_iters;
-  ///< max numer of iterations
-  size_type inner_steps = DefaultSettings<value_type>::inner_steps;
-  ///< inner flexible iterations
-  value_type lamb1 = 0.9;  ///< est of largest eigenvalue
-  value_type lamb2 = 0.0;  ///< est of smallest eigenvalue
-
-  KSP() = default;
-
-  /// \brief constructor with all essential parameters
-  /// \param[in] M multilevel ILU preconditioner
-  /// \param[in] rel_tol relative tolerance for convergence (1e-6 for \a double)
-  /// \param[in] max_iters maximum number of iterations
-  /// \param[in] innersteps inner iterations for jacobi kernels
-  explicit KSP(
-      std::shared_ptr<M_type> M,
-      const scalar_type       rel_tol = DefaultSettings<value_type>::rtol,
-      const size_type max_iters       = DefaultSettings<value_type>::max_iters,
-      const size_type innersteps = DefaultSettings<value_type>::inner_steps)
-      : _M(M), rtol(rel_tol), maxit(max_iters), inner_steps(innersteps) {
-    _this()._check_pars();
-  }
-
-  /// \brief set preconditioner
-  /// \param[in] M multilevel ILU preconditioner
-  inline void set_M(std::shared_ptr<M_type> M) {
-    _M = M;  // increment internal reference counter
-    if (_M && _M->nrows()) _this()._ensure_data_capacities(_M->nrows());
-  }
-
-  /// \brief get preconditioner
-  inline std::shared_ptr<M_type> get_M() const { return _M; }
-
-  /// \brief get residual array
-  inline const array_type &resids() const { return _resids; }
-
- protected:
-  std::shared_ptr<M_type> _M;       ///< preconditioner operator
-  mutable array_type      _resids;  ///< residual history
-
- protected:
-  /// \brief check and assign any illegal parameters to default setting
-  inline void _check_pars() {
-    if (rtol <= 0) rtol = DefaultSettings<value_type>::rtol;
-    if (maxit == 0u) maxit = DefaultSettings<value_type>::max_iters;
-    if (inner_steps == 0u)
-      inner_steps = DefaultSettings<value_type>::inner_steps;
-  }
-
-  /// \brief ensure history residuals
-  inline void _init_resids() const {
-    _resids.reserve(maxit + 1);
-    _resids.resize(1);
-  }
-
-  /// \brief validation checking
-  template <class Matrix>
-  inline bool _validate(const Matrix &A, const array_type &b,
-                        const array_type &x) const {
-    if (!_M || _M->empty()) return true;
-    if (_M->nrows() != A.nrows()) return true;
-    if (b.size() != A.nrows()) return true;
-    if (b.size() != x.size()) return true;
-    if (rtol <= 0.0) return true;
-    if (maxit == 0u) return true;
-    if (inner_steps == 0u) return true;
-    return false;
-  }
-
-  /// \brief show information
-  /// \param[in] kernel kernel name
-  /// \param[in] with_init_guess solve with initial guess flag
-  /// \param[in] rs restart, nonpositive values indicate N/A
-  inline void _show(const char *kernel, const bool with_init_guess,
-                    const int rs) const {
-    hilucsi_info(
-        "- %s -\n"
-        "rtol=%g\n"
-        "restart=%s\n"
-        "maxiter=%zd\n"
-        "flex-kernel: %s\n"
-        "init-guess: %s\n",
-        ChildSolver::repr(), rtol,
-        (rs > 0 ? std::to_string(rs).c_str() : "N/A"), maxit, kernel,
-        (with_init_guess ? "yes" : "no"));
-  }
-};
-
 /// \class JacobiBase
 /// \tparam Child child jacobi iteration object, either \ref Jacobi or
 ///         \ref ChebyshevJacobi
@@ -414,6 +299,244 @@ class DummyJacobi {
 
  protected:
   const M_type &_M;
+};
+
+/// \class KSP
+/// \brief Krylov subspace method base
+/// \tparam ChildSolver child solver type
+/// \tparam MType preconditioner type, see \ref HILUCSI
+template <class ChildSolver, class MType>
+class KSP {
+  /// \brief cast to child solver
+  inline ChildSolver &_this() { return static_cast<ChildSolver &>(*this); }
+
+  /// \brief cast to child solver with constant specifier
+  inline const ChildSolver &_this() const {
+    return static_cast<const ChildSolver &>(*this);
+  }
+
+ public:
+  typedef MType                           M_type;      ///< preconditioner
+  typedef typename M_type::array_type     array_type;  ///< value array
+  typedef typename array_type::size_type  size_type;   ///< size type
+  typedef typename array_type::value_type value_type;  ///< value type
+  typedef typename DefaultSettings<value_type>::scalar_type scalar_type;
+  ///< scalar type from value_type
+
+  static_assert(std::is_floating_point<scalar_type>::value,
+                "must be floating point type");
+
+  scalar_type rtol = DefaultSettings<value_type>::rtol;
+  ///< relative convergence tolerance
+  size_type maxit = DefaultSettings<value_type>::max_iters;
+  ///< max numer of iterations
+  size_type inner_steps = DefaultSettings<value_type>::inner_steps;
+  ///< inner flexible iterations
+  value_type lamb1   = 0.9;  ///< est of largest eigenvalue
+  value_type lamb2   = 0.0;  ///< est of smallest eigenvalue
+  int        restart = 0;    ///< restart
+
+  KSP() = default;
+
+  /// \brief constructor with all essential parameters
+  /// \param[in] M multilevel ILU preconditioner
+  /// \param[in] rel_tol relative tolerance for convergence (1e-6 for \a double)
+  /// \param[in] max_iters maximum number of iterations
+  /// \param[in] innersteps inner iterations for jacobi kernels
+  explicit KSP(
+      std::shared_ptr<M_type> M,
+      const scalar_type       rel_tol = DefaultSettings<value_type>::rtol,
+      const size_type max_iters       = DefaultSettings<value_type>::max_iters,
+      const size_type innersteps = DefaultSettings<value_type>::inner_steps)
+      : _M(M), rtol(rel_tol), maxit(max_iters), inner_steps(innersteps) {
+    _this()._check_pars();
+  }
+
+  /// \brief set preconditioner
+  /// \param[in] M multilevel ILU preconditioner
+  inline void set_M(std::shared_ptr<M_type> M) {
+    _M = M;  // increment internal reference counter
+    if (_M && _M->nrows()) _this()._ensure_data_capacities(_M->nrows());
+  }
+
+  /// \brief get preconditioner
+  inline std::shared_ptr<M_type> get_M() const { return _M; }
+
+  /// \brief get residual array
+  inline const array_type &resids() const { return _resids; }
+
+  /// \brief solve with \ref _M as traditional preconditioner
+  /// \tparam Matrix user input type, see \ref CRS and \ref CCS
+  /// \param[in] A user input matrix
+  /// \param[in] b right-hand side vector
+  /// \param[in,out] x solution
+  /// \param[in] with_init_guess if \a false (default), then assign zero to
+  ///             \a x as starting values
+  /// \param[in] verbose if \a true (default), enable verbose printing
+  template <class Matrix>
+  inline std::pair<int, size_type> solve_precond(
+      const Matrix &A, const array_type &b, array_type &x,
+      const bool with_init_guess = false, const bool verbose = true) const {
+    const static hilucsi::internal::StdoutStruct       Cout;
+    const static hilucsi::internal::StderrStruct       Cerr;
+    const static hilucsi::internal::DummyStreamer      Dummy_streamer;
+    const static hilucsi::internal::DummyErrorStreamer Dummy_cerr;
+
+    if (_this()._validate(A, b, x))
+      return std::make_pair(INVALID_ARGS, size_type(0));
+    if (verbose) _show("tradition", with_init_guess, restart);
+    if (!with_init_guess) std::fill(x.begin(), x.end(), value_type(0));
+    const internal::DummyJacobi<M_type> M(*_M);
+    if (verbose)
+      hilucsi_info("Calling traditional %s kernel...", ChildSolver::repr());
+    return verbose ? _this()._this()._solve(A, M, b, 1u, !with_init_guess, x,
+                                            Cout, Cerr)
+                   : _this()._this()._solve(A, M, b, 1u, !with_init_guess, x,
+                                            Dummy_streamer, Dummy_cerr);
+  }
+
+  /// \brief solve with \ref _M as Jacobi operator
+  /// \tparam Matrix user input type, see \ref CRS and \ref CCS
+  /// \param[in] A user input matrix
+  /// \param[in] b right-hand side vector
+  /// \param[in,out] x solution
+  /// \param[in] with_init_guess if \a false (default), then assign zero to
+  ///             \a x as starting values
+  /// \param[in] verbose if \a true (default), enable verbose printing
+  template <class Matrix>
+  inline std::pair<int, size_type> solve_jacobi(
+      const Matrix &A, const array_type &b, array_type &x,
+      const bool with_init_guess = false, const bool verbose = true) const {
+    const static hilucsi::internal::StdoutStruct       Cout;
+    const static hilucsi::internal::StderrStruct       Cerr;
+    const static hilucsi::internal::DummyStreamer      Dummy_streamer;
+    const static hilucsi::internal::DummyErrorStreamer Dummy_cerr;
+
+    if (_this()._validate(A, b, x))
+      return std::make_pair(INVALID_ARGS, size_type(0));
+    if (verbose) _show("jacobi", with_init_guess, restart);
+    const internal::Jacobi<M_type> M(*_M);
+    if (!with_init_guess) std::fill(x.begin(), x.end(), value_type(0));
+    if (verbose)
+      hilucsi_info("Calling Jacobi %s kernel...", ChildSolver::repr());
+    return verbose ? _this()._solve(A, M, b, inner_steps, !with_init_guess, x,
+                                    Cout, Cerr)
+                   : _this()._solve(A, M, b, inner_steps, !with_init_guess, x,
+                                    Dummy_streamer, Dummy_cerr);
+  }
+
+  /// \brief solve with \ref _M as Jacobi operator plus Chebyshev acceleration
+  /// \tparam Matrix user input type, see \ref CRS and \ref CCS
+  /// \param[in] A user input matrix
+  /// \param[in] b right-hand side vector
+  /// \param[in,out] x solution
+  /// \param[in] with_init_guess if \a false (default), then assign zero to
+  ///             \a x as starting values
+  /// \param[in] verbose if \a true (default), enable verbose printing
+  template <class Matrix>
+  inline std::pair<int, size_type> solve_chebyshev(
+      const Matrix &A, const array_type &b, array_type &x,
+      const bool with_init_guess = false, const bool verbose = true) const {
+    const static hilucsi::internal::StdoutStruct       Cout;
+    const static hilucsi::internal::StderrStruct       Cerr;
+    const static hilucsi::internal::DummyStreamer      Dummy_streamer;
+    const static hilucsi::internal::DummyErrorStreamer Dummy_cerr;
+
+    if (_this()._validate(A, b, x))
+      return std::make_pair(INVALID_ARGS, size_type(0));
+    const internal::ChebyshevJacobi<M_type> M(*_M, lamb1, lamb2);
+    if (verbose) {
+      _show("Chebyshev", with_init_guess, restart);
+      hilucsi_info("Calling Chebyshev-Jacobi %s kernel...",
+                   ChildSolver::repr());
+      hilucsi_warning("Chebyshev-Jacobi is experiemental...");
+    }
+    if (!with_init_guess) std::fill(x.begin(), x.end(), value_type(0));
+    return verbose ? _this()._solve(A, M, b, inner_steps, !with_init_guess, x,
+                                    Cout, Cerr)
+                   : _this()._solve(A, M, b, inner_steps, !with_init_guess, x,
+                                    Dummy_streamer, Dummy_cerr);
+  }
+
+  /// \brief solve for solution
+  /// \tparam Matrix user input type, see \ref CRS and \ref CCS
+  /// \param[in] A user input matrix
+  /// \param[in] b right-hand side vector
+  /// \param[in,out] x solution
+  /// \param[in] kernel default is TRADITION, i.e. \ref solve_precond
+  /// \param[in] with_init_guess if \a false (default), then assign zero to
+  ///             \a x as starting values
+  /// \param[in] verbose if \a true (default), enable verbose printing
+  template <class Matrix>
+  inline std::pair<int, size_type> solve(const Matrix &A, const array_type &b,
+                                         array_type &x,
+                                         const int   kernel = TRADITION,
+                                         const bool  with_init_guess = false,
+                                         const bool  verbose = true) const {
+    switch (kernel) {
+      case TRADITION:
+        return solve_precond(A, b, x, with_init_guess, verbose);
+      case JACOBI:
+        return solve_jacobi(A, b, x, with_init_guess, verbose);
+      case CHEBYSHEV_JACOBI:
+        return solve_chebyshev(A, b, x, with_init_guess, verbose);
+      default:
+        hilucsi_warning("Unknown choice of %s kernel %d", ChildSolver::repr(),
+                        kernel);
+        return std::make_pair(-99, size_type(0));
+    }
+  }
+
+ protected:
+  std::shared_ptr<M_type> _M;       ///< preconditioner operator
+  mutable array_type      _resids;  ///< residual history
+
+ protected:
+  /// \brief check and assign any illegal parameters to default setting
+  inline void _check_pars() {
+    if (rtol <= 0) rtol = DefaultSettings<value_type>::rtol;
+    if (maxit == 0u) maxit = DefaultSettings<value_type>::max_iters;
+    if (inner_steps == 0u)
+      inner_steps = DefaultSettings<value_type>::inner_steps;
+  }
+
+  /// \brief ensure history residuals
+  inline void _init_resids() const {
+    _resids.reserve(maxit + 1);
+    _resids.resize(1);
+  }
+
+  /// \brief validation checking
+  template <class Matrix>
+  inline bool _validate(const Matrix &A, const array_type &b,
+                        const array_type &x) const {
+    if (!_M || _M->empty()) return true;
+    if (_M->nrows() != A.nrows()) return true;
+    if (b.size() != A.nrows()) return true;
+    if (b.size() != x.size()) return true;
+    if (rtol <= 0.0) return true;
+    if (maxit == 0u) return true;
+    if (inner_steps == 0u) return true;
+    return false;
+  }
+
+  /// \brief show information
+  /// \param[in] kernel kernel name
+  /// \param[in] with_init_guess solve with initial guess flag
+  /// \param[in] rs restart, nonpositive values indicate N/A
+  inline void _show(const char *kernel, const bool with_init_guess,
+                    const int rs) const {
+    hilucsi_info(
+        "- %s -\n"
+        "rtol=%g\n"
+        "restart=%s\n"
+        "maxiter=%zd\n"
+        "flex-kernel: %s\n"
+        "init-guess: %s\n",
+        ChildSolver::repr(), rtol,
+        (rs > 0 ? std::to_string(rs).c_str() : "N/A"), maxit, kernel,
+        (with_init_guess ? "yes" : "no"));
+  }
 };
 
 /*!
