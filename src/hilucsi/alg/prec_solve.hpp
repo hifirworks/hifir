@@ -51,8 +51,9 @@ namespace internal {
 template <class CrsType, class DiagType, class RhsType, typename T = void>
 inline typename std::enable_if<CrsType::ROW_MAJOR, T>::type prec_solve_udl_inv(
     const CrsType &U, const DiagType &d, const CrsType &L, RhsType &y) {
-  using size_type  = typename CrsType::size_type;
-  using value_type = typename CrsType::value_type;
+  using size_type = typename CrsType::size_type;
+  // use the rhs value type as default value type
+  using value_type = typename std::remove_reference<decltype(y[0])>::type;
   static_assert(CrsType::ROW_MAJOR, "must be crs");
 
   const size_type m = U.nrows();
@@ -166,6 +167,8 @@ inline typename std::enable_if<!CcsType::ROW_MAJOR, T>::type prec_solve_udl_inv(
 
 /// \brief Given multilevel preconditioner and rhs, solve the solution
 /// \tparam PrecItr this is std::list<Prec>::const_iterator
+/// \tparam RhsType right hand side type, see \ref Array
+/// \tparam SolType solution type, see \ref Array
 /// \tparam WorkType buffer type, generic array interface, i.e. operator[]
 /// \param[in] prec_itr current iterator of a single level preconditioner
 /// \param[in] b right-hand side vector
@@ -182,27 +185,23 @@ inline typename std::enable_if<!CcsType::ROW_MAJOR, T>::type prec_solve_udl_inv(
 /// the size given by \ref compute_prec_work_space
 ///
 /// \sa compute_prec_work_space
-template <class PrecItr, class WorkType>
-inline void prec_solve(
-    PrecItr prec_itr,
-    const Array<typename std::remove_const<
-        typename std::iterator_traits<PrecItr>::value_type>::type::value_type>
-        &b,
-    Array<typename std::remove_const<
-        typename std::iterator_traits<PrecItr>::value_type>::type::value_type>
-        &     y,
-    WorkType &work) {
+template <class PrecItr, class RhsType, class SolType, class WorkType>
+inline void prec_solve(PrecItr prec_itr, const RhsType &b, SolType &y,
+                       WorkType &work) {
   using prec_type = typename std::remove_const<
       typename std::iterator_traits<PrecItr>::value_type>::type;
-  using value_type           = typename prec_type::value_type;
+  using value_type = typename prec_type::value_type;
+  using interface_value_type =
+      typename std::remove_reference<decltype(y[0])>::type;
   using size_type            = typename prec_type::size_type;
   using array_type           = Array<value_type>;
+  using interface_array_type = Array<interface_value_type>;
   constexpr static bool WRAP = true;
 
-  static_assert(
-      std::is_same<typename std::remove_reference<decltype(work[0])>::type,
-                   value_type>::value,
-      "value type must be same for buffer and input data");
+  // NOTE that we cannot assume the data types are the same, but in general,
+  // we can assume the preconditioner's data type should be consistent, and
+  // the data type passed as b and y, which we refer as "interface_value_type",
+  // are the same.
 
   hilucsi_assert(b.size() == y.size(), "solution and rhs sizes should match");
 
@@ -228,7 +227,8 @@ inline void prec_solve(
   if (prec.is_last_level()) {
     if (nm) {
       // create an array wrapper with size of n-m, of y(m+1:n)
-      auto y_mn = array_type(nm, y.data() + m, WRAP);
+      auto y_mn = array_type(nm, &work[0], WRAP);
+      std::copy_n(y.data() + m, nm, y_mn.begin());
       if (prec.sparse_solver.empty())
         prec.dense_solver.solve(y_mn);
       else {
@@ -237,9 +237,10 @@ inline void prec_solve(
                          prec.sparse_solver.backend(),
                          prec.sparse_solver.info());
       }
+      std::copy_n(y_mn.cbegin(), nm, y.data() + m);
     }
   } else {
-    auto        y_mn      = array_type(nm, y.data() + m, WRAP);
+    auto        y_mn      = interface_array_type(nm, y.data() + m, WRAP);
     value_type *work_next = &work[n];  // advance to next buffer region
     auto        work_b    = array_type(nm, &work[0] + m, WRAP);
     std::copy(y_mn.cbegin(), y_mn.cend(), work_b.begin());

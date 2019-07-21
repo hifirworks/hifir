@@ -196,6 +196,9 @@ class HILUCSI {
     const static internal::StdoutStruct  Crout_cout;
     const static internal::DummyStreamer Crout_cout_dummy;
 
+    static_assert(std::is_same<index_type, typename CsType::index_type>::value,
+                  "inconsistent index types");
+
     // print introduction
     if (hilucsi_verbose(INFO, opts)) {
       if (!internal::introduced) {
@@ -233,13 +236,28 @@ class HILUCSI {
     // initialize statistics
     for (size_type i(0); i < sizeof(_stats) / sizeof(size_type); ++i)
       _stats[i] = 0;
+    CsType AA;
+    if (std::is_same<value_type, typename CsType::value_type>::value)
+      AA = A;  // shallow
+    else {
+      if (hilucsi_verbose(INFO, opts))
+        hilucsi_info("converting value type precision...");
+      // shallow integer arrays
+      AA.resize(A.nrows(), A.ncols());
+      AA.vals().resize(A.nnz());
+      hilucsi_error_if(AA.vals().status() == DATA_UNDEF,
+                       "memory allocation failed");
+      std::copy(A.vals().cbegin(), A.vals().cend(), AA.vals().begin());
+      AA.ind_start() = A.ind_start();
+      AA.inds()      = A.inds();
+    }
     // create size references for dropping
     iarray_type row_sizes, col_sizes;
     if (hilucsi_verbose(FAC, opts))
-      _factorize_kernel(A, m0, opts, row_sizes, col_sizes, Crout_cout,
+      _factorize_kernel(AA, m0, opts, row_sizes, col_sizes, Crout_cout,
                         schur_threads);
     else
-      _factorize_kernel(A, m0, opts, row_sizes, col_sizes, Crout_cout_dummy,
+      _factorize_kernel(AA, m0, opts, row_sizes, col_sizes, Crout_cout_dummy,
                         schur_threads);
     t.finish();
     if (hilucsi_verbose(INFO, opts)) {
@@ -253,10 +271,13 @@ class HILUCSI {
   }
 
   /// \brief solve \f$\mathbf{x}=\mathbf{M}^{-1}\mathbf{b}\f$
+  /// \tparam RhsType right-hand side type
+  /// \tparam SolType solution type
   /// \param[in] b right-hand side vector
   /// \param[out] x solution vector
   /// \sa factorize
-  inline void solve(const array_type &b, array_type &x) const {
+  template <class RhsType, class SolType>
+  inline void solve(const RhsType &b, SolType &x) const {
     hilucsi_error_if(empty(), "MILU-Prec is empty!");
     hilucsi_error_if(b.size() != x.size(), "unmatched sizes");
     if (_prec_work.empty())
