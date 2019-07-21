@@ -12,7 +12,7 @@ using std::string;
 using prec_t   = DefaultHILUCSI;  // use default C CRS with double and int
 using crs_t    = prec_t::crs_type;
 using array_t  = prec_t::array_type;
-using solver_t = ksp::QMRCGSTAB<prec_t>;
+using solver_t = ksp::FQMRCGSTAB<prec_t>;
 
 const static char *help =
     "\n"
@@ -143,11 +143,12 @@ int main(int argc, char *argv[]) {
   solver.rtol = rtol;
   int                 flag;
   solver_t::size_type iters;
-  std::tie(flag, iters) = solver.solve(A, b, x, false, opts.verbose);
+  std::tie(flag, iters) =
+      solver.solve(A, b, x, ksp::TRADITION, false, opts.verbose);
   timer.finish();
   const double rs = iters ? solver.resids().back() : -1.0;
   hilucsi_info(
-      "\nQMRCGSTAB(%.1e) done!\n"
+      "\nFQMRCGSTAB(%.1e) done!\n"
       "\tflag: %s\n"
       "\titers: %zd\n"
       "\tres: %.4g\n"
