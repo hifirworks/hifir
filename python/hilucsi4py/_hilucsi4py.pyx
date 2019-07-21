@@ -37,6 +37,7 @@ import numpy as np
 from .utils import (convert_to_crs, convert_to_crs_and_b, _as_index_array, _as_value_array)
 
 
+# whenever added new external objects, make sure update this table
 __all__ = [
     'version',
     'is_warning',
@@ -61,7 +62,8 @@ __all__ = [
     'KSP_MSolveError',
     'KSP_DivergedError',
     'KSP_StagnatedError',
-    'FGMRES'
+    'FGMRES',
+    'FQMRCGSTAB'
 ]
 
 # utilities
@@ -507,6 +509,21 @@ def _handle_flag(int flag):
         raise KSP_BreakDownError
 
 
+def _handle_kernel(str kernel):
+    cdef int kn
+    if kernel == 'tradition':
+        kn = hilucsi.TRADITION
+    elif kernel == 'jacobi':
+        kn = hilucsi.JACOBI
+    elif kernel == 'chebyshev-jacobi':
+        kn = hilucsi.CHEBYSHEV_JACOBI
+    else:
+        choices = ('tradition', 'jacobi', 'chebyshev-jacobi')
+        raise KSP_InvalidArgumentsError(
+            'invalid kernel {}, must be {}'.format(kernel, choices))
+    return kn
+
+
 cdef class FGMRES:
     r"""Flexible GMRES implementation with rhs preconditioner
 
@@ -529,7 +546,7 @@ cdef class FGMRES:
     restart : int
         restart in GMRES, default is 30
     max_inners : int
-        maximum inner iterations used in Jacobi style kernle, default is 4
+        maximum inner iterations used in Jacobi style kernle, default is 2
     lamb1 : float or ``None``
         if given, then used as the largest eigenvalue estimation
     lamb2 : float or ``None``
@@ -549,19 +566,19 @@ cdef class FGMRES:
     """
     cdef shared_ptr[hilucsi.PyFGMRES] solver
 
-    def __init__(self, M=None, rtol=1e-6, restart=30, maxit=500, max_inners=4,
+    def __init__(self, M=None, rtol=1e-6, restart=30, maxit=500, max_inners=2,
                  **kw):
         pass
 
     def __cinit__(self, HILUCSI M=None, double rtol=1e-6, int restart=30,
-                  int maxit=500, int max_inners=4, **kw):
+                  int maxit=500, int max_inners=2, **kw):
         self.solver.reset(new hilucsi.PyFGMRES())
         if M is not None:
             deref(self.solver).set_M(M.M)
         deref(self.solver).rtol = rtol
         deref(self.solver).restart = restart
         deref(self.solver).maxit = maxit
-        deref(self.solver).max_inners = max_inners
+        deref(self.solver).inner_steps = max_inners
         deref(self.solver).check_pars()
         lamb1 = kw.pop('lamb1', None)
         if lamb1 is not None:
@@ -604,15 +621,15 @@ cdef class FGMRES:
         deref(self.solver).restart = rs
 
     @property
-    def max_inners(self):
-        """int: maximum inner iterations for Jacobi-like inner iterations (4)"""
-        return deref(self.solver).max_inners
+    def inner_steps(self):
+        """int: maximum inner iterations for Jacobi-like inner iterations (2)"""
+        return deref(self.solver).inner_steps
 
-    @max_inners.setter
-    def max_inners(self, int maxi):
+    @inner_steps.setter
+    def inner_steps(self, int maxi):
         if maxi <= 0:
-            raise ValueError('max_inners must be positive integer')
-        deref(self.solver).max_inners = maxi
+            raise ValueError('inner_steps must be positive integer')
+        deref(self.solver).inner_steps = maxi
 
     @property
     def lamb1(self):
@@ -632,14 +649,27 @@ cdef class FGMRES:
     def lamb2(self, double v):
         deref(self.solver).lamb2 = v
 
-    def set_M(self, HILUCSI M):
+    @property
+    def M(self):
+        """HILUCSI: get preconditioner"""
+        cdef:
+            HILUCSI _M = HILUCSI()
+        if not deref(self.solver).get_M():
+            # empty
+            deref(self.solver).set_M(_M.M)
+        else:
+            _M.M = deref(self.solver).get_M()
+        return _M
+
+    @M.setter
+    def M(self, HILUCSI M):
         deref(self.solver).set_M(M.M)
 
     @property
     def resids(self):
         """list: list of history residuals"""
-        cdef:
-            vector[double] res = vector[double](deref(self.solver).get_iters())
+        cdef vector[double] res = \
+            vector[double](deref(self.solver).get_resids_length())
         deref(self.solver).get_resids(res.data())
         return res
 
@@ -692,17 +722,208 @@ cdef class FGMRES:
         KSP_BreakDownError
             solver breaks down
         """
-        assert kernel in ('tradition', 'jacobi', 'chebyshev-jacobi')
         if init_guess and x is None:
             raise KSP_InvalidArgumentsError('init-guess missing x0')
-        cdef:
-            int kn
-        if kernel == 'tradition':
-            kn = hilucsi.PyFGMRES_TRADITION
-        elif kernel == 'jacobi':
-            kn = hilucsi.PyFGMRES_JACOBI
+        cdef int kn = _handle_kernel(kernel)
+        rowptr, colind, vals, b = convert_to_crs_and_b(*args, shape=shape)
+        if x is None:
+            xx = np.empty_like(b)
         else:
-            kn = hilucsi.PyFGMRES_CHEBYSHEV_JACOBI
+            xx = _as_value_array(x)
+        if xx.shape != b.shape:
+            raise ValueError('inconsistent x and b')
+        flag, iters = self._solve(rowptr, colind, vals, b, xx, kn, init_guess,
+            verbose)
+        _handle_flag(flag)
+        return xx, iters
+
+
+cdef class FQMRCGSTAB:
+    r"""Flexible QMRCGSTAB implementation with rhs preconditioner
+
+    The FQMRCGSTAB implementation has three modes (kernels): the first one is
+    the ``traditional`` kernel by treating :math:`\boldsymbol{M}` as the rhs
+    preconditioner; the second one is ``jacobi`` fashion, where
+    :math:`\boldsymbol{M}` is treated as the "diagonal" term in Jacobi iteration
+    combining with the input matrix :math:`\boldsymbol{A}`; finally, the last
+    fashion is an extension to ``jacobi`` with Chebyshev acceleration, which
+    requires estimations of the largest and smallest eigenvalues.
+
+    Parameters
+    ----------
+    M : :class:`HILUCSI` or ``None``
+        preconditioner
+    rtol : float
+        relative tolerance, default is 1e-6
+    maxit : int
+        maximum iterations, default is 500
+    innersteps : int
+        inner iterations used in Jacobi style kernle, default is 2
+    lamb1 : float or ``None``
+        if given, then used as the largest eigenvalue estimation
+    lamb2 : float or ``None``
+        if given, then used as the smallest eigenvalue estimation
+
+    Examples
+    --------
+
+    >>> from scipy.sparse import random
+    >>> from hilucsi4py import *
+    >>> import numpy as np
+    >>> A = random(10,10,0.5)
+    >>> M = HILUCSI()
+    >>> M.factorize(A)
+    >>> solver = FQMRCGSTAB(M)
+    >>> x = solver.solve(A, np.random.rand(10))
+    """
+    cdef shared_ptr[hilucsi.PyFQMRCGSTAB] solver
+
+    def __init__(self, M=None, rtol=1e-6, maxit=500, max_inners=2, **kw):
+        pass
+
+    def __cinit__(self, HILUCSI M=None, double rtol=1e-6, int maxit=500,
+        int innersteps=2, **kw):
+        self.solver.reset(new hilucsi.PyFQMRCGSTAB())
+        if M is not None:
+            deref(self.solver).set_M(M.M)
+        deref(self.solver).rtol = rtol
+        deref(self.solver).maxit = maxit
+        deref(self.solver).inner_steps = innersteps
+        deref(self.solver).check_pars()
+        lamb1 = kw.pop('lamb1', None)
+        if lamb1 is not None:
+            deref(self.solver).lamb1 = lamb1
+        lamb2 = kw.pop('lamb2', None)
+        if lamb2 is not None:
+            deref(self.solver).lamb2 = lamb2
+
+    @property
+    def rtol(self):
+        """float: relative convergence tolerance (1e-6)"""
+        return deref(self.solver).rtol
+
+    @rtol.setter
+    def rtol(self, double v):
+        if v <= 0.0:
+            raise ValueError('rtol must be positive')
+        deref(self.solver).rtol = v
+
+    @property
+    def maxit(self):
+        """int: maximum number of interations (500)"""
+        return deref(self.solver).maxit
+
+    @maxit.setter
+    def maxit(self, int max_iters):
+        if max_iters <= 0:
+            raise ValueError('maxit must be positive integer')
+        deref(self.solver).maxit = max_iters
+
+    @property
+    def inner_steps(self):
+        """int: maximum inner iterations for Jacobi-like inner iterations (2)"""
+        return deref(self.solver).inner_steps
+
+    @inner_steps.setter
+    def inner_steps(self, int maxi):
+        if maxi <= 0:
+            raise ValueError('inner_steps must be positive integer')
+        deref(self.solver).inner_steps = maxi
+
+    @property
+    def lamb1(self):
+        """float: largest eigenvalue estimation"""
+        return deref(self.solver).lamb1
+
+    @lamb1.setter
+    def lamb1(self, double v):
+        deref(self.solver).lamb1 = v
+
+    @property
+    def lamb2(self):
+        """float: smallest eigenvalue estimation"""
+        return deref(self.solver).lamb2
+
+    @lamb2.setter
+    def lamb2(self, double v):
+        deref(self.solver).lamb2 = v
+
+    @property
+    def M(self):
+        """HILUCSI: get preconditioner"""
+        cdef:
+            HILUCSI _M = HILUCSI()
+        if not deref(self.solver).get_M():
+            # empty
+            deref(self.solver).set_M(_M.M)
+        else:
+            _M.M = deref(self.solver).get_M()
+        return _M
+
+    @M.setter
+    def M(self, HILUCSI M):
+        deref(self.solver).set_M(M.M)
+
+    @property
+    def resids(self):
+        """list: list of history residuals"""
+        cdef vector[double] res = \
+            vector[double](deref(self.solver).get_resids_length())
+        deref(self.solver).get_resids(res.data())
+        return res
+
+    def _solve(self, int[::1] rowptr, int[::1] colind, double[::1] vals,
+        double[::1] b, double[::1] x, int kernel, bool with_init_guess,
+        bool verbose):
+        cdef:
+            size_t n = b.size
+            bool wg = with_init_guess
+            bool v = verbose
+            pair[int, size_t] info
+        info = deref(self.solver).solve(n, &rowptr[0], &colind[0], &vals[0],
+            &b[0], &x[0], kernel, wg, v)
+        return info.first, info.second
+
+    def solve(self, *args, shape=None, x=None, kernel='tradition',
+        init_guess=False, verbose=True):
+        """Sovle the rhs solution
+
+        Parameters
+        ----------
+        *args : input matrix
+            either three array of CRS or scipy sparse matrix, and rhs b
+        shape : ``None`` or tuple (optional)
+            if input is three array, then this must be given
+        x : ``None`` or buffer of solution
+            for efficiency purpose, one can provide the buffer
+        kernel : str (optional)
+            kernel for preconditioning, either 'tradition', 'jacobi', or
+            'chebyshev-jacobi'
+        init_guess : bool (optional)
+            if ``False`` (default), then set initial state to be zeros
+        verbose : bool (optional)
+            if `True`` (default), then enable verbose printing
+
+        Returns
+        -------
+        tuple of solutions and iterations used.
+
+        Raises
+        ------
+        KSP_InvalidArgumentsError
+            invalid input arguments
+        KSP_MSolveError
+            preconditioenr solver error, see :func:`HILUCSI.solve`
+        KSP_DivergedError
+            iterations diverge due to exceeding :attr:`maxit`
+        KSP_StagnatedError
+            iterations stagnate
+        KSP_BreakDownError
+            solver breaks down
+        """
+        if init_guess and x is None:
+            raise KSP_InvalidArgumentsError('init-guess missing x0')
+        cdef int kn = _handle_kernel(kernel)
         rowptr, colind, vals, b = convert_to_crs_and_b(*args, shape=shape)
         if x is None:
             xx = np.empty_like(b)

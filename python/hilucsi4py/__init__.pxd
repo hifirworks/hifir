@@ -86,24 +86,39 @@ cdef extern from 'hilucsi4py.hpp' namespace 'hilucsi' nogil:
         double rtol
         int restart
         size_t maxit
-        size_t max_inners
+        size_t inner_steps
         double lamb1
         double lamb2
         void set_M(shared_ptr[PyHILUCSI] M) except +
         shared_ptr[PyHILUCSI] get_M()
         void check_pars()
-        int get_iters()
+        int get_resids_length()
         void get_resids(double *r)
         pair[int, size_t] solve(const size_t n, const int *rowptr,
                                 const int *colind, const double *vals,
                                 const double *b, double *x, const int kernel,
                                 const bool with_init_guess,
                                 const bool verbose) except +
-
-    cdef enum:
-        PyFGMRES_TRADITION
-        PyFGMRES_JACOBI
-        PyFGMRES_CHEBYSHEV_JACOBI
+    
+    cdef cppclass PyFQMRCGSTAB:
+        PyFQMRCGSTAB()
+        PyFQMRCGSTAB(shared_ptr[PyHILUCSI] M, const double rel_tol,
+                 const size_t max_iters, const size_t innersteps) except +
+        double rtol
+        size_t maxit
+        size_t inner_steps
+        double lamb1
+        double lamb2
+        void set_M(shared_ptr[PyHILUCSI] M) except +
+        shared_ptr[PyHILUCSI] get_M()
+        void check_pars()
+        int get_resids_length()
+        void get_resids(double *r)
+        pair[int, size_t] solve(const size_t n, const int *rowptr,
+                                const int *colind, const double *vals,
+                                const double *b, double *x, const int kernel,
+                                const bool with_init_guess,
+                                const bool verbose) except +
 
 
 cdef extern from 'hilucsi4py.hpp' namespace 'hilucsi::ksp' nogil:
@@ -114,6 +129,11 @@ cdef extern from 'hilucsi4py.hpp' namespace 'hilucsi::ksp' nogil:
         DIVERGED
         STAGNATED
         BREAK_DOWN
+    
+    cdef enum:
+        TRADITION
+        JACOBI
+        CHEBYSHEV_JACOBI
 
 
 cdef extern from 'hilucsi4py.hpp' namespace 'hilucsi::internal' nogil:
