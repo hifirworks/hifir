@@ -113,13 +113,13 @@ norm2(const ArrayType &v) {
 
 // double
 template <>
-inline constexpr double conj(const double &v) {
+inline double conj(const double &v) {
   return v;
 }
 
 // float
 template <>
-inline constexpr float conj(const float &v) {
+inline float conj(const float &v) {
   return v;
 }
 
