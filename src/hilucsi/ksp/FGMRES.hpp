@@ -51,11 +51,11 @@ class FGMRES : public internal::KSP<FGMRES<MType>, MType> {
 
   using _base::maxit;
 
+  using _base::restart;
+
   using _base::inner_steps;
   using _base::lamb1;
   using _base::lamb2;
-
-  int restart = 30;  ///< restart
 
   FGMRES() = default;
 
@@ -72,120 +72,10 @@ class FGMRES : public internal::KSP<FGMRES<MType>, MType> {
       const size_type max_iters       = DefaultSettings<value_type>::max_iters,
       const size_type max_inner_steps =
           DefaultSettings<value_type>::inner_steps)
-      : restart(rs), _base(M, rel_tol, max_iters, max_inner_steps) {
+      : _base(M, rel_tol, max_iters, max_inner_steps) {
+    restart = rs;
+    if (restart <= 0) restart = 30;
     if (_M && _M->nrows()) _ensure_data_capacities(_M->nrows());
-  }
-
-  /// \brief solve with \ref _M as traditional preconditioner
-  /// \tparam Matrix user input type, see \ref CRS and \ref CCS
-  /// \param[in] A user input matrix
-  /// \param[in] b right-hand side vector
-  /// \param[in,out] x solution
-  /// \param[in] with_init_guess if \a false (default), then assign zero to
-  ///             \a x as starting values
-  /// \param[in] verbose if \a true (default), enable verbose printing
-  template <class Matrix>
-  inline std::pair<int, size_type> solve_precond(
-      const Matrix &A, const array_type &b, array_type &x,
-      const bool with_init_guess = false, const bool verbose = true) const {
-    const static hilucsi::internal::StdoutStruct       Cout;
-    const static hilucsi::internal::StderrStruct       Cerr;
-    const static hilucsi::internal::DummyStreamer      Dummy_streamer;
-    const static hilucsi::internal::DummyErrorStreamer Dummy_cerr;
-
-    if (_validate(A, b, x)) return std::make_pair(INVALID_ARGS, size_type(0));
-    if (verbose) _base::_show("tradition", with_init_guess, restart);
-    if (!with_init_guess) std::fill(x.begin(), x.end(), value_type(0));
-    const internal::DummyJacobi<M_type> M(*_M);
-    if (verbose) hilucsi_info("Calling traditional GMRES kernel...");
-    return verbose ? _solve(A, M, b, 1u, !with_init_guess, x, Cout, Cerr)
-                   : _solve(A, M, b, 1u, !with_init_guess, x, Dummy_streamer,
-                            Dummy_cerr);
-  }
-
-  /// \brief solve with \ref _M as Jacobi operator
-  /// \tparam Matrix user input type, see \ref CRS and \ref CCS
-  /// \param[in] A user input matrix
-  /// \param[in] b right-hand side vector
-  /// \param[in,out] x solution
-  /// \param[in] with_init_guess if \a false (default), then assign zero to
-  ///             \a x as starting values
-  /// \param[in] verbose if \a true (default), enable verbose printing
-  template <class Matrix>
-  inline std::pair<int, size_type> solve_jacobi(
-      const Matrix &A, const array_type &b, array_type &x,
-      const bool with_init_guess = false, const bool verbose = true) const {
-    const static hilucsi::internal::StdoutStruct       Cout;
-    const static hilucsi::internal::StderrStruct       Cerr;
-    const static hilucsi::internal::DummyStreamer      Dummy_streamer;
-    const static hilucsi::internal::DummyErrorStreamer Dummy_cerr;
-
-    if (_validate(A, b, x)) return std::make_pair(INVALID_ARGS, size_type(0));
-    if (verbose) _base::_show("Jacobi", with_init_guess, restart);
-    const internal::Jacobi<M_type> M(*_M);
-    if (!with_init_guess) std::fill(x.begin(), x.end(), value_type(0));
-    return verbose
-               ? _solve(A, M, b, inner_steps, !with_init_guess, x, Cout, Cerr)
-               : _solve(A, M, b, inner_steps, !with_init_guess, x,
-                        Dummy_streamer, Dummy_cerr);
-  }
-
-  /// \brief solve with \ref _M as Jacobi operator plus Chebyshev acceleration
-  /// \tparam Matrix user input type, see \ref CRS and \ref CCS
-  /// \param[in] A user input matrix
-  /// \param[in] b right-hand side vector
-  /// \param[in,out] x solution
-  /// \param[in] with_init_guess if \a false (default), then assign zero to
-  ///             \a x as starting values
-  /// \param[in] verbose if \a true (default), enable verbose printing
-  template <class Matrix>
-  inline std::pair<int, size_type> solve_chebyshev(
-      const Matrix &A, const array_type &b, array_type &x,
-      const bool with_init_guess = false, const bool verbose = true) const {
-    const static hilucsi::internal::StdoutStruct       Cout;
-    const static hilucsi::internal::StderrStruct       Cerr;
-    const static hilucsi::internal::DummyStreamer      Dummy_streamer;
-    const static hilucsi::internal::DummyErrorStreamer Dummy_cerr;
-
-    if (_validate(A, b, x)) return std::make_pair(INVALID_ARGS, size_type(0));
-    if (verbose) {
-      _base::_show("Chebyshev", with_init_guess, restart);
-      hilucsi_warning("Chebyshev Jacobi with GMRES is experiemental...");
-    }
-    const internal::ChebyshevJacobi<M_type> M(*_M, lamb1, lamb2);
-    if (!with_init_guess) std::fill(x.begin(), x.end(), value_type(0));
-    return verbose
-               ? _solve(A, M, b, inner_steps, !with_init_guess, x, Cout, Cerr)
-               : _solve(A, M, b, inner_steps, !with_init_guess, x,
-                        Dummy_streamer, Dummy_cerr);
-  }
-
-  /// \brief solve for solution
-  /// \tparam Matrix user input type, see \ref CRS and \ref CCS
-  /// \param[in] A user input matrix
-  /// \param[in] b right-hand side vector
-  /// \param[in,out] x solution
-  /// \param[in] kernel default is TRADITION, i.e. \ref solve_precond
-  /// \param[in] with_init_guess if \a false (default), then assign zero to
-  ///             \a x as starting values
-  /// \param[in] verbose if \a true (default), enable verbose printing
-  template <class Matrix>
-  inline std::pair<int, size_type> solve(const Matrix &A, const array_type &b,
-                                         array_type &x,
-                                         const int   kernel = TRADITION,
-                                         const bool  with_init_guess = false,
-                                         const bool  verbose = true) const {
-    switch (kernel) {
-      case TRADITION:
-        return solve_precond(A, b, x, with_init_guess, verbose);
-      case JACOBI:
-        return solve_jacobi(A, b, x, with_init_guess, verbose);
-      case CHEBYSHEV_JACOBI:
-        return solve_chebyshev(A, b, x, with_init_guess, verbose);
-      default:
-        hilucsi_warning("Unknown choice of FGMRES kernel %d", kernel);
-        return std::make_pair(-99, size_type(0));
-    }
   }
 
  protected:
@@ -356,7 +246,7 @@ class FGMRES : public internal::KSP<FGMRES<MType>, MType> {
         ++iter;
         Cout("  At iteration %zd (inner:%zd), relative residual is %g.", iter,
              exp_steps, resid);
-        if (resid < rtol || j + 1 >= (size_type)restart) break;
+        if (resid <= rtol || j + 1 >= (size_type)restart) break;
         ++j;
       }  // inf loop
       // backsolve
@@ -376,7 +266,7 @@ class FGMRES : public internal::KSP<FGMRES<MType>, MType> {
         auto       Z_itr = _Z.cbegin() + i * n;
         for (size_type k = 0u; k < n; ++k) x[k] += tmp * Z_itr[k];
       }
-      if (resid < rtol || flag != SUCCESS) break;
+      if (resid <= rtol || flag != SUCCESS) break;
     }
     return std::make_pair(flag, iter);
   }
