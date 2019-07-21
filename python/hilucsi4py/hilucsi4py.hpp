@@ -129,42 +129,43 @@ class PyHILUCSI : public DefaultHILUCSI {
   }
 };
 
-class PyFGMRES : public ksp::FGMRES<PyHILUCSI> {
+// using a template base for Ksp solver
+template <template <class> class Ksp>
+class KspAdapt : public Ksp<PyHILUCSI> {
  public:
-  using base      = ksp::FGMRES<PyHILUCSI>;
-  using size_type = base::size_type;
+  using base      = Ksp<PyHILUCSI>;
+  using size_type = typename base::size_type;
 
-  inline int  get_iters() const { return _resids.size(); }
+  inline int  get_resids_length() const { return base::_resids.size(); }
   inline void get_resids(double *r) const {
-    for (int i = 0; i < get_iters(); ++i) r[i] = _resids[i];
+    for (int i = 0; i < get_resids_length(); ++i) r[i] = base::_resids[i];
   }
 
-  inline void check_pars() { _check_pars(); }
+  inline void check_pars() { base::_check_pars(); }
 
   inline std::pair<int, size_type> solve(const size_type n, const int *rowptr,
                                          const int *colind, const double *vals,
                                          const double *b, double *x,
-                                         const int kernel = PyFGMRES::TRADITION,
+                                         const int  kernel = ksp::TRADITION,
                                          const bool with_init_guess = false,
                                          const bool verbose = true) const {
-    using crs_type             = base::M_type::crs_type;
-    using array_type           = crs_type::array_type;
+    using crs_type             = typename base::M_type::crs_type;
+    using array_type           = typename crs_type::array_type;
     constexpr static bool WRAP = true;
 
     const crs_type A(n, n, const_cast<int *>(rowptr), const_cast<int *>(colind),
                      const_cast<double *>(vals), WRAP);
+#ifndef NDEBUG
     A.check_validity();
+#endif
     const array_type bb(n, const_cast<double *>(b), WRAP);
     array_type       xx(n, x, WRAP);
     return base::solve(A, bb, xx, kernel, with_init_guess, verbose);
   }
 };
 
-enum {
-  PyFGMRES_TRADITION        = PyFGMRES::TRADITION,
-  PyFGMRES_JACOBI           = PyFGMRES::JACOBI,
-  PyFGMRES_CHEBYSHEV_JACOBI = PyFGMRES::CHEBYSHEV_JACOBI,
-};
+using PyFGMRES     = KspAdapt<ksp::FGMRES>;      // fgmres
+using PyFQMRCGSTAB = KspAdapt<ksp::FQMRCGSTAB>;  // fqmrcgstab
 
 }  // namespace hilucsi
 
