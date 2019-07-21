@@ -124,9 +124,6 @@ inline void drop_L_E(const typename CrsType::iarray_type &ref_indptr,
     L_E.col_ind().resize(0);
     L_E.vals().resize(0);
   }
-#ifndef NDEBUG
-  L_E.check_validity();
-#endif
 }
 
 /// \brief drop \a U_F
@@ -154,9 +151,6 @@ inline void drop_U_F(const typename CcsType::iarray_type &ref_indptr,
     U_F.row_ind().resize(0);
     U_F.vals().resize(0);
   }
-#ifndef NDEBUG
-  U_F.check_validity();
-#endif
 }
 
 /// \brief compute the simple version of Schur complement
@@ -522,11 +516,6 @@ inline void drop_L_E_and_U_F(const typename CrsType::iarray_type &ref_indptr_L,
       U_F.vals().resize(U_F.nnz());
     }
   } while (false);  // end of parallel region
-
-#ifndef NDEBUG
-  L_E.check_validity();
-  U_F.check_validity();
-#endif
 }
 
 /// \brief compute the simple version of Schur complement in MT setting
