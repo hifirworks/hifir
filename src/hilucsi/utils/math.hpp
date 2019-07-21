@@ -130,13 +130,13 @@ inline std::complex<T> conj(const std::complex<T> &v) {
 
 // double
 template <>
-inline constexpr double abs(const double &v) {
+inline double abs(const double &v) {
   return std::abs(v);
 }
 
 // float
 template <>
-inline constexpr float abs(const float &v) {
+inline float abs(const float &v) {
   return std::abs(v);
 }
 
