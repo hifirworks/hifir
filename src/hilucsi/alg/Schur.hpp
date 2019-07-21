@@ -174,15 +174,15 @@ inline void drop_U_F(const typename CcsType::iarray_type &ref_indptr,
 /// Mathematically, this is to compute:
 ///
 /// \f[
-///   \boldsymbol{S}_C=\boldsymbol{A}[\boldsymbol{p}_{m+1:n},\boldsymbol{q}_{m+1:n}]
-///     -\boldsymbol{L}_E\textrm{diag}(\boldsymbol{d_B})\boldsymbol{U}_F
+///   \mathbf{S}_C=\mathbf{A}[\mathbf{p}_{m+1:n},\mathbf{q}_{m+1:n}]
+///     -\mathbf{L}_E\textrm{diag}(\mathbf{d_B})\mathbf{U}_F
 /// \f]
 ///
-/// Where \f$\boldsymbol{L}_E=\boldsymbol{L}_{m+1:n,:}\f$,
-/// \f$\boldsymbol{U}_F=\boldsymbol{U}_{:,m+1:n}\f$. Notice that both
-/// \f$\boldsymbol{L}\f$ and \f$\boldsymbol{U}\f$ are lower and upper parts
+/// Where \f$\mathbf{L}_E=\mathbf{L}_{m+1:n,:}\f$,
+/// \f$\mathbf{U}_F=\mathbf{U}_{:,m+1:n}\f$. Notice that both
+/// \f$\mathbf{L}\f$ and \f$\mathbf{U}\f$ are lower and upper parts
 /// \b after computing Crout updates. Therefore, they are rectangle matrices
-/// if \f$m<n\f$. Accessing \f$\boldsymbol{U}_{:,m+1:n}\f$ can be efficiently
+/// if \f$m<n\f$. Accessing \f$\mathbf{U}_{:,m+1:n}\f$ can be efficiently
 /// achieved with \a U_start vector, which is given after Crout updates.
 ///
 /// This computation involves sparse matrix multiplication, which is done in

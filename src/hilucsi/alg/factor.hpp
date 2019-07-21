@@ -111,8 +111,8 @@ inline std::tuple<double, double, double, double, int, int> determine_fac_pars(
 /// This routine, essentially, is to compute:
 ///
 /// \f[
-///   \boldsymbol{D}=\left(\boldsymbol{SAT}\right)_{\boldsymbol{p}_{1:m},
-///     \boldsymbol{q}_{1:m}}
+///   \mathbf{D}=\left(\mathbf{SAT}\right)_{\mathbf{p}_{1:m},
+///     \mathbf{q}_{1:m}}
 /// \f]
 ///
 /// This routine is used before \ref Crout update to extract the initial
@@ -171,8 +171,8 @@ inline Array<typename CcsType::value_type> extract_perm_diag(
 /// Essentially, this routine is to perform:
 ///
 /// \f[
-///   \boldsymbol{E}=\left(\boldsymbol{SAT}\right)_{\boldsymbol{p}_{m+1:n},
-///     \boldsymbol{q}_{1:m}}
+///   \mathbf{E}=\left(\mathbf{SAT}\right)_{\mathbf{p}_{m+1:n},
+///     \mathbf{q}_{1:m}}
 /// \f]
 template <class CrsType, class ScalingType, class PermType>
 inline typename CrsType::other_type extract_E(
@@ -276,8 +276,8 @@ inline typename CrsType::other_type extract_E(
 /// This routine, essentially, is to compute:
 ///
 /// \f[
-///   \boldsymbol{F}=\left(\boldsymbol{SAT}\right)_{\boldsymbol{p}_{1:m},
-///     \boldsymbol{q}_{m+1:n}}
+///   \mathbf{F}=\left(\mathbf{SAT}\right)_{\mathbf{p}_{1:m},
+///     \mathbf{q}_{m+1:n}}
 /// \f]
 template <class CcsType, class ScalingType, class PermType, class BufferType>
 inline CcsType extract_F(const ScalingType &s, const CcsType &A,

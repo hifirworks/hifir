@@ -56,7 +56,7 @@ class LUP : public internal::SmallScaleBase<ValueType> {
       _rank = _mat.ncols();
   }
 
-  /// \brief solve \f$\boldsymbol{LUx}=\boldsymbol{Px}\f$
+  /// \brief solve \f$\mathbf{LUx}=\mathbf{Px}\f$
   /// \param[in,out] x input rhs, output solution
   inline void solve(Array<value_type> &x) const {
     hilucsi_error_if(

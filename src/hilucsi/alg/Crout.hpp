@@ -122,28 +122,28 @@ class Crout {
   /// \param[out] ut current row vector of U
   /// \sa compute_l
   ///
-  /// This routine computes the current row vector of \f$\boldsymbol{U}\f$
+  /// This routine computes the current row vector of \f$\mathbf{U}\f$
   /// (w/o diagonal scaling). Mathematically, this routine is to compute:
   ///
   /// \f[
-  ///   \boldsymbol{u}_{k}^{T}=
-  ///     \hat{\boldsymbol{A}}[p_{k},\boldsymbol{q}_{k+1:n}]-
-  ///     \boldsymbol{L}_{k,1:k-1}\boldsymbol{D}_{k-1}
-  ///       \boldsymbol{U}_{1:k-1,k+1:n}
+  ///   \mathbf{u}_{k}^{T}=
+  ///     \hat{\mathbf{A}}[p_{k},\mathbf{q}_{k+1:n}]-
+  ///     \mathbf{L}_{k,1:k-1}\mathbf{D}_{k-1}
+  ///       \mathbf{U}_{1:k-1,k+1:n}
   /// \f]
   ///
   /// It's worth noting that, conceptally, the formula above is nothing but
   /// a vector matrix operation. However, standard implementation won't give
   /// good performance (especially with consideration of cache performance),
-  /// this is because \f$\boldsymbol{L}\f$ is stored in column major whereas
-  /// row major for \f$\boldsymbol{U}\f$. Therefore, the actual implementation
-  /// is in the fashion that loops through \f$\boldsymbol{U}\f$ in row major
-  /// while keeping \f$\boldsymbol{L}\f$ as much static as possible.
+  /// this is because \f$\mathbf{L}\f$ is stored in column major whereas
+  /// row major for \f$\mathbf{U}\f$. Therefore, the actual implementation
+  /// is in the fashion that loops through \f$\mathbf{U}\f$ in row major
+  /// while keeping \f$\mathbf{L}\f$ as much static as possible.
   ///
   /// Regarding the complexity cost, it takes
-  /// \f$\matchcal{O}(\textrm{nnz}(\boldsymbol{A}_{p_k,:}))\f$ to first load the
-  /// row of A to \f$\boldsymbol{u}_k^T\f$, and takes
-  /// \f$\mathcal{O}(\cup_j \textrm{nnz}(\boldsymbol{U}_{j,:}))\f$, where
+  /// \f$\mathcal{O}(\textrm{nnz}(\mathbf{A}_{p_k,:}))\f$ to first load the
+  /// row of A to \f$\mathbf{u}_k^T\f$, and takes
+  /// \f$\mathcal{O}(\cup_j \textrm{nnz}(\mathbf{U}_{j,:}))\f$, where
   /// \f$l_{kj}\neq 0\f$ for computing the vector matrix operation.
   template <class ScaleArray, class CrsType, class PermType, class PosArray,
             class DiagType, class CcsType, class SpVecType>
@@ -223,28 +223,28 @@ class Crout {
   /// \param[out] l column vector of L at current \ref _step
   /// \sa compute_ut
   ///
-  /// This routine computes the current column vector of \f$\boldsymbol{L}\f$
+  /// This routine computes the current column vector of \f$\mathbf{L}\f$
   /// (w/o diagonal scaling). Mathematically, this routine is to compute:
   ///
   /// \f[
-  ///   \boldsymbol{\ell}_{k}=
-  ///     \hat{\boldsymbol{A}}[\boldsymbol{p}_{k+1:n},q_{k}]-
-  ///     \boldsymbol{L}_{k+1:n,1:k-1}\boldsymbol{D}_{k-1}
-  ///       \boldsymbol{U}_{1:k-1,k}
+  ///   \mathbf{\ell}_{k}=
+  ///     \hat{\mathbf{A}}[\mathbf{p}_{k+1:n},q_{k}]-
+  ///     \mathbf{L}_{k+1:n,1:k-1}\mathbf{D}_{k-1}
+  ///       \mathbf{U}_{1:k-1,k}
   /// \f]
   ///
   /// It's worth noting that, conceptally, the formula above is nothing but
   /// a matrix vector operation. However, standard implementation won't give
   /// good performance (especially with consideration of cache performance),
-  /// this is because \f$\boldsymbol{L}\f$ is stored in column major whereas
-  /// row major for \f$\boldsymbol{U}\f$. Therefore, the actual implementation
-  /// is in the fashion that loops through \f$\boldsymbol{L}\f$ in column major
-  /// while keeping \f$\boldsymbol{U}\f$ as much static as possible.
+  /// this is because \f$\mathbf{L}\f$ is stored in column major whereas
+  /// row major for \f$\mathbf{U}\f$. Therefore, the actual implementation
+  /// is in the fashion that loops through \f$\mathbf{L}\f$ in column major
+  /// while keeping \f$\mathbf{U}\f$ as much static as possible.
   ///
   /// Regarding the complexity cost, it takes
-  /// \f$\matchcal{O}(\textrm{nnz}(\boldsymbol{A}_{:,q_k}))\f$ to first load the
-  /// column of A to \f$\boldsymbol{\ell}_k\f$, and takes
-  /// \f$\mathcal{O}(\cup_i \textrm{nnz}(\boldsymbol{L}_{:,i}))\f$, where
+  /// \f$\mathcal{O}(\textrm{nnz}(\mathbf{A}_{:,q_k}))\f$ to first load the
+  /// column of A to \f$\mathbf{\ell}_k\f$, and takes
+  /// \f$\mathcal{O}(\cup_i \textrm{nnz}(\mathbf{L}_{:,i}))\f$, where
   /// \f$u_{ik}\neq 0\f$ for computing the matrix vector operation.
   template <bool IsSymm, class ScaleArray, class CcsType, class PermType,
             class PosArray, class DiagType, class CrsType, class SpVecType>
@@ -424,16 +424,16 @@ class Crout {
   /// the diagonal entries:
   ///
   /// \f[
-  ///   \boldsymbol{D}_{k+1:m,k+1:m}=\boldsymbol{D}_{k+1:m,k+1:m}-
-  ///     \boldsymbol{D}_{k,k}
-  ///     \left(\boldsymbol{\ell}_k\otimes\boldsymbol{u}_k\right)_{k+1:m,k+1:m}
+  ///   \mathbf{D}_{k+1:m,k+1:m}=\mathbf{D}_{k+1:m,k+1:m}-
+  ///     \mathbf{D}_{k,k}
+  ///     \left(\mathbf{\ell}_k\otimes\mathbf{u}_k\right)_{k+1:m,k+1:m}
   /// \f]
   ///
   /// The complexity is bounded by:
   ///
   /// \f[
-  ///   \mathcal{O}(\min(\textrm{nnz}(\boldsymbol{\ell}_k),
-  ///     \textrm{nnz}(\boldsymbol{u}_k)))
+  ///   \mathcal{O}(\min(\textrm{nnz}(\mathbf{\ell}_k),
+  ///     \textrm{nnz}(\mathbf{u}_k)))
   ///\f]
   template <bool IsSymm, class SpVecType, class DiagType>
   inline typename std::enable_if<!IsSymm>::type update_B_diag(
@@ -495,15 +495,15 @@ class Crout {
   /// the diagonal entries:
   ///
   /// \f[
-  ///   \boldsymbol{D}_{k+1:m,k+1:m}=\boldsymbol{D}_{k+1:m,k+1:m}-
-  ///     \boldsymbol{D}_{k,k}
-  ///     \left(\boldsymbol{\ell}_k\otimes\boldsymbol{\u}_k\right)_{k+1:m,k+1:m}
+  ///   \mathbf{D}_{k+1:m,k+1:m}=\mathbf{D}_{k+1:m,k+1:m}-
+  ///     \mathbf{D}_{k,k}
+  ///     \left(\mathbf{\ell}_k\otimes\mathbf{u}_k\right)_{k+1:m,k+1:m}
   /// \f]
   ///
   /// The complexity is bounded by:
   ///
   /// \f[
-  ///   \mathcal{O}(\textrm{nnz}(\boldsymbol{\u}_k))
+  ///   \mathcal{O}(\textrm{nnz}(\mathbf{u}_k))
   ///\f]
   template <bool IsSymm, class SpVecType, class DiagType>
   inline typename std::enable_if<IsSymm>::type update_B_diag(
@@ -531,13 +531,13 @@ class Crout {
   /// \param[in,out] v vector to be scaled
   /// \return The returned boolean flag indices a singularity occurs if \a true
   ///
-  /// This routine computes \f$\boldsymbol{v}=\boldsymbol{v}/d_k\f$; firstly,
+  /// This routine computes \f$\mathbf{v}=\mathbf{v}/d_k\f$; firstly,
   /// singularity is checked to ensure the validation of computation. Then,
   /// we test if it's safe to invert \f$d_k\f$ so that we can use multiplication
   /// instead of division.
   ///
   /// Regarding complexity, this routine takes
-  /// \f$\mathcal{O}(\textrm{nnz}(\boldsymbol{v}))\f$
+  /// \f$\mathcal{O}(\textrm{nnz}(\mathbf{v}))\f$
   template <class DiagType, class SpVecType>
   inline bool scale_inv_diag(const DiagType &d, SpVecType &v) const {
     using value_t                     = typename DiagType::value_type;

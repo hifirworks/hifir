@@ -42,8 +42,7 @@ namespace internal {
 /// This routine is to solve:
 ///
 /// \f[
-///   \boldsymbol{y}&=\boldsymbol{U}^{-1}\boldsymbol{D}^{-1}\boldsymbol{L}^{-1}
-///     \boldsymbol{y}
+///   \mathbf{y}=\mathbf{U}^{-1}\mathbf{D}^{-1}\mathbf{L}^{-1}\mathbf{y}
 /// \f]
 ///
 /// The overall complexity is linear assuming the local nnz are bounded by a
@@ -100,8 +99,7 @@ inline typename std::enable_if<CrsType::ROW_MAJOR, T>::type prec_solve_udl_inv(
 /// This routine is to solve:
 ///
 /// \f[
-///   \boldsymbol{y}&=\boldsymbol{U}^{-1}\boldsymbol{D}^{-1}\boldsymbol{L}^{-1}
-///     \boldsymbol{y}
+///   \mathbf{y}=\mathbf{U}^{-1}\mathbf{D}^{-1}\mathbf{L}^{-1}\mathbf{y}
 /// \f]
 ///
 /// The overall complexity is linear assuming the local nnz are bounded by a

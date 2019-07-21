@@ -252,7 +252,7 @@ class HILUCSI {
     if (revert_warn) (void)warn_flag(1);
   }
 
-  /// \brief solve \f$\boldsymbol{x}=\boldsymbol{M}^{-1}\boldsymbol{b}\f$
+  /// \brief solve \f$\mathbf{x}=\mathbf{M}^{-1}\mathbf{b}\f$
   /// \param[in] b right-hand side vector
   /// \param[out] x solution vector
   /// \sa factorize

@@ -996,7 +996,7 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \sa scale_diag_right
   ///
   /// Mathematically, this member function is to perform
-  /// \f$ \textrm{diag}(\boldsymbol{s})\boldsymbol{A}\f$; the overall complexity
+  /// \f$ \textrm{diag}(\mathbf{s})\mathbf{A}\f$; the overall complexity
   /// is in order of \f$\mathcal{O}(nnz)\f$
   template <class DiagArray>
   inline void scale_diag_left(const DiagArray &s) {
@@ -1017,7 +1017,7 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \sa scale_diag_left
   ///
   /// Mathematically, this member function is to perform
-  /// \f$\boldsymbol{A} \textrm{diag}(\boldsymbol{t})\f$; the overall complexity
+  /// \f$\mathbf{A} \textrm{diag}(\mathbf{t})\f$; the overall complexity
   /// is in order of \f$\mathcal{O}(nnz)\f$
   template <class DiagArray>
   inline void scale_diag_right(const DiagArray &t) {
@@ -1036,8 +1036,8 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] t diagonal matrix of right side
   ///
   /// Mathematically, this member function is to perform
-  /// \f$\textrm{diag}(\boldsymbol{s}) \boldsymbol{A}
-  /// \textrm{diag}(\boldsymbol{t})\f$
+  /// \f$\textrm{diag}(\mathbf{s}) \mathbf{A}
+  /// \textrm{diag}(\mathbf{t})\f$
   template <class LeftDiagArray, class RightDiagArray>
   inline void scale_diags(const LeftDiagArray &s, const RightDiagArray &t) {
     scale_diag_left(s);
@@ -1202,7 +1202,7 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] x input array
   /// \param[out] y output array
   /// \note Sizes must match
-  /// \note Compute \f$y=\boldsymbol{A}^Tx\f$
+  /// \note Compute \f$y=\mathbf{A}^Tx\f$
   template <class IArray, class OArray>
   inline void mv_t(const IArray &x, OArray &y) const {
     hilucsi_error_if(nrows() != x.size() || ncols() != y.size(),
@@ -1732,7 +1732,7 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \sa scale_diag_right
   ///
   /// Mathematically, this member function is to perform
-  /// \f$ \textrm{diag}(\boldsymbol{s})\boldsymbol{A}\f$; the overall complexity
+  /// \f$ \textrm{diag}(\mathbf{s})\mathbf{A}\f$; the overall complexity
   /// is in order of \f$\mathcal{O}(nnz)\f$
   template <class DiagArray>
   inline void scale_diag_left(const DiagArray &s) {
@@ -1750,7 +1750,7 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \sa scale_diag_left
   ///
   /// Mathematically, this member function is to perform
-  /// \f$\boldsymbol{A} \textrm{diag}(\boldsymbol{s})\f$; the overall complexity
+  /// \f$\mathbf{A} \textrm{diag}(\mathbf{s})\f$; the overall complexity
   /// is in order of \f$\mathcal{O}(nnz)\f$
   template <class DiagArray>
   inline void scale_diag_right(const DiagArray &t) {
@@ -1772,8 +1772,8 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] t diagonal matrix of right side
   ///
   /// Mathematically, this member function is to perform
-  /// \f$\textrm{diag}(\boldsymbol{s}) \boldsymbol{A}
-  /// \textrm{diag}(\boldsymbol{t})\f$
+  /// \f$\textrm{diag}(\mathbf{s}) \mathbf{A}
+  /// \textrm{diag}(\mathbf{t})\f$
   template <class LeftDiagArray, class RightDiagArray>
   inline void scale_diags(const LeftDiagArray &s, const RightDiagArray &t) {
     scale_diag_left(s);

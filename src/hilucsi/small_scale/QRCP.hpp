@@ -111,27 +111,19 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
   /// \brief solve system
   /// \param[in,out] x input rhs, output solution
   ///
-  /// First, QRCP returns \f$\boldsymbol{AP}=\boldsymbol{QR}\f$, thus when we
-  /// have \f$\boldsymbol{Ax}=\boldsymbol{b}\f$, the derivation is:
+  /// First, QRCP returns \f$\mathbf{AP}=\mathbf{QR}\f$, thus when we
+  /// have \f$\mathbf{Ax}=\mathbf{b}\f$, the derivation is:
   ///
-  /// \f[
-  ///   \boldsymbol{QRP}^T\boldsymbol{x}&=\boldsymbol{b}
-  /// \f]
-  /// \f[
-  ///   \hookrightarrow\boldsymbol{RP}^T\boldsymbol{x}&=\boldsymbol{Q}^T
-  ///     \boldsymbol{b}
-  /// \f]
-  /// \f[
-  ///   \hookrightarrow\boldsymbol{P}^T\boldsymbol{x}&=\boldsymbol{R}^{-1}
-  ///     \boldsymbol{Q}^T\boldsymbol{b}
-  /// \f]
-  /// \f[
-  ///   \hookrightarrow\boldsymbol{x}&=\boldsymbol{PR}^{-1}\boldsymbol{Q}^T
-  ///     \boldsymbol{b}
-  /// \f]
+  /// \f{eqnarray*}{
+  ///   \mathbf{QRP}^T\mathbf{x}&=&\mathbf{b} \\
+  ///   \hookrightarrow\mathbf{RP}^T\mathbf{x}&=&\mathbf{Q}^T\mathbf{b} \\
+  ///   \hookrightarrow\mathbf{P}^T\mathbf{x}&=&\mathbf{R}^{-1}
+  ///     \mathbf{Q}^T\mathbf{b} \\
+  ///   \hookrightarrow\mathbf{x}&=&\mathbf{PR}^{-1}\mathbf{Q}^T\mathbf{b}
+  /// \f}
   ///
-  /// Notice that \f$\boldsymbol{R}^{-1}\boldsymbol{Q}^T\f$ is the
-  /// pseudo-inverse of \f$\boldsymbol{AP}\f$.
+  /// Notice that \f$\mathbf{R}^{-1}\mathbf{Q}^T\f$ is the
+  /// pseudo-inverse of \f$\mathbf{AP}\f$.
   inline void solve(Array<value_type> &x) const {
     using v_t = typename ValueTypeTrait<value_type>::value_type;
 
