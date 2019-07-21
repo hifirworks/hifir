@@ -45,7 +45,7 @@ enum {
   HILUCSI_REORDER_AUTO = 1, /*!< use automaticaly reordering (default) */
   HILUCSI_REORDER_AMD  = 2, /*!< use AMD ordering */
   HILUCSI_REORDER_RCM  = 3, /*!< use RCM ordering (require BGL) */
-  HILUCSI_REORDER_NULL = 6, /*!< ordering Null flag (internal checking) */
+  HILUCSI_REORDER_NULL = 4, /*!< ordering Null flag (internal checking) */
 };
 
 /*!
