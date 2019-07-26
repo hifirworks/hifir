@@ -23,18 +23,21 @@ namespace ksp {
 
 /// \class FGMRES
 /// \tparam MType preconditioner type, see \ref HILUCSI
+/// \tparam ValueType if not given, i.e. \a void, then use value in \a MType
 /// \brief flexible GMRES implementation
 /// \ingroup gmres
-template <class MType>
-class FGMRES : public internal::KSP<FGMRES<MType>, MType> {
+template <class MType, class ValueType = void>
+class FGMRES
+    : public internal::KSP<FGMRES<MType, ValueType>, MType, ValueType> {
  protected:
-  using _base = internal::KSP<FGMRES<MType>, MType>;  ///< base
+  using _base = internal::KSP<FGMRES<MType, ValueType>, MType, ValueType>;
+  ///< base
   // grant friendship
   friend _base;
 
  public:
   typedef MType                           M_type;      ///< preconditioner
-  typedef typename M_type::array_type     array_type;  ///< value array
+  typedef typename _base::array_type      array_type;  ///< value array
   typedef typename array_type::size_type  size_type;   ///< size type
   typedef typename array_type::value_type value_type;  ///< value type
   typedef typename DefaultSettings<value_type>::scalar_type scalar_type;
