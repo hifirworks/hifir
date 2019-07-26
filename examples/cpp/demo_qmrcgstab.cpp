@@ -18,7 +18,7 @@ const static char *help =
     "\n"
     "usage:\n"
     "\n"
-    " ./demo case [options] [flags]\n"
+    " ./demo_qmrcgstab case [options] [flags]\n"
     "\n"
     "where the \"case\" is an HILUCSI benchmark input directory that contains\n"
     "a matrix file and an ASCII rhs file. The matrix file is in HILUCSI\n"
