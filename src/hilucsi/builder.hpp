@@ -195,6 +195,8 @@ class HILUCSI {
                         const Options &opts = get_default_options()) {
     const static internal::StdoutStruct  Crout_cout;
     const static internal::DummyStreamer Crout_cout_dummy;
+    using cs_type =
+        typename std::conditional<CsType::ROW_MAJOR, crs_type, ccs_type>::type;
 
     static_assert(std::is_same<index_type, typename CsType::index_type>::value,
                   "inconsistent index types");
@@ -236,9 +238,13 @@ class HILUCSI {
     // initialize statistics
     for (size_type i(0); i < sizeof(_stats) / sizeof(size_type); ++i)
       _stats[i] = 0;
-    CsType AA;
+
+    cs_type AA;
+    AA.resize(A.nrows(), A.ncols());
+    AA.ind_start() = A.ind_start();
+    AA.inds()      = A.inds();
     if (std::is_same<value_type, typename CsType::value_type>::value)
-      AA = A;  // shallow
+      AA.vals() = array_type(A.nnz(), (value_type *)A.vals().data(), true);
     else {
       if (hilucsi_verbose(INFO, opts))
         hilucsi_info("converting value type precision...");
@@ -248,8 +254,6 @@ class HILUCSI {
       hilucsi_error_if(AA.vals().status() == DATA_UNDEF,
                        "memory allocation failed");
       std::copy(A.vals().cbegin(), A.vals().cend(), AA.vals().begin());
-      AA.ind_start() = A.ind_start();
-      AA.inds()      = A.inds();
     }
     // create size references for dropping
     iarray_type row_sizes, col_sizes;
