@@ -79,6 +79,25 @@ cdef extern from 'hilucsi4py.hpp' namespace 'hilucsi' nogil:
         # solving routine
         void solve(const size_t n, const double *b, double *x) except +
 
+    cdef cppclass PyHILUCSI_Mixed:
+        PyHILUCSI_Mixed()
+        bool empty()
+        size_t levels()
+        size_t nnz()
+        size_t nnz_EF()
+        size_t nnz_LDU()
+        size_t nrows()
+        size_t ncols()
+        size_t stats(const size_t entry) except +
+
+        # computing routine
+        void factorize(const size_t n, const int *indptr, const int *indices,
+                       const double *vals, const size_t m0,
+                       const Options &opts) except +
+
+        # solving routine
+        void solve(const size_t n, const double *b, double *x) except +
+
     cdef cppclass PyFGMRES:
         PyFGMRES()
         PyFGMRES(shared_ptr[PyHILUCSI] M, const double rel_tol, const int rs,
@@ -99,6 +118,28 @@ cdef extern from 'hilucsi4py.hpp' namespace 'hilucsi' nogil:
                                 const double *b, double *x, const int kernel,
                                 const bool with_init_guess,
                                 const bool verbose) except +
+
+    cdef cppclass PyFGMRES_Mixed:
+        PyFGMRES_Mixed()
+        PyFGMRES_Mixed(shared_ptr[PyHILUCSI_Mixed] M, const double rel_tol,
+                       const int rs, const size_t max_iters,
+                       const size_t max_inner_steps) except +
+        double rtol
+        int restart
+        size_t maxit
+        size_t inner_steps
+        double lamb1
+        double lamb2
+        void set_M(shared_ptr[PyHILUCSI_Mixed] M) except +
+        shared_ptr[PyHILUCSI_Mixed] get_M()
+        void check_pars()
+        int get_resids_length()
+        void get_resids(double *r)
+        pair[int, size_t] solve(const size_t n, const int *rowptr,
+                                const int *colind, const double *vals,
+                                const double *b, double *x, const int kernel,
+                                const bool with_init_guess,
+                                const bool verbose) except +
     
     cdef cppclass PyFQMRCGSTAB:
         PyFQMRCGSTAB()
@@ -111,6 +152,27 @@ cdef extern from 'hilucsi4py.hpp' namespace 'hilucsi' nogil:
         double lamb2
         void set_M(shared_ptr[PyHILUCSI] M) except +
         shared_ptr[PyHILUCSI] get_M()
+        void check_pars()
+        int get_resids_length()
+        void get_resids(double *r)
+        pair[int, size_t] solve(const size_t n, const int *rowptr,
+                                const int *colind, const double *vals,
+                                const double *b, double *x, const int kernel,
+                                const bool with_init_guess,
+                                const bool verbose) except +
+
+    cdef cppclass PyFQMRCGSTAB_Mixed:
+        PyFQMRCGSTAB_Mixed()
+        PyFQMRCGSTAB_Mixed(shared_ptr[PyHILUCSI_Mixed] M, const double rel_tol,
+                           const size_t max_iters,
+                           const size_t innersteps) except +
+        double rtol
+        size_t maxit
+        size_t inner_steps
+        double lamb1
+        double lamb2
+        void set_M(shared_ptr[PyHILUCSI_Mixed] M) except +
+        shared_ptr[PyHILUCSI_Mixed] get_M()
         void check_pars()
         int get_resids_length()
         void get_resids(double *r)
