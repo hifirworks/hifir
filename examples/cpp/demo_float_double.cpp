@@ -9,16 +9,19 @@
 using namespace hilucsi;
 using std::string;
 
-using prec_t   = DefaultHILUCSI;  // use default C CRS with double and int
-using crs_t    = prec_t::crs_type;
-using array_t  = prec_t::array_type;
-using solver_t = ksp::FQMRCGSTAB<prec_t>;
+using prec_t   = HILUCSI<float, int>;
+using crs_t    = CRS<double, int>;
+using array_t  = crs_t::array_type;
+using solver_t = ksp::FGMRES<prec_t, double>;
+
+// this example shows mixed precision of using float preconditioner with
+// double solver
 
 const static char *help =
     "\n"
     "usage:\n"
     "\n"
-    " ./demo_qmrcgstab case [options] [flags]\n"
+    " ./demo_float_double case [options] [flags]\n"
     "\n"
     "where the \"case\" is an HILUCSI benchmark input directory that contains\n"
     "a matrix file and an ASCII rhs file. The matrix file is in HILUCSI\n"
@@ -54,7 +57,9 @@ const static char *help =
     "\tlevels to apply symmetric preprocessing, nonpositive number indicates\n"
     "\tapply symmetric preprocessing for all levels (1)\n"
     " -T|--rtol\n"
-    "\trelative tolerance for QMRCGSTAB (1e-6) solver\n"
+    "\trelative tolerance for FGMRES (1e-6) solver\n"
+    " -R|--restart\n"
+    "\trestart for FGMRES (30)\n"
     "\n"
     "flags:\n"
     "\n"
@@ -73,7 +78,7 @@ const static char *help =
     "\n"
     "examples:\n"
     "\n"
-    "\t./demo_qmrcgstab my_test\n"
+    "\t./demo my_test\n"
     " use default setting solve the problem in \"my_test\" directory.\n"
     "\t./demo my_test - < ./parameters.cfg\n"
     " solve with user-defined parameters and read in from stdin\n"
@@ -82,9 +87,9 @@ const static char *help =
     "\n";
 
 // parse input arguments:
-//  return (control parameters, thin or augmented, tolerance, symm)
-inline static std::tuple<Options, double, bool> parse_args(int   argc,
-                                                           char *argv[]);
+//  return (control parameters, thin or augmented, restart, tolerance, symm)
+inline static std::tuple<Options, int, double, bool> parse_args(int   argc,
+                                                                char *argv[]);
 
 // get the input data, (A, b, m)
 inline static std::tuple<crs_t, array_t, array_t::size_type> get_inputs(
@@ -92,10 +97,11 @@ inline static std::tuple<crs_t, array_t, array_t::size_type> get_inputs(
 
 int main(int argc, char *argv[]) {
   Options opts;
+  int     restart;
   double  rtol;
   bool    symm;
   // parse arguments
-  std::tie(opts, rtol, symm) = parse_args(argc, argv);
+  std::tie(opts, restart, rtol, symm) = parse_args(argc, argv);
   if (opts.verbose == VERBOSE_NONE) warn_flag(0);
   crs_t              A;
   array_t            b;
@@ -108,8 +114,9 @@ int main(int argc, char *argv[]) {
     m = A.nrows();
   } else if (!symm)
     m = 0;
-  std::cout << "rtol=" << rtol << "\nNumberOfUnknowns=" << A.nrows()
-            << ", nnz(A)=" << A.nnz() << "\n"
+  std::cout << "rtol=" << rtol << ", restart=" << restart
+            << "\nNumberOfUnknowns=" << A.nrows() << ", nnz(A)=" << A.nnz()
+            << "\n"
             << "symmetric=" << symm << ", leading-block=" << m << "\n\n"
             << opt_repr(opts) << std::endl;
 
@@ -140,30 +147,31 @@ int main(int argc, char *argv[]) {
   // solve
   timer.start();
   solver_t solver(_M);
-  solver.rtol = rtol;
+  solver.rtol    = rtol;
+  solver.restart = restart;
   int                 flag;
   solver_t::size_type iters;
-  std::tie(flag, iters) =
-      solver.solve(A, b, x, ksp::TRADITION, false, opts.verbose);
+  std::tie(flag, iters) = solver.solve_precond(A, b, x, false, opts.verbose);
   timer.finish();
   const double rs = iters ? solver.resids().back() : -1.0;
   hilucsi_info(
-      "\nFQMRCGSTAB(%.1e) done!\n"
+      "\nFGMRES(%d,%.1e) done!\n"
       "\tflag: %s\n"
       "\titers: %zd\n"
       "\tres: %.4g\n"
       "\ttime: %.4gs\n",
-      rtol, ksp::flag_repr(solver_t::repr(), flag).c_str(), iters, rs,
+      restart, rtol, ksp::flag_repr(solver_t::repr(), flag).c_str(), iters, rs,
       timer.time());
   return flag;
 }
 
-inline static std::tuple<Options, double, bool> parse_args(int   argc,
-                                                           char *argv[]) {
-  Options opts = get_default_options();
-  double  tol  = 1e-6;
-  bool    symm = false;
-  opts.verbose = VERBOSE_NONE;
+inline static std::tuple<Options, int, double, bool> parse_args(int   argc,
+                                                                char *argv[]) {
+  Options opts    = get_default_options();
+  int     restart = 30;
+  double  tol     = 1e-6;
+  bool    symm    = false;
+  opts.verbose    = VERBOSE_NONE;
   if (argc < 2) {
     std::cerr << "Missing input directory!\n" << help;
     std::exit(1);
@@ -238,12 +246,16 @@ inline static std::tuple<Options, double, bool> parse_args(int   argc,
       symm = true;
     } else if (arg == string("-T") || arg == string("--rtol")) {
       ++i;
-      if (i >= argc) fatal_exit("missing QMRCGSTAB rtol value!");
+      if (i >= argc) fatal_exit("missing GMRES rtol value!");
       tol = std::atof(argv[i]);
+    } else if (arg == string("-R") || arg == string("--restart")) {
+      ++i;
+      if (i >= argc) fatal_exit("missing GMRES restart value!");
+      restart = std::atoi(argv[i]);
     }
     ++i;
   }
-  return std::make_tuple(opts, tol, symm);
+  return std::make_tuple(opts, restart, tol, symm);
 }
 
 inline static std::tuple<crs_t, array_t, array_t::size_type> get_inputs(

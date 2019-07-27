@@ -12,9 +12,8 @@
 #define _HILUCSI_PRE_MATCHINGSCALING_HPP
 
 #include "hilucsi/Options.h"
-#include "hilucsi/ds/Array.hpp"
 #include "hilucsi/ds/CompressedStorage.hpp"
-#include "hilucsi/pre/MC64.hpp"
+#include "hilucsi/pre/EqlDriver.hpp"
 #include "hilucsi/utils/Timer.hpp"
 #include "hilucsi/utils/common.hpp"
 
@@ -238,14 +237,14 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   } else
     B = A_crs.extract_leading(m0);  // for explicit leading block do copy
 
-  using mc64_kernel = MC64<value_type, index_type>;
+  using mc64_kernel = EqlDriver<value_type, index_type>;
   do {
     DefaultTimer timer;
     timer.start();
     mc64_kernel::template do_matching<IsSymm>(verbose, B, p(), q(), s, t,
                                               opts.pre_scale);
     timer.finish();
-    if (timing) hilucsi_info("MC64 matching took %gs.", (double)timer.time());
+    if (timing) hilucsi_info("Equilibrator took %gs.", (double)timer.time());
   } while (false);
   // fill identity mapping and add one to scaling vectors for offsets, if any
   for (size_type i = m0; i < M; ++i) {

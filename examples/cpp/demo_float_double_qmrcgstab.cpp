@@ -9,16 +9,19 @@
 using namespace hilucsi;
 using std::string;
 
-using prec_t   = DefaultHILUCSI;  // use default C CRS with double and int
-using crs_t    = prec_t::crs_type;
-using array_t  = prec_t::array_type;
-using solver_t = ksp::FQMRCGSTAB<prec_t>;
+using prec_t   = HILUCSI<float, int>;
+using crs_t    = CRS<double, int>;
+using array_t  = crs_t::array_type;
+using solver_t = ksp::FQMRCGSTAB<prec_t, double>;
+
+// this example shows mixed precision of using float preconditioner with
+// double solver for qmrcgstab
 
 const static char *help =
     "\n"
     "usage:\n"
     "\n"
-    " ./demo_qmrcgstab case [options] [flags]\n"
+    " ./demo_float_double_qmrcgstab case [options] [flags]\n"
     "\n"
     "where the \"case\" is an HILUCSI benchmark input directory that contains\n"
     "a matrix file and an ASCII rhs file. The matrix file is in HILUCSI\n"

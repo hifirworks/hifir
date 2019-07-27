@@ -15,9 +15,10 @@
 #include <cstddef>
 #include <memory>
 #include <string>
+#include <type_traits>
 
+#include "hilucsi/ds/Array.hpp"
 #include "hilucsi/utils/common.hpp"
-#include "hilucsi/utils/log.hpp"
 
 namespace hilucsi {
 namespace ksp {
@@ -95,6 +96,7 @@ namespace internal {
 /// \tparam Child child jacobi iteration object, either \ref Jacobi or
 ///         \ref ChebyshevJacobi
 /// \tparam MType "preconditioner" operator type, see \ref HILUCSI
+/// \tparam ValueType if not given, i.e. \a void, then use value in \a MType
 /// \brief generic base class for Jacobi iterations
 ///
 /// It's worth noting that instead of a real Jacobi processing, i.e. taking
@@ -103,7 +105,7 @@ namespace internal {
 /// This is indeed true due to the fact that multilevel preconditioning
 /// always processes on the leading block of the Schur complements thus
 /// resulting a structure of hierarchical diagonal blocks.
-template <class Child, class MType>
+template <class Child, class MType, class ValueType = void>
 class JacobiBase {
   /// \brief helper for casting to \a Child
   inline const Child &_this() const {
@@ -111,8 +113,11 @@ class JacobiBase {
   }
 
  public:
-  typedef MType                           M_type;      ///< preconditioner type
-  typedef typename M_type::array_type     array_type;  ///< value array type
+  typedef MType M_type;  ///< preconditioner type
+  typedef typename std::conditional<std::is_void<ValueType>::value,
+                                    typename M_type::array_type,
+                                    Array<ValueType>>::type array_type;
+  ///< value array type
   typedef typename array_type::value_type value_type;  ///< value type
   typedef typename array_type::size_type  size_type;   ///< size type
 
@@ -186,9 +191,13 @@ class JacobiBase {
 /// \class Jacobi
 /// \brief regular Jacobi iterations
 /// \tparam MType "preconditioner" operator type, see \ref HILUCSI
-template <class MType>
-class Jacobi : public internal::JacobiBase<Jacobi<MType>, MType> {
-  using _base = internal::JacobiBase<Jacobi<MType>, MType>;  ///< base
+/// \tparam ValueType if not given, i.e. \a void, then use value in \a MType
+template <class MType, class ValueType = void>
+class Jacobi
+    : public internal::JacobiBase<Jacobi<MType, ValueType>, MType, ValueType> {
+  using _base =
+      internal::JacobiBase<Jacobi<MType, ValueType>, MType, ValueType>;
+  ///< base
   friend _base;
 
  public:
@@ -217,10 +226,14 @@ class Jacobi : public internal::JacobiBase<Jacobi<MType>, MType> {
 /// \class ChebyshevJacobi
 /// \brief Jacobi iterations with Chebyshev accelerations
 /// \tparam MType "preconditioner" operator type, see \ref HILUCSI
-template <class MType>
+/// \tparam ValueType if not given, i.e. \a void, then use value in \a MType
+template <class MType, class ValueType = void>
 class ChebyshevJacobi
-    : public internal::JacobiBase<ChebyshevJacobi<MType>, MType> {
-  using _base = internal::JacobiBase<ChebyshevJacobi<MType>, MType>;  ///< base
+    : public internal::JacobiBase<ChebyshevJacobi<MType, ValueType>, MType,
+                                  ValueType> {
+  using _base =
+      internal::JacobiBase<ChebyshevJacobi<MType, ValueType>, MType, ValueType>;
+  ///< base
   friend _base;
 
  public:
@@ -279,17 +292,23 @@ class ChebyshevJacobi
 /// \class DummyJacobi
 /// \brief dummy "Jacobi" that has the same solve interface as, say, \ref Jacobi
 /// \tparam MType "preconditioner" operator type, see \ref HILUCSI
-template <class MType>
+/// \tparam ValueType if not given, i.e. \a void, then use value in \a MType
+template <class MType, class ValueType = void>
 class DummyJacobi {
  public:
-  typedef MType                       M_type;
-  typedef typename M_type::array_type array_type;
-  typedef typename M_type::size_type  size_type;
+  typedef MType                                             M_type;  ///< M type
+  typedef typename std::conditional<std::is_void<ValueType>::value,
+                                    typename M_type::array_type,
+                                    Array<ValueType>>::type array_type;
+  ///< value array type
+  typedef typename M_type::size_type size_type;  ///< size
 
   DummyJacobi() = delete;
 
   explicit DummyJacobi(const M_type &M) : _M(M) {}
 
+  /// \brief wrapper around preconditioner solve
+  /// \tparam Matrix matrix type, see \ref CRS
   template <class Matrix>
   inline bool solve(const Matrix &, const array_type &b, const size_type,
                     array_type &x0) const {
@@ -298,14 +317,15 @@ class DummyJacobi {
   }
 
  protected:
-  const M_type &_M;
+  const M_type &_M;  ///< reference to preconditioner
 };
 
 /// \class KSP
 /// \brief Krylov subspace method base
 /// \tparam ChildSolver child solver type
 /// \tparam MType preconditioner type, see \ref HILUCSI
-template <class ChildSolver, class MType>
+/// \tparam ValueType if not given, i.e. \a void, then use value in \a MType
+template <class ChildSolver, class MType, class ValueType = void>
 class KSP {
   /// \brief cast to child solver
   inline ChildSolver &_this() { return static_cast<ChildSolver &>(*this); }
@@ -316,8 +336,11 @@ class KSP {
   }
 
  public:
-  typedef MType                           M_type;      ///< preconditioner
-  typedef typename M_type::array_type     array_type;  ///< value array
+  typedef MType M_type;  ///< preconditioner
+  typedef typename std::conditional<std::is_void<ValueType>::value,
+                                    typename M_type::array_type,
+                                    Array<ValueType>>::type array_type;
+  ///< value array type
   typedef typename array_type::size_type  size_type;   ///< size type
   typedef typename array_type::value_type value_type;  ///< value type
   typedef typename DefaultSettings<value_type>::scalar_type scalar_type;
@@ -386,7 +409,7 @@ class KSP {
       return std::make_pair(INVALID_ARGS, size_type(0));
     if (verbose) _show("tradition", with_init_guess, restart);
     if (!with_init_guess) std::fill(x.begin(), x.end(), value_type(0));
-    const internal::DummyJacobi<M_type> M(*_M);
+    const internal::DummyJacobi<M_type, value_type> M(*_M);
     if (verbose)
       hilucsi_info("Calling traditional %s kernel...", ChildSolver::repr());
     return verbose ? _this()._this()._solve(A, M, b, 1u, !with_init_guess, x,
@@ -415,7 +438,7 @@ class KSP {
     if (_this()._validate(A, b, x))
       return std::make_pair(INVALID_ARGS, size_type(0));
     if (verbose) _show("jacobi", with_init_guess, restart);
-    const internal::Jacobi<M_type> M(*_M);
+    const internal::Jacobi<M_type, value_type> M(*_M);
     if (!with_init_guess) std::fill(x.begin(), x.end(), value_type(0));
     if (verbose)
       hilucsi_info("Calling Jacobi %s kernel...", ChildSolver::repr());
@@ -444,7 +467,7 @@ class KSP {
 
     if (_this()._validate(A, b, x))
       return std::make_pair(INVALID_ARGS, size_type(0));
-    const internal::ChebyshevJacobi<M_type> M(*_M, lamb1, lamb2);
+    const internal::ChebyshevJacobi<M_type, value_type> M(*_M, lamb1, lamb2);
     if (verbose) {
       _show("Chebyshev", with_init_guess, restart);
       hilucsi_info("Calling Chebyshev-Jacobi %s kernel...",

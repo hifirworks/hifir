@@ -12,3 +12,6 @@ Qiao (Chiao) Chen <qiao.chen@stonybrook.edu> <benechiao@gmail.com>
     - initial developer, setup the software framework
     - serial HILUCSI developer with parallel Schur computation
     - implemented FGMRES and FQMRCGSTAB
+
+Yujie Xiao <yujie.xiao@stonybrook.edu>
+    - helped implementing matching/scaling as done in equilibrate.hpp

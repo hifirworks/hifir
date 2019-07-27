@@ -8,8 +8,8 @@
 /// \brief QMRCGSTAB implementation
 /// \authors Qiao,
 
-#ifndef _HILUCSI_KSP_QMRCGSTAB_HPP
-#define _HILUCSI_KSP_QMRCGSTAB_HPP
+#ifndef _HILUCSI_KSP_FQMRCGSTAB_HPP
+#define _HILUCSI_KSP_FQMRCGSTAB_HPP
 
 #include <cmath>
 #include <limits>
@@ -23,18 +23,21 @@ namespace ksp {
 
 /// \class FQMRCGSTAB
 /// \tparam MType preconditioner type, see \ref HILUCSI
+/// \tparam ValueType if not given, i.e. \a void, then use value in \a MType
 /// \brief QMRCGSTAB implementation
 /// \ingroup qmrcgstab
-template <class MType>
-class FQMRCGSTAB : public internal::KSP<FQMRCGSTAB<MType>, MType> {
+template <class MType, class ValueType = void>
+class FQMRCGSTAB
+    : public internal::KSP<FQMRCGSTAB<MType, ValueType>, MType, ValueType> {
  protected:
-  using _base = internal::KSP<FQMRCGSTAB<MType>, MType>;  ///< base
+  using _base = internal::KSP<FQMRCGSTAB<MType, ValueType>, MType, ValueType>;
+  ///< base
   // grant friendship
   friend _base;
 
  public:
   typedef MType                           M_type;      ///< preconditioner
-  typedef typename M_type::array_type     array_type;  ///< value array
+  typedef typename _base::array_type      array_type;  ///< value array
   typedef typename array_type::size_type  size_type;   ///< size type
   typedef typename array_type::value_type value_type;  ///< value type
   typedef typename DefaultSettings<value_type>::scalar_type scalar_type;
@@ -279,4 +282,4 @@ class FQMRCGSTAB : public internal::KSP<FQMRCGSTAB<MType>, MType> {
 }  // namespace ksp
 }  // namespace hilucsi
 
-#endif  // _HILUCSI_KSP_QMRCGSTAB_HPP
+#endif  // _HILUCSI_KSP_FQMRCGSTAB_HPP
