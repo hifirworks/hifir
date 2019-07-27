@@ -48,6 +48,11 @@
 
 namespace hilucsi {
 
+// types
+using py_crs_type   = DefaultHILUCSI::crs_type;
+using py_array_type = DefaultHILUCSI::array_type;
+using size_type     = DefaultHILUCSI::size_type;
+
 // read native hilucsi format
 inline void read_hilucsi(const std::string &fn, std::size_t &nrows,
                          std::size_t &ncols, std::size_t &m,
@@ -55,9 +60,8 @@ inline void read_hilucsi(const std::string &fn, std::size_t &nrows,
                          std::vector<double> &vals, const bool is_bin = true) {
   Array<int>    ind_ptr, inds;
   Array<double> values;
-  using crs_type = DefaultHILUCSI::crs_type;
-  auto A         = is_bin ? crs_type::from_bin(fn.c_str(), &m)
-                  : crs_type::from_ascii(fn.c_str(), &m);
+  auto          A = is_bin ? py_crs_type::from_bin(fn.c_str(), &m)
+                  : py_crs_type::from_ascii(fn.c_str(), &m);
   nrows = A.nrows();
   ncols = A.ncols();
   ind_ptr.swap(A.row_start());
@@ -75,10 +79,9 @@ inline void write_hilucsi(const std::string &fn, const std::size_t nrows,
                           const int *indices, const double *vals,
                           const std::size_t m0, const bool is_bin = true) {
   constexpr static bool WRAP = true;
-  using crs_type             = DefaultHILUCSI::crs_type;
-  const crs_type A(nrows, ncols, const_cast<int *>(indptr),
-                   const_cast<int *>(indices), const_cast<double *>(vals),
-                   WRAP);
+  const py_crs_type     A(nrows, ncols, const_cast<int *>(indptr),
+                          const_cast<int *>(indices), const_cast<double *>(vals),
+                          WRAP);
   // aggressively checking
   A.check_validity();
   if (is_bin)
@@ -101,18 +104,16 @@ inline void query_hilucsi_info(const std::string &fn, bool &is_row, bool &is_c,
 // we need to create a child class.
 class PyHILUCSI : public DefaultHILUCSI {
  public:
-  using base      = DefaultHILUCSI;
-  using size_type = base::size_type;
+  using base = DefaultHILUCSI;
 
   // factorize crs
   inline void factorize(const size_type n, const int *rowptr, const int *colind,
                         const double *vals, const size_type m0,
                         const Options &opts) {
-    using crs_type             = base::crs_type;
     constexpr static bool WRAP = true;
 
-    crs_type A(n, n, const_cast<int *>(rowptr), const_cast<int *>(colind),
-               const_cast<double *>(vals), WRAP);
+    py_crs_type A(n, n, const_cast<int *>(rowptr), const_cast<int *>(colind),
+                  const_cast<double *>(vals), WRAP);
     base::factorize(A, m0, opts);
   }
 
@@ -120,7 +121,6 @@ class PyHILUCSI : public DefaultHILUCSI {
 
   // overload solve
   inline void solve(const size_type n, const double *b, double *x) const {
-    using array_type           = base::array_type;
     constexpr static bool WRAP = true;
 
     const array_type B(n, const_cast<double *>(b), WRAP);
@@ -129,12 +129,40 @@ class PyHILUCSI : public DefaultHILUCSI {
   }
 };
 
-// using a template base for Ksp solver
-template <template <class> class Ksp>
-class KspAdapt : public Ksp<PyHILUCSI> {
+// mixed precision, using float preconditioner
+class PyHILUCSI_Mixed : public HILUCSI<float, int> {
  public:
-  using base      = Ksp<PyHILUCSI>;
-  using size_type = typename base::size_type;
+  using base = HILUCSI<float, int>;
+
+  // factorize crs
+  inline void factorize(const size_type n, const int *rowptr, const int *colind,
+                        const double *vals, const size_type m0,
+                        const Options &opts) {
+    constexpr static bool WRAP = true;
+
+    py_crs_type A(n, n, const_cast<int *>(rowptr), const_cast<int *>(colind),
+                  const_cast<double *>(vals), WRAP);
+    base::factorize(A, m0, opts);
+  }
+
+  using base::solve;
+
+  // overload solve
+  inline void solve(const size_type n, const double *b, double *x) const {
+    constexpr static bool WRAP = true;
+
+    const py_array_type B(n, const_cast<double *>(b), WRAP);
+    py_array_type       X(n, x, WRAP);
+    solve(B, X);
+  }
+};
+
+// using a template base for Ksp solver
+template <template <class, class> class Ksp, class MType = PyHILUCSI,
+          class ValueType = void>
+class KspAdapt : public Ksp<MType, ValueType> {
+ public:
+  using base = Ksp<MType, ValueType>;
 
   inline int  get_resids_length() const { return base::_resids.size(); }
   inline void get_resids(double *r) const {
@@ -149,23 +177,24 @@ class KspAdapt : public Ksp<PyHILUCSI> {
                                          const int  kernel = ksp::TRADITION,
                                          const bool with_init_guess = false,
                                          const bool verbose = true) const {
-    using crs_type             = typename base::M_type::crs_type;
-    using array_type           = typename crs_type::array_type;
     constexpr static bool WRAP = true;
 
-    const crs_type A(n, n, const_cast<int *>(rowptr), const_cast<int *>(colind),
-                     const_cast<double *>(vals), WRAP);
+    const py_crs_type A(n, n, const_cast<int *>(rowptr),
+                        const_cast<int *>(colind), const_cast<double *>(vals),
+                        WRAP);
 #ifndef NDEBUG
     A.check_validity();
 #endif
-    const array_type bb(n, const_cast<double *>(b), WRAP);
-    array_type       xx(n, x, WRAP);
+    const py_array_type bb(n, const_cast<double *>(b), WRAP);
+    py_array_type       xx(n, x, WRAP);
     return base::solve(A, bb, xx, kernel, with_init_guess, verbose);
   }
 };
 
-using PyFGMRES     = KspAdapt<ksp::FGMRES>;      // fgmres
-using PyFQMRCGSTAB = KspAdapt<ksp::FQMRCGSTAB>;  // fqmrcgstab
+using PyFGMRES           = KspAdapt<ksp::FGMRES>;      // fgmres
+using PyFQMRCGSTAB       = KspAdapt<ksp::FQMRCGSTAB>;  // fqmrcgstab
+using PyFGMRES_Mixed     = KspAdapt<ksp::FGMRES, PyHILUCSI_Mixed, double>;
+using PyFQMRCGSTAB_Mixed = KspAdapt<ksp::FQMRCGSTAB, PyHILUCSI_Mixed, double>;
 
 }  // namespace hilucsi
 
