@@ -22,17 +22,13 @@ only needed if the header files cannot be found in standard include path or
 current working directory.) In addition, you need to configure linking against
 LAPACK by setting the environment variable ``HILUCSI_LAPACK_LIB``, and the
 default is ``-llapack``. If you have a specific library path to LAPACK, you
-then need to set the environment variable ``HILUCSI_LAPACK_LIB_PATH``. Finally,
-the current version depends on MC64 package, which we assume you should have
-it built with flag ``-fPIC``, and the environment variable
-``HILUCSI_MC64_LIB_PATH`` needs to be set.
+then need to set the environment variable ``HILUCSI_LAPACK_LIB_PATH``.
 
 To sum up, the following environment variables can be configured
 
 1. ``HILUCSI_INCLUDE_PATH``, default is empty
 2. ``HILUCSI_LAPACK_LIB``, default is ``-llapack``
 3. ``HILUCSI_LAPACK_LIB_PATH``, default is empty
-4. ``HILUCSI_MC64_LIB_PATH``, default is empty
 
 It's worth noting that the C++ interface of HILUCSI is needed if you plan to
 use the Cython interface of *hilucsi4py*.
@@ -41,8 +37,8 @@ The default installation
 ````````````````````````
 
 The following command assumes ``HILUCSI.hpp`` is located in system include
-path or current directory. In addition, ``liblapack.so`` and ``libmc64.a`` can
-be found in system library path or under ``LIBRARY_PATH``.
+path or current directory. In addition, ``liblapack.so`` can be found in system
+library path or under ``LIBRARY_PATH``.
 
 .. code:: console
 
@@ -63,15 +59,13 @@ during compilation.
 Installation with customized third-party libraries
 ``````````````````````````````````````````````````
 
-Sometimes, it's helpful to have optimized LAPACK and/or your MC64 is installed
-in nonstandard locations. The following command shows how to link MKL (on
-Ubuntu) as well as linking to MC64 in a nonstandard library path.
+Sometimes, it's helpful to have optimized LAPACK package. The following command
+shows how to link MKL (on Ubuntu).
 
 .. code:: console
 
     export HILUCSI_LAPACK_LIB="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core"
     export HILUCSI_LAPACK_LIB_PATH=/opt/intel/mkl/lib/intel64
-    export HILUCSI_MC64_LIB_PATH=$HOME/.local/lib
     pip3 install . --user
 
 Contacts

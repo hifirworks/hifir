@@ -21,18 +21,13 @@ _lapack_lib = os.environ.get('HILUCSI_LAPACK_LIB', '-llapack')
 _lapack_libs = _lapack_lib.split(' ')
 for i, _l in enumerate(_lapack_libs):
     _lapack_libs[i] = _l[2:]
-libs = _lapack_libs + ['mc64', 'gfortran']  # shall we for fortran?
+libs = _lapack_libs
 
 # configure library paths
 lib_dirs = None
 _lapack_path = os.environ.get('HILUCSI_LAPACK_LIB_PATH', '')
 if _lapack_path:
     lib_dirs = [_lapack_path]
-_mc64_lib_path = os.environ.get('HILUCSI_MC64_LIB_PATH', '')
-if _mc64_lib_path:
-    if lib_dirs is None:
-        lib_dirs = []
-    lib_dirs += [_mc64_lib_path]
 rpath = None if lib_dirs is None else lib_dirs
 
 
