@@ -27,7 +27,7 @@
 namespace hilucsi {
 
 /// \class EqlDriver
-/// \brief driver class wrapped around \ref Equilibrator
+/// \brief driver class wrapped around \ref eql::Equilibrator
 /// \tparam ValueType value type
 /// \tparam IndexType index type, e.g. \a int
 /// \ingroup pre
