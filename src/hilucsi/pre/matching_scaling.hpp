@@ -123,8 +123,8 @@ inline CcsType compute_perm_leading_block(const CcsType &A,
                                           const typename CcsType::size_type m,
                                           const PermType &p, const PermType &q,
                                           const bool apat = false) {
-  using size_type                 = typename CcsType::size_type;
-  using index_type                = typename CcsType::index_type;
+  using size_type  = typename CcsType::size_type;
+  using index_type = typename CcsType::index_type;
 
   CcsType B(m, m);
   auto &  col_start = B.col_start();
@@ -354,7 +354,10 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   return_type BB;
   if (compute_perm) {
     p.build_inv();
-    BB = internal::compute_perm_leading_block(A, A_crs, m, p, q);
+    // to see if we need to build A^T+A pattern
+    const bool build_apat = !IsSymm && opts.reorder == REORDER_RCM;
+    if (build_apat) q.build_inv();
+    BB = internal::compute_perm_leading_block(A, A_crs, m, p, q, build_apat);
   }
   return std::make_pair(BB, m);
 }
