@@ -157,13 +157,6 @@ class FQMRCGSTAB
     _resids[0]      = tau / normb;  // starting with size 1
     if (_resids[0] <= rtol) return std::make_pair(flag, size_type(0));
     std::copy(r0.cbegin(), r0.cend(), _p.begin());
-    if (M.solve(A, _p, innersteps, _ph)) {
-      Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
-           "Failed to call M operator at iteration %d.", 1);
-      flag = M_SOLVE_ERROR;
-      return std::make_pair(flag, size_type(1));
-    }
-    A.mv(_ph, _v);
     std::copy(r0.cbegin(), r0.cend(), _r.begin());
     // comment out, implicitly handled in the loop
     // std::fill_n(_d.begin(), n, value_type(0));
@@ -173,6 +166,13 @@ class FQMRCGSTAB
 
     // main loop
     for (; iter <= maxit; ++iter) {
+      if (M.solve(A, _p, innersteps, _ph)) {
+        Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+             "Failed to call M operator at iteration %zd.", iter);
+        flag = M_SOLVE_ERROR;
+        break;
+      }
+      A.mv(_ph, _v);
       auto rho2 = inner(r0, _v);
       if (rho2 == 0) {
         Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
@@ -235,7 +235,7 @@ class FQMRCGSTAB
       const auto resid_prev = _resids.back();
       _resids.push_back(norm2(_Ax) / normb);
       Cout("  At iteration %zd (inner:%zd), relative residual is %g.", iter,
-           innersteps, _resids.back());
+           innersteps * 2, _resids.back());  // *2 due to called A*x twice
       if (_resids.back() <= rtol) break;
 
       if (std::isnan(_resids.back()) || std::isinf(_resids.back())) {
@@ -254,14 +254,6 @@ class FQMRCGSTAB
       const auto beta = alpha * rho2 / (omega * rho1);
       for (size_type i(0); i < n; ++i)
         _p[i] = _r[i] + beta * (_p[i] - omega * _v[i]);
-
-      if (M.solve(A, _p, innersteps, _ph)) {
-        Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
-             "Failed to call M operator at iteration %zd.", iter);
-        flag = M_SOLVE_ERROR;
-        break;
-      }
-      A.mv(_ph, _v);
       rho1 = rho2;
     }  // for
 
