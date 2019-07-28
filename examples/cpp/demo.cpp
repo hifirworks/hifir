@@ -42,9 +42,7 @@ const static char *help =
     "\t\t0: off\n"
     "\t\t1: auto (amd), default\n"
     "\t\t2: amd\n"
-    "\t\t3: rcm (requires BGL)\n"
-    "\t\t4: king (requires BGL)\n"
-    "\t\t5: sloan (requires BGL)\n"
+    "\t\t3: rcm\n"
     " -I|-pre-scale\n"
     "\ta priori scaling before calling matching/scaling\n"
     "\t\t0: off (default)\n"
@@ -57,6 +55,12 @@ const static char *help =
     "\trelative tolerance for FGMRES (1e-6) solver\n"
     " -R|--restart\n"
     "\trestart for FGMRES (30)\n"
+    " -K|--kernel\n"
+    "\tinner kernel for FGMRES (30)\n"
+    "\t\t0: traditional right preconditioner, default\n"
+    "\t\t1: Jacobi process as right preconditioner\n"
+    "\t\t2: Chebyshev-Jacobi process as right precond\n"
+    "\t\t3: Auto, using traditional precond with Jacobi as refinement kernel\n"
     "\n"
     "flags:\n"
     "\n"
@@ -85,8 +89,8 @@ const static char *help =
 
 // parse input arguments:
 //  return (control parameters, thin or augmented, restart, tolerance, symm)
-inline static std::tuple<Options, int, double, bool> parse_args(int   argc,
-                                                                char *argv[]);
+inline static std::tuple<Options, int, double, bool, int> parse_args(
+    int argc, char *argv[]);
 
 // get the input data, (A, b, m)
 inline static std::tuple<crs_t, array_t, array_t::size_type> get_inputs(
@@ -97,8 +101,9 @@ int main(int argc, char *argv[]) {
   int     restart;
   double  rtol;
   bool    symm;
+  int     kernel;
   // parse arguments
-  std::tie(opts, restart, rtol, symm) = parse_args(argc, argv);
+  std::tie(opts, restart, rtol, symm, kernel) = parse_args(argc, argv);
   if (opts.verbose == VERBOSE_NONE) warn_flag(0);
   crs_t              A;
   array_t            b;
@@ -148,7 +153,7 @@ int main(int argc, char *argv[]) {
   solver.restart = restart;
   int                 flag;
   solver_t::size_type iters;
-  std::tie(flag, iters) = solver.solve_precond(A, b, x, false, opts.verbose);
+  std::tie(flag, iters) = solver.solve(A, b, x, kernel, false, opts.verbose);
   timer.finish();
   const double rs = iters ? solver.resids().back() : -1.0;
   hilucsi_info(
@@ -162,12 +167,13 @@ int main(int argc, char *argv[]) {
   return flag;
 }
 
-inline static std::tuple<Options, int, double, bool> parse_args(int   argc,
-                                                                char *argv[]) {
+inline static std::tuple<Options, int, double, bool, int> parse_args(
+    int argc, char *argv[]) {
   Options opts    = get_default_options();
   int     restart = 30;
   double  tol     = 1e-6;
   bool    symm    = false;
+  int     kernel  = ksp::TRADITION;
   opts.verbose    = VERBOSE_NONE;
   if (argc < 2) {
     std::cerr << "Missing input directory!\n" << help;
@@ -249,10 +255,14 @@ inline static std::tuple<Options, int, double, bool> parse_args(int   argc,
       ++i;
       if (i >= argc) fatal_exit("missing GMRES restart value!");
       restart = std::atoi(argv[i]);
+    } else if (arg == string("-K") || arg == string("--kernel")) {
+      ++i;
+      if (i >= argc) fatal_exit("missing GMRES kernel choice!");
+      kernel = std::atoi(argv[i]);
     }
     ++i;
   }
-  return std::make_tuple(opts, restart, tol, symm);
+  return std::make_tuple(opts, restart, tol, symm, kernel);
 }
 
 inline static std::tuple<crs_t, array_t, array_t::size_type> get_inputs(

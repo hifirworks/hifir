@@ -42,9 +42,7 @@ const static char *help =
     "\t\t0: off\n"
     "\t\t1: auto (amd), default\n"
     "\t\t2: amd\n"
-    "\t\t3: rcm (requires BGL)\n"
-    "\t\t4: king (requires BGL)\n"
-    "\t\t5: sloan (requires BGL)\n"
+    "\t\t3: rcm\n"
     " -I|-pre-scale\n"
     "\ta priori scaling before calling matching/scaling\n"
     "\t\t0: off (default)\n"
@@ -54,7 +52,13 @@ const static char *help =
     "\tlevels to apply symmetric preprocessing, nonpositive number indicates\n"
     "\tapply symmetric preprocessing for all levels (1)\n"
     " -T|--rtol\n"
-    "\trelative tolerance for QMRCGSTAB (1e-6) solver\n"
+    "\trelative tolerance for FQMRCGSTAB (1e-6) solver\n"
+    " -K|--kernel\n"
+    "\tinner kernel for FGMRES (30)\n"
+    "\t\t0: traditional right preconditioner, default\n"
+    "\t\t1: Jacobi process as right preconditioner\n"
+    "\t\t2: Chebyshev-Jacobi process as right precond\n"
+    "\t\t3: Auto, using traditional precond with Jacobi as refinement kernel\n"
     "\n"
     "flags:\n"
     "\n"
@@ -83,8 +87,8 @@ const static char *help =
 
 // parse input arguments:
 //  return (control parameters, thin or augmented, tolerance, symm)
-inline static std::tuple<Options, double, bool> parse_args(int   argc,
-                                                           char *argv[]);
+inline static std::tuple<Options, double, bool, int> parse_args(int   argc,
+                                                                char *argv[]);
 
 // get the input data, (A, b, m)
 inline static std::tuple<crs_t, array_t, array_t::size_type> get_inputs(
@@ -94,8 +98,9 @@ int main(int argc, char *argv[]) {
   Options opts;
   double  rtol;
   bool    symm;
+  int     kernel;
   // parse arguments
-  std::tie(opts, rtol, symm) = parse_args(argc, argv);
+  std::tie(opts, rtol, symm, kernel) = parse_args(argc, argv);
   if (opts.verbose == VERBOSE_NONE) warn_flag(0);
   crs_t              A;
   array_t            b;
@@ -144,7 +149,7 @@ int main(int argc, char *argv[]) {
   int                 flag;
   solver_t::size_type iters;
   std::tie(flag, iters) =
-      solver.solve(A, b, x, ksp::TRADITION, false, opts.verbose);
+      solver.solve(A, b, x, kernel, false, opts.verbose);
   timer.finish();
   const double rs = iters ? solver.resids().back() : -1.0;
   hilucsi_info(
@@ -158,12 +163,13 @@ int main(int argc, char *argv[]) {
   return flag;
 }
 
-inline static std::tuple<Options, double, bool> parse_args(int   argc,
-                                                           char *argv[]) {
-  Options opts = get_default_options();
-  double  tol  = 1e-6;
-  bool    symm = false;
-  opts.verbose = VERBOSE_NONE;
+inline static std::tuple<Options, double, bool, int> parse_args(int   argc,
+                                                                char *argv[]) {
+  Options opts   = get_default_options();
+  double  tol    = 1e-6;
+  bool    symm   = false;
+  int     kernel = ksp::TRADITION;
+  opts.verbose   = VERBOSE_NONE;
   if (argc < 2) {
     std::cerr << "Missing input directory!\n" << help;
     std::exit(1);
@@ -240,10 +246,14 @@ inline static std::tuple<Options, double, bool> parse_args(int   argc,
       ++i;
       if (i >= argc) fatal_exit("missing QMRCGSTAB rtol value!");
       tol = std::atof(argv[i]);
+    } else if (arg == string("-K") || arg == string("--kernel")) {
+      ++i;
+      if (i >= argc) fatal_exit("missing GMRES kernel choice!");
+      kernel = std::atoi(argv[i]);
     }
     ++i;
   }
-  return std::make_tuple(opts, tol, symm);
+  return std::make_tuple(opts, tol, symm, kernel);
 }
 
 inline static std::tuple<crs_t, array_t, array_t::size_type> get_inputs(
