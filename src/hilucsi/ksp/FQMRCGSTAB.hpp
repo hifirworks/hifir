@@ -267,6 +267,187 @@ class FQMRCGSTAB
     return std::make_pair(flag, iter);
   }
 
+  /// \brief low level solve kernel with auto/smart M-solve
+  /// \tparam Matrix user input matrix type, see \ref CRS and \ref CCS
+  /// \tparam Operator "preconditioner" operator type, see \ref internal::Jacobi
+  /// \tparam StreamerCout cout streamer type
+  /// \tparam StreamerCerr cerr streamer type
+  /// \param[in] A user matrix
+  /// \param[in] M "preconditioner" operator
+  /// \param[in] b right hard size
+  /// \param[in] zero_start flag to indicate \a x0 starts with all zeros
+  /// \param[in,out] x0 initial guess and solution on output
+  /// \param[in] Cout "stdout" streamer
+  /// \param[in] Cerr "stderr" streamer
+  template <class Matrix, class Operator, class StreamerCout,
+            class StreamerCerr>
+  std::pair<int, size_type> _solve_auto(const Matrix &A, const Operator &M,
+                                        const array_type &b,
+                                        const bool zero_start, array_type &x0,
+                                        const StreamerCout &Cout,
+                                        const StreamerCerr &Cerr) const {
+    constexpr static int _D =
+        std::numeric_limits<scalar_type>::digits10 / 2 + 1;
+    const static scalar_type _inc_eps =
+        std::pow(scalar_type(10), -(scalar_type)_D);
+    constexpr static size_type max_j_steps = 8u;
+
+    const size_type n = b.size();
+    // record  time after preconditioner
+    _ensure_data_capacities(n);
+    const auto normb = norm2(b);
+    auto &     x     = x0;
+    int        flag  = SUCCESS;
+    if (normb == 0) {
+      std::fill_n(x.begin(), n, value_type(0));
+      return std::make_pair(flag, size_type(0));
+    }
+    if (zero_start)
+      std::copy(b.cbegin(), b.cend(), _r0.begin());
+    else {
+      A.mv(x, _Ax);
+      for (size_type i(0); i < n; ++i) _r0[i] = b[i] - _Ax[i];
+    }
+    const auto &r0  = _r0;
+    auto        tau = norm2(r0);
+    _resids[0]      = tau / normb;  // starting with size 1
+    if (_resids[0] <= rtol) return std::make_pair(flag, size_type(0));
+    std::copy(r0.cbegin(), r0.cend(), _p.begin());
+    std::copy(r0.cbegin(), r0.cend(), _r.begin());
+    // comment out, implicitly handled in the loop
+    // std::fill_n(_d.begin(), n, value_type(0));
+    value_type eta(0), theta(0), rho1 = tau * tau;
+
+    size_type iter(1);
+
+    unsigned res_inc_flag = 0u;
+
+    // main loop
+    for (; iter <= maxit; ++iter) {
+      const bool do_j = iter <= max_j_steps;
+      // if do auto smart solve
+      if (do_j || res_inc_flag) {
+        if (M.solve(A, _p, inner_steps, _ph)) {
+          Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+               "Failed to call M operator at iteration %zd.", iter);
+          flag = M_SOLVE_ERROR;
+          break;
+        }
+      } else
+        M.M().solve(_p, _ph);
+      A.mv(_ph, _v);
+      auto rho2 = inner(r0, _v);
+      if (rho2 == 0) {
+        Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+             "Solver break-down detected at iteration %zd.", iter);
+        flag = BREAK_DOWN;
+        break;
+      }
+      if (rho1 == 0) {
+        Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+             "Stagnated detected at iteration %zd.", iter);
+        flag = STAGNATED;
+        break;
+      }
+      const auto alpha = rho1 / rho2;
+      for (size_type i(0); i < n; ++i) _s[i] = _r[i] - alpha * _v[i];
+      const auto theta2 = norm2(_s) / tau;
+      auto       c      = 1. / std::sqrt(1.0 + theta2 * theta2);
+      const auto tau2   = tau * theta2 * c;
+      const auto eta2   = c * c * alpha;
+      if (iter == 1u)
+        std::copy(_ph.cbegin(), _ph.cend(), _d2.begin());
+      else {
+        const auto coeff = theta * theta * eta / alpha;
+        for (size_type i(0); i < n; ++i) _d2[i] = _ph[i] + coeff * _d[i];
+      }
+      for (size_type i(0); i < n; ++i) _x2[i] = x[i] + eta2 * _d2[i];
+
+      if (do_j || res_inc_flag) {
+        if (M.solve(A, _s, inner_steps, _sh)) {
+          Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+               "Failed to call M operator at iteration %zd.", iter);
+          flag = M_SOLVE_ERROR;
+          break;
+        }
+      } else
+        M.M().solve(_s, _sh);
+      A.mv(_sh, _t);
+
+      const auto uu = inner(_s, _t), vv = norm2_sq(_t);
+      const auto omega = uu / vv;
+      if (omega == 0) {
+        Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+             "Stagnated detected at iteration %zd.", iter);
+        flag = STAGNATED;
+        break;
+      }
+      for (size_type i(0); i < n; ++i) _r[i] = _s[i] - omega * _t[i];
+
+      theta             = norm2(_r) / tau2;
+      c                 = 1. / std::sqrt(1. + theta * theta);
+      tau               = tau2 * theta * c;
+      eta               = c * c * omega;
+      const auto _coeff = theta2 * theta2 * eta2 / omega;
+      for (size_type i(0); i < n; ++i) {
+        const auto tmp = _sh[i] + _coeff * _d2[i];
+        _d[i]          = tmp;
+        x[i]           = _x2[i] + eta * tmp;
+      }
+
+      // update residual
+      A.mv(x, _Ax);
+      for (size_type i(0); i < n; ++i) _Ax[i] = b[i] - _Ax[i];
+      const auto resid_prev = _resids.back();
+      _resids.push_back(norm2(_Ax) / normb);
+      do {
+        // *2 due to called A*x twice
+        const size_type inners = do_j || res_inc_flag ? inner_steps * 2 : 2;
+        Cout("  At iteration %zd (inner:%zd), relative residual is %g.", iter,
+             inners, _resids.back());
+      } while (false);
+      if (_resids.back() <= rtol) break;
+
+      if (std::isnan(_resids.back()) || std::isinf(_resids.back())) {
+        Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+             "Solver break-down detected at iteration %zd.", iter);
+        flag = BREAK_DOWN;
+        break;
+      }
+      // check if residual increasing
+      if (_resids.back() >= _resids[iter - 1] * (1 - _inc_eps)) {
+        Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+             "Residual begins to increase at iteration %zd. Turn on inner "
+             "refinements.",
+             iter);
+        res_inc_flag = 2u;
+      } else {
+        if (res_inc_flag) --res_inc_flag;
+      }
+
+      rho2 = inner(_r, r0);
+      if (rho2 == 0) {
+        Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+             "Stagnated detected at iteration %zd.", iter);
+        flag = STAGNATED;
+        break;
+      }
+      const auto beta = alpha * rho2 / (omega * rho1);
+      for (size_type i(0); i < n; ++i)
+        _p[i] = _r[i] + beta * (_p[i] - omega * _v[i]);
+      rho1 = rho2;
+    }  // for
+
+    if (flag == SUCCESS && _resids.back() > rtol) {
+      Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+           "Reached maxit iteration limit %zd.", maxit);
+      flag = DIVERGED;
+      iter = maxit;
+    }
+
+    return std::make_pair(flag, iter);
+  }
+
  private:
   using _base::restart;
 };
