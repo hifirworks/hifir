@@ -106,18 +106,25 @@ inline typename CcsType::size_type defer_zero_diags(
 
 /// \brief permute the matrix for asymmetric cases
 /// \tparam CcsType ccs storage for intermidiate matrix after matching
+/// \tparam CrsType crs storage, see \ref CRS
 /// \tparam PermType permutation matrix, see \ref BiPermMatrix
 /// \param[in] A input matrix after performing matching
+/// \param[in] A_crs input matrix with crs type
 /// \param[in] m leading block size that must no larger than size(A)
 /// \param[in] p row permutation matrix
 /// \param[in] q column permutation matrix
-/// \note It's worth noting that \a q must be bi-directional mapping
+/// \param[in] apat if \a true, then compute \f$\mathbf{A}_m^T+\mathbf{A}_m\f$
+///             default is \a false
+/// \note It's worth noting that \a p must be bi-directional mapping
+/// \note If \a apat is \a true, then \a q must be bi-directional mapping
 template <class CcsType, class CrsType, class PermType>
-inline CcsType compute_perm_leading_block(const CcsType &A, const CrsType &,
+inline CcsType compute_perm_leading_block(const CcsType &A,
+                                          const CrsType &A_crs,
                                           const typename CcsType::size_type m,
-                                          const PermType &                  p,
-                                          const PermType &                  q) {
-  using size_type = typename CcsType::size_type;
+                                          const PermType &p, const PermType &q,
+                                          const bool apat = false) {
+  using size_type  = typename CcsType::size_type;
+  using index_type = typename CcsType::index_type;
 
   CcsType B(m, m);
   auto &  col_start = B.col_start();
@@ -126,37 +133,114 @@ inline CcsType compute_perm_leading_block(const CcsType &A, const CrsType &,
                    "memory allocation failed");
   col_start.front() = 0;  // zero based
 
-  // determine nnz
-  for (size_type col = 0u; col < m; ++col) {
-    const auto q_col   = q[col];
-    col_start[col + 1] = std::count_if(
-        A.row_ind_cbegin(q_col), A.row_ind_cend(q_col), [&](decltype(q_col) i) {
-          return static_cast<size_type>(p.inv(i)) < m;
-        });
-  }
-  for (size_type i = 0u; i < m; ++i) col_start[i + 1] += col_start[i];
-
-  // allocate storage
-  // B.reserve(col_start[m]);
-  auto &row_ind = B.row_ind();
-  // NOTE we only indices for reordering step
-  row_ind.resize(col_start[m]);
-  hilucsi_error_if(row_ind.status() == DATA_UNDEF, "memory allocation failed");
-  auto itr = row_ind.begin();
-
-  // assemble nnz arrays
-  for (size_type col = 0u; col < m; ++col) {
-    const auto q_col   = q[col];
-    auto       A_v_itr = A.val_cbegin(q_col);
-    for (auto A_itr = A.row_ind_cbegin(q_col), last = A.row_ind_cend(q_col);
-         A_itr != last; ++A_itr, ++A_v_itr) {
-      const size_type p_inv = p.inv(*A_itr);
-      if (p_inv < m) {
-        *itr++ = p_inv;
-      }
+  if (!apat) {
+    // determine nnz
+    for (size_type col = 0u; col < m; ++col) {
+      const auto q_col = q[col];
+      col_start[col + 1] =
+          col_start[col] +
+          std::count_if(A.row_ind_cbegin(q_col), A.row_ind_cend(q_col),
+                        [&](decltype(q_col) i) {
+                          return static_cast<size_type>(p.inv(i)) < m;
+                        });
     }
-    // sort indices
-    std::sort(B.row_ind_begin(col), itr);
+    // for (size_type i = 0u; i < m; ++i) col_start[i + 1] += col_start[i];
+
+    // allocate storage
+    auto &row_ind = B.row_ind();
+    // NOTE we only indices for reordering step
+    row_ind.resize(col_start[m]);
+    hilucsi_error_if(row_ind.status() == DATA_UNDEF,
+                     "memory allocation failed");
+    auto itr = row_ind.begin();
+
+    // assemble nnz arrays
+    for (size_type col = 0u; col < m; ++col) {
+      const auto q_col   = q[col];
+      auto       A_v_itr = A.val_cbegin(q_col);
+      for (auto A_itr = A.row_ind_cbegin(q_col), last = A.row_ind_cend(q_col);
+           A_itr != last; ++A_itr, ++A_v_itr) {
+        const size_type p_inv = p.inv(*A_itr);
+        if (p_inv < m) *itr++ = p_inv;
+      }
+      // sort indices
+      std::sort(B.row_ind_begin(col), itr);
+    }
+  } else {
+    // form nonzero pattern of A+A^T
+
+    // create mask
+    std::vector<bool> masks(m, false);
+    // first determine nnz
+    do {
+      typename CcsType::iarray_type buf(m);
+      hilucsi_error_if(buf.status() == DATA_UNDEF, "memory allocation failed");
+      for (size_type i(0); i < m; ++i) {
+        size_type nnz(0);
+        // first loop through col
+        const auto col = q[i];
+        for (auto itr = A.row_ind_cbegin(col), last = A.row_ind_cend(col);
+             itr != last; ++itr) {
+          const size_type ind = p.inv(*itr);
+          if (ind < m) {
+            masks[ind] = true;
+            buf[nnz++] = ind;
+          }
+        }
+        // then loop through row, note that we only count indices are not been
+        // counted yet
+        const auto row = p[i];
+        for (auto itr  = A_crs.col_ind_cbegin(row),
+                  last = A_crs.col_ind_cend(row);
+             itr != last; ++itr) {
+          const size_type ind = q.inv(*itr);
+          if (!masks[ind] && ind < m) {
+            masks[ind] = true;
+            buf[nnz++] = ind;
+          }
+        }
+        col_start[i + 1] = col_start[i] + nnz;
+        // reset flags
+        std::for_each(buf.cbegin(), buf.cbegin() + nnz,
+                      [&](const index_type j) { masks[j] = false; });
+      }
+    } while (false);  // free buf here
+
+    // then, form indices
+    // allocate storage
+    auto &row_ind = B.row_ind();
+    // NOTE we only indices for reordering step
+    row_ind.resize(col_start[m]);
+    hilucsi_error_if(row_ind.status() == DATA_UNDEF,
+                     "memory allocation failed");
+
+    auto i_itr = row_ind.begin();
+    for (size_type i(0); i < m; ++i) {
+      const auto col = q[i];
+      for (auto itr = A.row_ind_cbegin(col), last = A.row_ind_cend(col);
+           itr != last; ++itr) {
+        const size_type ind = p.inv(*itr);
+        if (ind < m) {
+          *i_itr++   = ind;
+          masks[ind] = true;
+        }
+      }
+      const auto row = p[i];
+      for (auto itr = A_crs.col_ind_cbegin(row), last = A_crs.col_ind_cend(row);
+           itr != last; ++itr) {
+        const size_type ind = q.inv(*itr);
+        if (!masks[ind] && ind < m) {
+          masks[ind] = true;
+          *i_itr++   = ind;
+        }
+      }
+      // sort indices
+      // TODO do we need this in rcm?
+      std::sort(B.row_ind_begin(i), i_itr);
+      // reset flags
+      std::for_each(B.row_ind_cbegin(i), B.row_ind_cend(i),
+                    [&](const index_type j) { masks[j] = false; });
+    }
   }
 
   return B;
@@ -270,7 +354,10 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   return_type BB;
   if (compute_perm) {
     p.build_inv();
-    BB = internal::compute_perm_leading_block(A, A_crs, m, p, q);
+    // to see if we need to build A^T+A pattern
+    const bool build_apat = !IsSymm && opts.reorder == REORDER_RCM;
+    if (build_apat) q.build_inv();
+    BB = internal::compute_perm_leading_block(A, A_crs, m, p, q, build_apat);
   }
   return std::make_pair(BB, m);
 }

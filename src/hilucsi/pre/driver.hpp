@@ -82,15 +82,15 @@ inline typename CcsType::size_type do_preprocessing(
 
     auto &            B = match_res.first;
     Array<index_type> P;
-    // for auto reordering, we use rcm only if first level symmetry and
-    // have static deferrals
-    const bool try_use_rcm = IsSymm && level == 1u && B.nrows() != m0;
     if (opt.reorder == REORDER_AUTO) {
+      // for auto reordering, we use rcm only if first level symmetry and
+      // have static deferrals
+      const bool try_use_rcm = IsSymm && level == 1u && B.nrows() != m0;
       P = try_use_rcm ? run_rcm(B, opt) : run_amd<false>(B, opt);
       if (try_use_rcm) reorder_name = "RCM";
-    } else if (opt.reorder == REORDER_AMD)
+    } else if (opt.reorder == REORDER_AMD) {
       P = run_amd<false>(B, opt);
-    else {
+    } else {
       P            = run_rcm(B, opt);
       reorder_name = "RCM";
     }

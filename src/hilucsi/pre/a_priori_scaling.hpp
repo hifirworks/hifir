@@ -38,7 +38,6 @@ template <class CrsType>
 inline void scale_eye(CrsType &B, typename CrsType::array_type &rs,
                       typename CrsType::array_type &cs,
                       const bool ensure_fortran_index = true) {
-  using value_type = typename CrsType::value_type;
   using size_type  = typename CrsType::size_type;
   using index_type = typename CrsType::index_type;
 
