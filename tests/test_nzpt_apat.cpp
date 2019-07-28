@@ -19,8 +19,8 @@ constexpr static int N = 100;
 const static RandIntGen i_rand(1, N);
 
 TEST(NZ_PT_APAT, core) {
-  using crs_t   = CRS<double, int>;
-  using ccs_t   = crs_t::other_type;
+  using crs_t = CRS<double, int>;
+  using ccs_t = crs_t::other_type;
 
   const int   m(i_rand());
   const crs_t A1 = gen_rand_sparse<crs_t>(m, m);
@@ -31,7 +31,7 @@ TEST(NZ_PT_APAT, core) {
     inline constexpr int inv(const int i) const { return i; }
   } dummy_p;
 
-  const auto B =
+  auto B =
       internal::compute_perm_leading_block(A2, A1, m, dummy_p, dummy_p, true);
 
   for (int i = 0; i < m; ++i) {
@@ -47,4 +47,12 @@ TEST(NZ_PT_APAT, core) {
     EXPECT_TRUE(std::all_of(mask.cbegin(), mask.cend(),
                             [](const bool i) { return !i; }));
   }
+
+  // assign dummy value array in order to build the crs of B
+  B.vals() = gen_ran_vec<ccs_t::array_type>(B.nnz());
+  const crs_t B2(B);
+  EXPECT_TRUE(std::equal(B.col_start().cbegin(), B.col_start().cend(),
+                         B2.row_start().cbegin()));
+  EXPECT_TRUE(std::equal(B.row_ind().cbegin(), B.row_ind().cend(),
+                         B2.col_ind().cbegin()));
 }
