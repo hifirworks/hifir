@@ -98,18 +98,19 @@ cdef extern from 'hilucsi4py.hpp' namespace 'hilucsi' nogil:
         # solving routine
         void solve(const size_t n, const double *b, double *x) except +
 
-    cdef cppclass PyFGMRES:
-        PyFGMRES()
-        PyFGMRES(shared_ptr[PyHILUCSI] M, const double rel_tol, const int rs,
-                 const size_t max_iters, const size_t max_inner_steps) except +
-        double rtol
-        int restart
-        size_t maxit
-        size_t inner_steps
-        double lamb1
-        double lamb2
-        void set_M(shared_ptr[PyHILUCSI] M) except +
-        shared_ptr[PyHILUCSI] get_M()
+    cdef cppclass KspSolver:
+        void set_rtol(const double v)
+        double get_rtol()
+        void set_restart(const int v)
+        int get_restart()
+        void set_maxit(const size_t v)
+        size_t get_maxit()
+        void set_inner_steps(const size_t v)
+        size_t get_inner_steps()
+        void set_lamb1(const double v)
+        double get_lamb1()
+        void set_lamb2(const double v)
+        double get_lamb2()
         void check_pars()
         int get_resids_length()
         void get_resids(double *r)
@@ -119,68 +120,50 @@ cdef extern from 'hilucsi4py.hpp' namespace 'hilucsi' nogil:
                                 const bool with_init_guess,
                                 const bool verbose) except +
 
-    cdef cppclass PyFGMRES_Mixed:
+    cdef cppclass PyFGMRES(KspSolver):
+        PyFGMRES()
+        PyFGMRES(shared_ptr[PyHILUCSI] M, const double rel_tol, const int rs,
+                 const size_t max_iters, const size_t max_inner_steps) except +
+        void set_M(shared_ptr[PyHILUCSI] M) except +
+        shared_ptr[PyHILUCSI] get_M()
+
+    cdef cppclass PyFGMRES_Mixed(KspSolver):
         PyFGMRES_Mixed()
         PyFGMRES_Mixed(shared_ptr[PyHILUCSI_Mixed] M, const double rel_tol,
                        const int rs, const size_t max_iters,
                        const size_t max_inner_steps) except +
-        double rtol
-        int restart
-        size_t maxit
-        size_t inner_steps
-        double lamb1
-        double lamb2
         void set_M(shared_ptr[PyHILUCSI_Mixed] M) except +
         shared_ptr[PyHILUCSI_Mixed] get_M()
-        void check_pars()
-        int get_resids_length()
-        void get_resids(double *r)
-        pair[int, size_t] solve(const size_t n, const int *rowptr,
-                                const int *colind, const double *vals,
-                                const double *b, double *x, const int kernel,
-                                const bool with_init_guess,
-                                const bool verbose) except +
     
-    cdef cppclass PyFQMRCGSTAB:
+    cdef cppclass PyFQMRCGSTAB(KspSolver):
         PyFQMRCGSTAB()
         PyFQMRCGSTAB(shared_ptr[PyHILUCSI] M, const double rel_tol,
                  const size_t max_iters, const size_t innersteps) except +
-        double rtol
-        size_t maxit
-        size_t inner_steps
-        double lamb1
-        double lamb2
         void set_M(shared_ptr[PyHILUCSI] M) except +
         shared_ptr[PyHILUCSI] get_M()
-        void check_pars()
-        int get_resids_length()
-        void get_resids(double *r)
-        pair[int, size_t] solve(const size_t n, const int *rowptr,
-                                const int *colind, const double *vals,
-                                const double *b, double *x, const int kernel,
-                                const bool with_init_guess,
-                                const bool verbose) except +
 
-    cdef cppclass PyFQMRCGSTAB_Mixed:
+    cdef cppclass PyFQMRCGSTAB_Mixed(KspSolver):
         PyFQMRCGSTAB_Mixed()
         PyFQMRCGSTAB_Mixed(shared_ptr[PyHILUCSI_Mixed] M, const double rel_tol,
                            const size_t max_iters,
                            const size_t innersteps) except +
-        double rtol
-        size_t maxit
-        size_t inner_steps
-        double lamb1
-        double lamb2
         void set_M(shared_ptr[PyHILUCSI_Mixed] M) except +
         shared_ptr[PyHILUCSI_Mixed] get_M()
-        void check_pars()
-        int get_resids_length()
-        void get_resids(double *r)
-        pair[int, size_t] solve(const size_t n, const int *rowptr,
-                                const int *colind, const double *vals,
-                                const double *b, double *x, const int kernel,
-                                const bool with_init_guess,
-                                const bool verbose) except +
+
+    cdef cppclass PyFBICGSTAB(KspSolver):
+        PyFBICGSTAB()
+        PyFBICGSTAB(shared_ptr[PyHILUCSI] M, const double rel_tol,
+                 const size_t max_iters, const size_t innersteps) except +
+        void set_M(shared_ptr[PyHILUCSI] M) except +
+        shared_ptr[PyHILUCSI] get_M()
+
+    cdef cppclass PyFBICGSTAB_Mixed(KspSolver):
+        PyFBICGSTAB_Mixed()
+        PyFBICGSTAB_Mixed(shared_ptr[PyHILUCSI_Mixed] M, const double rel_tol,
+                           const size_t max_iters,
+                           const size_t innersteps) except +
+        void set_M(shared_ptr[PyHILUCSI_Mixed] M) except +
+        shared_ptr[PyHILUCSI_Mixed] get_M()
 
 
 cdef extern from 'hilucsi4py.hpp' namespace 'hilucsi::ksp' nogil:

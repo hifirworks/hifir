@@ -24,6 +24,7 @@
 #endif  // HILUCSI_STDOUT
 
 #include <string>
+#include <type_traits>
 #include <vector>
 
 // then include the file descriptor wrapper
@@ -157,26 +158,71 @@ class PyHILUCSI_Mixed : public HILUCSI<float, int> {
   }
 };
 
+// abstract interface for solver
+class KspSolver {
+ public:
+  virtual ~KspSolver() {}
+  virtual void                      set_rtol(const double)           = 0;
+  virtual double                    get_rtol() const                 = 0;
+  virtual void                      set_restart(const int)           = 0;
+  virtual int                       get_restart() const              = 0;
+  virtual void                      set_maxit(const size_type)       = 0;
+  virtual size_type                 get_maxit() const                = 0;
+  virtual void                      set_inner_steps(const size_type) = 0;
+  virtual size_type                 get_inner_steps() const          = 0;
+  virtual void                      set_lamb1(const double)          = 0;
+  virtual double                    get_lamb1() const                = 0;
+  virtual void                      set_lamb2(const double)          = 0;
+  virtual double                    get_lamb2() const                = 0;
+  virtual void                      check_pars()                     = 0;
+  virtual int                       get_resids_length() const        = 0;
+  virtual void                      get_resids(double *r) const      = 0;
+  virtual std::pair<int, size_type> solve(const size_type n, const int *rowptr,
+                                          const int *colind, const double *vals,
+                                          const double *b, double *x,
+                                          const int  kernel,
+                                          const bool with_init_guess,
+                                          const bool verbose) const  = 0;
+};
+
 // using a template base for Ksp solver
 template <template <class, class> class Ksp, class MType = PyHILUCSI,
           class ValueType = void>
-class KspAdapt : public Ksp<MType, ValueType> {
+class KspAdapt : public Ksp<MType, ValueType>, public KspSolver {
  public:
   using base = Ksp<MType, ValueType>;
+  virtual ~KspAdapt() {}
 
-  inline int  get_resids_length() const { return base::_resids.size(); }
-  inline void get_resids(double *r) const {
+  virtual void   set_rtol(const double v) override final { base::rtol = v; }
+  virtual double get_rtol() const override final { return base::rtol; }
+  virtual void   set_restart(const int v) override final { base::restart = v; }
+  virtual int    get_restart() const override final { return base::restart; }
+  virtual void set_maxit(const size_type v) override final { base::maxit = v; }
+  virtual size_type get_maxit() const override final { return base::maxit; }
+  virtual void      set_inner_steps(const size_type v) override final {
+    base::inner_steps = v;
+  }
+  virtual size_type get_inner_steps() const override final {
+    return base::inner_steps;
+  }
+  virtual void   set_lamb1(const double v) override final { base::lamb1 = v; }
+  virtual double get_lamb1() const override final { return base::lamb1; }
+  virtual void   set_lamb2(const double v) override final { base::lamb2 = v; }
+  virtual double get_lamb2() const override final { return base::lamb2; }
+
+  virtual int get_resids_length() const override final {
+    return base::_resids.size();
+  }
+  virtual void get_resids(double *r) const override final {
     for (int i = 0; i < get_resids_length(); ++i) r[i] = base::_resids[i];
   }
 
-  inline void check_pars() { base::_check_pars(); }
+  virtual void check_pars() override final { base::_check_pars(); }
 
-  inline std::pair<int, size_type> solve(const size_type n, const int *rowptr,
-                                         const int *colind, const double *vals,
-                                         const double *b, double *x,
-                                         const int  kernel = ksp::TRADITION,
-                                         const bool with_init_guess = false,
-                                         const bool verbose = true) const {
+  virtual std::pair<int, size_type> solve(
+      const size_type n, const int *rowptr, const int *colind,
+      const double *vals, const double *b, double *x, const int kernel,
+      const bool with_init_guess, const bool verbose) const override final {
     constexpr static bool WRAP = true;
 
     const py_crs_type A(n, n, const_cast<int *>(rowptr),
@@ -193,8 +239,10 @@ class KspAdapt : public Ksp<MType, ValueType> {
 
 using PyFGMRES           = KspAdapt<ksp::FGMRES>;      // fgmres
 using PyFQMRCGSTAB       = KspAdapt<ksp::FQMRCGSTAB>;  // fqmrcgstab
+using PyFBICGSTAB        = KspAdapt<ksp::FBICGSTAB>;   // fbicgstab
 using PyFGMRES_Mixed     = KspAdapt<ksp::FGMRES, PyHILUCSI_Mixed, double>;
 using PyFQMRCGSTAB_Mixed = KspAdapt<ksp::FQMRCGSTAB, PyHILUCSI_Mixed, double>;
+using PyFBICGSTAB_Mixed  = KspAdapt<ksp::FBICGSTAB, PyHILUCSI_Mixed, double>;
 
 }  // namespace hilucsi
 
