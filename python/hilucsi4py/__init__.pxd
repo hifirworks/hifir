@@ -196,6 +196,7 @@ cdef extern from 'hilucsi4py.hpp' namespace 'hilucsi::ksp' nogil:
         TRADITION
         JACOBI
         CHEBYSHEV_JACOBI
+        AUTO
 
 
 cdef extern from 'hilucsi4py.hpp' namespace 'hilucsi::internal' nogil:

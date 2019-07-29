@@ -655,8 +655,10 @@ def _handle_kernel(str kernel):
         kn = hilucsi.JACOBI
     elif kernel == 'chebyshev-jacobi':
         kn = hilucsi.CHEBYSHEV_JACOBI
+    elif kernel == 'auto':
+        kn = hilucsi.AUTO
     else:
-        choices = ('tradition', 'jacobi', 'chebyshev-jacobi')
+        choices = ('tradition', 'jacobi', 'chebyshev-jacobi', 'auto')
         raise KSP_InvalidArgumentsError(
             'invalid kernel {}, must be {}'.format(kernel, choices))
     return kn
@@ -684,7 +686,7 @@ cdef class FGMRES:
     restart : int
         restart in GMRES, default is 30
     max_inners : int
-        maximum inner iterations used in Jacobi style kernle, default is 2
+        maximum inner iterations used in Jacobi style kernle, default is 4
     lamb1 : float or ``None``
         if given, then used as the largest eigenvalue estimation
     lamb2 : float or ``None``
@@ -708,12 +710,12 @@ cdef class FGMRES:
     def is_mixed():
         return False
 
-    def __init__(self, M=None, rtol=1e-6, restart=30, maxit=500, max_inners=2,
+    def __init__(self, M=None, rtol=1e-6, restart=30, maxit=500, max_inners=4,
                  **kw):
         pass
 
     def __cinit__(self, HILUCSI M=None, double rtol=1e-6, int restart=30,
-                  int maxit=500, int max_inners=2, **kw):
+                  int maxit=500, int max_inners=4, **kw):
         self.solver.reset(new hilucsi.PyFGMRES())
         if M is not None:
             deref(self.solver).set_M(M.M)
@@ -764,7 +766,7 @@ cdef class FGMRES:
 
     @property
     def inner_steps(self):
-        """int: maximum inner iterations for Jacobi-like inner iterations (2)"""
+        """int: maximum inner iterations for Jacobi-like inner iterations (4)"""
         return deref(self.solver).inner_steps
 
     @inner_steps.setter
@@ -902,7 +904,7 @@ cdef class FGMRES_Mixed:
     restart : int
         restart in GMRES, default is 30
     max_inners : int
-        maximum inner iterations used in Jacobi style kernle, default is 2
+        maximum inner iterations used in Jacobi style kernle, default is 4
     lamb1 : float or ``None``
         if given, then used as the largest eigenvalue estimation
     lamb2 : float or ``None``
@@ -926,12 +928,12 @@ cdef class FGMRES_Mixed:
     def is_mixed():
         return True
 
-    def __init__(self, M=None, rtol=1e-6, restart=30, maxit=500, max_inners=2,
+    def __init__(self, M=None, rtol=1e-6, restart=30, maxit=500, max_inners=4,
                  **kw):
         pass
 
     def __cinit__(self, HILUCSI_Mixed M=None, double rtol=1e-6, int restart=30,
-                  int maxit=500, int max_inners=2, **kw):
+                  int maxit=500, int max_inners=4, **kw):
         self.solver.reset(new hilucsi.PyFGMRES_Mixed())
         if M is not None:
             deref(self.solver).set_M(M.M)
@@ -982,7 +984,7 @@ cdef class FGMRES_Mixed:
 
     @property
     def inner_steps(self):
-        """int: maximum inner iterations for Jacobi-like inner iterations (2)"""
+        """int: maximum inner iterations for Jacobi-like inner iterations (4)"""
         return deref(self.solver).inner_steps
 
     @inner_steps.setter
@@ -1118,7 +1120,7 @@ cdef class FQMRCGSTAB:
     maxit : int
         maximum iterations, default is 500
     innersteps : int
-        inner iterations used in Jacobi style kernle, default is 2
+        inner iterations used in Jacobi style kernle, default is 4
     lamb1 : float or ``None``
         if given, then used as the largest eigenvalue estimation
     lamb2 : float or ``None``
@@ -1142,11 +1144,11 @@ cdef class FQMRCGSTAB:
     def is_mixed():
         return False
 
-    def __init__(self, M=None, rtol=1e-6, maxit=500, max_inners=2, **kw):
+    def __init__(self, M=None, rtol=1e-6, maxit=500, max_inners=4, **kw):
         pass
 
     def __cinit__(self, HILUCSI M=None, double rtol=1e-6, int maxit=500,
-        int innersteps=2, **kw):
+        int innersteps=4, **kw):
         self.solver.reset(new hilucsi.PyFQMRCGSTAB())
         if M is not None:
             deref(self.solver).set_M(M.M)
@@ -1185,7 +1187,7 @@ cdef class FQMRCGSTAB:
 
     @property
     def inner_steps(self):
-        """int: maximum inner iterations for Jacobi-like inner iterations (2)"""
+        """int: maximum inner iterations for Jacobi-like inner iterations (4)"""
         return deref(self.solver).inner_steps
 
     @inner_steps.setter
@@ -1321,7 +1323,7 @@ cdef class FQMRCGSTAB_Mixed:
     maxit : int
         maximum iterations, default is 500
     innersteps : int
-        inner iterations used in Jacobi style kernle, default is 2
+        inner iterations used in Jacobi style kernle, default is 4
     lamb1 : float or ``None``
         if given, then used as the largest eigenvalue estimation
     lamb2 : float or ``None``
@@ -1345,11 +1347,11 @@ cdef class FQMRCGSTAB_Mixed:
     def is_mixed():
         return True
 
-    def __init__(self, M=None, rtol=1e-6, maxit=500, max_inners=2, **kw):
+    def __init__(self, M=None, rtol=1e-6, maxit=500, max_inners=4, **kw):
         pass
 
     def __cinit__(self, HILUCSI_Mixed M=None, double rtol=1e-6, int maxit=500,
-        int innersteps=2, **kw):
+        int innersteps=4, **kw):
         self.solver.reset(new hilucsi.PyFQMRCGSTAB_Mixed())
         if M is not None:
             deref(self.solver).set_M(M.M)
@@ -1388,7 +1390,7 @@ cdef class FQMRCGSTAB_Mixed:
 
     @property
     def inner_steps(self):
-        """int: maximum inner iterations for Jacobi-like inner iterations (2)"""
+        """int: maximum inner iterations for Jacobi-like inner iterations (4)"""
         return deref(self.solver).inner_steps
 
     @inner_steps.setter
