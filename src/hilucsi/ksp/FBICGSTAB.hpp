@@ -396,6 +396,9 @@ class FBICGSTAB
 
     return std::make_pair(flag, iter);
   }
+
+ protected:
+  using _base::restart;
 };
 
 }  // namespace ksp

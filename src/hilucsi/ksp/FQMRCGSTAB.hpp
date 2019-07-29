@@ -460,7 +460,7 @@ class FQMRCGSTAB
     return std::make_pair(flag, iter);
   }
 
- private:
+ protected:
   using _base::restart;
 };
 
