@@ -8,7 +8,7 @@ from scipy.sparse import random
 import numpy as np
 
 
-def test_random():
+def test_fqmrcgstab():
     A = random(10, 10, 0.5)
     solver = FQMRCGSTAB()
     solver.M.factorize(A)
@@ -16,4 +16,4 @@ def test_random():
     x, _ = solver.solve(A, b)
     res = np.linalg.norm(x - 1) / np.linalg.norm(b)
     assert res <= 1e-6
-    assert abs(res - solver.resids[-1]) <= 1e-15
+    assert abs(res - solver.resids[-1]) <= 1e-14

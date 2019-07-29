@@ -8,7 +8,7 @@ from scipy.sparse import random
 import numpy as np
 
 
-def test_random():
+def test_mixed():
     A = random(10, 10, 0.5)
     solver = FGMRES_Mixed()
     solver.M.factorize(A)
