@@ -71,7 +71,7 @@ class DefaultSettings {
   ///< default relative tolerance for residual convergence
   static constexpr std::size_t max_iters = 500u;
   ///< maximum number of iterations
-  static constexpr std::size_t inner_steps = 2u;  ///< inner flexible iterations
+  static constexpr std::size_t inner_steps = 4u;  ///< inner flexible iterations
 };
 
 /// \brief flags for flexible kernels

@@ -5,7 +5,7 @@
 //@HEADER
 
 /// \file hilucsi/ksp/FQMRCGSTAB.hpp
-/// \brief QMRCGSTAB implementation
+/// \brief FQMRCGSTAB implementation
 /// \authors Qiao,
 
 #ifndef _HILUCSI_KSP_FQMRCGSTAB_HPP
@@ -24,7 +24,7 @@ namespace ksp {
 /// \class FQMRCGSTAB
 /// \tparam MType preconditioner type, see \ref HILUCSI
 /// \tparam ValueType if not given, i.e. \a void, then use value in \a MType
-/// \brief QMRCGSTAB implementation
+/// \brief Flexible QMRCGSTAB implementation
 /// \ingroup qmrcgstab
 template <class MType, class ValueType = void>
 class FQMRCGSTAB
@@ -244,6 +244,12 @@ class FQMRCGSTAB
         flag = BREAK_DOWN;
         break;
       }
+      if (_resids.back() > 100) {
+        Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+             "Divergence encountered at iteration %zd.", iter);
+        flag = DIVERGED;
+        break;
+      }
       rho2 = inner(_r, r0);
       if (rho2 == 0) {
         Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
@@ -290,7 +296,7 @@ class FQMRCGSTAB
         std::numeric_limits<scalar_type>::digits10 / 2 + 1;
     const static scalar_type _inc_eps =
         std::pow(scalar_type(10), -(scalar_type)_D);
-    constexpr static size_type max_j_steps = 8u;
+    constexpr static size_type max_j_steps = 3u;
 
     const size_type n = b.size();
     // record  time after preconditioner
@@ -412,6 +418,12 @@ class FQMRCGSTAB
         Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
              "Solver break-down detected at iteration %zd.", iter);
         flag = BREAK_DOWN;
+        break;
+      }
+      if (_resids.back() > 100) {
+        Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+             "Divergence encountered at iteration %zd.", iter);
+        flag = DIVERGED;
         break;
       }
       // check if residual increasing

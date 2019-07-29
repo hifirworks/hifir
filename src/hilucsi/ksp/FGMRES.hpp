@@ -297,6 +297,8 @@ class FGMRES
         std::numeric_limits<scalar_type>::digits10 / 2 + 1;
     const static scalar_type _stag_eps =
         std::pow(scalar_type(10), -(scalar_type)_D);
+    // steps for using jacobi kernel
+    constexpr static size_type j_steps = 2u;
 
     size_type       iter(0);
     const size_type n     = b.size();
@@ -305,8 +307,7 @@ class FGMRES
       std::fill_n(x0.begin(), n, value_type(0));
       return std::make_pair((int)SUCCESS, size_type(0));
     }
-    // steps for using jacobi kernel
-    const size_type j_steps = restart / 6;
+
     // record  time after preconditioner
     _ensure_data_capacities(n);
     const size_type max_outer_iters =
