@@ -667,10 +667,8 @@ def _handle_kernel(str kernel):
         kn = hilucsi.JACOBI
     elif kernel == 'chebyshev-jacobi':
         kn = hilucsi.CHEBYSHEV_JACOBI
-    elif kernel == 'auto':
-        kn = hilucsi.AUTO
     else:
-        choices = ('tradition', 'jacobi', 'chebyshev-jacobi', 'auto')
+        choices = ('tradition', 'jacobi', 'chebyshev-jacobi')
         raise KSP_InvalidArgumentsError(
             'invalid kernel {}, must be {}'.format(kernel, choices))
     return kn
