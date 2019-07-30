@@ -79,7 +79,6 @@ enum {
   TRADITION = 0,     ///< traditional kernel
   JACOBI,            ///< with inner jacobi iterations
   CHEBYSHEV_JACOBI,  ///< with inner Jacobi plus Chebyshev accelerations
-  AUTO,              ///< with automate kernel
 };
 
 /*!
@@ -485,35 +484,6 @@ class KSP {
                                     Dummy_streamer, Dummy_cerr);
   }
 
-  /// \brief solve with Jacobi operator as selective refinement
-  /// \tparam Matrix user input type, see \ref CRS and \ref CCS
-  /// \param[in] A user input matrix
-  /// \param[in] b right-hand side vector
-  /// \param[in,out] x solution
-  /// \param[in] with_init_guess if \a false (default), then assign zero to
-  ///             \a x as starting values
-  /// \param[in] verbose if \a true (default), enable verbose printing
-  template <class Matrix>
-  inline std::pair<int, size_type> solve_auto(
-      const Matrix &A, const array_type &b, array_type &x,
-      const bool with_init_guess = false, const bool verbose = true) const {
-    const static hilucsi::internal::StdoutStruct       Cout;
-    const static hilucsi::internal::StderrStruct       Cerr;
-    const static hilucsi::internal::DummyStreamer      Dummy_streamer;
-    const static hilucsi::internal::DummyErrorStreamer Dummy_cerr;
-
-    if (_this()._validate(A, b, x))
-      return std::make_pair(INVALID_ARGS, size_type(0));
-    if (verbose) _show("auto", with_init_guess, restart);
-    const internal::Jacobi<M_type, value_type> M(*_M);
-    if (!with_init_guess) std::fill(x.begin(), x.end(), value_type(0));
-    if (verbose) hilucsi_info("Calling Auto %s kernel...", ChildSolver::repr());
-    return verbose
-               ? _this()._solve_auto(A, M, b, !with_init_guess, x, Cout, Cerr)
-               : _this()._solve_auto(A, M, b, !with_init_guess, x,
-                                     Dummy_streamer, Dummy_cerr);
-  }
-
   /// \brief solve for solution
   /// \tparam Matrix user input type, see \ref CRS and \ref CCS
   /// \param[in] A user input matrix
@@ -536,8 +506,6 @@ class KSP {
         return solve_jacobi(A, b, x, with_init_guess, verbose);
       case CHEBYSHEV_JACOBI:
         return solve_chebyshev(A, b, x, with_init_guess, verbose);
-      case AUTO:
-        return solve_auto(A, b, x, with_init_guess, verbose);
       default:
         hilucsi_warning("Unknown choice of %s kernel %d", ChildSolver::repr(),
                         kernel);

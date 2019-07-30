@@ -135,16 +135,17 @@ class FGMRES
   /// \param[in] A user matrix
   /// \param[in] M "preconditioner" operator
   /// \param[in] b right hard size
-  /// \param[in] max_inner_steps maximum inner steps for jacobi-style kernels
+  /// \param[in] innersteps inner steps for jacobi-style kernels
   /// \param[in] zero_start flag to indicate \x0 starts with all zeros
   /// \param[in,out] x0 initial guess and solution on output
   /// \param[in] Cout "stdout" streamer
   /// \param[in] Cerr "stderr" streamer
+  /// \note This is MGS kernel
   template <class Matrix, class Operator, class StreamerCout,
             class StreamerCerr>
   std::pair<int, size_type> _solve(const Matrix &A, const Operator &M,
                                    const array_type &b,
-                                   const size_type   max_inner_steps,
+                                   const size_type   innersteps,
                                    const bool zero_start, array_type &x0,
                                    const StreamerCout &Cout,
                                    const StreamerCerr &Cerr) const {
@@ -183,14 +184,13 @@ class FGMRES
       const auto inv_beta = 1. / beta;
       if (!it_outer) _resids[0] = beta / beta0;
       for (size_type i = 0u; i < n; ++i) _Q[i] = _v[i] * inv_beta;
-      size_type       j(0);
-      auto            R_itr     = _R.begin();
-      const size_type exp_steps = std::min(it_outer + 1, max_inner_steps);
+      size_type j(0);
+      auto      R_itr = _R.begin();
       for (;;) {
         const auto jn = j * n;
         std::copy(_Q.cbegin() + jn, _Q.cbegin() + jn + n, _v.begin());
         if (n < (size_type)restart) _w.resize(n);
-        if (M.solve(A, _v, exp_steps, _w)) {
+        if (M.solve(A, _v, innersteps, _w)) {
           Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
                "Failed to call M operator at iteration %zd.", iter);
           flag = M_SOLVE_ERROR;
@@ -200,8 +200,7 @@ class FGMRES
         A.mv(_w, _v);
         if (n < (size_type)restart) _w.resize(restart);
         for (size_type k = 0u; k <= j; ++k) {
-          auto itr = _Q.cbegin() + k * n;
-
+          auto itr       = _Q.cbegin() + k * n;
           _w[k]          = inner(_v, itr);
           const auto tmp = _w[k];
           for (size_type i = 0u; i < n; ++i) _v[i] -= tmp * itr[i];
@@ -248,159 +247,7 @@ class FGMRES
         }
         ++iter;
         Cout("  At iteration %zd (inner:%zd), relative residual is %g.", iter,
-             exp_steps, resid);
-        if (resid <= rtol || j + 1 >= (size_type)restart) break;
-        ++j;
-      }  // inf loop
-      // backsolve
-      if (j) {
-        for (int k = j; k > -1; --k) {
-          --R_itr;
-          _y[k] /= *R_itr;
-          const auto tmp = _y[k];
-          for (int i = k - 1; i > -1; --i) {
-            --R_itr;
-            _y[i] -= tmp * *R_itr;
-          }
-        }
-      }
-      for (size_type i = 0u; i <= j; ++i) {
-        const auto tmp   = _y[i];
-        auto       Z_itr = _Z.cbegin() + i * n;
-        for (size_type k = 0u; k < n; ++k) x[k] += tmp * Z_itr[k];
-      }
-      if (resid <= rtol || flag != SUCCESS) break;
-    }
-    return std::make_pair(flag, iter);
-  }
-
-  /// \brief low level solve kernel with auto/smart M-solve
-  /// \tparam Matrix user input matrix type, see \ref CRS and \ref CCS
-  /// \tparam Operator "preconditioner" operator type, see \ref internal::Jacobi
-  /// \tparam StreamerCout cout streamer type
-  /// \tparam StreamerCerr cerr streamer type
-  /// \param[in] A user matrix
-  /// \param[in] M "preconditioner" operator
-  /// \param[in] b right hard size
-  /// \param[in] zero_start flag to indicate \x0 starts with all zeros
-  /// \param[in,out] x0 initial guess and solution on output
-  /// \param[in] Cout "stdout" streamer
-  /// \param[in] Cerr "stderr" streamer
-  template <class Matrix, class Operator, class StreamerCout,
-            class StreamerCerr>
-  std::pair<int, size_type> _solve_auto(const Matrix &A, const Operator &M,
-                                        const array_type &b,
-                                        const bool zero_start, array_type &x0,
-                                        const StreamerCout &Cout,
-                                        const StreamerCerr &Cerr) const {
-    constexpr static int _D =
-        std::numeric_limits<scalar_type>::digits10 / 2 + 1;
-    const static scalar_type _stag_eps =
-        std::pow(scalar_type(10), -(scalar_type)_D);
-    // steps for using jacobi kernel
-    constexpr static size_type j_steps = 2u;
-
-    size_type       iter(0);
-    const size_type n     = b.size();
-    const auto      beta0 = norm2(b);
-    if (beta0 == 0) {
-      std::fill_n(x0.begin(), n, value_type(0));
-      return std::make_pair((int)SUCCESS, size_type(0));
-    }
-
-    // record  time after preconditioner
-    _ensure_data_capacities(n);
-    const size_type max_outer_iters =
-        (size_type)std::ceil((scalar_type)maxit / restart);
-    auto &      x    = x0;
-    int         flag = SUCCESS;
-    scalar_type resid(1);
-    for (size_type it_outer = 0u; it_outer < max_outer_iters; ++it_outer) {
-      Cout("Enter outer iteration %zd...", it_outer + 1);
-      if (it_outer)
-        Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
-             "Couldn\'t solve with %d restarts.", restart);
-      // initial residual
-      if (iter || !zero_start) {
-        A.mv(x, _v);
-        for (size_type i = 0u; i < n; ++i) _v[i] = b[i] - _v[i];
-      } else
-        std::copy_n(b.cbegin(), n, _v.begin());
-      const auto beta     = norm2(_v);
-      _y[0]               = beta;
-      const auto inv_beta = 1. / beta;
-      if (!it_outer) _resids[0] = beta / beta0;
-      for (size_type i = 0u; i < n; ++i) _Q[i] = _v[i] * inv_beta;
-      size_type j(0);
-      auto      R_itr = _R.begin();
-      for (;;) {
-        const auto jn = j * n;
-        std::copy(_Q.cbegin() + jn, _Q.cbegin() + jn + n, _v.begin());
-        if (n < (size_type)restart) _w.resize(n);
-        bool do_jacobi = false;
-        if (j < j_steps && inner_steps > 1u) {
-          if (M.solve(A, _v, inner_steps, _w)) {
-            Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
-                 "Failed to call M operator at iteration %zd.", iter);
-            flag = M_SOLVE_ERROR;
-            break;
-          }
-          do_jacobi = true;
-        } else
-          M.M().solve(_v, _w);
-        std::copy(_w.cbegin(), _w.cend(), _Z.begin() + jn);
-        A.mv(_w, _v);
-        if (n < (size_type)restart) _w.resize(restart);
-        for (size_type k = 0u; k <= j; ++k) {
-          auto itr = _Q.cbegin() + k * n;
-
-          _w[k]          = inner(_v, itr);
-          const auto tmp = _w[k];
-          for (size_type i = 0u; i < n; ++i) _v[i] -= tmp * itr[i];
-        }
-        const auto v_norm2 = norm2_sq(_v);
-        const auto v_norm  = std::sqrt(v_norm2);
-        if (j + 1 < (size_type)restart) {
-          auto       itr      = _Q.begin() + jn + n;
-          const auto inv_norm = 1. / v_norm;
-          for (size_type i = 0u; i < n; ++i) itr[i] = inv_norm * _v[i];
-        }
-        auto J1 = _J.begin(), J2 = J1 + restart;
-        for (size_type colJ = 0u; colJ + 1u <= j; ++colJ) {
-          const auto tmp = _w[colJ];
-          _w[colJ]       = conj(J1[colJ]) * tmp + conj(J2[colJ]) * _w[colJ + 1];
-          _w[colJ + 1]   = -J2[colJ] * tmp + J1[colJ] * _w[colJ + 1];
-        }
-        const auto rho        = std::sqrt(_w[j] * _w[j] + v_norm2);
-        J1[j]                 = _w[j] / rho;
-        J2[j]                 = v_norm / rho;
-        _y[j + 1]             = -J2[j] * _y[j];
-        _y[j]                 = conj(J1[j]) * _y[j];
-        _w[j]                 = rho;
-        R_itr                 = std::copy_n(_w.cbegin(), j + 1, R_itr);
-        const auto resid_prev = resid;
-        resid                 = abs(_y[j + 1]) / beta0;
-        _resids.push_back(resid);
-        if (std::isnan(resid) || std::isinf(resid)) {
-          Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
-               "Solver break-down detected at iteration %zd.", iter);
-          flag = BREAK_DOWN;
-          break;
-        }
-        if (resid >= resid_prev * (1 - _stag_eps)) {
-          Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
-               "Stagnated detected at iteration %zd.", iter);
-          flag = STAGNATED;
-          break;
-        } else if (iter >= maxit) {
-          Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
-               "Reached maxit iteration limit %zd.", maxit);
-          flag = DIVERGED;
-          break;
-        }
-        ++iter;
-        Cout("  At iteration %zd (inner:%zd), relative residual is %g.", iter,
-             (do_jacobi ? inner_steps : size_type(1)), resid);
+             innersteps, resid);
         if (resid <= rtol || j + 1 >= (size_type)restart) break;
         ++j;
       }  // inf loop
