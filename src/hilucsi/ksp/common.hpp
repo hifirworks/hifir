@@ -555,7 +555,7 @@ class KSP {
     hilucsi_info(
         "- %s -\n"
         "rtol=%g\n"
-        "restart=%s\n"
+        "restart/cycle=%s\n"
         "maxiter=%zd\n"
         "flex-kernel: %s\n"
         "init-guess: %s\n",

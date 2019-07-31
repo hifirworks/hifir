@@ -252,16 +252,11 @@ class FGMRES
         ++j;
       }  // inf loop
       // backsolve
-      if (j) {
-        for (int k = j; k > -1; --k) {
-          --R_itr;
-          _y[k] /= *R_itr;
-          const auto tmp = _y[k];
-          for (int i = k - 1; i > -1; --i) {
-            --R_itr;
-            _y[i] -= tmp * *R_itr;
-          }
-        }
+      for (int k = j; k > -1; --k) {
+        --R_itr;
+        _y[k] /= *R_itr;
+        const auto tmp = _y[k];
+        for (int i = k - 1; i > -1; --i) _y[i] -= tmp * *(--R_itr);
       }
       for (size_type i = 0u; i <= j; ++i) {
         const auto tmp   = _y[i];
