@@ -1,3 +1,9 @@
+//@HEADER
+//----------------------------------------------------------------------------
+//                Copyright (C) 2019 The HILUCSI AUTHORS
+//----------------------------------------------------------------------------
+//@HEADER
+
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -223,7 +229,7 @@ inline static std::tuple<Options, int, double, bool, int, int> parse_args(
     std::exit(0);
   }
   if (arg == string("-V") || arg == string("--version")) {
-    std::cout << "PSMILU version: " << version() << std::endl;
+    std::cout << "HILUCSI version: " << version() << std::endl;
     std::exit(0);
   }
   if (arg == string("") || arg[0] == '-') {
@@ -243,7 +249,7 @@ inline static std::tuple<Options, int, double, bool, int, int> parse_args(
       std::exit(0);
     }
     if (arg == string("-V") || arg == string("--version")) {
-      std::cout << "PSMILU version: " << version() << std::endl;
+      std::cout << "HILUCSI version: " << version() << std::endl;
       std::exit(0);
     }
     if (arg == string("-t") || arg == string("--tau")) {
