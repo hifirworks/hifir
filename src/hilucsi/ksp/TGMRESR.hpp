@@ -66,18 +66,18 @@ class TGMRESR
   /// \brief constructor with all essential parameters
   /// \param[in] M multilevel ILU preconditioner
   /// \param[in] rel_tol relative tolerance for convergence (1e-6 for double)
-  /// \param[in] rs restart, default is 30
+  /// \param[in] cc truncated cycling frequency, default is 10
   /// \param[in] max_iters maximum number of iterations
   /// \param[in] innersteps maximum inner iterations for jacobi kernels
   explicit TGMRESR(
       std::shared_ptr<M_type> M,
       const scalar_type       rel_tol = DefaultSettings<value_type>::rtol,
-      const int               rs      = 30,
+      const int               cc      = 10,
       const size_type max_iters       = DefaultSettings<value_type>::max_iters,
       const size_type innersteps = DefaultSettings<value_type>::inner_steps)
       : _base(M, rel_tol, max_iters, innersteps) {
-    restart = rs;
-    if (restart <= 0) restart = 30;
+    restart = cc;
+    if (restart <= 0) restart = 10;
     if (_M && _M->nrows()) _ensure_data_capacities(_M->nrows());
   }
 
@@ -85,10 +85,8 @@ class TGMRESR
   /// \name workspace
   /// Workspace for GMRES algorithm
   /// @{
-  mutable array_type                   _y;
   mutable array_type                   _Q;  ///< Q space
   mutable array_type                   _Z;
-  mutable array_type                   _J;
   mutable array_type                   _v;
   mutable array_type                   _w;
   mutable array_type                   _r;
@@ -100,21 +98,20 @@ class TGMRESR
  protected:
   /// \brief check and assign any illegal parameters to default setting
   inline void _check_pars() {
-    if (restart <= 0) restart = 30;
+    if (restart <= 0) restart = 10;
     _base::_check_pars();
   }
 
   /// \brief ensure internal buffer sizes
   /// \param[in] n right-hand size array size
   inline void _ensure_data_capacities(const size_type n) const {
-    _y.resize(maxit + 1);
-    _Q.resize(n * restart + n);
+    _Q.resize(n * restart);
     _Z.resize(_Q.size());
-    _J.resize(2 * maxit);
     _v.resize(n);
-    _w.resize(std::max(n, size_type(maxit)));
+    _w.resize(n);
     _r.resize(n);
     _perm.resize(maxit + 1);
+    // build periodic permutation table
     const size_type buckets = maxit / restart;
     const int       offsets = maxit - buckets * restart;
     for (size_type j(0); j < buckets; ++j) {
@@ -321,7 +318,7 @@ class TGMRESR
     const size_type cycle = restart;
     auto &          x     = x0;
     int             flag  = SUCCESS;
-    // scalar_type     resid(1);
+
     // initialize residual
     value_type beta = beta0;
     if (!zero_start) {
@@ -331,8 +328,7 @@ class TGMRESR
     } else
       std::copy_n(b.cbegin(), n, _r.begin());
     _resids[0] = beta / beta0;
-    _w.resize(n);
-    auto &u = _w, &c = _v;
+    auto &u = _w, &c = _v;  // wrap var name to align with the paper
     for (;;) {
       const size_type j = _perm[iter], jn = j * n, j_next = _perm[iter + 1],
                       start = iter < cycle ? 0 : iter - cycle + 1;
@@ -359,6 +355,8 @@ class TGMRESR
         c_itr[i] = c[i] * c_norm_inv;
         u_itr[i] = u[i] * c_norm_inv;
       }
+
+      // update solution and residual
       const auto eta = inner(_r, c_itr);
       for (size_type i(0); i < n; ++i) {
         x[i] += eta * u_itr[i];
