@@ -9,19 +9,17 @@
 using namespace hilucsi;
 using std::string;
 
-using prec_t   = HILUCSI<float, int>;
-using crs_t    = CRS<double, int>;
-using array_t  = crs_t::array_type;
-using solver_t = ksp::FGMRES<prec_t, double>;
-
-// this example shows mixed precision of using float preconditioner with
-// double solver
+using prec_t      = HILUCSI<float, int>;
+using crs_t       = CRS<double, int>;
+using array_t     = crs_t::array_type;
+using ksp_factory = ksp::KSPFactory<prec_t, double>;
+using solver_t    = ksp_factory::abc_solver;
 
 const static char *help =
     "\n"
     "usage:\n"
     "\n"
-    " ./demo_float_double case [options] [flags]\n"
+    " ./demo_mixed case [options] [flags]\n"
     "\n"
     "where the \"case\" is an HILUCSI benchmark input directory that contains\n"
     "a matrix file and an ASCII rhs file. The matrix file is in HILUCSI\n"
@@ -45,21 +43,31 @@ const static char *help =
     "\t\t0: off\n"
     "\t\t1: auto (amd), default\n"
     "\t\t2: amd\n"
-    "\t\t3: rcm (requires BGL)\n"
-    "\t\t4: king (requires BGL)\n"
-    "\t\t5: sloan (requires BGL)\n"
+    "\t\t3: rcm\n"
     " -I|-pre-scale\n"
     "\ta priori scaling before calling matching/scaling\n"
     "\t\t0: off (default)\n"
     "\t\t1: local extreme scale\n"
     "\t\t2: iterative scaling based on inf-norm (experimental)\n"
+    " -P|--ksp\n"
+    "\tKSP methods:\n"
+    "\t\t0: FGMRES (default)\n"
+    "\t\t1: FQMRCGSTAB\n"
+    "\t\t2: TGMRESR\n"
+    "\t\t3: FBICGSTAB\n"
     " -S|--symm-pre-lvls\n"
     "\tlevels to apply symmetric preprocessing, nonpositive number indicates\n"
     "\tapply symmetric preprocessing for all levels (1)\n"
     " -T|--rtol\n"
-    "\trelative tolerance for FGMRES (1e-6) solver\n"
+    "\trelative tolerance for KSP (1e-6) solver\n"
     " -R|--restart\n"
-    "\trestart for FGMRES (30)\n"
+    "\trestart/cycle for KSP (30)\n"
+    " -K|--kernel\n"
+    "\tinner kernel for KSP\n"
+    "\t\t0: traditional right preconditioner, default\n"
+    "\t\t1: Jacobi process as right preconditioner\n"
+    "\t\t2: Chebyshev-Jacobi process as right precond\n"
+    "\t\t3: Auto, using traditional precond with Jacobi as refinement kernel\n"
     "\n"
     "flags:\n"
     "\n"
@@ -69,7 +77,7 @@ const static char *help =
     "\tshow version and exit\n"
     " -n|--no-saddle\n"
     "\tdisable static deferals for saddle point problems\n"
-    " -N|--no-par-refine\n"
+    " -N|--no-refine\n"
     "\tdisable parameter refinement from level to level\n"
     " -s|--symm\n"
     "\ttreat as symmetric problems\n"
@@ -88,20 +96,40 @@ const static char *help =
 
 // parse input arguments:
 //  return (control parameters, thin or augmented, restart, tolerance, symm)
-inline static std::tuple<Options, int, double, bool> parse_args(int   argc,
-                                                                char *argv[]);
+inline static std::tuple<Options, int, double, bool, int, int> parse_args(
+    int argc, char *argv[]);
 
 // get the input data, (A, b, m)
 inline static std::tuple<crs_t, array_t, array_t::size_type> get_inputs(
     string dir);
+
+// create solver
+inline static std::shared_ptr<solver_t> create_ksp(const int choice,
+                                                   std::shared_ptr<prec_t> M) {
+  switch (choice) {
+    case 0:
+      return std::make_shared<ksp_factory::fgmres>(M);
+    case 1:
+      return std::make_shared<ksp_factory::fqmrcgstab>(M);
+    case 2:
+      return std::make_shared<ksp_factory::tgmresr>(M);
+    case 3:
+      return std::make_shared<ksp_factory::fbicgstab>(M);
+    default:
+      hilucsi_error("unknown ksp solver choice %d", choice);
+  }
+  return nullptr;
+}
 
 int main(int argc, char *argv[]) {
   Options opts;
   int     restart;
   double  rtol;
   bool    symm;
+  int     kernel;
+  int     ksp;
   // parse arguments
-  std::tie(opts, restart, rtol, symm) = parse_args(argc, argv);
+  std::tie(opts, restart, rtol, symm, kernel, ksp) = parse_args(argc, argv);
   if (opts.verbose == VERBOSE_NONE) warn_flag(0);
   crs_t              A;
   array_t            b;
@@ -146,31 +174,43 @@ int main(int argc, char *argv[]) {
 
   // solve
   timer.start();
-  solver_t solver(_M);
-  solver.rtol    = rtol;
-  solver.restart = restart;
+  std::shared_ptr<solver_t> solver(create_ksp(ksp, _M));
+  solver->set_rtol(rtol);
+  if (solver->is_arnoldi()) solver->set_restart_or_cycle(restart);
   int                 flag;
   solver_t::size_type iters;
-  std::tie(flag, iters) = solver.solve_precond(A, b, x, false, opts.verbose);
+  std::tie(flag, iters) = solver->solve(A, b, x, kernel, false, opts.verbose);
   timer.finish();
-  const double rs = iters ? solver.resids().back() : -1.0;
+  const double rs = solver->get_resids().back();
+  double       act_rs;
+  do {
+    // for mixed-precision, we compute the actual residual
+    array_t r(b.size());
+    A.mv(x, r);
+    for (array_t::size_type i(0); i < b.size(); ++i) r[i] -= b[i];
+    act_rs = norm2(r) / norm2(b);
+  } while (false);
+
   hilucsi_info(
-      "\nFGMRES(%d,%.1e) done!\n"
+      "\n%s(%.1e) done!\n"
       "\tflag: %s\n"
       "\titers: %zd\n"
       "\tres: %.4g\n"
+      "\tact-res: %.4g\n"
       "\ttime: %.4gs\n",
-      restart, rtol, ksp::flag_repr(solver_t::repr(), flag).c_str(), iters, rs,
-      timer.time());
+      solver->repr(), rtol, ksp::flag_repr(solver->repr(), flag).c_str(), iters,
+      rs, act_rs, timer.time());
   return flag;
 }
 
-inline static std::tuple<Options, int, double, bool> parse_args(int   argc,
-                                                                char *argv[]) {
+inline static std::tuple<Options, int, double, bool, int, int> parse_args(
+    int argc, char *argv[]) {
   Options opts    = get_default_options();
   int     restart = 30;
   double  tol     = 1e-6;
   bool    symm    = false;
+  int     kernel  = ksp::TRADITION;
+  int     ksp     = 0;
   opts.verbose    = VERBOSE_NONE;
   if (argc < 2) {
     std::cerr << "Missing input directory!\n" << help;
@@ -244,18 +284,26 @@ inline static std::tuple<Options, int, double, bool> parse_args(int   argc,
       std::cin >> opts;
     } else if (arg == string("-s") || arg == string("--symm")) {
       symm = true;
+    } else if (arg == string("-P") || arg == string("--ksp")) {
+      ++i;
+      if (i >= argc) fatal_exit("missing KSP solver choice!");
+      ksp = std::atoi(argv[i]);
     } else if (arg == string("-T") || arg == string("--rtol")) {
       ++i;
-      if (i >= argc) fatal_exit("missing GMRES rtol value!");
+      if (i >= argc) fatal_exit("missing KSP rtol value!");
       tol = std::atof(argv[i]);
     } else if (arg == string("-R") || arg == string("--restart")) {
       ++i;
-      if (i >= argc) fatal_exit("missing GMRES restart value!");
+      if (i >= argc) fatal_exit("missing GMRES restart/cycle value!");
       restart = std::atoi(argv[i]);
+    } else if (arg == string("-K") || arg == string("--kernel")) {
+      ++i;
+      if (i >= argc) fatal_exit("missing KSP kernel choice!");
+      kernel = std::atoi(argv[i]);
     }
     ++i;
   }
-  return std::make_tuple(opts, restart, tol, symm);
+  return std::make_tuple(opts, restart, tol, symm, kernel, ksp);
 }
 
 inline static std::tuple<crs_t, array_t, array_t::size_type> get_inputs(
