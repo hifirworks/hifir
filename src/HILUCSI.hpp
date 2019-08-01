@@ -18,6 +18,7 @@
 #include "hilucsi/ksp/FBICGSTAB.hpp"
 #include "hilucsi/ksp/FGMRES.hpp"
 #include "hilucsi/ksp/FQMRCGSTAB.hpp"
+#include "hilucsi/ksp/TGMRESR.hpp"
 
 namespace hilucsi {
 
