@@ -352,6 +352,11 @@ class KSP {
   static_assert(std::is_floating_point<scalar_type>::value,
                 "must be floating point type");
 
+  /// \brief check if mixed solver
+  inline constexpr bool is_mixed() const {
+    return !std::is_same<value_type, typename M_type::value_type>::value;
+  }
+
   scalar_type rtol = DefaultSettings<value_type>::rtol;
   ///< relative convergence tolerance
   size_type maxit = DefaultSettings<value_type>::max_iters;
