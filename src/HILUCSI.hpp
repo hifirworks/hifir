@@ -15,9 +15,7 @@
 
 #include "hilucsi/builder.hpp"
 
-#include "hilucsi/ksp/FBICGSTAB.hpp"
-#include "hilucsi/ksp/FGMRES.hpp"
-#include "hilucsi/ksp/FQMRCGSTAB.hpp"
+#include "hilucsi/ksp/interface.hpp"
 
 namespace hilucsi {
 

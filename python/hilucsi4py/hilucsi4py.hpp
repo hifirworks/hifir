@@ -243,6 +243,8 @@ using PyFBICGSTAB        = KspAdapt<ksp::FBICGSTAB>;   // fbicgstab
 using PyFGMRES_Mixed     = KspAdapt<ksp::FGMRES, PyHILUCSI_Mixed, double>;
 using PyFQMRCGSTAB_Mixed = KspAdapt<ksp::FQMRCGSTAB, PyHILUCSI_Mixed, double>;
 using PyFBICGSTAB_Mixed  = KspAdapt<ksp::FBICGSTAB, PyHILUCSI_Mixed, double>;
+using PyTGMRESR          = KspAdapt<ksp::TGMRESR>;
+using PyTGMRESR_Mixed    = KspAdapt<ksp::TGMRESR, PyHILUCSI_Mixed, double>;
 
 }  // namespace hilucsi
 
