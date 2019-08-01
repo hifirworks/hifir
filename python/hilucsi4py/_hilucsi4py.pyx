@@ -78,7 +78,9 @@ __all__ = [
     'FQMRCGSTAB',
     'FQMRCGSTAB_Mixed',
     'FBICGSTAB',
-    'FBICGSTAB_Mixed'
+    'FBICGSTAB_Mixed',
+    'TGMRESR',
+    'TGMRESR_Mixed'
 ]
 
 # utilities
@@ -1343,3 +1345,197 @@ cdef class FBICGSTAB_Mixed(KspSolver):
     @M.setter
     def M(self, HILUCSI_Mixed M):
         deref(<fbicgstab_mixed_ptr>self.solver.get()).set_M(M.M)
+
+
+cdef class TGMRESR(KspSolver):
+    r"""Truncated GMRESR implementation with rhs preconditioner
+
+    The TMGRESR implementation has three modes (kernels): the first one is the
+    ``traditional`` kernel by treating :math:`\boldsymbol{M}` as the rhs
+    preconditioner; the second one is ``jacobi`` fashion, where
+    :math:`\boldsymbol{M}` is treated as the "diagonal" term in Jacobi iteration
+    combining with the input matrix :math:`\boldsymbol{A}`; finally, the last
+    fashion is an extension to ``jacobi`` with Chebyshev acceleration, which
+    requires estimations of the largest and smallest eigenvalues.
+
+    Parameters
+    ----------
+    M : :class:`HILUCSI` or ``None``
+        preconditioner
+    rtol : float
+        relative tolerance, default is 1e-6
+    maxit : int
+        maximum iterations, default is 500
+    cycle : int
+        truncated cycle in GMRESR, default is 10
+    max_inners : int
+        maximum inner iterations used in Jacobi style kernle, default is 4
+    lamb1 : float or ``None``
+        if given, then used as the largest eigenvalue estimation
+    lamb2 : float or ``None``
+        if given, then used as the smallest eigenvalue estimation
+
+    Examples
+    --------
+
+    >>> from scipy.sparse import random
+    >>> from hilucsi4py import *
+    >>> import numpy as np
+    >>> A = random(10,10,0.5)
+    >>> M = HILUCSI()
+    >>> M.factorize(A)
+    >>> solver = TGMRESR(M)
+    >>> x = solver.solve(A, np.random.rand(10))
+    """
+
+    def __init__(self, M=None, rtol=1e-6, cycle=10, maxit=500, max_inners=4,
+                 **kw):
+        pass
+
+    def __cinit__(self, HILUCSI M=None, double rtol=1e-6, int cycle=10,
+                  int maxit=500, int max_inners=4, **kw):
+        self.solver.reset(new hilucsi.PyFGMRES())
+        if M is not None:
+            deref(<fgmres_ptr>self.solver.get()).set_M(M.M)
+        deref(self.solver).set_rtol(rtol)
+        deref(self.solver).set_restart(cycle)  # use restart for cycle
+        deref(self.solver).set_maxit(maxit)
+        deref(self.solver).set_inner_steps(max_inners)
+        deref(self.solver).check_pars()
+        lamb1 = kw.pop('lamb1', None)
+        if lamb1 is not None:
+            deref(self.solver).set_lamb1(lamb1)
+        lamb2 = kw.pop('lamb2', None)
+        if lamb2 is not None:
+            deref(self.solver).set_lamb2(lamb2)
+
+    @property
+    def cycle(self):
+        """int: cycle for TGMRESR (10)"""
+        return deref(self.solver).get_restart()
+
+    @cycle.setter
+    def cycle(self, int cc):
+        if cc <= 0:
+            raise ValueError('cycle must be positive integer')
+        deref(self.solver).set_restart(cc)
+
+    @property
+    def M(self):
+        """HILUCSI: get preconditioner"""
+        cdef:
+            HILUCSI _M = HILUCSI()
+            fgmres_ptr child = <fgmres_ptr>self.solver.get()
+        if not deref(child).get_M():
+            # empty
+            deref(child).set_M(_M.M)
+        else:
+            _M.M = deref(child).get_M()
+        return _M
+
+    @M.setter
+    def M(self, HILUCSI M):
+        deref(<fgmres_ptr>self.solver.get()).set_M(M.M)
+
+    def __str__(self):
+        fmt = self.__class__.__name__
+        fmt += '\nrtol={}\nmaxit={}\ncycle={}\n'.format(
+            self.rtol, self.maxit, self.cycle)
+        return fmt
+
+
+cdef class TGMRESR_Mixed(KspSolver):
+    r"""Truncated GMRESR implementation with rhs preconditioner (mixed precision)
+
+    The FMGRES implementation has three modes (kernels): the first one is the
+    ``traditional`` kernel by treating :math:`\boldsymbol{M}` as the rhs
+    preconditioner; the second one is ``jacobi`` fashion, where
+    :math:`\boldsymbol{M}` is treated as the "diagonal" term in Jacobi iteration
+    combining with the input matrix :math:`\boldsymbol{A}`; finally, the last
+    fashion is an extension to ``jacobi`` with Chebyshev acceleration, which
+    requires estimations of the largest and smallest eigenvalues.
+
+    Parameters
+    ----------
+    M : :class:`HILUCSI_Mixed` or ``None``
+        preconditioner
+    rtol : float
+        relative tolerance, default is 1e-6
+    maxit : int
+        maximum iterations, default is 500
+    cycle : int
+        truncated cycle in GMRESR, default is 10
+    max_inners : int
+        maximum inner iterations used in Jacobi style kernle, default is 4
+    lamb1 : float or ``None``
+        if given, then used as the largest eigenvalue estimation
+    lamb2 : float or ``None``
+        if given, then used as the smallest eigenvalue estimation
+
+    Examples
+    --------
+
+    >>> from scipy.sparse import random
+    >>> from hilucsi4py import *
+    >>> import numpy as np
+    >>> A = random(10,10,0.5)
+    >>> M = HILUCSI_Mixed()
+    >>> M.factorize(A)
+    >>> solver = TGMRESR_Mixed(M)
+    >>> x = solver.solve(A, np.random.rand(10))
+    """
+
+    def __init__(self, M=None, rtol=1e-6, cycle=10, maxit=500, max_inners=4,
+                 **kw):
+        pass
+
+    def __cinit__(self, HILUCSI_Mixed M=None, double rtol=1e-6, int cycle=10,
+                  int maxit=500, int max_inners=4, **kw):
+        self.solver.reset(new hilucsi.PyFGMRES_Mixed())
+        if M is not None:
+            deref(<fgmres_mixed_ptr>self.solver.get()).set_M(M.M)
+        deref(self.solver).set_rtol(rtol)
+        deref(self.solver).set_restart(cycle)
+        deref(self.solver).set_maxit(maxit)
+        deref(self.solver).set_inner_steps(max_inners)
+        deref(self.solver).check_pars()
+        lamb1 = kw.pop('lamb1', None)
+        if lamb1 is not None:
+            deref(self.solver).set_lamb1(lamb1)
+        lamb2 = kw.pop('lamb2', None)
+        if lamb2 is not None:
+            deref(self.solver).set_lamb2(lamb2)
+
+    @property
+    def cycle(self):
+        """int: cycle for TGMRESR (10)"""
+        return deref(self.solver).get_restart()
+
+    @cycle.setter
+    def cycle(self, int cc):
+        if cc <= 0:
+            raise ValueError('cycle must be positive integer')
+        deref(self.solver).set_restart(cc)
+
+    @property
+    def M(self):
+        """HILUCSI_Mixed: get preconditioner"""
+        cdef:
+            HILUCSI_Mixed _M = HILUCSI_Mixed()
+            fgmres_mixed_ptr child = <fgmres_mixed_ptr>self.solver.get()
+        if not deref(child).get_M():
+            # empty
+            deref(child).set_M(_M.M)
+        else:
+            _M.M = deref(child).get_M()
+        return _M
+
+    @M.setter
+    def M(self, HILUCSI_Mixed M):
+        deref(<fgmres_mixed_ptr>self.solver.get()).set_M(M.M)
+
+    def __str__(self):
+        fmt = self.__class__.__name__
+        fmt += '\nrtol={}\nmaxit={}\nrestart={}\n'.format(
+            self.rtol, self.maxit, self.restart)
+        return fmt

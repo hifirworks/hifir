@@ -165,6 +165,21 @@ cdef extern from 'hilucsi4py.hpp' namespace 'hilucsi' nogil:
         void set_M(shared_ptr[PyHILUCSI_Mixed] M) except +
         shared_ptr[PyHILUCSI_Mixed] get_M()
 
+    cdef cppclass PyTGMRESR(KspSolver):
+        PyTGMRESR()
+        PyTGMRESR(shared_ptr[PyHILUCSI] M, const double rel_tol,
+                 const size_t max_iters, const size_t innersteps) except +
+        void set_M(shared_ptr[PyHILUCSI] M) except +
+        shared_ptr[PyHILUCSI] get_M()
+
+    cdef cppclass PyTGMRESR_Mixed(KspSolver):
+        PyTGMRESR_Mixed()
+        PyTGMRESR_Mixed(shared_ptr[PyHILUCSI_Mixed] M, const double rel_tol,
+                           const size_t max_iters,
+                           const size_t innersteps) except +
+        void set_M(shared_ptr[PyHILUCSI_Mixed] M) except +
+        shared_ptr[PyHILUCSI_Mixed] get_M()
+
 
 cdef extern from 'hilucsi4py.hpp' namespace 'hilucsi::ksp' nogil:
     cdef enum:
