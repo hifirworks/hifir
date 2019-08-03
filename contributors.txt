@@ -16,4 +16,3 @@ Qiao (Chiao) Chen <qiao.chen@stonybrook.edu> <benechiao@gmail.com>
 
 Yujie Xiao <yujie.xiao@stonybrook.edu>
     - helped cleaning up matching/scaling implementation as done in equilibrate.hpp
-    - helped providing prototype implementation of truncated GMRES
