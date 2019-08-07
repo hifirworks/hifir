@@ -133,11 +133,10 @@ class MUMPS {
   }
 
   /// \brief set information streaming and threads
-
-  /// \param[in] verbose enable verbose printing, default is \a true
   /// \param[in] threads threads used, default is 1
-  inline void set_info(const bool verbose = false, int threads = 1) const {
-    if (!verbose) _handle.icntl[0] = _handle.icntl[2] = 0;
+  inline void set_info(const bool /* verbose */ = false,
+                       int threads              = 1) const {
+    if (true) _handle.icntl[0] = _handle.icntl[2] = 0;
     // query the warning
     if (!warn_flag()) _handle.icntl[3] = 1;  // only error
     threads           = threads <= 0 ? 1 : threads;
