@@ -1137,7 +1137,7 @@ inline CsType level_factorize(const CsType &                   A,
     if (nm <= static_cast<size_type>(HILUCSI_LASTLEVEL_SPARSE_SIZE)) {
       DefaultTimer timer2;
       auto &       last_level = precs.back().sparse_solver;
-      last_level.set_info(hilucsi_verbose(INFO, opts));
+      last_level.set_info(hilucsi_verbose(INFO, opts), schur_threads);
       const double nnz_b4 = 0.01 * S.nnz();
       timer2.start();
       last_level.factorize(S);
