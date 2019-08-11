@@ -9,6 +9,9 @@
 
 /// \defgroup util Utilities
 
+/// \defgroup mt Multithreading
+/// \ingroup util
+
 /// \defgroup pre Preprocessing
 
 /// \defgroup alg Algorithms
