@@ -92,13 +92,13 @@ class KSPSolver {
   /// \brief get preconditioner
   virtual std::shared_ptr<M_type> get_M() const = 0;
 
-  /// \brief solve interface for \ref CRS
+  /// \brief solve interface for CRS
   virtual std::pair<int, size_type> solve(
       const crs_type &, const array_type &, array_type &, const int = TRADITION,
       const bool /* with_init_guess */ = false,
       const bool /* verbose */         = true) const = 0;
 
-  /// \brief solve interface for \ref CCS
+  /// \brief solve interface for CCS
   virtual std::pair<int, size_type> solve(
       const ccs_type &, const array_type &, array_type &, const int = TRADITION,
       const bool /* with_init_guess */ = false,
@@ -139,6 +139,8 @@ class KSPAdaptor
   /// \brief virtual destructor
   virtual ~KSPAdaptor() {}
 
+  /// \name parameters
+  /// @{
   virtual void set_rtol(const scalar_type tol) override final {
     _base::rtol = tol;
   }
@@ -177,6 +179,7 @@ class KSPAdaptor
   virtual const array_type &get_resids() const override final {
     return _base::resids();
   }
+  /// @}
 
   /// \brief check name representation
   virtual const char *repr() const override final { return _base::repr(); }
@@ -202,7 +205,7 @@ class KSPAdaptor
   /// \param[in] A user input matrix
   /// \param[in] b right-hand side vector
   /// \param[in,out] x solution
-  /// \param[in] kernel default is TRADITION, i.e. \ref solve_precond
+  /// \param[in] kernel default is TRADITION
   /// \param[in] with_init_guess if \a false (default), then assign zero to
   ///             \a x as starting values
   /// \param[in] verbose if \a true (default), enable verbose printing
@@ -217,7 +220,7 @@ class KSPAdaptor
   /// \param[in] A user input matrix
   /// \param[in] b right-hand side vector
   /// \param[in,out] x solution
-  /// \param[in] kernel default is TRADITION, i.e. \ref solve_precond
+  /// \param[in] kernel default is TRADITION
   /// \param[in] with_init_guess if \a false (default), then assign zero to
   ///             \a x as starting values
   /// \param[in] verbose if \a true (default), enable verbose printing
