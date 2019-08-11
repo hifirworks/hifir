@@ -151,6 +151,16 @@ inline T *ensure_type_consistency(const ArrayType &v,
   return ptr;
 }
 
+/// \brief trait to determine mixed precision relationships
+/// \tparam T value type
+///
+/// We instantiate for \a double, \a float, and \a half (if included)
+template <class T>
+struct ValueTypeMixedTrait {
+  typedef T boost_type;   ///< high precision
+  typedef T reduce_type;  ///< reduced precision
+};
+
 /*!
  * @}
  */ // group util
@@ -173,6 +183,41 @@ struct ValueTypeTrait<float> {
 template <class T>
 struct ValueTypeTrait<std::complex<T>> {
   typedef typename ValueTypeTrait<T>::value_type value_type;
+};
+
+// mixed traits double
+template <>
+struct ValueTypeMixedTrait<double> {
+  using boost_type  = double;  // no long double supported
+  using reduce_type = float;
+};
+
+// mixed traits for float
+template <>
+struct ValueTypeMixedTrait<float> {
+  using boost_type = double;
+  using reduce_type =
+#  ifdef _HILUCSI_UTILS_HALF_HPP
+      half;
+#  else
+      float;
+#  endif
+};
+
+#  ifdef _HILUCSI_UTILS_HALF_HPP
+template <>
+struct ValueTypeMixedTrait<half> {
+  using boost_type  = float;
+  using reduce_type = half;
+};
+#  endif
+
+// mixed traits for complex
+template <class T>
+struct ValueTypeMixedTrait<std::complex<T>> {
+  using boost_type = std::complex<typename ValueTypeMixedTrait<T>::boost_type>;
+  using reduce_type =
+      std::complex<typename ValueTypeMixedTrait<T>::reduce_type>;
 };
 
 #endif  // DOXYGEN_SHOULD_SKIP_THIS

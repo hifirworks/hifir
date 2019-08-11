@@ -16,6 +16,7 @@
 #include <type_traits>
 
 #include "hilucsi/ds/Array.hpp"
+#include "hilucsi/ds/SparseVec.hpp"
 #include "hilucsi/utils/common.hpp"
 #include "hilucsi/utils/log.hpp"
 #include "hilucsi/utils/mt.hpp"
@@ -197,7 +198,11 @@ inline void compute_Schur_simple(const ScaleArray &s, const CrsType &A,
                                  const CrsType &L_E, const DiagArray &d,
                                  const CrsType &U_F, CrsType &SC,
                                  SpVecType &buf) {
-  using size_type = typename CrsType::size_type;
+  using size_type        = typename CrsType::size_type;
+  using value_type       = typename CrsType::value_type;
+  using boost_value_type = typename ValueTypeMixedTrait<value_type>::boost_type;
+  constexpr static bool BOOST_PRECISION =
+      !std::is_same<boost_value_type, value_type>::value;
   static_assert(CrsType::ROW_MAJOR, "must be CRS");
 
   const size_type n = A.nrows();
@@ -270,8 +275,15 @@ inline void compute_Schur_simple(const ScaleArray &s, const CrsType &A,
   hilucsi_assert(col_ind.size() == (size_type)row_start[N], "fatal error!");
 
   // step 3, fill in the numerical values
-  auto &buf_vals = buf.vals();
-  auto &vals     = SC.vals();
+  Array<boost_value_type> _buf;
+  boost_value_type *      buf_vals;
+  if (BOOST_PRECISION) {
+    _buf.resize(N);
+    hilucsi_error_if(_buf.status() == DATA_UNDEF, "memory allocation failed");
+    buf_vals = _buf.data();
+  } else
+    buf_vals = (boost_value_type *)buf.vals().data();
+  auto &vals = SC.vals();
   vals.resize(col_ind.size());
   for (size_type i(0); i < N; ++i) {
     // first, assign values to zero
@@ -284,9 +296,9 @@ inline void compute_Schur_simple(const ScaleArray &s, const CrsType &A,
     }
 
     // second, fetch C into the buffer
-    const size_type pi        = p[m + i];
-    auto            a_val_itr = A.val_cbegin(pi);
-    const auto      s_pi      = s[pi];  // row scaling
+    const size_type        pi        = p[m + i];
+    auto                   a_val_itr = A.val_cbegin(pi);
+    const boost_value_type s_pi      = s[pi];  // row scaling
     for (auto itr = A.col_ind_cbegin(pi), last = A.col_ind_cend(pi);
          itr != last; ++itr, ++a_val_itr) {
       const size_type A_idx = *itr;
@@ -300,8 +312,8 @@ inline void compute_Schur_simple(const ScaleArray &s, const CrsType &A,
     auto L_v_itr = L_E.val_cbegin(i);
     for (auto L_itr = L_E.col_ind_cbegin(i); L_itr != L_last;
          ++L_itr, ++L_v_itr) {
-      const auto idx = *L_itr;
-      const auto ld  = *L_v_itr * d[idx];
+      const auto             idx = *L_itr;
+      const boost_value_type ld  = *L_v_itr * d[idx];
       // get the U iter
       auto U_last  = U_F.col_ind_cend(idx);
       auto U_v_itr = U_F.val_cbegin(idx);
@@ -551,7 +563,11 @@ inline CrsType compute_Schur_simple(const ScaleArray &s, const CrsType &A,
   hilucsi_assert(threads > 1, "thread number %d must be no smaller than 1",
                  threads);
 
-  using size_type = typename CrsType::size_type;
+  using size_type        = typename CrsType::size_type;
+  using value_type       = typename CrsType::value_type;
+  using boost_value_type = typename ValueTypeMixedTrait<value_type>::boost_type;
+  using boost_sparse_vec_type =
+      SparseVector<boost_value_type, typename CrsType::index_type>;
 
   const size_type n = A.nrows();
   if (m == n) return CrsType();
@@ -575,10 +591,11 @@ inline CrsType compute_Schur_simple(const ScaleArray &s, const CrsType &A,
     const size_type start_idx = part.first, poe_idx = part.second;
 
     // create local sparse buffer
-    SpVecType buf_;
-    if (thread) buf_.resize(N);
-    SpVecType &buf = thread ? buf_ : buf0;
-    size_type  tag(n);
+    boost_sparse_vec_type buf(N);
+    // SpVecType buf_;
+    // if (thread) buf_.resize(N);
+    // SpVecType &buf = thread ? buf_ : buf0;
+    size_type tag(n);
 
     // step 1, determine the overall nnz
     for (size_type i(start_idx); i < poe_idx; ++i, ++tag) {
@@ -651,9 +668,9 @@ inline CrsType compute_Schur_simple(const ScaleArray &s, const CrsType &A,
         buf_vals[*itr] = 0.0;
 
       // second, fetch C into the buffer
-      const size_type pi        = p[m + i];
-      auto            a_val_itr = A.val_cbegin(pi);
-      const auto      s_pi      = s[pi];  // row scaling
+      const size_type        pi        = p[m + i];
+      auto                   a_val_itr = A.val_cbegin(pi);
+      const boost_value_type s_pi      = s[pi];  // row scaling
       for (auto itr = A.col_ind_cbegin(pi), last = A.col_ind_cend(pi);
            itr != last; ++itr, ++a_val_itr) {
         const size_type A_idx = *itr;
@@ -667,8 +684,8 @@ inline CrsType compute_Schur_simple(const ScaleArray &s, const CrsType &A,
       auto L_v_itr = L_E.val_cbegin(i);
       for (auto L_itr = L_E.col_ind_cbegin(i); L_itr != L_last;
            ++L_itr, ++L_v_itr) {
-        const auto idx = *L_itr;
-        const auto ld  = *L_v_itr * d[idx];
+        const auto             idx = *L_itr;
+        const boost_value_type ld  = *L_v_itr * d[idx];
         // get the U iter
         auto U_last  = U_F.col_ind_cend(idx);
         auto U_v_itr = U_F.val_cbegin(idx);
