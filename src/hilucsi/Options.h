@@ -105,7 +105,7 @@ static hilucsi_Options hilucsi_get_default_options(void) {
                            .pre_scale     = 0,
                            .symm_pre_lvls = 1,
                            .threads       = 0,
-                           .mumps_blr     = 2};
+                           .mumps_blr     = 1};
 }
 
 /*!
