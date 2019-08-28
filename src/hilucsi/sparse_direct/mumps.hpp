@@ -128,19 +128,24 @@ class MUMPS {
     _handle.job = -1;  // initialization stage
     _trait::call_mumps(_handle);
     set_info(verbose, threads);
-    // apply at most 5 iterative refinement
-    _handle.icntl[9] = 5;
+    // apply at most 3 iterative refinement
+    _handle.icntl[9] = 3;
   }
 
   /// \brief set information streaming and threads
+  /// \param[in] blr BLR feature, default is 0 (disbled)
+  /// \param[in] blr_tol absolute tolerance of blr, default is 0 (full-rank)
   /// \param[in] threads threads used, default is 1
-  inline void set_info(const bool /* verbose */ = false,
-                       int threads              = 1) const {
+  /// \note See mumps user manual on control parameters ICNTL(35) and CNTL(7)
+  inline void set_info(const int blr = 0, const double blr_tol = 0.0,
+                       int threads = 1) const {
     if (true) _handle.icntl[0] = _handle.icntl[2] = 0;
     // query the warning
     if (!warn_flag()) _handle.icntl[3] = 1;  // only error
     threads           = threads <= 0 ? 1 : threads;
     _handle.icntl[15] = threads;
+    _handle.icntl[34] = blr < 0 ? 0 : blr;
+    _handle.cntl[6]   = blr_tol < 0.0 ? 0.0 : blr_tol;
   }
 
   /// \brief destructor, free out all internal memory used by MUMPS

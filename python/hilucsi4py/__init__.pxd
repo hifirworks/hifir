@@ -199,4 +199,4 @@ cdef extern from 'hilucsi4py.hpp' namespace 'hilucsi::ksp' nogil:
 cdef extern from 'hilucsi4py.hpp' namespace 'hilucsi::internal' nogil:
     # using an internal var to determine the data types of options
     # true for double, flase for int
-    bool option_dtypes[17]
+    bool option_dtypes[18]
