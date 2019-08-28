@@ -128,8 +128,8 @@ class MUMPS {
     _handle.job = -1;  // initialization stage
     _trait::call_mumps(_handle);
     set_info(verbose, threads);
-    // apply at most 5 iterative refinement
-    _handle.icntl[9] = 5;
+    // apply at most 3 iterative refinement
+    _handle.icntl[9] = 3;
   }
 
   /// \brief set information streaming and threads
