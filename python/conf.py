@@ -6,8 +6,15 @@ from setuptools import Extension
 from setuptools.command.build_ext import build_ext
 from Cython.Build import cythonize
 
-_hilucsi4py_debug = os.environ.get('HILUCSI4PY_DEBUG', None)
-_hilucsi4py_debug = _hilucsi4py_debug is not None
+
+def is_debug():
+    flag = os.environ.get('HILUCSI4PY_DEBUG', None)
+    if flag is None:
+        return False
+    return flag.lower() not in ('0', 'no', 'off', 'false')
+
+
+_hilucsi4py_debug = is_debug()
 
 # configure include paths
 _hilucsi_inc_path = os.environ.get('HILUCSI_INCLUDE_PATH', '')
@@ -51,7 +58,7 @@ class BuildExt(build_ext):
                 f.write('int main(int argc, char *argv[]){return 0;}')
                 try:
                     self.compiler.compile([f.name], extra_postargs=[flag])
-                except Exception:
+                except BaseException:
                     return False
             return True
 
