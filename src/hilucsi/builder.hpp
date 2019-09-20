@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <iterator>
 #include <numeric>
+#include <type_traits>
 
 #include "hilucsi/Options.h"
 #include "hilucsi/alg/Prec.hpp"
@@ -274,12 +275,42 @@ class HILUCSI {
     if (revert_warn) (void)warn_flag(1);
   }
 
+  /// \brief factorize the MILU preconditioner with generic interface
+  /// \tparam IsCrs if \a true, then the input compressed structure will be
+  ///               assumed to be \ref CRS format
+  /// \tparam IndexType_ integer data type, e.g., \a int
+  /// \tparam ValueType_ value data type, e.g., \a double
+  /// \param[in] n size of system
+  /// \param[in] indptr index starting position array, must be length of \a n+1
+  /// \param[in] indices index value array, must be length of \a indptr[n]
+  /// \param[in] vals value array, same length as that of \a indices
+  /// \param[in] m0 leading block size, if it's zero (default), then the routine
+  ///               will assume an asymmetric leading block.
+  /// \param[in] opts control parameters, using the default values in the paper.
+  ///
+  /// This interface differs from the above one is that it takes plain-old-data
+  /// types as input thus flexible. Notice that the integer and floating data
+  /// types don't need to align with \ref index_type and \ref value_type, which
+  /// aims for mixed-precision computation.
+  template <bool IsCrs, class IndexType_, class ValueType_>
+  inline void factorize(const size_type n, const IndexType_ *indptr,
+                        const IndexType_ *indices, const ValueType_ *vals,
+                        const size_type m0   = 0u,
+                        const Options & opts = get_default_options()) {
+    using foreign_crs_type = CRS<ValueType_, IndexType_>;
+    using foreign_ccs_type = typename foreign_crs_type::other_type;
+    using foreign_cs_type  = typename std::conditional<IsCrs, foreign_crs_type,
+                                                      foreign_ccs_type>::type;
+    const foreign_cs_type A(n, (IndexType_ *)indptr, (IndexType_ *)indices,
+                            (ValueType_ *)vals, true);
+    factorize(A, m0, opts);
+  }
+
   /// \brief solve \f$\mathbf{x}=\mathbf{M}^{-1}\mathbf{b}\f$
   /// \tparam RhsType right-hand side type
   /// \tparam SolType solution type
   /// \param[in] b right-hand side vector
   /// \param[out] x solution vector
-  /// \sa factorize
   template <class RhsType, class SolType>
   inline void solve(const RhsType &b, SolType &x) const {
     hilucsi_error_if(empty(), "MILU-Prec is empty!");
