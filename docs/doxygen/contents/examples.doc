@@ -5,21 +5,27 @@
 //----------------------------------------------------------------------------
 //@HEADER
 
-/*! \page _examples Examples
+/*! \page _examples Collection of examples
 
 \addindex examples
 \tableofcontents
 
-\section _hello_world_eg "Hello World!"
+\section _eg1 A comprehensive demonstration
 
-blah blah...
+The example \ref demo.cpp shows the detailed usage of how to use HILUCSI with our
+built-in Krylov subspace solvers (see \ref ksp). Once the user has instantiate
+the template arguments for index and numeric types, he/she just need to call
+the factorization method to compute the preconditioner.
 
-\section _c_eg Example with C Index
+\section _eg2 Using HILUCSI with mixed-precision support
 
-blah blah...
-
-\section _for_eg Example with Fortran Index
-
-blah blah...
+The example \ref demo_mixed.cpp shows how to enable mixed-precision. Actually,
+one can just build the preconditioner in \a float, while its solve method can
+be use with \a double arrays.
 
 */
+
+// generate doxygen example collections
+
+/// \example demo.cpp
+/// \example demo_mixed.cpp
