@@ -6,7 +6,7 @@ Welcome to the `HILUCSI` package! `HILUCSI` stands for `H`ierarchical `I`ncomple
 
 ## License ##
 
-Please refer to [`LICENSE`](./LICENSE) and [`AUTHORS`](./AUTHORS) files for more information regarding copyright.
+`HILUCSI` is released under GPL version 3. For more details, please refer to [`LICENSE`](./LICENSE) and [`AUTHORS`](./AUTHORS) files for more information regarding copyright.
 
 ## Contact ##
 
