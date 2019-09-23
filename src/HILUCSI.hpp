@@ -1,12 +1,30 @@
-//@HEADER
-//----------------------------------------------------------------------------
-//                Copyright (C) 2019 The HILUCSI AUTHORS
-//----------------------------------------------------------------------------
-//@HEADER
+///////////////////////////////////////////////////////////////////////////////
+//                This file is part of HILUCSI project                       //
+///////////////////////////////////////////////////////////////////////////////
 
-/// \file HILUCSI.hpp
-/// \brief top-level user interface
-/// \authors Qiao,
+/*!
+ * \file HILUCSI.hpp
+ * \brief top-level user interface
+ * \authors Qiao,
+
+\verbatim
+Copyright (C) 2019 NumGeom Group at Stony Brook University
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+\endverbatim
+
+ */
 
 #ifndef _HILUCSI_HPP
 #define _HILUCSI_HPP

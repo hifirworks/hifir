@@ -1,60 +1,78 @@
-//@HEADER
-//----------------------------------------------------------------------------
-//                Copyright (C) 2019 The HILUCSI AUTHORS
-//----------------------------------------------------------------------------
-//@HEADER
+///////////////////////////////////////////////////////////////////////////////
+//                This file is part of HILUCSI project                       //
+///////////////////////////////////////////////////////////////////////////////
 
-/// \file hilucsi/utils/io.hpp
-/// \brief Read and write native IO formats
-/// \authors Qiao,
-///
-/// We define two native file formats for exchanging compressed storage data;
-/// these two formats are the HILUCSI binary and HILUCSI ASCII formats. The
-/// former is for efficient IO, while the latter is for data readability and
-/// compatibility.
-///
-/// First, let's introduce the binary format. There are three data groups that
-/// are stored: 1) \a general \a information, which requires 7 bytes in total;
-/// sequentially, they are, byte by byte, platform endianness (1 for little,
-/// 0 for big), word size (8 for 64bit and 4 for 32bit), integer size, storage
-/// scheme (1 for CRS and 0 for CCS), reserved, floating
-/// point precision flag (1 for \a double and 0 for \a float), and the value
-/// data type (1 for real and 0 for complex). 2) \a matrix \a sizes, the sizes
-/// are stored in \b fixed-size integers, which are type of \a uint64_t, thus
-/// having 32 bytes in total; four size attributes are stored, which are row
-/// size, column size, total number of nonzeros, and the leading block size,
-/// resp. 3) The final group is the \a matrix \a data \a attributes, the index
-/// position (pointer) array is stored first, followed by index array and
-/// the value array.
-///
-/// \warning OS endianness is not compatible for now, e.g. if a file is
-///          written on a Little-Endian machine, then it must be loaded from
-///          Little-Endian machines.
-///
-/// Second, let's take a look at the ASCII file format, which is designed for
-/// cross-platform compatibility. Like the binary format, there are three
-/// data groups as well. For general information, three characters are stored
-/// in a single line, ?$%, where ? is the matrix storage scheme used, 'R' for
-/// CRS while 'C' for CCS; $ is reserved, which are
-/// for C and Fortran based index systems, resp; finally, % is the data type,
-/// which adapts the naming scheme in BLAS, i.e. 'D' for double, 'S' for
-/// single, 'Z' for complex double, and 'C' for complex single. For instance,
-/// \a RCD defines a CSR matrix with 0-based index of double precision values.
-/// Similary to the binary format, the sizes are stored and separated by white
-/// space. Finally, for the data attributes, the index pointer is stored first,
-/// then indices and values. Regarding numerical value format, we use C++ IO
-/// operators with proper precisions so that no information is truncated
-/// during IO. Specail note for complex types, the standard format for complex
-/// is (real,imag), which should be used if one consider writing reader/writer
-/// in other programming languages.
-///
-/// For ASCII format, the groups are separated by \a newline, while either
-/// white space or \a newline can be used to separate the integral and
-/// numerical values. Also, the data groups are compactly stored, i.e. no
-/// gaps are allowed. Regarding comments (including empty lines), they are
-/// only allowed at the beginning of the file; a line of comment starts with
-/// character '#', which is a commonly used convension, e.g. shell, make,
-/// Python, etc.
+/*!
+ * \file hilucsi/utils/io.hpp
+ * \brief Read and write native IO formats
+ * \authors Qiao,
+ *
+ * We define two native file formats for exchanging compressed storage data;
+ * these two formats are the HILUCSI binary and HILUCSI ASCII formats. The
+ * former is for efficient IO, while the latter is for data readability and
+ * compatibility.
+ *
+ * First, let's introduce the binary format. There are three data groups that
+ * are stored: 1) \a general \a information, which requires 7 bytes in total;
+ * sequentially, they are, byte by byte, platform endianness (1 for little,
+ * 0 for big), word size (8 for 64bit and 4 for 32bit), integer size, storage
+ * scheme (1 for CRS and 0 for CCS), reserved, floating
+ * point precision flag (1 for \a double and 0 for \a float), and the value
+ * data type (1 for real and 0 for complex). 2) \a matrix \a sizes, the sizes
+ * are stored in \b fixed-size integers, which are type of \a uint64_t, thus
+ * having 32 bytes in total; four size attributes are stored, which are row
+ * size, column size, total number of nonzeros, and the leading block size,
+ * resp. 3) The final group is the \a matrix \a data \a attributes, the index
+ * position (pointer) array is stored first, followed by index array and
+ * the value array.
+ *
+ * \warning OS endianness is not compatible for now, e.g. if a file is
+ *          written on a Little-Endian machine, then it must be loaded from
+ *          Little-Endian machines.
+ *
+ * Second, let's take a look at the ASCII file format, which is designed for
+ * cross-platform compatibility. Like the binary format, there are three
+ * data groups as well. For general information, three characters are stored
+ * in a single line, ?$%, where ? is the matrix storage scheme used, 'R' for
+ * CRS while 'C' for CCS; $ is reserved, which are
+ * for C and Fortran based index systems, resp; finally, % is the data type,
+ * which adapts the naming scheme in BLAS, i.e. 'D' for double, 'S' for
+ * single, 'Z' for complex double, and 'C' for complex single. For instance,
+ * \a RCD defines a CSR matrix with 0-based index of double precision values.
+ * Similary to the binary format, the sizes are stored and separated by white
+ * space. Finally, for the data attributes, the index pointer is stored first,
+ * then indices and values. Regarding numerical value format, we use C++ IO
+ * operators with proper precisions so that no information is truncated
+ * during IO. Specail note for complex types, the standard format for complex
+ * is (real,imag), which should be used if one consider writing reader/writer
+ * in other programming languages.
+ *
+ * For ASCII format, the groups are separated by \a newline, while either
+ * white space or \a newline can be used to separate the integral and
+ * numerical values. Also, the data groups are compactly stored, i.e. no
+ * gaps are allowed. Regarding comments (including empty lines), they are
+ * only allowed at the beginning of the file; a line of comment starts with
+ * character '#', which is a commonly used convension, e.g. shell, make,
+ * Python, etc.
+
+\verbatim
+Copyright (C) 2019 NumGeom Group at Stony Brook University
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+\endverbatim
+
+ */
 
 #ifndef _HILUCSI_UTILS_IO_HPP
 #define _HILUCSI_UTILS_IO_HPP
