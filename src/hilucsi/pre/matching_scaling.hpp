@@ -5,7 +5,7 @@
 /*!
  * \file hilucsi/pre/matching_scaling.hpp
  * \brief calling interface for matching and scaling
- * \authors Qiao,
+ * \author Qiao Chen
 
 \verbatim
 Copyright (C) 2019 NumGeom Group at Stony Brook University

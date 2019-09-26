@@ -6,7 +6,7 @@
  * \file hilucsi/alg/Crout.hpp
  * \brief Implementation of modified \a Crout update in deferred fashion
  *        by using compressed data structures
- * \authors Qiao,
+ * \author Qiao Chen
 
 \verbatim
 Copyright (C) 2019 NumGeom Group at Stony Brook University

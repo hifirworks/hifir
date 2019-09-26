@@ -7,7 +7,7 @@
 /*!
  * \file hilucsi/Options.h
  * \brief HILUCSI algorithm parameter controls
- * \authors Qiao,
+ * \author Qiao Chen
 
 \verbatim
 Copyright (C) 2019 NumGeom Group at Stony Brook University

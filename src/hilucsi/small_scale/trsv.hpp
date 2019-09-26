@@ -5,7 +5,7 @@
 /*!
  * \file hilucsi/small_scale/trsv.hpp
  * \brief Interface wrappers for solving triangular systems
- * \authors Qiao,
+ * \author Qiao Chen
  * \todo add interfaces for complex types
 
 \verbatim

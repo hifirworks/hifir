@@ -5,7 +5,7 @@
 /*!
  * \file hilucsi/utils/math.hpp
  * \brief Some handy BLAS 1 vector routines
- * \authors Qiao,
+ * \author Qiao Chen
 
 \verbatim
 Copyright (C) 2019 NumGeom Group at Stony Brook University

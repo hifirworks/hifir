@@ -5,7 +5,7 @@
 /*!
  * \file hilucsi/small_scale/QRCP.hpp
  * \brief Small scale solver with dense QR with column pivoting
- * \authors Qiao,
+ * \author Qiao Chen
 
 \verbatim
 Copyright (C) 2019 NumGeom Group at Stony Brook University

@@ -5,7 +5,7 @@
 /*!
  * \file hilucsi/utils/io.hpp
  * \brief Read and write native IO formats
- * \authors Qiao,
+ * \author Qiao Chen
  *
  * We define two native file formats for exchanging compressed storage data;
  * these two formats are the HILUCSI binary and HILUCSI ASCII formats. The

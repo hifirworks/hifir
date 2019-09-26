@@ -5,7 +5,7 @@
 /*!
  * \file hilucsi/utils/Timer.hpp
  * \brief A simple timer wrapping around C++ chrono
- * \authors Qiao,
+ * \author Qiao Chen
  * \note C++ <chrono> timer should be thread safe
 
 \verbatim

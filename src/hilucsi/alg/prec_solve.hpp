@@ -5,7 +5,7 @@
 /*!
  * \file hilucsi/alg/prec_solve.hpp
  * \brief Multilevel preconditioner solver
- * \authors Qiao,
+ * \author Qiao Chen
 
 \verbatim
 Copyright (C) 2019 NumGeom Group at Stony Brook University

@@ -5,7 +5,7 @@
 /*!
  * \file hilucsi/pre/MC64.hpp
  * \brief old (Fortran 77) MC64 Wrapper
- * \authors Qiao,
+ * \author Qiao Chen
  * \warning This file will be removed in the future with our own implementation
 
 \verbatim

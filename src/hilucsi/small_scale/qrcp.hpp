@@ -5,7 +5,7 @@
 /*!
  * \file hilucsi/small_scale/qrcp.hpp
  * \brief Interface wrappers for QR with column pivoting routines in LAPACK
- * \authors Qiao,
+ * \author Qiao Chen
  * \todo add interfaces for complex types
 
 \verbatim

@@ -5,7 +5,7 @@
 /*!
  * \file hilucsi/sparse_direct/mumps.hpp
  * \brief Interface to MUMPS >= 5.1.2 for last level sparse direct solver
- * \authors Qiao,
+ * \author Qiao Chen
 
 \verbatim
 Copyright (C) 2019 NumGeom Group at Stony Brook University

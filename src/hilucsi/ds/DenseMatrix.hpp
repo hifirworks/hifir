@@ -5,7 +5,7 @@
 /*!
  * \file hilucsi/ds/DenseMatrix.hpp
  * \brief Dense storage for the last level in multilevel ILU
- * \authors Qiao,
+ * \author Qiao Chen
 
 \verbatim
 Copyright (C) 2019 NumGeom Group at Stony Brook University

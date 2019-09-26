@@ -5,7 +5,7 @@
 /*!
  * \file HILUCSI.hpp
  * \brief top-level user interface
- * \authors Qiao,
+ * \author Qiao Chen
 
 \verbatim
 Copyright (C) 2019 NumGeom Group at Stony Brook University

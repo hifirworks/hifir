@@ -5,7 +5,8 @@
 /*!
  * \file hilucsi/pre/equilibrate.hpp
  * \brief balancing systems to achieve better conditioning
- * \authors Yujie Xiao, Qiao
+ * \author Yujie Xiao
+ * \author Qiao Chen
 
 \verbatim
 Copyright (C) 2019 NumGeom Group at Stony Brook University

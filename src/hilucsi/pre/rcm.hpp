@@ -5,7 +5,7 @@
 /*!
  * \file hilucsi/pre/rcm.hpp
  * \brief Kernel for reversed Cuthill-Mckee ordering
- * \authors Qiao,
+ * \author Qiao Chen
 
 \verbatim
 Copyright (C) 2019 NumGeom Group at Stony Brook University

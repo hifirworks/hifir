@@ -6,7 +6,7 @@
  * \file hilucsi/alg/thresholds.hpp
  * \brief Implementation of scalability-oriented and inverse-based dual
  *        thresholding for dropping
- * \authors Qiao,
+ * \author Qiao Chen
 
 \verbatim
 Copyright (C) 2019 NumGeom Group at Stony Brook University

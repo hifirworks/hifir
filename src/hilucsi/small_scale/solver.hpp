@@ -5,7 +5,7 @@
 /*!
  * \file hilucsi/small_scale/solver.hpp
  * \brief Small scale solver main interface
- * \authors Qiao,
+ * \author Qiao Chen
 
 \verbatim
 Copyright (C) 2019 NumGeom Group at Stony Brook University

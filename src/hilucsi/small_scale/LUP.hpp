@@ -5,7 +5,7 @@
 /*!
  * \file hilucsi/small_scale/LUP.hpp
  * \brief Small scale solver with dense LU with partial pivoting
- * \authors Qiao,
+ * \author Qiao Chen
 
 \verbatim
 Copyright (C) 2019 NumGeom Group at Stony Brook University

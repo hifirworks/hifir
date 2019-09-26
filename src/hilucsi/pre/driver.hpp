@@ -5,7 +5,7 @@
 /*!
  * \file hilucsi/pre/driver.hpp
  * \brief Top-level driver routine to handle preprocessing
- * \authors Qiao,
+ * \author Qiao Chen
 
 \verbatim
 Copyright (C) 2019 NumGeom Group at Stony Brook University

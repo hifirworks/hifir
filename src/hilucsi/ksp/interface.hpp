@@ -5,7 +5,7 @@
 /*!
  * \file hilucsi/ksp/interface.hpp
  * \brief Interface solver for KSP methods
- * \authors Qiao,
+ * \author Qiao Chen
 
 \verbatim
 Copyright (C) 2019 NumGeom Group at Stony Brook University

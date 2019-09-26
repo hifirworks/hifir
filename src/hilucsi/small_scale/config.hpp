@@ -7,7 +7,7 @@
 /*!
  * \file hilucsi/small_scale/config.hpp
  * \brief Simple configuration for using LAPACK
- * \authors Qiao,
+ * \author Qiao Chen
 
 \verbatim
 Copyright (C) 2019 NumGeom Group at Stony Brook University

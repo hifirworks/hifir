@@ -5,7 +5,7 @@
 /*!
  * \file hilucsi/utils/stacktrace.hpp
  * \brief Print stacktrace on error aborting
- * \authors Qiao,
+ * \author Qiao Chen
  * \note Only works on Unix/Linux
 
 \verbatim

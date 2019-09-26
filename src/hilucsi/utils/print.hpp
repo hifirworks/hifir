@@ -5,7 +5,7 @@
 /*!
  * \file hilucsi/utils/print.hpp
  * \brief Macros for "stdout" and "stderr" message printers
- * \authors Qiao,
+ * \author Qiao Chen
  *
  * This file contains two simple hooks for dumping messages to "stdout" and
  * "stderr". By default, we use \a stdout and \a stderr, but one can change

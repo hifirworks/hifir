@@ -5,7 +5,7 @@
 /*!
  * \file hilucsi/pre/a_priori_scaling.hpp
  * \brief *a priori* scaling before official matching/scaling and reordering
- * \authors Qiao,
+ * \author Qiao Chen
 
 \verbatim
 Copyright (C) 2019 NumGeom Group at Stony Brook University
