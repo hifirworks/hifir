@@ -35,3 +35,5 @@ python/hsl_mc64*
 .ipynb_checkpoints
 docs/hilucsi4py/README.rst
 _build
+CMakeCache.txt
+CMakeFiles
