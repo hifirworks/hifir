@@ -4,6 +4,35 @@
 
 Welcome to the `HILUCSI` package! `HILUCSI` stands for `H`ierarchical `I`ncomplete `LU-C`rount with `S`calability-oriented and `I`nverse-based dropping, which is a new *multilevel ILU* software framework based on (near) linear time complexity and robust dropping strategy. Yup, you read it right, we have both!
 
+## Installation ##
+
+Since `HILUCSI` is a header-only package, one can simply just
+
+```console
+sudo cp src/* /usr/local/include
+```
+
+or regular user installation
+
+```console
+mkdir -p $HOME/.local/include
+cp src/* $HOME/.local/include
+```
+
+One can also install `HILUCSI` via `cmake`
+
+```console
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local ..
+make install
+```
+
+One can reset the default options in `macros.hpp` via `cmake`, for more, please take a look at all options with command
+
+```console
+cmake -LA | awk '{if(f)print} /-- Cache values/{f=1}'
+```
+
 ## License ##
 
 `HILUCSI` is released under GPL version 3. For more details, please refer to the [`LICENSE`](./LICENSE) file.
