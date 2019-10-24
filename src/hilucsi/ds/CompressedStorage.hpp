@@ -1062,23 +1062,6 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
     scale_diag_right(t);
   }
 
-  /// \brief matrix vector multiplication (low level API)
-  /// \param[in] x input array pointer
-  /// \param[out] y output array pointer
-  /// \warning User's responsibility to maintain valid pointers
-  inline void mv_nt_low(const value_type *x, value_type *y) const {
-    for (size_type i = 0u; i < _psize; ++i) {
-      y[i]       = 0;
-      auto v_itr = _base::val_cbegin(i);
-      auto i_itr = col_ind_cbegin(i);
-      for (auto last = col_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
-        hilucsi_assert(size_type(*i_itr) < _ncols, "%zd exceeds column size",
-                       size_type(*i_itr));
-        y[i] += *v_itr * x[*i_itr];
-      }
-    }
-  }
-
   /// \brief matrix vector multiplication with different value type
   /// \tparam Vx other value type for \a x
   /// \tparam Vy other value type for \a y
@@ -1087,26 +1070,8 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \warning User's responsibility to maintain valid pointers
   template <class Vx, class Vy>
   inline void mv_nt_low(const Vx *x, Vy *y) const {
+    mv_nt_low(x, size_type(0), _psize, y);
     for (size_type i = 0u; i < _psize; ++i) {
-      y[i]       = 0;
-      auto v_itr = _base::val_cbegin(i);
-      auto i_itr = col_ind_cbegin(i);
-      for (auto last = col_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
-        hilucsi_assert(size_type(*i_itr) < _ncols, "%zd exceeds column size",
-                       size_type(*i_itr));
-        y[i] += *v_itr * x[*i_itr];
-      }
-    }
-  }
-
-  /// \brief matrix vector for kernel MT compatibility (CRS only)
-  /// \param[in] x input array pointer
-  /// \param[in] istart index start
-  /// \param[in] len local length
-  /// \param[out] y output array (only \a [istart,istart+len) are ref-ed)
-  inline void mv_nt_low(const value_type *x, const size_type istart,
-                        const size_type len, value_type *y) const {
-    for (size_type i = istart, n = istart + len; i < n; ++i) {
       y[i]       = 0;
       auto v_itr = _base::val_cbegin(i);
       auto i_itr = col_ind_cbegin(i);
@@ -1171,25 +1136,6 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
     hilucsi_error_if(istart + len > nrows(),
                      "out-of-bound pass-of-end range detected");
     mv_nt_low(x.data(), istart, len, y.data());
-  }
-
-  /// \brief matrix transpose vector multiplication (low level API)
-  /// \param[in] x input array pointer
-  /// \param[out] y output array pointer
-  /// \warning User's responsibility to maintain valid pointers
-  inline void mv_t_low(const value_type *x, value_type *y) const {
-    if (!_psize) return;
-    std::fill_n(y, ncols(), value_type(0));
-    for (size_type i = 0u; i < _psize; ++i) {
-      const auto temp  = x[i];
-      auto       v_itr = _base::val_cbegin(i);
-      auto       i_itr = col_ind_cbegin(i);
-      for (auto last = col_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
-        const size_type j = *i_itr;
-        hilucsi_assert(j < _ncols, "%zd exceeds column size", j);
-        y[j] += *v_itr * temp;
-      }
-    }
   }
 
   /// \brief matrix transpose vector multiplication with different type
@@ -1798,25 +1744,6 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
     scale_diag_right(t);
   }
 
-  /// \brief matrix vector multiplication (low level API)
-  /// \param[in] x input array pointer
-  /// \param[out] y output array pointer
-  /// \warning User's responsibilty to ensure valid pointers
-  inline void mv_nt_low(const value_type *x, value_type *y) const {
-    if (!_psize) return;
-    std::fill_n(y, nrows(), 0);
-    for (size_type i = 0u; i < _psize; ++i) {
-      const auto temp  = x[i];
-      auto       v_itr = _base::val_cbegin(i);
-      auto       i_itr = row_ind_cbegin(i);
-      for (auto last = row_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
-        hilucsi_assert(size_type(*i_itr) < _nrows, "%zd exceeds the size bound",
-                       size_type(*i_itr));
-        y[*i_itr] += temp * *v_itr;
-      }
-    }
-  }
-
   /// \brief matrix vector multiplication with different value type
   /// \tparam Vx other value type for \a x
   /// \tparam Vy other value type for \a y
@@ -1850,23 +1777,6 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
     hilucsi_error_if(nrows() != y.size() || ncols() != x.size(),
                      "matrix vector unmatched sizes!");
     mv_nt_low(x.data(), y.data());
-  }
-
-  /// \brief matrix transpose vector multiplication (low level API)
-  /// \param[in] x input array pointer
-  /// \param[out] y output array pointer
-  /// \warning User's responsibilty to ensure valid pointers
-  inline void mv_t_low(const value_type *x, value_type *y) const {
-    for (size_type i = 0u; i < _psize; ++i) {
-      y[i]       = 0;
-      auto v_itr = _base::val_cbegin(i);
-      auto i_itr = row_ind_cbegin(i);
-      for (auto last = row_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
-        hilucsi_assert(size_type(*i_itr) < _nrows, "%zd exceeds the size bound",
-                       size_type(*i_itr));
-        y[i] += x[*i_itr] * *v_itr;
-      }
-    }
   }
 
   /// \brief matrix transpose vector multiplication with different type
