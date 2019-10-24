@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# ----------------------------------------------------------------------------
-#                Copyright (C) 2019 The HILUCSI AUTHORS
-# ----------------------------------------------------------------------------
+###############################################################################
+#                 This file is part of HILUCSI4PY project                     #
+###############################################################################
 
 # This file is to utilize Cython API feature to generate Python3 print
 # wrappers for stdout (1) and stderr (2), which will be wrapped as

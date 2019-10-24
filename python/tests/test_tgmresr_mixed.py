@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-# ----------------------------------------------------------------------------
-#                Copyright (C) 2019 The HILUCSI AUTHORS
-# ----------------------------------------------------------------------------
+###############################################################################
+#                 This file is part of HILUCSI4PY project                     #
+###############################################################################
 
-from hilucsi4py import TGMRESR_Mixed
 from scipy.sparse import random
 import numpy as np
+
+from hilucsi4py import TGMRESR_Mixed
 
 
 def test_tgmresr_mixed():
