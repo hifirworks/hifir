@@ -40,6 +40,17 @@ namespace hilucsi {
 
 namespace internal {
 
+/*!
+ * \addtogroup ds
+ * @{
+ */
+
+/// \brief Determine total number of intervals given a compressed storage
+/// \tparam MaxInterval Maximum interval upper bound
+/// \tparam CsType Compressed storage, i.e., \ref CRS or \ref CCS
+/// \tparam IndexArray Index array type, i.e., \ref Array
+/// \param[in] A Input compressed matrix
+/// \param[out] itrv_start output interval starting position array
 template <std::size_t MaxInterval, class CsType, class IndexArray>
 inline void determine_nitrvs(const CsType &A, IndexArray &itrv_start) {
   using size_type = typename CsType::size_type;
@@ -64,7 +75,7 @@ inline void determine_nitrvs(const CsType &A, IndexArray &itrv_start) {
     while (iter != iter_last) {
       if (*(iter - 1) + 1 != *iter || len > MaxInterval) {
         ++nitrvs;  // increment number of intervals
-        len = 1;   // reset length
+        len = 0;   // reset length
       }
       ++iter;
       ++len;
@@ -73,11 +84,18 @@ inline void determine_nitrvs(const CsType &A, IndexArray &itrv_start) {
   }
 }
 
+/// \brief Build the interval arrays
+/// \tparam CsType Compressed storage, i.e., \ref CRS or \ref CCS
+/// \tparam IndexArray Index array type, i.e., \ref Array
+/// \tparam IntervalArray Interval array type, i.e., \ref Array
+/// \param[in] A Input compressed matrix
+/// \param[in] itrv_start Input interval startingposition array
+/// \param[out] ind_start Output starting index of each interval
+/// \param[out] lens Output lengths of each interval, as to \a ind_start
 template <class CsType, class IndexArray, class IntervalArray>
 inline void build_intervals(const CsType &A, const IndexArray &itrv_start,
                             IndexArray &ind_start, IntervalArray &lens) {
-  using size_type     = typename CsType::size_type;
-  using interval_type = typename IntervalArray::value_type;
+  using size_type = typename CsType::size_type;
 
   const size_type total_nitrvs = itrv_start.back();
   ind_start.resize(total_nitrvs);
@@ -91,23 +109,57 @@ inline void build_intervals(const CsType &A, const IndexArray &itrv_start,
   for (size_type i(0); i < n; ++i) {
     if (!A.nnz_in_primary(i)) continue;
     auto iter = A.ind_cbegin(i), iter_last = A.ind_cend(i);
-    *ind_iter++ = *iter++;  // increment iter here
-    *len_iter++ = 1;
+    *ind_iter = *iter++;  // increment iter here
+    *len_iter = 1;
     while (iter != iter_last) {
       // XXX: !len:-> overflow back to zero
       if (*(iter - 1) + 1 != *iter || !*len_iter) {
         // get a breaking point
-        *ind_iter++ = *iter;
-        --(*len_iter);
-        *len_iter++ = 1;
+        *++ind_iter = *iter;
+        if (!*len_iter) --(*len_iter);
+        *++len_iter = 0;
       }
       ++iter;
       ++(*len_iter);
     }
-    hilucsi_assert(ind_iter == ind_start.begin() + itrv_start[i + 1], "fatal");
-    hilucsi_assert(len_iter == lens.begin() + itrv_start[i + 1], "fatal");
+    ++ind_iter;
+    ++len_iter;
+    hilucsi_assert(
+        ind_iter == ind_start.begin() + itrv_start[i + 1], "fatal, %zd",
+        size_type((ind_start.begin() + itrv_start[i + 1]) - ind_iter));
+    hilucsi_assert(len_iter == lens.begin() + itrv_start[i + 1], "fatal, %zd",
+                   size_type((lens.begin() + itrv_start[i + 1]) - len_iter));
   }
 }
+
+/// \brief Analyzing the cost ratio of interval to classical storages
+/// \tparam INDEX_SIZE Index size
+/// \tparam VALUE_SIZE Value type size
+/// \tparam INTERVAL_SIZE Interval type size
+/// \param[in] n Number of rows/columns
+/// \param[in] nnz Total number of nonzeros
+/// \param[in] nitrvs Total number of itervals
+/// \return double
+/// \note If the result is greater than 1, it means we are wasting memory by
+///       using interval storage
+template <std::size_t INDEX_SIZE, std::size_t VALUE_SIZE,
+          std::size_t INTERVAL_SIZE>
+inline double analyze_storage_cost_ratio(const std::size_t n,
+                                         const std::size_t nnz,
+                                         const std::size_t nitrvs) {
+  // cost of classical
+  const double classical_size =
+      (double)nnz * (INDEX_SIZE + VALUE_SIZE) + (double)(n + 1) * INDEX_SIZE;
+  // cost of interval
+  const double interval_size = (double)nnz * VALUE_SIZE +
+                               (double)nitrvs * (INDEX_SIZE + INTERVAL_SIZE) +
+                               2.0 * (n + 1) * INDEX_SIZE;
+  return classical_size != 0.0 ? interval_size / classical_size : 0.0;
+}
+
+/*!
+ * @}
+ */
 
 }  // namespace internal
 
@@ -148,20 +200,24 @@ class IntervalCRS {
 
   /// \brief allow implicit convert from a rvalue reference of CRS
   /// \param[in,out] A CRS of rvalue reference
-  IntervalCRS(crs_type &&A, const bool /* smart_convert */ = true)
+  /// \param[in] smart_convert (optional) Perform smart converting
+  IntervalCRS(crs_type &&A, const bool smart_convert = true)
       : _nrows(A.nrows()), _ncols(A.ncols()) {
     internal::determine_nitrvs<MAX_INTERVAL>(A, _itrv_start);
+    bool convert_to_interval = true;
+    if (smart_convert && _itrv_start.size())
+      convert_to_interval = size_type(2) * _itrv_start.back() <= A.nnz();
     // NOTE, we can check number of intervals to do smart_convert
-    if (true) {
+    if (convert_to_interval) {
       internal::build_intervals(A, _itrv_start, _col_ind_start, _col_len);
       // destroy A
       _row_start = std::move(A.row_start());
       _vals      = std::move(A.vals());
+      A.destroy();
       _ref.reset();
     } else {
       _ref = std::make_shared<crs_type>(std::move(A));
-      // NOTE: we don't set nrows and ncols to zero
-      iarray_type().swap(_itrv_start);
+      iarray_type().swap(_itrv_start);  // destroy allocated space
     }
   }
 
@@ -200,19 +256,13 @@ class IntervalCRS {
   ///       interval based storage
   inline double storage_cost_ratio() const {
     if (_ref) return 1.0;
-    constexpr static size_type INDEX_SIZE    = sizeof(index_type);
-    constexpr static size_type VALUE_SIZE    = sizeof(value_type);
-    constexpr static size_type INTERVAL_SIZE = sizeof(interval_type);
-    // cost of classical
-    const double classical_size = (double)nnz() * (INDEX_SIZE + VALUE_SIZE) +
-                                  (double)_row_start.size() * INDEX_SIZE;
-    // cost of interval
-    const double interval_size =
-        (double)nnz() * VALUE_SIZE +
-        (double)nitrvs() * (INDEX_SIZE + INTERVAL_SIZE) +
-        2.0 * _row_start.size() * INDEX_SIZE;
-    return classical_size != 0.0 ? interval_size / classical_size : 0.0;
+    return internal::analyze_storage_cost_ratio<
+        sizeof(index_type), sizeof(value_type), sizeof(interval_type)>(
+        nrows(), nnz(), nitrvs());
   }
+
+  /// \brief Check if converted to interval-based structure
+  inline bool converted() const { return !_ref; }
 
   /// \brief matrix vector multiplication (low-level API)
   /// \tparam Vx other value type for \a x
@@ -230,9 +280,9 @@ class IntervalCRS {
     else {
       const auto n = istart + len;
       for (size_type i(istart); i < n; ++i) {
-        const auto val_i    = _vals.cbegin() + _row_start[i];
-        auto       len_iter = _col_len.cbegin() + _itrv_start[i];
-        auto       last     = _col_ind_start.cbegin() + _itrv_start[i + 1];
+        auto val_i    = _vals.cbegin() + _row_start[i];
+        auto len_iter = _col_len.cbegin() + _itrv_start[i];
+        auto last     = _col_ind_start.cbegin() + _itrv_start[i + 1];
         typename std::conditional<(sizeof(Vy) > sizeof(value_type)), Vy,
                                   value_type>::type tmp(0);
         // loop thru all intervals
@@ -308,7 +358,7 @@ class IntervalCRS {
       std::fill_n(y, _ncols, Vy(0));
       for (size_type i(0); i < _nrows; ++i) {
         const auto temp     = x[i];
-        const auto val_i    = _vals.cbegin() + _row_start[i];
+        auto       val_i    = _vals.cbegin() + _row_start[i];
         auto       len_iter = _col_len.cbegin() + _itrv_start[i];
         auto       last     = _col_ind_start.cbegin() + _itrv_start[i + 1];
         // loop thru all intervals
@@ -352,10 +402,10 @@ class IntervalCRS {
 
  protected:
   size_type            _nrows, _ncols;  ///< number of rows/columns
-  array_type           _row_start;      ///< row pointer for values
-  array_type           _itrv_start;     ///< row pointer for column indices
+  iarray_type          _row_start;      ///< row pointer for values
+  iarray_type          _itrv_start;     ///< row pointer for column indices
   array_type           _vals;           ///< numerical values
-  array_type           _col_ind_start;  ///< column index start of each interval
+  iarray_type          _col_ind_start;  ///< column index start of each interval
   Array<interval_type> _col_len;        ///< interval length
   std::shared_ptr<crs_type> _ref;       ///< reference to A for smart convert
 };
@@ -397,20 +447,23 @@ class IntervalCCS {
 
   /// \brief allow implicit convert from a rvalue reference of CCS
   /// \param[in,out] A CCS of rvalue reference
-  IntervalCCS(ccs_type &&A, const bool /* smart_convert */ = true)
+  /// \param[in] smart_convert (optional) Perform smart converting
+  IntervalCCS(ccs_type &&A, const bool smart_convert = true)
       : _nrows(A.nrows()), _ncols(A.ncols()) {
     internal::determine_nitrvs<MAX_INTERVAL>(A, _itrv_start);
-    // NOTE, we can check number of intervals to do smart_convert
-    if (true) {
+    bool convert_to_interval = true;
+    if (smart_convert && _itrv_start.size())
+      convert_to_interval = size_type(2) * _itrv_start.back() <= A.nnz();
+    if (convert_to_interval) {
       internal::build_intervals(A, _itrv_start, _row_ind_start, _row_len);
       // destroy A
       _col_start = std::move(A.col_start());
       _vals      = std::move(A.vals());
+      A.destroy();
       _ref.reset();
     } else {
       _ref = std::make_shared<ccs_type>(std::move(A));
-      // NOTE: we don't set nrows and ncols to zero
-      iarray_type().swap(_itrv_start);
+      iarray_type().swap(_itrv_start);  // destroy allocated space
     }
   }
 
@@ -443,25 +496,19 @@ class IntervalCCS {
   inline size_type nitrvs() const {
     return _ref ? size_type(0) : _row_ind_start.size();
   }
-  
+
   /// \brief analyze storage ratio from interval to classical
   /// \note Results greater than 1 means we are wasting storage by using
   ///       interval based storage
   inline double storage_cost_ratio() const {
     if (_ref) return 1.0;
-    constexpr static size_type INDEX_SIZE    = sizeof(index_type);
-    constexpr static size_type VALUE_SIZE    = sizeof(value_type);
-    constexpr static size_type INTERVAL_SIZE = sizeof(interval_type);
-    // cost of classical
-    const double classical_size = (double)nnz() * (INDEX_SIZE + VALUE_SIZE) +
-                                  (double)_col_start.size() * INDEX_SIZE;
-    // cost of interval
-    const double interval_size =
-        (double)nnz() * VALUE_SIZE +
-        (double)nitrvs() * (INDEX_SIZE + INTERVAL_SIZE) +
-        2.0 * _col_start.size() * INDEX_SIZE;
-    return classical_size != 0.0 ? interval_size / classical_size : 0.0;
+    return internal::analyze_storage_cost_ratio<
+        sizeof(index_type), sizeof(value_type), sizeof(interval_type)>(
+        ncols(), nnz(), nitrvs());
   }
+
+  /// \brief Check if converted to interval-based structure
+  inline bool converted() const { return !_ref; }
 
   /// \brief matrix vector multiplication with different value type
   /// \tparam Vx other value type for \a x
@@ -565,10 +612,10 @@ class IntervalCCS {
 
  protected:
   size_type            _nrows, _ncols;  ///< number of rows/columns
-  array_type           _col_start;      ///< column pointer for values
-  array_type           _itrv_start;     ///< column pointer for intervals
+  iarray_type          _col_start;      ///< column pointer for values
+  iarray_type          _itrv_start;     ///< column pointer for intervals
   array_type           _vals;           ///< numerical values
-  array_type           _row_ind_start;  ///< row index start of each interval
+  iarray_type          _row_ind_start;  ///< row index start of each interval
   Array<interval_type> _row_len;        ///< interval length
   std::shared_ptr<ccs_type> _ref;       ///< reference to A for smart convert
 };
