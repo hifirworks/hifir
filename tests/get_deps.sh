@@ -1,4 +1,7 @@
 #!/bin/bash
+###############################################################################
+#                   This file is part of HILUCSI project                      #
+###############################################################################
 
 # script to parse a test script's first 50 lines into space/nl separated
 # array of elements and extract out the dependencies
