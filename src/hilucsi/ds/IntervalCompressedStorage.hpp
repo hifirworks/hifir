@@ -223,7 +223,9 @@ class IntervalCRS {
 
   /// \brief convert from a CCS matrix
   /// \param[in] A CCS input
-  IntervalCRS(const ccs_type &A) : IntervalCRS(crs_type(A)) {}
+  /// \param[in] smart_convert (optional) Perform smart converting
+  IntervalCRS(const ccs_type &A, const bool smart_convert = true)
+      : IntervalCRS(crs_type(A), smart_convert) {}
 
   /// \brief default copy constructor
   IntervalCRS(const IntervalCRS &) = default;
@@ -400,6 +402,72 @@ class IntervalCRS {
     !tran ? mv_nt(x, y) : mv_t(x, y);
   }
 
+  /// \brief Assume as a strict lower matrix and solve with forward sub
+  /// \tparam RhsType Rhs type
+  /// \param[in,out] y Input rhs, output solution
+  /// \note Advanced use for preconditioner solve.
+  /// \sa solve_as_strict_upper
+  template <class RhsType>
+  inline void solve_as_strict_lower(RhsType &y) const {
+    if (_ref) {
+      _ref->solve_as_strict_lower(y);
+      return;
+    }
+    // retrieve value type from rhs
+    using value_type_ = typename std::remove_reference<decltype(y[0])>::type;
+    for (size_type j(1); j < _nrows; ++j) {
+      auto v_itr = _vals.cbegin() + _row_start[j];
+      typename std::conditional<(sizeof(value_type_) < sizeof(value_type)),
+                                value_type, value_type_>::type tmp(0);
+      auto len_iter = _col_len.cbegin() + _itrv_start[j];
+      auto last     = _col_ind_start.cbegin() + _itrv_start[j + 1];
+      // loop thru all intervals
+      for (auto iter = _col_ind_start.cbegin() + _itrv_start[j]; iter != last;
+           ++iter, ++len_iter) {
+        const auto          idx = *iter;
+        const interval_type m   = *len_iter;
+        // for each interval, loop thru the consecutive range
+        for (interval_type i(0); i < m; ++i, ++v_itr)
+          tmp += *v_itr * y[idx + i];
+      }
+      y[j] -= tmp;
+    }
+  }
+
+  /// \brief Assume as a strict upper matrix and solve with backward sub
+  /// \tparam RhsType Rhs type
+  /// \param[in,out] y Input rhs, output solution
+  /// \note Advanced use for preconditioner solve.
+  /// \sa solve_as_strict_lower
+  template <class RhsType>
+  inline void solve_as_strict_upper(RhsType &y) const {
+    if (_ref) {
+      _ref->solve_as_strict_upper(y);
+      return;
+    }
+    // retrieve value type from rhs
+    using value_type_ = typename std::remove_reference<decltype(y[0])>::type;
+    hilucsi_assert(_nrows, "cannot be empty");
+    for (size_type j = _nrows - 1; j != 0u; --j) {
+      const size_type j1    = j - 1;
+      auto            v_itr = _vals.cbegin() + _row_start[j1];
+      typename std::conditional<(sizeof(value_type_) < sizeof(value_type)),
+                                value_type, value_type_>::type tmp(0);
+      auto len_iter = _col_len.cbegin() + _itrv_start[j1];
+      auto last     = _col_ind_start.cbegin() + _itrv_start[j];
+      // loop thru all intervals
+      for (auto iter = _col_ind_start.cbegin() + _itrv_start[j1]; iter != last;
+           ++iter, ++len_iter) {
+        const auto          idx = *iter;
+        const interval_type m   = *len_iter;
+        // for each interval, loop thru the consecutive range
+        for (interval_type i(0); i < m; ++i, ++v_itr)
+          tmp += *v_itr * y[idx + i];
+      }
+      y[j1] -= tmp;
+    }
+  }
+
  protected:
   size_type            _nrows, _ncols;  ///< number of rows/columns
   iarray_type          _row_start;      ///< row pointer for values
@@ -469,7 +537,9 @@ class IntervalCCS {
 
   /// \brief convert from a CRS matrix
   /// \param[in] A CRS input
-  IntervalCCS(const crs_type &A) : IntervalCCS(ccs_type(A)) {}
+  /// \param[in] smart_convert (optional) Perform smart converting
+  IntervalCCS(const crs_type &A, const bool smart_convert = true)
+      : IntervalCCS(ccs_type(A), smart_convert) {}
 
   /// \brief default copy constructor
   IntervalCCS(const IntervalCCS &) = default;
@@ -608,6 +678,67 @@ class IntervalCCS {
   template <class IArray, class OArray>
   inline void mv(const IArray &x, OArray &y, bool tran = false) const {
     !tran ? mv_nt(x, y) : mv_t(x, y);
+  }
+
+  /// \brief Assume as a strict lower matrix and solve with forward sub
+  /// \tparam RhsType Rhs type
+  /// \param[in,out] y Input rhs, output solution
+  /// \note Advanced use for preconditioner solve.
+  /// \sa solve_as_strict_upper
+  template <class RhsType>
+  inline void solve_as_strict_lower(RhsType &y) const {
+    if (_ref) {
+      _ref->solve_as_strict_lower(y);
+      return;
+    }
+    for (size_type j(0); j < _ncols; ++j) {
+      const auto y_j      = y[j];
+      auto       v_itr    = _vals.cbegin() + _col_start[j];
+      auto       len_iter = _row_len.cbegin() + _itrv_start[j];
+      auto       last     = _row_ind_start.cbegin() + _itrv_start[j + 1];
+      // loop thru all intervals
+      for (auto iter = _row_ind_start.cbegin() + _itrv_start[j]; iter != last;
+           ++iter, ++len_iter) {
+        const auto          idx = *iter;
+        const interval_type m   = *len_iter;
+        // for each interval, loop thru the consecutive range
+        for (interval_type i(0); i < m; ++i, ++v_itr)
+          y[idx + i] -= *v_itr * y_j;
+      }
+    }
+  }
+
+  /// \brief Assume as a strict upper matrix and solve with backward sub
+  /// \tparam RhsType Rhs type
+  /// \param[in,out] y Input rhs, output solution
+  /// \note Advanced use for preconditioner solve.
+  /// \sa solve_as_strict_lower
+  template <class RhsType>
+  inline void solve_as_strict_upper(RhsType &y) const {
+    if (_ref) {
+      _ref->solve_as_strict_upper(y);
+      return;
+    }
+    using rev_iterator   = std::reverse_iterator<const_i_iterator>;
+    using rev_v_iterator = std::reverse_iterator<const_v_iterator>;
+    using rev_itrv_iterator =
+        std::reverse_iterator<typename Array<interval_type>::const_iterator>;
+
+    for (size_type j(_ncols - 1); j != 0u; --j) {
+      const auto y_j   = y[j];
+      auto       v_itr = rev_v_iterator(_vals.cbegin() + _col_start[j + 1]);
+      auto len_iter = rev_itrv_iterator(_row_len.cbegin() + _itrv_start[j + 1]);
+      auto last     = rev_iterator(_row_ind_start.cbegin() + _itrv_start[j]);
+      // loop through all intervals in reversed order
+      for (auto iter =
+               rev_iterator(_row_ind_start.cbegin() + _itrv_start[j + 1]);
+           iter != last; ++iter, ++len_iter) {
+        const auto          idx = *iter - 1;
+        const interval_type m   = *len_iter;
+        for (interval_type i(m); i != 0u; --i, ++v_itr)
+          y[idx + i] -= *v_itr * y_j;
+      }
+    }
   }
 
  protected:
