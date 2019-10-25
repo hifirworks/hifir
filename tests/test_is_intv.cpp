@@ -15,6 +15,6 @@ using namespace hilucsi;
 TEST(IS_INTV, test) {
   using mat1_t = CRS<double, int>;
   using mat2_t = IntervalCCS<double, int>;
-  EXPECT_TRUE(IsIntervalCS<mat2_t>::value);
-  EXPECT_FALSE(IsIntervalCS<mat1_t>::value);
+  EXPECT_TRUE(is_interval_cs<mat2_t>::value);
+  EXPECT_FALSE(is_interval_cs<mat1_t>::value);
 }
