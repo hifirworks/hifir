@@ -751,6 +751,19 @@ class IntervalCCS {
   std::shared_ptr<ccs_type> _ref;       ///< reference to A for smart convert
 };
 
+/// \brief Trait for determining interval compressed storage
+/// \note Use SFINAE techinique
+/// \ingroup ds
+template <class Cs, typename = void>
+struct IsIntervalCS : std::false_type {};
+
+/// \brief Trait for determining interval compressed storage
+/// \note Use SFINAE techinique
+/// \ingroup ds
+template <class Cs>
+struct IsIntervalCS<Cs, decltype(std::declval<Cs>().nitrvs(), void())>
+    : std::true_type {};
+
 }  // namespace hilucsi
 
 #endif  // _HILUCSI_DS_INTERVALCOMPRESSEDSTORAGE_HPP
