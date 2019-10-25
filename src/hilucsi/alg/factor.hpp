@@ -1142,6 +1142,9 @@ inline CsType level_factorize(const CsType &                   A,
                      std::move(E), std::move(F), std::move(s), std::move(t),
                      std::move(p()), std::move(q.inv()));
 
+  // report if using interval based data structures
+  if (hilucsi_verbose(INFO, opts)) precs.back().report_status();
+
   // if dense is not empty, then push it back
   if (!S_D.empty()) {
     auto &last_level = precs.back().dense_solver;

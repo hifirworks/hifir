@@ -75,7 +75,7 @@ static bool introduced = false;
 /// \class HILUCSI
 /// \tparam ValueType numerical value type, e.g. \a double
 /// \tparam IndexType index type, e.g. \a int
-/// \tparam SSSType default is LU with partial pivoting
+/// \tparam IntervalBased default is true, using interval based
 ///
 /// This is top user interface (C++); it is designed as a preconditioner that
 /// can be easily plugin other codes. There are two core member functions, 1)
@@ -99,18 +99,17 @@ static bool introduced = false;
 ///     builder.solve(...);
 ///   }
 /// \endcode
-template <class ValueType, class IndexType,
-          SmallScaleType SSSType = SMALLSCALE_LUP>
+template <class ValueType, class IndexType, bool IntervalBased = true>
 class HILUCSI {
  public:
-  typedef ValueType                     value_type;    ///< value type
-  typedef Array<value_type>             array_type;    ///< array type
-  typedef IndexType                     index_type;    ///< index type
-  typedef Array<index_type>             iarray_type;   ///< index array
-  typedef CRS<value_type, index_type>   crs_type;      ///< crs type
-  typedef typename crs_type::other_type ccs_type;      ///< ccs type
-  constexpr static SmallScaleType sss_type = SSSType;  ///< small scale type
-  typedef Precs<value_type, index_type, sss_type> precs_type;
+  typedef ValueType                     value_type;   ///< value type
+  typedef Array<value_type>             array_type;   ///< array type
+  typedef IndexType                     index_type;   ///< index type
+  typedef Array<index_type>             iarray_type;  ///< index array
+  typedef CRS<value_type, index_type>   crs_type;     ///< crs type
+  typedef typename crs_type::other_type ccs_type;     ///< ccs type
+  // constexpr static SmallScaleType sss_type = SSSType;  ///< small scale type
+  typedef Precs<value_type, index_type, IntervalBased> precs_type;
   ///< multilevel preconditioner type
   typedef typename precs_type::value_type prec_type;  ///< single level prec
   typedef typename prec_type::size_type   size_type;  ///< size type
