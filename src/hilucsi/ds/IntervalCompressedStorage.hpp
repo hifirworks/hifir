@@ -163,6 +163,11 @@ inline double analyze_storage_cost_ratio(const std::size_t n,
 
 }  // namespace internal
 
+/*!
+ * \addtogroup ds
+ * @{
+ */
+
 /// \class IntervalCRS
 /// \brief Interval-based CRS representation
 /// \tparam ValueType numerical value type, e.g. \a double, \a float, etc
@@ -753,16 +758,32 @@ class IntervalCCS {
 
 /// \brief Trait for determining interval compressed storage
 /// \note Use SFINAE techinique
-/// \ingroup ds
 template <class Cs, typename = void>
 struct is_interval_cs : std::false_type {};
 
 /// \brief Trait for determining interval compressed storage
 /// \note Use SFINAE techinique
-/// \ingroup ds
 template <class Cs>
 struct is_interval_cs<Cs, decltype(std::declval<Cs>().nitrvs(), void())>
     : std::true_type {};
+
+/// \brief helper trait to define interval type from classical
+/// \warning \a Cs must be classical type, e.g., CRS or CCS
+template <class Cs, class IntervalType = std::uint8_t>
+struct using_interval_from_classical {
+  static_assert(!is_interval_cs<Cs>::value, "cannot be interval type");
+  using type = typename std::conditional<
+      Cs::ROW_MAJOR,
+      IntervalCRS<typename Cs::value_type, typename Cs::index_type,
+                  IntervalType>,
+      IntervalCCS<typename Cs::value_type, typename Cs::index_type,
+                  IntervalType>>::type;
+  ///< interval-based type derived from classical version
+};
+
+/*!
+ * @}
+ */ // end group ds
 
 }  // namespace hilucsi
 
