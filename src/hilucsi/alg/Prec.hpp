@@ -33,6 +33,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <utility>
 
 #include "hilucsi/ds/CompressedStorage.hpp"
+#include "hilucsi/ds/IntervalCompressedStorage.hpp"
 #include "hilucsi/small_scale/solver.hpp"
 #ifdef HILUCSI_ENABLE_MUMPS
 #  include "hilucsi/sparse_direct/mumps.hpp"
@@ -59,10 +60,9 @@ struct DummySparseSolver {
 /// \brief A single level preconditioner
 /// \tparam ValueType value data type, e.g. \a double
 /// \tparam IndexType index data type, e.g. \a int
-/// \tparam SSSType default is LU with partial pivoting
+/// \tparam IntervalBased default is true, using interval based
 /// \ingroup slv
-template <class ValueType, class IndexType,
-          SmallScaleType SSSType = SMALLSCALE_LUP>
+template <class ValueType, class IndexType, bool IntervalBased = true>
 struct Prec {
   typedef ValueType                     value_type;  ///< value type
   typedef IndexType                     index_type;  ///< index type
@@ -71,16 +71,21 @@ struct Prec {
   typedef Array<index_type>             perm_type;   ///< permutation
   typedef typename ccs_type::size_type  size_type;   ///< size
   typedef typename ccs_type::array_type array_type;  ///< array
-  using mat_type = ccs_type;
+  typedef ccs_type                      mat_type;    ///< interface type
 #ifdef HILUCSI_ENABLE_MUMPS
   using sparse_direct_type = MUMPS<ValueType>;
 #else
   using sparse_direct_type = internal::DummySparseSolver;
-#endif                                      // HILUCSI_ENABLE_MUMPS
-  static constexpr char EMPTY_PREC = '\0';  ///< empty prec
+#endif                                                   // HILUCSI_ENABLE_MUMPS
+  static constexpr char EMPTY_PREC     = '\0';           ///< empty prec
+  static constexpr bool INTERVAL_BASED = IntervalBased;  ///< interval
+  using data_mat_type                  = typename std::conditional<
+      INTERVAL_BASED, typename using_interval_from_classical<mat_type>::type,
+      mat_type>::type;  ///< data matrix type
 
  private:
-  typedef SmallScaleSolverTrait<SSSType> _sss_trait;  ///< small scale trait
+  typedef SmallScaleSolverTrait<SMALLSCALE_LUP> _sss_trait;
+  ///< small scale trait
  public:
   typedef typename _sss_trait::template solver_type<value_type> sss_solver_type;
   ///< small scaled solver type
@@ -134,6 +139,39 @@ struct Prec {
     return 0;
   }
 
+  /// \brief Using SFINAE to report interval-based information
+  template <typename T = void>
+  inline typename std::enable_if<INTERVAL_BASED, T>::type report_status()
+      const {
+    static const auto report_kernel = [](const data_mat_type &mat,
+                                         const char *         name) {
+      if (!mat.converted()) {
+        hilucsi_info(
+            "%s was not able to be converted to interval, too small average "
+            "interval (<2)",
+            name);
+      } else {
+        hilucsi_info(
+            "%s was converted to interval!\n"
+            "\tstorage ratio (interval:classical) = %.3f%%\n"
+            "\taverage interval length = %.4g",
+            name, 100.0 * mat.storage_cost_ratio(),
+            (double)mat.nnz() / mat.nitrvs());
+      }
+    };
+
+    report_kernel(L_B, "L_B");
+    report_kernel(U_B, "U_B");
+    report_kernel(E, "E");
+    report_kernel(F, "F");
+  }
+
+  template <typename T = void>
+  inline typename std::enable_if<!INTERVAL_BASED, T>::type report_status()
+      const {
+    // do nothing
+  }
+
   /// \brief enable explicitly calling move
   /// \param[in,out] L_b lower part
   /// \param[in,out] d_b diagonal
@@ -178,11 +216,11 @@ struct Prec {
 
   size_type                  m;      ///< leading block size
   size_type                  n;      ///< system size
-  mat_type                   L_B;    ///< lower part of leading block
+  data_mat_type              L_B;    ///< lower part of leading block
   array_type                 d_B;    ///< diagonal block of leading block
-  mat_type                   U_B;    ///< upper part of leading block
-  mat_type                   E;      ///< scaled and permutated E part
-  mat_type                   F;      ///< scaled and permutated F part
+  data_mat_type              U_B;    ///< upper part of leading block
+  data_mat_type              E;      ///< scaled and permutated E part
+  data_mat_type              F;      ///< scaled and permutated F part
   array_type                 s;      ///< row scaling vector
   array_type                 t;      ///< column scaling vector
   perm_type                  p;      ///< row permutation matrix
@@ -201,7 +239,7 @@ struct Prec {
 /// \brief multilevel preconditioners
 /// \tparam ValueType value data type, e.g. \a double
 /// \tparam IndexType index data type, e.g. \a int
-/// \tparam SSSType default is LU with partial pivoting
+/// \tparam IntervalBased default is true, using interval based
 /// \ingroup slv
 ///
 /// We choose to use STL list because adding new node is constant time without
@@ -231,9 +269,8 @@ struct Prec {
 ///
 /// These fit into the usage for Precs. Notice that for the second way, after
 /// calling \ref Prec::move_destroy, all input arguments will be destroyed.
-template <class ValueType, class IndexType,
-          SmallScaleType SSSType = SMALLSCALE_LUP>
-using Precs = std::list<Prec<ValueType, IndexType, SSSType>>;
+template <class ValueType, class IndexType, bool IntervalBased = true>
+using Precs = std::list<Prec<ValueType, IndexType, IntervalBased>>;
 
 }  // namespace hilucsi
 

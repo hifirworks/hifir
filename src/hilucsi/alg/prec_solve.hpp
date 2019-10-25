@@ -42,6 +42,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 namespace hilucsi {
 namespace internal {
 
+#if 0
+
 /*!
  * \addtogroup slv
  * @{
@@ -141,10 +143,10 @@ inline typename std::enable_if<!CcsType::ROW_MAJOR, T>::type prec_solve_udl_inv(
   for (size_type j = 0u; j < m; ++j) {
     const auto y_j = y[j];
     auto       itr = L.row_ind_cbegin(j);
-#ifndef NDEBUG
+#  ifndef NDEBUG
     if (itr != L.row_ind_cend(j))
       hilucsi_error_if(size_type(*itr) <= j, "must be strictly lower part!");
-#endif
+#  endif
     auto v_itr = L.val_cbegin(j);
     for (auto last = L.row_ind_cend(j); itr != last; ++itr, ++v_itr) {
       hilucsi_assert(size_type(*itr) < m, "%zd exceeds system size %zd",
@@ -161,10 +163,10 @@ inline typename std::enable_if<!CcsType::ROW_MAJOR, T>::type prec_solve_udl_inv(
     for (size_type j = m - 1; j != 0u; --j) {
       const auto y_j = y[j];
       auto       itr = rev_iterator(U.row_ind_cend(j));
-#ifndef NDEBUG
+#  ifndef NDEBUG
       if (itr != rev_iterator(U.row_ind_cbegin(j)))
         hilucsi_error_if(size_type(*itr) >= j, "must be strictly upper part");
-#endif
+#  endif
       auto v_itr = rev_v_iterator(U.val_cend(j));
       for (auto last = rev_iterator(U.row_ind_cbegin(j)); itr != last;
            ++itr, ++v_itr)
@@ -175,6 +177,50 @@ inline typename std::enable_if<!CcsType::ROW_MAJOR, T>::type prec_solve_udl_inv(
 /*!
  * @}
  */
+
+#else
+
+/// \brief triangular solving kernel in \a hilucsi_solve algorithm
+/// \tparam UType compressed type for U
+/// \tparam LType compressed type for L
+/// \tparam DiagType diagonal vector type, see \ref Array
+/// \tparam RhsType rhs and solution type, generial array interface
+/// \param[in] U strictly upper part
+/// \param[in] d diagonal vector
+/// \param[in] L strictly lower part
+/// \param[in,out] y input rhs and solution upon output
+/// \ingroup slv
+///
+/// This routine is to solve:
+///
+/// \f[
+///   \mathbf{y}=\mathbf{U}^{-1}\mathbf{D}^{-1}\mathbf{L}^{-1}\mathbf{y}
+/// \f]
+///
+/// The overall complexity is linear assuming the local nnz are bounded by a
+/// constant.
+template <class UType, class DiagType, class LType, class RhsType>
+inline void prec_solve_udl_inv(const UType &U, const DiagType &d,
+                               const LType &L, RhsType &y) {
+  using size_type = typename LType::size_type;
+
+  const size_type m = U.nrows();
+  hilucsi_assert(U.ncols() == m, "U must be squared");
+  hilucsi_assert(L.nrows() == L.ncols(), "L must be squared");
+  hilucsi_assert(d.size() >= m, "diagonal must be no smaller than system size");
+  if (!m) return;
+
+  // y=inv(L)*y
+  L.solve_as_strict_lower(y);
+
+  // y=inv(D)*y
+  for (size_type i = 0u; i < m; ++i) y[i] /= d[i];
+
+  // y = inv(U)*y
+  U.solve_as_strict_upper(y);
+}
+
+#endif
 
 }  // namespace internal
 

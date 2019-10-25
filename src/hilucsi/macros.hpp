@@ -149,6 +149,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #  define HILUCSI_MIN_LOCAL_SIZE_PERCTG 85
 #endif  // HILUCSI_MIN_LOCAL_SIZE_PERCTG
 
+/// \def HILUCSI_DENSE_MODE
+/// \brief backend dense kernels, if it's 1 (default), then using LU, 2 for
+///        QRCP, other values will rollback to LU.
+#ifndef HILUCSI_DENSE_MODE
+#  define HILUCSI_DENSE_MODE 1
+#endif  // HILUCSI_DENSE_MODE
+
 /*!
  * @}
  */

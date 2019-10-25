@@ -1,3 +1,7 @@
+###############################################################################
+#                   This file is part of HILUCSI project                      #
+###############################################################################
+
 # automatic makefile for unit testing
 # authors:
 #		Qiao,
@@ -15,6 +19,11 @@ ifneq ($(LAPACK_LIB),)
 # add lapack blas libraries, use generic libraries for testing
 	LIBS += $(LAPACK_LIB)
 endif
+# Default, we use built-in assertions, set to 1 for sanitizer
+DEBUG_ = 
+ifeq ($(DEBUG),1)
+	DEBUG_ += -DNDEBUG -fno-omit-frame-pointer -fsanitize=address
+endif
 .PHONY: clean
 .PRECIOUS: $(EXECS)
 
@@ -25,7 +34,7 @@ test_%: test_%.exe
 
 define MAKE_EXE_RULE =
 $(1).exe: $(1).cpp common.hpp $$(shell ./get_deps.sh $(1))
-	$(CXX) $(CXXFLAGS) $$< -o $$@ $(LIBS) $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) $(DEBUG_) $$< -o $$@ $(LIBS) $(LDFLAGS)
 endef
 
 $(foreach test,$(TESTS),$(eval $(call MAKE_EXE_RULE, $(test))))

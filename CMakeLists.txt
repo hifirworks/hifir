@@ -105,6 +105,7 @@ set(HILUCSI_RESERVE_FAC 5 CACHE STRING "Space ratio (wrt input) reserved for L a
 set(HILUCSI_LASTLEVEL_DENSE_SIZE 1500 CACHE STRING "Static size for switching to dense level")
 set(HILUCSI_LASTLEVEL_SPARSE_SIZE 15000 CACHE STRING "Static size for switching to complete sparse level")
 set(HILUCSI_MIN_LOCAL_SIZE_PERCTG 85 CACHE STRING "Average percentage for local row/column sizes used in space dropping")
+set(HILUCSI_DENSE_MODE 1 CACHE STRING "Dense solve mode LU (1, default) or QRCP (2)")
 
 configure_file(${HILUCSI_MOD_PATH}/macros.hpp.in ${HILUCSI_BUILD_DIR}/hilucsi/macros.hpp)
 

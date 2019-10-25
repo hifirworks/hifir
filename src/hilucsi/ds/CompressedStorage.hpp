@@ -30,6 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define _HILUCSI_DS_COMPRESSEDSTORAGE_HPP
 
 #include <algorithm>
+#include <iterator>
 #include <type_traits>
 #include <utility>
 
@@ -1062,23 +1063,6 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
     scale_diag_right(t);
   }
 
-  /// \brief matrix vector multiplication (low level API)
-  /// \param[in] x input array pointer
-  /// \param[out] y output array pointer
-  /// \warning User's responsibility to maintain valid pointers
-  inline void mv_nt_low(const value_type *x, value_type *y) const {
-    for (size_type i = 0u; i < _psize; ++i) {
-      y[i]       = 0;
-      auto v_itr = _base::val_cbegin(i);
-      auto i_itr = col_ind_cbegin(i);
-      for (auto last = col_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
-        hilucsi_assert(size_type(*i_itr) < _ncols, "%zd exceeds column size",
-                       size_type(*i_itr));
-        y[i] += *v_itr * x[*i_itr];
-      }
-    }
-  }
-
   /// \brief matrix vector multiplication with different value type
   /// \tparam Vx other value type for \a x
   /// \tparam Vy other value type for \a y
@@ -1087,26 +1071,8 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \warning User's responsibility to maintain valid pointers
   template <class Vx, class Vy>
   inline void mv_nt_low(const Vx *x, Vy *y) const {
+    mv_nt_low(x, size_type(0), _psize, y);
     for (size_type i = 0u; i < _psize; ++i) {
-      y[i]       = 0;
-      auto v_itr = _base::val_cbegin(i);
-      auto i_itr = col_ind_cbegin(i);
-      for (auto last = col_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
-        hilucsi_assert(size_type(*i_itr) < _ncols, "%zd exceeds column size",
-                       size_type(*i_itr));
-        y[i] += *v_itr * x[*i_itr];
-      }
-    }
-  }
-
-  /// \brief matrix vector for kernel MT compatibility (CRS only)
-  /// \param[in] x input array pointer
-  /// \param[in] istart index start
-  /// \param[in] len local length
-  /// \param[out] y output array (only \a [istart,istart+len) are ref-ed)
-  inline void mv_nt_low(const value_type *x, const size_type istart,
-                        const size_type len, value_type *y) const {
-    for (size_type i = istart, n = istart + len; i < n; ++i) {
       y[i]       = 0;
       auto v_itr = _base::val_cbegin(i);
       auto i_itr = col_ind_cbegin(i);
@@ -1173,25 +1139,6 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
     mv_nt_low(x.data(), istart, len, y.data());
   }
 
-  /// \brief matrix transpose vector multiplication (low level API)
-  /// \param[in] x input array pointer
-  /// \param[out] y output array pointer
-  /// \warning User's responsibility to maintain valid pointers
-  inline void mv_t_low(const value_type *x, value_type *y) const {
-    if (!_psize) return;
-    std::fill_n(y, ncols(), value_type(0));
-    for (size_type i = 0u; i < _psize; ++i) {
-      const auto temp  = x[i];
-      auto       v_itr = _base::val_cbegin(i);
-      auto       i_itr = col_ind_cbegin(i);
-      for (auto last = col_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
-        const size_type j = *i_itr;
-        hilucsi_assert(j < _ncols, "%zd exceeds column size", j);
-        y[j] += *v_itr * temp;
-      }
-    }
-  }
-
   /// \brief matrix transpose vector multiplication with different type
   /// \tparam Vx other value type for \a x
   /// \tparam Vy other value type for \a y
@@ -1238,6 +1185,48 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   template <class IArray, class OArray>
   inline void mv(const IArray &x, OArray &y, bool tran = false) const {
     !tran ? mv_nt(x, y) : mv_t(x, y);
+  }
+
+  /// \brief Assume as a strict lower matrix and solve with forward sub
+  /// \tparam RhsType Rhs type
+  /// \param[in,out] y Input rhs, output solution
+  /// \note Advanced use for preconditioner solve.
+  /// \sa solve_as_strict_upper
+  template <class RhsType>
+  inline void solve_as_strict_lower(RhsType &y) const {
+    // retrieve value type from rhs
+    using value_type_ = typename std::remove_reference<decltype(y[0])>::type;
+    for (size_type j(1); j < _psize; ++j) {
+      auto itr   = col_ind_cbegin(j);
+      auto v_itr = _base::val_cbegin(j);
+      typename std::conditional<(sizeof(value_type_) < sizeof(value_type)),
+                                value_type, value_type_>::type tmp(0);
+      for (auto last = col_ind_cend(j); itr != last; ++itr, ++v_itr)
+        tmp += *v_itr * y[*itr];
+      y[j] -= tmp;
+    }
+  }
+
+  /// \brief Assume as a strict upper matrix and solve with backward sub
+  /// \tparam RhsType Rhs type
+  /// \param[in,out] y Input rhs, output solution
+  /// \note Advanced use for preconditioner solve.
+  /// \sa solve_as_strict_lower
+  template <class RhsType>
+  inline void solve_as_strict_upper(RhsType &y) const {
+    // retrieve value type from rhs
+    using value_type_ = typename std::remove_reference<decltype(y[0])>::type;
+    hilucsi_assert(_psize, "cannot be empty");
+    for (size_type j = _psize - 1; j != 0u; --j) {
+      const size_type j1    = j - 1;
+      auto            itr   = col_ind_cbegin(j1);
+      auto            v_itr = _base::val_cbegin(j1);
+      typename std::conditional<(sizeof(value_type_) < sizeof(value_type)),
+                                value_type, value_type_>::type tmp(0);
+      for (auto last = col_ind_cend(j1); itr != last; ++itr, ++v_itr)
+        tmp += *v_itr * y[*itr];
+      y[j1] -= tmp;
+    }
   }
 
   /// \brief read a native binary file
@@ -1798,25 +1787,6 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
     scale_diag_right(t);
   }
 
-  /// \brief matrix vector multiplication (low level API)
-  /// \param[in] x input array pointer
-  /// \param[out] y output array pointer
-  /// \warning User's responsibilty to ensure valid pointers
-  inline void mv_nt_low(const value_type *x, value_type *y) const {
-    if (!_psize) return;
-    std::fill_n(y, nrows(), 0);
-    for (size_type i = 0u; i < _psize; ++i) {
-      const auto temp  = x[i];
-      auto       v_itr = _base::val_cbegin(i);
-      auto       i_itr = row_ind_cbegin(i);
-      for (auto last = row_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
-        hilucsi_assert(size_type(*i_itr) < _nrows, "%zd exceeds the size bound",
-                       size_type(*i_itr));
-        y[*i_itr] += temp * *v_itr;
-      }
-    }
-  }
-
   /// \brief matrix vector multiplication with different value type
   /// \tparam Vx other value type for \a x
   /// \tparam Vy other value type for \a y
@@ -1850,23 +1820,6 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
     hilucsi_error_if(nrows() != y.size() || ncols() != x.size(),
                      "matrix vector unmatched sizes!");
     mv_nt_low(x.data(), y.data());
-  }
-
-  /// \brief matrix transpose vector multiplication (low level API)
-  /// \param[in] x input array pointer
-  /// \param[out] y output array pointer
-  /// \warning User's responsibilty to ensure valid pointers
-  inline void mv_t_low(const value_type *x, value_type *y) const {
-    for (size_type i = 0u; i < _psize; ++i) {
-      y[i]       = 0;
-      auto v_itr = _base::val_cbegin(i);
-      auto i_itr = row_ind_cbegin(i);
-      for (auto last = row_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
-        hilucsi_assert(size_type(*i_itr) < _nrows, "%zd exceeds the size bound",
-                       size_type(*i_itr));
-        y[i] += x[*i_itr] * *v_itr;
-      }
-    }
   }
 
   /// \brief matrix transpose vector multiplication with different type
@@ -1912,6 +1865,45 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   template <class IArray, class OArray>
   inline void mv(const IArray &x, OArray &y, bool tran = false) const {
     !tran ? mv_nt(x, y) : mv_t(x, y);
+  }
+
+  /// \brief Assume as a strict lower matrix and solve with forward sub
+  /// \tparam RhsType Rhs type
+  /// \param[in,out] y Input rhs, output solution
+  /// \note Advanced use for preconditioner solve.
+  /// \sa solve_as_strict_upper
+  template <class RhsType>
+  inline void solve_as_strict_lower(RhsType &y) const {
+    for (size_type j(0); j < _psize; ++j) {
+      const auto y_j   = y[j];
+      auto       itr   = row_ind_cbegin(j);
+      auto       v_itr = _base::val_cbegin(j);
+      for (auto last = row_ind_cend(j); itr != last; ++itr, ++v_itr) {
+        hilucsi_assert(size_type(*itr) < _psize, "%zd exceeds system size %zd",
+                       size_type(*itr), _psize);
+        y[*itr] -= *v_itr * y_j;
+      }
+    }
+  }
+
+  /// \brief Assume as a strict upper matrix and solve with backward sub
+  /// \tparam RhsType Rhs type
+  /// \param[in,out] y Input rhs, output solution
+  /// \note Advanced use for preconditioner solve.
+  /// \sa solve_as_strict_lower
+  template <class RhsType>
+  inline void solve_as_strict_upper(RhsType &y) const {
+    using rev_iterator   = std::reverse_iterator<const_i_iterator>;
+    using rev_v_iterator = std::reverse_iterator<const_v_iterator>;
+
+    for (size_type j(_psize - 1); j != 0u; --j) {
+      const auto y_j   = y[j];
+      auto       itr   = rev_iterator(row_ind_cend(j));
+      auto       v_itr = rev_v_iterator(_base::val_cend(j));
+      for (auto last = rev_iterator(row_ind_cbegin(j)); itr != last;
+           ++itr, ++v_itr)
+        y[*itr] -= *v_itr * y_j;
+    }
   }
 
   /// \brief read a native HILUCSI binary file
