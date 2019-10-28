@@ -9,7 +9,6 @@
 #include "hilucsi/utils/stacktrace.hpp"
 
 #include <gtest/gtest.h>
-#include <regex>
 
 #define TAG "stack trace:"
 
@@ -37,10 +36,9 @@ TEST(StackTrace, test) {
     foo2(v);
   } catch (const std::runtime_error &e) {
 #ifdef __GNUC__
-    const char *msg = e.what();
-    std::regex  st(TAG "*");
-    std::cmatch mt;
-    const bool  found = std::regex_search(msg, mt, st);
+    const std::string msg   = e.what();
+    const auto        n     = msg.find(TAG);
+    const bool        found = n != std::string::npos;
     ASSERT_TRUE(found);
 #else
     psmilu_warning("stack trace test only avail on Linux");
