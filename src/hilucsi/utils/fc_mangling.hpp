@@ -31,6 +31,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _HILUCSI_UTILS_FCMANGLING_HPP
 #define _HILUCSI_UTILS_FCMANGLING_HPP
 
+// handle MKL
+#if HILUCSI_HAS_MKL
+#  ifdef HILUCSI_FC
+#    undef HILUCSI_FC
+#  endif
+#  define HILUCSI_FC(l, U) l
+#endif  // HILUCSI_HAS_MKL
+
 #ifndef HILUCSI_FC
 #  ifdef HILUCSI_FC_UPPER
 #    ifdef HILUCSI_FC_APPEND_
