@@ -324,10 +324,9 @@ class HILUCSI {
   }
 
   /// \brief optimization a priori
-  /// \param[in] expected_calls used in MKL (if enabled)
-  inline void optimize(const size_type expected_calls = -1) {
-    if (prec_type::OPTIMIZE_FLAG)
-      for (auto &prec : _precs) prec.optimize(expected_calls);
+  /// \param[in] tag optimization tag
+  inline void optimize(const int tag = 0) {
+    for (auto &prec : _precs) prec.optimize(tag);
   }
 
   /// \brief solve \f$\mathbf{x}=\mathbf{M}^{-1}\mathbf{b}\f$

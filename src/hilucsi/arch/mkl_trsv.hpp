@@ -72,6 +72,7 @@ inline const char *mkl_status_name(const sparse_status_t status) {
 /// \brief Triangular solver with MKL enhanced on CPU
 /// \tparam ValueType value type, either \a double or \a float
 /// \tparam IndexType index type, better to be MKL_INT (int)
+/// \ingroup mt
 template <class ValueType, class IndexType>
 class MKL_SpTrSolver {
   static_assert(std::is_floating_point<ValueType>::value &&
@@ -130,7 +131,10 @@ class MKL_SpTrSolver {
   // interface compatibility
   inline size_type nrows() const { return _work.size(); }
   inline size_type ncols() const { return _work.size(); }
-  inline bool      empty() const { return _handle && _work.size(); }
+  inline bool      empty() const {
+    if (!_handle) return true;
+    return !_work.size();
+  }
 
   /// \brief optimize the solver with hints
   /// \tparam IsUpper flag indicating upper or lower cases

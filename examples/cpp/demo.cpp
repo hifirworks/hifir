@@ -199,7 +199,7 @@ int main(int argc, char *argv[]) {
       timer.time());
 
   timer.start();
-  M.optimize(50);
+  M.optimize();
   timer.finish();
   hilucsi_info(
       "\nOptimization preconditioner done!\n"
