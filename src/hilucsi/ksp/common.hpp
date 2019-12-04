@@ -36,6 +36,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <type_traits>
 
 #include "hilucsi/ds/Array.hpp"
+#include "hilucsi/ds/CompressedStorage.hpp"
 #include "hilucsi/utils/common.hpp"
 
 namespace hilucsi {
@@ -190,7 +191,8 @@ class JacobiBase {
       std::copy(x.cbegin(), x.cend(), _xk.begin());
       if (iters) {
         // compute A*xk=x
-        A.mv(_xk, x);
+        mt::mv_nt(A, _xk, x);
+        // A.mv(_xk, x);
         // compute residual x=b-x
         for (size_type i(0); i < n; ++i) x[i] = b[i] - x[i];
       } else
