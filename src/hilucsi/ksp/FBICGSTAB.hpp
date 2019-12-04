@@ -155,7 +155,8 @@ class FBICGSTAB
     if (zero_start)
       std::copy(b.cbegin(), b.cend(), _r.begin());
     else {
-      A.mv(x, _r);
+      mt::mv_nt(A, x, _r);
+      // A.mv(x, _r);
       for (size_type i(0); i < n; ++i) _r[i] = b[i] - _r[i];
     }
     if ((_resids[0] = norm2(_r) / normb) <= rtol)
@@ -189,7 +190,8 @@ class FBICGSTAB
         flag = M_SOLVE_ERROR;
         break;
       }
-      A.mv(_p_hat, _v);
+      mt::mv_nt(A, _p_hat, _v);
+      // A.mv(_p_hat, _v);
       alpha = rho / inner(r_tld, _v);
       for (size_type i(0); i < n; ++i) {
         x[i] += alpha * _p_hat[i];
@@ -213,7 +215,8 @@ class FBICGSTAB
         flag = M_SOLVE_ERROR;
         break;
       }
-      A.mv(_p_hat, _v);
+      mt::mv_nt(A, _p_hat, _v);
+      // A.mv(_p_hat, _v);
       omega = inner(_v, _s) / norm2_sq(_v);
       for (size_type i(0); i < n; ++i) {
         x[i] += omega * _p_hat[i];

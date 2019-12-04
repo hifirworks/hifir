@@ -1010,12 +1010,26 @@ inline CsType level_factorize(const CsType &                   A,
   crs_type S;
 
   const auto L_nnz = L.nnz(), U_nnz = U.nnz();
-  ccs_type   L_B, U_B;
+
+  // NOTE if we build with MKL sparse enhancement, then we use CRS to store
+  // L_B and U_B. Otherwise, we use CCS. Notice that this is defined exactly
+  // the same as in Prec.
+#if HILUCSI_HAS_SPARSE_MKL
+  // for MKL, use CRS
+  crs_type L_B, U_B;
+#else
+  // for non-mkl sparse, use ccs as defined in Prec
+  ccs_type L_B, U_B;
+#endif
   do {
     DefaultTimer timer2;
     timer2.start();
     auto L_E = L.template split_crs<true>(m, L_start);
-    L_B      = L.template split<false>(m, L_start);
+#if HILUCSI_HAS_SPARSE_MKL
+    L_B = L.template split_crs<false>(m, L_start);
+#else
+    L_B = L.template split<false>(m, L_start);
+#endif
     L.destroy();
     timer2.finish();
     if (hilucsi_verbose(INFO, opts))
@@ -1024,7 +1038,11 @@ inline CsType level_factorize(const CsType &                   A,
     do {
       timer2.start();
       auto U_F2 = U.template split_ccs<true>(m, U_start);
-      U_B       = U.template split_ccs<false>(m, U_start);
+#if HILUCSI_HAS_SPARSE_MKL
+      U_B = U.template split<false>(m, U_start);
+#else
+      U_B = U.template split_ccs<false>(m, U_start);
+#endif
       U.destroy();
       timer2.finish();
       if (hilucsi_verbose(INFO, opts))
@@ -1143,7 +1161,10 @@ inline CsType level_factorize(const CsType &                   A,
                      std::move(p()), std::move(q.inv()));
 
   // report if using interval based data structures
-  if (hilucsi_verbose(INFO, opts)) precs.back().report_status();
+  if (hilucsi_verbose(INFO, opts)) {
+    precs.back().report_status_lu();
+    precs.back().report_status_ef();
+  }
 
   // if dense is not empty, then push it back
   if (!S_D.empty()) {

@@ -141,9 +141,10 @@ class MUMPS {
   /// we modify some utility configurations based on runtime or compilation
   /// options.
   explicit MUMPS(const bool verbose = true, int threads = 1) {
-    _handle.par = 1;   // host has data
-    _handle.sym = 0;   // general systems
-    _handle.job = -1;  // initialization stage
+    _handle.par          = 1;        // host has data
+    _handle.sym          = 0;        // general systems
+    _handle.job          = -1;       // initialization stage
+    _handle.comm_fortran = -987654;  // communicator for MPI build
     _trait::call_mumps(_handle);
     set_info(verbose, threads);
     // apply at most 3 iterative refinement

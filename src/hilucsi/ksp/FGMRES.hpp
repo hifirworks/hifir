@@ -193,7 +193,8 @@ class FGMRES
              "Couldn\'t solve with %d restarts.", restart);
       // initial residual
       if (iter || !zero_start) {
-        A.mv(x, _v);
+        // A.mv(x, _v);
+        mt::mv_nt(A, x, _v);
         for (size_type i = 0u; i < n; ++i) _v[i] = b[i] - _v[i];
       } else
         std::copy_n(b.cbegin(), n, _v.begin());
@@ -215,7 +216,8 @@ class FGMRES
           break;
         }
         std::copy(_w.cbegin(), _w.cend(), _Z.begin() + jn);
-        A.mv(_w, _v);
+        // A.mv(_w, _v);
+        mt::mv_nt(A, _w, _v);
         if (n < (size_type)restart) _w.resize(restart);
         for (size_type k = 0u; k <= j; ++k) {
           auto itr       = _Q.cbegin() + k * n;

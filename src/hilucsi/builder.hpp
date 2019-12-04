@@ -75,7 +75,7 @@ static bool introduced = false;
 /// \class HILUCSI
 /// \tparam ValueType numerical value type, e.g. \a double
 /// \tparam IndexType index type, e.g. \a int
-/// \tparam IntervalBased default is true, using interval based
+/// \tparam IntervalBased default is \a false, disabling interval based
 ///
 /// This is top user interface (C++); it is designed as a preconditioner that
 /// can be easily plugin other codes. There are two core member functions, 1)
@@ -99,7 +99,7 @@ static bool introduced = false;
 ///     builder.solve(...);
 ///   }
 /// \endcode
-template <class ValueType, class IndexType, bool IntervalBased = true>
+template <class ValueType, class IndexType, bool IntervalBased = false>
 class HILUCSI {
  public:
   typedef ValueType                     value_type;   ///< value type
@@ -321,6 +321,13 @@ class HILUCSI {
     const foreign_cs_type A(n, (IndexType_ *)indptr, (IndexType_ *)indices,
                             (ValueType_ *)vals, true);
     factorize(A, m0, opts);
+  }
+
+  /// \brief optimization a priori
+  /// \param[in] expected_calls used in MKL (if enabled)
+  inline void optimize(const size_type expected_calls = -1) {
+    if (prec_type::OPTIMIZE_FLAG)
+      for (auto &prec : _precs) prec.optimize(expected_calls);
   }
 
   /// \brief solve \f$\mathbf{x}=\mathbf{M}^{-1}\mathbf{b}\f$
