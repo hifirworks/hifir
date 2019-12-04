@@ -30,6 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define _HILUCSI_ARCH_MKLTRSV_HPP
 
 #include <algorithm>
+#include <limits>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -101,12 +102,9 @@ class MKL_SpTrSolver {
   /// \param[in] rowptr row pointer
   /// \param[in] colind column indices
   /// \param[in] vals values
-  /// \param[in] is_upper is upper matrix
   inline void setup(const index_array &rowptr, const index_array &colind,
-                    const value_array &vals, const bool is_upper) {
+                    const value_array &vals) {
     _create_mkl_sparse(rowptr, colind, vals.data());
-    // optimize
-    _optimize(is_upper);
   }
 
   /// \brief solve as strict lower
@@ -132,6 +130,35 @@ class MKL_SpTrSolver {
   // interface compatibility
   inline size_type nrows() const { return _work.size(); }
   inline size_type ncols() const { return _work.size(); }
+  inline bool      empty() const { return _handle && _work.size(); }
+
+  /// \brief optimize the solver with hints
+  /// \tparam IsUpper flag indicating upper or lower cases
+  /// \param[in] expected_calls expected calls, default is max in \a MKL_INT
+  template <bool IsUpper>
+  inline void optimize(
+      const MKL_INT expected_calls = std::numeric_limits<MKL_INT>::max()) {
+    // pre-tabulated constant flags
+    static const sparse_operation_t no_tran    = SPARSE_OPERATION_NON_TRANSPOSE;
+    static const matrix_descr       upper_desc = {.type =
+                                                SPARSE_MATRIX_TYPE_TRIANGULAR,
+                                            .mode = SPARSE_FILL_MODE_UPPER,
+                                            .diag = SPARSE_DIAG_UNIT},
+                              lower_desc       = {
+                                  .type = SPARSE_MATRIX_TYPE_TRIANGULAR,
+                                  .mode = SPARSE_FILL_MODE_LOWER,
+                                  .diag = SPARSE_DIAG_UNIT};
+    const auto hint_status = mkl_sparse_set_sv_hint(
+        _handle, no_tran, IsUpper ? upper_desc : lower_desc, expected_calls);
+    hilucsi_error_if(hint_status != SPARSE_STATUS_SUCCESS,
+                     "MKL spblas returned error %s",
+                     internal::mkl_status_name(hint_status));
+    // optimize
+    const auto opt_status = mkl_sparse_optimize(_handle);
+    hilucsi_error_if(opt_status != SPARSE_STATUS_SUCCESS,
+                     "MKL spblas returned error %s",
+                     internal::mkl_status_name(opt_status));
+  }
 
  protected:
   /// \brief initialize workspace
@@ -194,31 +221,6 @@ class MKL_SpTrSolver {
     hilucsi_error_if(status != SPARSE_STATUS_SUCCESS,
                      "MKL spblas returned error %s",
                      internal::mkl_status_name(status));
-  }
-
-  /// \brief optimize the interface
-  /// \param[in] is_upper flag to indicate if upper matrix
-  inline void _optimize(const bool is_upper) const {
-    // pre-tabulated constant flags
-    static const sparse_operation_t no_tran    = SPARSE_OPERATION_NON_TRANSPOSE;
-    static const matrix_descr       upper_desc = {.type =
-                                                SPARSE_MATRIX_TYPE_TRIANGULAR,
-                                            .mode = SPARSE_FILL_MODE_UPPER,
-                                            .diag = SPARSE_DIAG_UNIT},
-                              lower_desc       = {
-                                  .type = SPARSE_MATRIX_TYPE_TRIANGULAR,
-                                  .mode = SPARSE_FILL_MODE_LOWER,
-                                  .diag = SPARSE_DIAG_UNIT};
-    const auto hint_status = mkl_sparse_set_sv_hint(
-        _handle, no_tran, is_upper ? upper_desc : lower_desc, 1);
-    hilucsi_error_if(hint_status != SPARSE_STATUS_SUCCESS,
-                     "MKL spblas returned error %s",
-                     internal::mkl_status_name(hint_status));
-    // optimize
-    const auto opt_status = mkl_sparse_optimize(_handle);
-    hilucsi_error_if(opt_status != SPARSE_STATUS_SUCCESS,
-                     "MKL spblas returned error %s",
-                     internal::mkl_status_name(opt_status));
   }
 
   /// \brief perform triangular upper solve as double precision

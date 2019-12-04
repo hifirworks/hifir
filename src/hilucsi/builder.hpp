@@ -323,6 +323,13 @@ class HILUCSI {
     factorize(A, m0, opts);
   }
 
+  /// \brief optimization a priori
+  /// \param[in] expected_calls used in MKL (if enabled)
+  inline void optimize(const size_type expected_calls = -1) {
+    if (prec_type::OPTIMIZE_FLAG)
+      for (auto &prec : _precs) prec.optimize(expected_calls);
+  }
+
   /// \brief solve \f$\mathbf{x}=\mathbf{M}^{-1}\mathbf{b}\f$
   /// \tparam RhsType right-hand side type
   /// \tparam SolType solution type

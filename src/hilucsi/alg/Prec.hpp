@@ -86,11 +86,13 @@ struct Prec {
       INTERVAL_BASED, typename using_interval_from_classical<mat_type>::type,
       mat_type>::type;  ///< data matrix type
 #if HILUCSI_HAS_SPARSE_MKL
-  using tri_mat_type           = crs_type;      ///< triangular matrix type
-  using tri_mat_interface_type = tri_mat_type;  ///< interface type
+  using tri_mat_type                  = crs_type;
+  using tri_mat_interface_type        = tri_mat_type;
+  constexpr static bool OPTIMIZE_FLAG = true;
 #else
-  using tri_mat_type           = data_mat_type;
-  using tri_mat_interface_type = mat_type;
+  using tri_mat_type           = data_mat_type;  ///< triangular matrix type
+  using tri_mat_interface_type = mat_type;       ///< interface type
+  constexpr static bool OPTIMIZE_FLAG = false;   ///< optimization flag
 #endif
 
  private:
@@ -133,12 +135,7 @@ struct Prec {
         s(std::move(S)),
         t(std::move(T)),
         p(std::move(P)),
-        q_inv(std::move(Q_inv)) {
-#if HILUCSI_HAS_SPARSE_MKL
-    mkl_L.setup(L_B.row_start(), L_B.col_ind(), L_B.vals(), false);
-    mkl_U.setup(U_B.row_start(), U_B.col_ind(), U_B.vals(), true);
-#endif
-  }
+        q_inv(std::move(Q_inv)) {}
 
   /// \brief get number of nonzeros
   inline size_type nnz() const {
@@ -245,9 +242,21 @@ struct Prec {
     t     = std::move(T);
     p     = std::move(P);
     q_inv = std::move(Q_inv);
+  }
+
+  /// \brief a priori optimization
+  /// \param[in] expected_calls number of calls
+  inline void optimize(const size_type expected_calls = -1) {
 #if HILUCSI_HAS_SPARSE_MKL
-    mkl_L.setup(L_B.row_start(), L_B.col_ind(), L_B.vals(), false);
-    mkl_U.setup(U_B.row_start(), U_B.col_ind(), U_B.vals(), true);
+    mkl_L.setup(L_B.row_start(), L_B.col_ind(), L_B.vals());
+    mkl_U.setup(U_B.row_start(), U_B.col_ind(), U_B.vals());
+    const MKL_INT exp_calls = expected_calls == (size_type)-1
+                                  ? std::numeric_limits<MKL_INT>::max()
+                                  : expected_calls;
+    mkl_L.template optimize<false>(exp_calls);
+    mkl_U.template optimize<true>(exp_calls);
+#else
+    (void)expected_calls;
 #endif
   }
 

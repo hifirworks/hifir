@@ -282,10 +282,12 @@ inline void prec_solve(PrecItr prec_itr, const RhsType &b, SolType &y,
   if (nm) {
 // solve for work(1:m)=inv(U)*inv(B)*inv(L)*work(1:m), this is done inplace
 #if HILUCSI_HAS_SPARSE_MKL
-    internal::prec_solve_udl_inv(prec.mkl_U, prec.d_B, prec.mkl_L, work);
-#else
-    internal::prec_solve_udl_inv(prec.U_B, prec.d_B, prec.L_B, work);
+    if (!prec.mkl_U.empty())
+      internal::prec_solve_udl_inv(prec.mkl_U, prec.d_B, prec.mkl_L, work);
+    else
 #endif
+      internal::prec_solve_udl_inv(prec.U_B, prec.d_B, prec.L_B, work);
+
     // then compute y(m+1:n) = E*work(1:m)
     prec.E.mv_nt_low(&work[0], y.data() + m);
     // then subtract b from the y(m+1:n)
@@ -332,10 +334,11 @@ inline void prec_solve(PrecItr prec_itr, const RhsType &b, SolType &y,
 
 // solve for work(1:m)=inv(U)*inv(B)*inv(L)*work(1:m), inplace
 #if HILUCSI_HAS_SPARSE_MKL
-  internal::prec_solve_udl_inv(prec.mkl_U, prec.d_B, prec.mkl_L, work);
-#else
-  internal::prec_solve_udl_inv(prec.U_B, prec.d_B, prec.L_B, work);
+  if (!prec.mkl_U.empty())
+    internal::prec_solve_udl_inv(prec.mkl_U, prec.d_B, prec.mkl_L, work);
+  else
 #endif
+    internal::prec_solve_udl_inv(prec.U_B, prec.d_B, prec.L_B, work);
 
   // Now, we have work(1:n) storing the complete solution before final scaling
   // and permutation
