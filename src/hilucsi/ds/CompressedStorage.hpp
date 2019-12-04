@@ -1074,14 +1074,15 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   inline void mv_nt_low(const Vx *x, Vy *y) const {
     mv_nt_low(x, size_type(0), _psize, y);
     for (size_type i = 0u; i < _psize; ++i) {
-      y[i]       = 0;
       auto v_itr = _base::val_cbegin(i);
       auto i_itr = col_ind_cbegin(i);
+      Vy   tmp(0);
       for (auto last = col_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
         hilucsi_assert(size_type(*i_itr) < _ncols, "%zd exceeds column size",
                        size_type(*i_itr));
-        y[i] += *v_itr * x[*i_itr];
+        tmp += *v_itr * x[*i_itr];
       }
+      y[i] = tmp;
     }
   }
 
@@ -1096,14 +1097,15 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   inline void mv_nt_low(const Vx *x, const size_type istart,
                         const size_type len, Vy *y) const {
     for (size_type i = istart, n = istart + len; i < n; ++i) {
-      y[i]       = 0;
+      Vy   tmp(0);
       auto v_itr = _base::val_cbegin(i);
       auto i_itr = col_ind_cbegin(i);
       for (auto last = col_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
         hilucsi_assert(size_type(*i_itr) < _ncols, "%zd exceeds column size",
                        size_type(*i_itr));
-        y[i] += *v_itr * x[*i_itr];
+        tmp += *v_itr * x[*i_itr];
       }
+      y[i] = tmp;
     }
   }
 
@@ -2095,6 +2097,11 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
 
 namespace mt {
 
+/*!
+ * \addtogroup ds
+ * @{
+ */
+
 /// \brief matrix vector in parallel with openmp
 /// \tparam CsType compressed storage type, e.g. \a CRS
 /// \tparam IArray input array type
@@ -2110,7 +2117,7 @@ inline typename std::enable_if<CsType::ROW_MAJOR, T>::type mv_nt(
                    "matrix vector multiplication unmatched sizes!");
   int nthreads = get_nthreads();
   if (nthreads == 0) nthreads = get_nthreads(-1);
-  if (nthreads == 1 || (A.nrows() < 5000u && A.nnz() / (double)A.nrows() <= 20))
+  if (nthreads == 1 || (A.nrows() < 1000u && A.nnz() / (double)A.nrows() <= 20))
     return A.mv_nt(x, y);
 #ifdef _OPENMP
 #  pragma omp parallel num_threads(nthreads)
@@ -2121,12 +2128,47 @@ inline typename std::enable_if<CsType::ROW_MAJOR, T>::type mv_nt(
   } while (false);  // parallel region
 }
 
+/// \brief matrix vector in parallel with openmp
+/// \tparam CsType compressed storage type, e.g. \a CRS
+/// \tparam Vx other value type for \a x
+/// \tparam Vy other value type for \a y
+/// \param[in] A input matrix
+/// \param[in] x input array
+/// \param[out] y output array
+/// \note Sizes must match
+template <class CsType, class Vx, class Vy, typename T = void>
+inline typename std::enable_if<CsType::ROW_MAJOR, T>::type mv_nt_low(
+    const CsType &A, const Vx *x, Vy *y) {
+  int nthreads = get_nthreads();
+  if (nthreads == 0) nthreads = get_nthreads(-1);
+  if (nthreads == 1 || (A.nrows() < 1000u && A.nnz() / (double)A.nrows() <= 20))
+    return A.mv_nt_low(x, y);
+#ifdef _OPENMP
+#  pragma omp parallel num_threads(nthreads)
+#endif
+  do {
+    const auto part = uniform_partition(A.nrows(), nthreads, get_thread());
+    A.mv_nt_low(x, part.first, part.second - part.first, y);
+  } while (false);  // parallel region
+}
+
 /// \brief CCS API compatibility
 template <class CsType, class IArray, class OArray, typename T = void>
 inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type mv_nt(
     const CsType &A, const IArray &x, OArray &y) {
   return A.mv_nt(x, y);
 }
+
+/// \brief CCS API compatibility
+template <class CsType, class Vx, class Vy, typename T = void>
+inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type mv_nt_low(
+    const CsType &A, const Vx *x, Vy *y) {
+  A.mv_nt_low(x, y);
+}
+
+/*!
+ * @}
+ */
 
 }  // namespace mt
 
