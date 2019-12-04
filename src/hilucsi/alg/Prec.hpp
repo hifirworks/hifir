@@ -41,6 +41,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #if HILUCSI_HAS_SPARSE_MKL
 #  include "hilucsi/arch/mkl_trsv.hpp"
 #endif
+#include "hilucsi/arch/ls_trsv.hpp"
 
 namespace hilucsi {
 
@@ -78,22 +79,15 @@ struct Prec {
 #ifdef HILUCSI_ENABLE_MUMPS
   using sparse_direct_type = MUMPS<ValueType>;
 #else
-  using sparse_direct_type     = internal::DummySparseSolver;
+  using sparse_direct_type = internal::DummySparseSolver;
 #endif                                                   // HILUCSI_ENABLE_MUMPS
   static constexpr char EMPTY_PREC     = '\0';           ///< empty prec
   static constexpr bool INTERVAL_BASED = IntervalBased;  ///< interval
   using data_mat_type                  = typename std::conditional<
       INTERVAL_BASED, typename using_interval_from_classical<mat_type>::type,
-      mat_type>::type;  ///< data matrix type
-#if HILUCSI_HAS_SPARSE_MKL
-  using tri_mat_type                  = crs_type;
-  using tri_mat_interface_type        = tri_mat_type;
-  constexpr static bool OPTIMIZE_FLAG = true;
-#else
-  using tri_mat_type           = data_mat_type;  ///< triangular matrix type
-  using tri_mat_interface_type = mat_type;       ///< interface type
-  constexpr static bool OPTIMIZE_FLAG = false;   ///< optimization flag
-#endif
+      mat_type>::type;         ///< data matrix type
+  using tri_mat_type           = crs_type;      ///< triangular matrix type
+  using tri_mat_interface_type = tri_mat_type;  ///< interface type
 
  private:
   typedef SmallScaleSolverTrait<SMALLSCALE_LUP> _sss_trait;
@@ -245,18 +239,24 @@ struct Prec {
   }
 
   /// \brief a priori optimization
-  /// \param[in] expected_calls number of calls
-  inline void optimize(const size_type expected_calls = -1) {
+  /// \param[in] tag optimization tag
+  inline void optimize(const int tag = 0) {
+    if (!tag) {
+      ls_L.setup(L_B);
+      ls_L.template optimize<false>();
+      ls_U.setup(U_B);
+      ls_U.template optimize<true>();
+    }
 #if HILUCSI_HAS_SPARSE_MKL
-    mkl_L.setup(L_B.row_start(), L_B.col_ind(), L_B.vals());
-    mkl_U.setup(U_B.row_start(), U_B.col_ind(), U_B.vals());
-    const MKL_INT exp_calls = expected_calls == (size_type)-1
-                                  ? std::numeric_limits<MKL_INT>::max()
-                                  : expected_calls;
-    mkl_L.template optimize<false>(exp_calls);
-    mkl_U.template optimize<true>(exp_calls);
+    else if (tag == 1) {
+      mkl_L.setup(L_B.row_start(), L_B.col_ind(), L_B.vals());
+      mkl_U.setup(U_B.row_start(), U_B.col_ind(), U_B.vals());
+      mkl_L.template optimize<false>(1);
+      mkl_U.template optimize<true>(1);
+    }
 #else
-    (void)expected_calls;
+    else
+      hilucsi_error("unknown optimization tag %d", tag);
 #endif
   }
 
@@ -282,8 +282,10 @@ struct Prec {
   array_type                 t;      ///< column scaling vector
   perm_type                  p;      ///< row permutation matrix
   perm_type                  q_inv;  ///< column inverse permutation matrix
-  sss_solver_type            dense_solver;   ///< dense decomposition
-  mutable sparse_direct_type sparse_solver;  ///< sparse solver
+  sss_solver_type            dense_solver;    ///< dense decomposition
+  mutable sparse_direct_type sparse_solver;   ///< sparse solver
+  LsSpTrSolver<value_type, index_type> ls_L;  ///< levelset L
+  LsSpTrSolver<value_type, index_type> ls_U;  ///< levelset U
 #if HILUCSI_HAS_SPARSE_MKL
   MKL_SpTrSolver<value_type, index_type> mkl_L;
   MKL_SpTrSolver<value_type, index_type> mkl_U;
