@@ -75,7 +75,7 @@ static bool introduced = false;
 /// \class HILUCSI
 /// \tparam ValueType numerical value type, e.g. \a double
 /// \tparam IndexType index type, e.g. \a int
-/// \tparam IntervalBased default is true, using interval based
+/// \tparam IntervalBased default is \a false, disabling interval based
 ///
 /// This is top user interface (C++); it is designed as a preconditioner that
 /// can be easily plugin other codes. There are two core member functions, 1)
@@ -99,7 +99,7 @@ static bool introduced = false;
 ///     builder.solve(...);
 ///   }
 /// \endcode
-template <class ValueType, class IndexType, bool IntervalBased = true>
+template <class ValueType, class IndexType, bool IntervalBased = false>
 class HILUCSI {
  public:
   typedef ValueType                     value_type;   ///< value type
