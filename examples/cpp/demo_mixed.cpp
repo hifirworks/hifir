@@ -198,6 +198,7 @@ int main(int argc, char *argv[]) {
       100.0 * M.nnz_EF() / M.nnz(), M.levels(), 100.0 * M.stats(5) / M.stats(4),
       timer.time());
 
+#if 0
   timer.start();
   M.optimize();
   timer.finish();
@@ -205,6 +206,7 @@ int main(int argc, char *argv[]) {
       "\nOptimization preconditioner done!\n"
       "\ttime: %.4gs\n",
       timer.time());
+#endif
 
   // solve
   timer.start();
