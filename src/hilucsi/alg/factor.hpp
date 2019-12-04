@@ -1011,12 +1011,12 @@ inline CsType level_factorize(const CsType &                   A,
 
   const auto L_nnz = L.nnz(), U_nnz = U.nnz();
 
-  crs_type L_B, U_B;
+  ccs_type L_B, U_B;
   do {
     DefaultTimer timer2;
     timer2.start();
     auto L_E = L.template split_crs<true>(m, L_start);
-    L_B      = L.template split_crs<false>(m, L_start);
+    L_B      = L.template split<false>(m, L_start);
     L.destroy();
     timer2.finish();
     if (hilucsi_verbose(INFO, opts))
@@ -1025,7 +1025,7 @@ inline CsType level_factorize(const CsType &                   A,
     do {
       timer2.start();
       auto U_F2 = U.template split_ccs<true>(m, U_start);
-      U_B       = U.template split<false>(m, U_start);
+      U_B       = U.template split_ccs<false>(m, U_start);
       U.destroy();
       timer2.finish();
       if (hilucsi_verbose(INFO, opts))

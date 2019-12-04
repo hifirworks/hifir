@@ -85,9 +85,7 @@ struct Prec {
   static constexpr bool INTERVAL_BASED = IntervalBased;  ///< interval
   using data_mat_type                  = typename std::conditional<
       INTERVAL_BASED, typename using_interval_from_classical<mat_type>::type,
-      mat_type>::type;         ///< data matrix type
-  using tri_mat_type           = crs_type;      ///< triangular matrix type
-  using tri_mat_interface_type = tri_mat_type;  ///< interface type
+      mat_type>::type;  ///< data matrix type
 
  private:
   typedef SmallScaleSolverTrait<SMALLSCALE_LUP> _sss_trait;
@@ -115,10 +113,9 @@ struct Prec {
   /// \param[in] P row permutation
   /// \param[in] Q_inv inverse column permutation
   /// \note This allows us to use emplace back in STL efficiently
-  Prec(size_type mm, size_type nn, tri_mat_interface_type &&L_b,
-       array_type &&d_b, tri_mat_interface_type &&U_b, mat_type &&e,
-       mat_type &&f, array_type &&S, array_type &&T, perm_type &&P,
-       perm_type &&Q_inv)
+  Prec(size_type mm, size_type nn, mat_type &&L_b, array_type &&d_b,
+       mat_type &&U_b, mat_type &&e, mat_type &&f, array_type &&S,
+       array_type &&T, perm_type &&P, perm_type &&Q_inv)
       : m(mm),
         n(nn),
         L_B(std::move(L_b)),
@@ -179,7 +176,7 @@ struct Prec {
 
   /// \brief report LU status with SFINAE
   template <typename T = void>
-  inline typename std::enable_if<is_interval_cs<tri_mat_type>::value, T>::type
+  inline typename std::enable_if<is_interval_cs<mat_type>::value, T>::type
   report_status_lu() const {
     static const auto report_kernel = [](const data_mat_type &mat,
                                          const char *         name) {
@@ -203,9 +200,10 @@ struct Prec {
   }
 
   template <typename T = void>
-  inline typename std::enable_if<!is_interval_cs<tri_mat_type>::value, T>::type
+  inline typename std::enable_if<!is_interval_cs<mat_type>::value, T>::type
   report_status_lu() const {}
 
+#if 0
   /// \brief enable explicitly calling move
   /// \param[in,out] L_b lower part
   /// \param[in,out] d_b diagonal
@@ -237,20 +235,23 @@ struct Prec {
     p     = std::move(P);
     q_inv = std::move(Q_inv);
   }
+#endif
 
   /// \brief a priori optimization
   /// \param[in] tag optimization tag
   inline void optimize(const int tag = 0) {
+    _L_crs = crs_type(L_B);
+    _U_crs = crs_type(U_B);
     if (!tag) {
-      ls_L.setup(L_B);
+      ls_L.setup(_L_crs);
       ls_L.template optimize<false>();
-      ls_U.setup(U_B);
+      ls_U.setup(_U_crs);
       ls_U.template optimize<true>();
     }
 #if HILUCSI_HAS_SPARSE_MKL
     else if (tag == 1) {
-      mkl_L.setup(L_B.row_start(), L_B.col_ind(), L_B.vals());
-      mkl_U.setup(U_B.row_start(), U_B.col_ind(), U_B.vals());
+      mkl_L.setup(_L_crs.row_start(), _L_crs.col_ind(), _L_crs.vals());
+      mkl_U.setup(_U_crs.row_start(), _U_crs.col_ind(), _U_crs.vals());
       mkl_L.template optimize<false>(1);
       mkl_U.template optimize<true>(1);
     }
@@ -273,17 +274,22 @@ struct Prec {
 
   size_type                  m;      ///< leading block size
   size_type                  n;      ///< system size
-  tri_mat_type               L_B;    ///< lower part of leading block
+  mat_type                   L_B;    ///< lower part of leading block
   array_type                 d_B;    ///< diagonal block of leading block
-  tri_mat_type               U_B;    ///< upper part of leading block
+  mat_type                   U_B;    ///< upper part of leading block
   data_mat_type              E;      ///< scaled and permutated E part
   data_mat_type              F;      ///< scaled and permutated F part
   array_type                 s;      ///< row scaling vector
   array_type                 t;      ///< column scaling vector
   perm_type                  p;      ///< row permutation matrix
   perm_type                  q_inv;  ///< column inverse permutation matrix
-  sss_solver_type            dense_solver;    ///< dense decomposition
-  mutable sparse_direct_type sparse_solver;   ///< sparse solver
+  sss_solver_type            dense_solver;   ///< dense decomposition
+  mutable sparse_direct_type sparse_solver;  ///< sparse solver
+
+ protected:
+  crs_type _L_crs;  ///< crs type for parallel trsv
+  crs_type _U_crs;  ///< crs type for parallel trsv
+ public:
   LsSpTrSolver<value_type, index_type> ls_L;  ///< levelset L
   LsSpTrSolver<value_type, index_type> ls_U;  ///< levelset U
 #if HILUCSI_HAS_SPARSE_MKL
