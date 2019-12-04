@@ -167,7 +167,8 @@ class FQMRCGSTAB
     if (zero_start)
       std::copy(b.cbegin(), b.cend(), _r0.begin());
     else {
-      A.mv(x, _Ax);
+      mt::mv_nt(A, x, _Ax);
+      // A.mv(x, _Ax);
       for (size_type i(0); i < n; ++i) _r0[i] = b[i] - _Ax[i];
     }
     const auto &r0  = _r0;
@@ -190,7 +191,8 @@ class FQMRCGSTAB
         flag = M_SOLVE_ERROR;
         break;
       }
-      A.mv(_ph, _v);
+      mt::mv_nt(A, _ph, _v);
+      // A.mv(_ph, _v);
       auto rho2 = inner(r0, _v);
       if (rho2 == 0) {
         Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
@@ -224,7 +226,8 @@ class FQMRCGSTAB
         flag = M_SOLVE_ERROR;
         break;
       }
-      A.mv(_sh, _t);
+      mt::mv_nt(A, _sh, _t);
+      // A.mv(_sh, _t);
 
       const auto uu = inner(_s, _t), vv = norm2_sq(_t);
       const auto omega = uu / vv;
@@ -248,7 +251,8 @@ class FQMRCGSTAB
       }
 
       // update residual
-      A.mv(x, _Ax);
+      mt::mv_nt(A, x, _Ax);
+      // A.mv(x, _Ax);
       for (size_type i(0); i < n; ++i) _Ax[i] = b[i] - _Ax[i];
       const auto resid_prev = _resids.back();
       _resids.push_back(norm2(_Ax) / normb);

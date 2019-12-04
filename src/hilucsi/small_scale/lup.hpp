@@ -33,7 +33,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "hilucsi/small_scale/config.hpp"
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
-
+#  if HILUCSI_HAS_MKL == 0
 extern "C" {
 
 // factorization
@@ -60,7 +60,7 @@ void HILUCSI_FC(sgetrs,
                         float *, hilucsi_lapack_int *, hilucsi_lapack_int *,
                         float *, hilucsi_lapack_int *, hilucsi_lapack_int *);
 }
-
+#  endif
 #endif  // DOXYGEN_SHOULD_SKIP_THIS
 
 namespace hilucsi {

@@ -26,6 +26,10 @@
 #include <string>
 #include <tuple>
 
+#ifdef HILUCSI_DEMO_USE_MKL
+#  include <mkl.h>
+#endif
+
 #include "HILUCSI.hpp"
 
 using namespace hilucsi;
@@ -192,6 +196,14 @@ int main(int argc, char *argv[]) {
       "\ttime: %.4gs\n",
       100.0 * M.nnz() / A.nnz(), 100.0 * M.nnz_EF() / A.nnz(),
       100.0 * M.nnz_EF() / M.nnz(), M.levels(), 100.0 * M.stats(5) / M.stats(4),
+      timer.time());
+
+  timer.start();
+  M.optimize();
+  timer.finish();
+  hilucsi_info(
+      "\nOptimization preconditioner done!\n"
+      "\ttime: %.4gs\n",
       timer.time());
 
   // solve

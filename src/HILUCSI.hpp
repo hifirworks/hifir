@@ -29,6 +29,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _HILUCSI_HPP
 #define _HILUCSI_HPP
 
+#ifdef _MKL_H_
+#  define HILUCSI_HAS_MKL 1
+#else
+#  define HILUCSI_HAS_MKL 0
+#endif  // MKL
+#if defined(_MKL_SPBLAS_H_) || HILUCSI_HAS_MKL
+#  define HILUCSI_HAS_SPARSE_MKL 1
+#else
+#  define HILUCSI_HAS_SPARSE_MKL 0
+#endif
+
 #include "hilucsi/macros.hpp"
 
 #include "hilucsi/builder.hpp"

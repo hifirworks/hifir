@@ -38,6 +38,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifdef HILUCSI_ENABLE_MUMPS
 #  include "hilucsi/sparse_direct/mumps.hpp"
 #endif  // HILUCSI_ENABLE_MUMPS
+#if HILUCSI_HAS_SPARSE_MKL
+#  include "hilucsi/arch/mkl_trsv.hpp"
+#endif
 
 namespace hilucsi {
 
@@ -75,13 +78,22 @@ struct Prec {
 #ifdef HILUCSI_ENABLE_MUMPS
   using sparse_direct_type = MUMPS<ValueType>;
 #else
-  using sparse_direct_type = internal::DummySparseSolver;
+  using sparse_direct_type     = internal::DummySparseSolver;
 #endif                                                   // HILUCSI_ENABLE_MUMPS
   static constexpr char EMPTY_PREC     = '\0';           ///< empty prec
   static constexpr bool INTERVAL_BASED = IntervalBased;  ///< interval
   using data_mat_type                  = typename std::conditional<
       INTERVAL_BASED, typename using_interval_from_classical<mat_type>::type,
       mat_type>::type;  ///< data matrix type
+#if HILUCSI_HAS_SPARSE_MKL
+  using tri_mat_type                  = crs_type;
+  using tri_mat_interface_type        = tri_mat_type;
+  constexpr static bool OPTIMIZE_FLAG = true;
+#else
+  using tri_mat_type           = data_mat_type;  ///< triangular matrix type
+  using tri_mat_interface_type = mat_type;       ///< interface type
+  constexpr static bool OPTIMIZE_FLAG = false;   ///< optimization flag
+#endif
 
  private:
   typedef SmallScaleSolverTrait<SMALLSCALE_LUP> _sss_trait;
@@ -109,9 +121,10 @@ struct Prec {
   /// \param[in] P row permutation
   /// \param[in] Q_inv inverse column permutation
   /// \note This allows us to use emplace back in STL efficiently
-  Prec(size_type mm, size_type nn, mat_type &&L_b, array_type &&d_b,
-       mat_type &&U_b, mat_type &&e, mat_type &&f, array_type &&S,
-       array_type &&T, perm_type &&P, perm_type &&Q_inv)
+  Prec(size_type mm, size_type nn, tri_mat_interface_type &&L_b,
+       array_type &&d_b, tri_mat_interface_type &&U_b, mat_type &&e,
+       mat_type &&f, array_type &&S, array_type &&T, perm_type &&P,
+       perm_type &&Q_inv)
       : m(mm),
         n(nn),
         L_B(std::move(L_b)),
@@ -141,8 +154,39 @@ struct Prec {
 
   /// \brief Using SFINAE to report interval-based information
   template <typename T = void>
-  inline typename std::enable_if<INTERVAL_BASED, T>::type report_status()
+  inline typename std::enable_if<INTERVAL_BASED, T>::type report_status_ef()
       const {
+    static const auto report_kernel = [](const data_mat_type &mat,
+                                         const char *         name) {
+      if (!mat.converted()) {
+        hilucsi_info(
+            "%s was not able to be converted to interval, too small average "
+            "interval (<2)",
+            name);
+      } else {
+        hilucsi_info(
+            "%s was converted to interval!\n"
+            "\tstorage ratio (interval:classical) = %.3f%%\n"
+            "\taverage interval length = %.4g",
+            name, 100.0 * mat.storage_cost_ratio(),
+            (double)mat.nnz() / mat.nitrvs());
+      }
+    };
+
+    report_kernel(E, "E");
+    report_kernel(F, "F");
+  }
+
+  template <typename T = void>
+  inline typename std::enable_if<!INTERVAL_BASED, T>::type report_status_ef()
+      const {
+    // do nothing
+  }
+
+  /// \brief report LU status with SFINAE
+  template <typename T = void>
+  inline typename std::enable_if<is_interval_cs<tri_mat_type>::value, T>::type
+  report_status_lu() const {
     static const auto report_kernel = [](const data_mat_type &mat,
                                          const char *         name) {
       if (!mat.converted()) {
@@ -162,15 +206,11 @@ struct Prec {
 
     report_kernel(L_B, "L_B");
     report_kernel(U_B, "U_B");
-    report_kernel(E, "E");
-    report_kernel(F, "F");
   }
 
   template <typename T = void>
-  inline typename std::enable_if<!INTERVAL_BASED, T>::type report_status()
-      const {
-    // do nothing
-  }
+  inline typename std::enable_if<!is_interval_cs<tri_mat_type>::value, T>::type
+  report_status_lu() const {}
 
   /// \brief enable explicitly calling move
   /// \param[in,out] L_b lower part
@@ -189,9 +229,10 @@ struct Prec {
   /// calling this routine.
   ///
   /// \warning Everything on output is destroyed, as the routine name says.
-  inline void move_destroy(mat_type &L_b, array_type &d_b, mat_type &U_b,
-                           mat_type &e, mat_type &f, array_type &S,
-                           array_type &T, perm_type &P, perm_type &Q_inv) {
+  inline void move_destroy(tri_mat_interface_type &L_b, array_type &d_b,
+                           tri_mat_interface_type &U_b, mat_type &e,
+                           mat_type &f, array_type &S, array_type &T,
+                           perm_type &P, perm_type &Q_inv) {
     L_B   = std::move(L_b);
     d_B   = std::move(d_b);
     U_B   = std::move(U_b);
@@ -201,6 +242,22 @@ struct Prec {
     t     = std::move(T);
     p     = std::move(P);
     q_inv = std::move(Q_inv);
+  }
+
+  /// \brief a priori optimization
+  /// \param[in] expected_calls number of calls
+  inline void optimize(const size_type expected_calls = -1) {
+#if HILUCSI_HAS_SPARSE_MKL
+    mkl_L.setup(L_B.row_start(), L_B.col_ind(), L_B.vals());
+    mkl_U.setup(U_B.row_start(), U_B.col_ind(), U_B.vals());
+    const MKL_INT exp_calls = expected_calls == (size_type)-1
+                                  ? std::numeric_limits<MKL_INT>::max()
+                                  : expected_calls;
+    mkl_L.template optimize<false>(exp_calls);
+    mkl_U.template optimize<true>(exp_calls);
+#else
+    (void)expected_calls;
+#endif
   }
 
   /// \brief check if this a last level preconditioner
@@ -216,9 +273,9 @@ struct Prec {
 
   size_type                  m;      ///< leading block size
   size_type                  n;      ///< system size
-  data_mat_type              L_B;    ///< lower part of leading block
+  tri_mat_type               L_B;    ///< lower part of leading block
   array_type                 d_B;    ///< diagonal block of leading block
-  data_mat_type              U_B;    ///< upper part of leading block
+  tri_mat_type               U_B;    ///< upper part of leading block
   data_mat_type              E;      ///< scaled and permutated E part
   data_mat_type              F;      ///< scaled and permutated F part
   array_type                 s;      ///< row scaling vector
@@ -227,6 +284,10 @@ struct Prec {
   perm_type                  q_inv;  ///< column inverse permutation matrix
   sss_solver_type            dense_solver;   ///< dense decomposition
   mutable sparse_direct_type sparse_solver;  ///< sparse solver
+#if HILUCSI_HAS_SPARSE_MKL
+  MKL_SpTrSolver<value_type, index_type> mkl_L;
+  MKL_SpTrSolver<value_type, index_type> mkl_U;
+#endif
 
  private:
   /// \brief allow casting to \a char, this is needed to add an empty node

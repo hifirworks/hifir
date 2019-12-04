@@ -340,7 +340,8 @@ class TGMRESR
     // initialize residual
     value_type beta = beta0;
     if (!zero_start) {
-      A.mv(x, _r);
+      mt::mv_nt(A, x, _r);
+      // A.mv(x, _r);
       for (size_type i = 0u; i < n; ++i) _r[i] = b[i] - _r[i];
       beta = norm2(_r);
     } else
@@ -357,7 +358,8 @@ class TGMRESR
         flag = M_SOLVE_ERROR;
         break;
       }
-      A.mv(u, c);
+      mt::mv_nt(A, u, c);
+      // A.mv(u, c);
       for (size_type k = start; k < iter; ++k) {
         const auto p_k   = _perm[k];
         auto       c_k   = _Q.cbegin() + p_k * n;
