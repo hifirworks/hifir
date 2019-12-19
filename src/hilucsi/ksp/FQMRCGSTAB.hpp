@@ -173,8 +173,8 @@ class FQMRCGSTAB
     }
     const auto &r0  = _r0;
     auto        tau = norm2(r0);
-    _resids[0]      = tau / normb;  // starting with size 1
-    if (_resids[0] <= rtol) return std::make_pair(flag, size_type(0));
+    _resids[0]      = tau;  // starting with size 1
+    if (_resids[0] <= rtol * normb) return std::make_pair(flag, size_type(0));
     std::copy(r0.cbegin(), r0.cend(), _p.begin());
     std::copy(r0.cbegin(), r0.cend(), _r.begin());
     // comment out, implicitly handled in the loop
@@ -255,18 +255,20 @@ class FQMRCGSTAB
       // A.mv(x, _Ax);
       for (size_type i(0); i < n; ++i) _Ax[i] = b[i] - _Ax[i];
       const auto resid_prev = _resids.back();
-      _resids.push_back(norm2(_Ax) / normb);
-      Cout("  At iteration %zd (inner:%zd), relative residual is %g.", iter,
-           innersteps * 2, _resids.back());  // *2 due to called A*x twice
-      if (_resids.back() <= rtol) break;
+      _resids.push_back(norm2(_Ax));
+      const auto resid = _resids.back() / normb;
+      Cout("  At iteration %zd (#Ax:%zd), relative residual is %g.", iter,
+           innersteps * 2,
+           resid);  // *2 due to called A*x twice
+      if (resid <= rtol) break;
 
-      if (std::isnan(_resids.back()) || std::isinf(_resids.back())) {
+      if (std::isnan(resid) || std::isinf(resid)) {
         Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
              "Solver break-down detected at iteration %zd.", iter);
         flag = BREAK_DOWN;
         break;
       }
-      if (_resids.back() > 100) {
+      if (resid > 100) {
         Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
              "Divergence encountered at iteration %zd.", iter);
         flag = DIVERGED;
@@ -285,7 +287,7 @@ class FQMRCGSTAB
       rho1 = rho2;
     }  // for
 
-    if (flag == SUCCESS && _resids.back() > rtol) {
+    if (flag == SUCCESS && _resids.back() > rtol * normb) {
       Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
            "Reached maxit iteration limit %zd.", maxit);
       flag = DIVERGED;

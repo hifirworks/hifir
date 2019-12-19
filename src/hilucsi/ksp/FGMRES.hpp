@@ -201,7 +201,7 @@ class FGMRES
       const auto beta     = norm2(_v);
       _y[0]               = beta;
       const auto inv_beta = 1. / beta;
-      if (!it_outer) _resids[0] = beta / beta0;
+      if (!it_outer) _resids[0] = beta;
       for (size_type i = 0u; i < n; ++i) _Q[i] = _v[i] * inv_beta;
       size_type j(0);
       auto      R_itr = _R.begin();
@@ -246,8 +246,8 @@ class FGMRES
         _w[j]                 = rho;
         R_itr                 = std::copy_n(_w.cbegin(), j + 1, R_itr);
         const auto resid_prev = resid;
-        resid                 = abs(_y[j + 1]) / beta0;
-        _resids.push_back(resid);
+        _resids.push_back(abs(_y[j + 1]));
+        resid = _resids.back() / beta0;
         if (std::isnan(resid) || std::isinf(resid)) {
           Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
                "Solver break-down detected at iteration %zd.", iter);
@@ -266,7 +266,7 @@ class FGMRES
           break;
         }
         ++iter;
-        Cout("  At iteration %zd (inner:%zd), relative residual is %g.", iter,
+        Cout("  At iteration %zd (#Ax:%zd), relative residual is %g.", iter,
              innersteps, resid);
         if (resid <= rtol || j + 1 >= (size_type)restart) break;
         ++j;

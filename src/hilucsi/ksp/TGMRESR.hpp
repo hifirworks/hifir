@@ -346,7 +346,7 @@ class TGMRESR
       beta = norm2(_r);
     } else
       std::copy_n(b.cbegin(), n, _r.begin());
-    _resids[0] = beta / beta0;
+    _resids[0] = beta;
     auto &u = _w, &c = _v;  // wrap var name to align with the paper
     for (;;) {
       const size_type j = _perm[iter], jn = j * n, j_next = _perm[iter + 1],
@@ -382,15 +382,16 @@ class TGMRESR
         x[i] += eta * u_itr[i];
         _r[i] -= eta * c_itr[i];
       }
-      const auto resid_prev = _resids[iter];
-      _resids.push_back(norm2(_r) / beta0);
-      if (std::isnan(_resids.back()) || std::isinf(_resids.back())) {
+      const auto resid_prev = _resids[iter] / beta0;
+      _resids.push_back(norm2(_r));
+      const auto resid = _resids.back() / beta0;
+      if (std::isnan(resid) || std::isinf(resid)) {
         Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
              "Solver break-down detected at iteration %zd.", iter);
         flag = BREAK_DOWN;
         break;
       }
-      if (_resids.back() >= resid_prev * (1 - _stag_eps)) {
+      if (resid >= resid_prev * (1 - _stag_eps)) {
         Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
              "Stagnated detected at iteration %zd.", iter);
         flag = STAGNATED;
@@ -402,9 +403,9 @@ class TGMRESR
         break;
       }
       ++iter;
-      Cout("  At iteration %zd (inner:%zd), relative residual is %g.", iter,
-           innersteps, _resids.back());
-      if (_resids.back() <= rtol) break;
+      Cout("  At iteration %zd (#Ax:%zd), relative residual is %g.", iter,
+           innersteps, resid);
+      if (resid <= rtol) break;
     }
     return std::make_pair(flag, iter);
   }
