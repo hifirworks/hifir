@@ -217,13 +217,14 @@ int main(int argc, char *argv[]) {
   solver_t::size_type iters;
   std::tie(flag, iters) = solver->solve(A, b, x, kernel, false, opts.verbose);
   timer.finish();
-  const double rs = solver->get_resids().back();
+  const auto   normb = norm2(b);
+  const double rs    = solver->get_resids().back() / normb;
   double       act_rs;
   do {
     array_t r(b.size());
     A.mv(x, r);
     for (array_t::size_type i(0); i < b.size(); ++i) r[i] -= b[i];
-    act_rs = norm2(r) / norm2(b);
+    act_rs = norm2(r) / normb;
   } while (false);
   hilucsi_info(
       "\n%s(%.1e) done!\n"
