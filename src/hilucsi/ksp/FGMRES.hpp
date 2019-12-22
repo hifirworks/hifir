@@ -186,6 +186,7 @@ class FGMRES
     auto &      x    = x0;
     int         flag = SUCCESS;
     scalar_type resid(1);
+    int         stag_guard(0);
     for (size_type it_outer = 0u; it_outer < max_outer_iters; ++it_outer) {
       Cout("Enter outer iteration %zd...", it_outer + 1);
       if (it_outer)
@@ -254,17 +255,22 @@ class FGMRES
           flag = BREAK_DOWN;
           break;
         }
-        if (resid >= resid_prev * (1 - _stag_eps)) {
-          Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
-               "Stagnated detected at iteration %zd.", iter);
-          flag = STAGNATED;
-          break;
+        const bool is_stag = resid >= resid_prev * (1 - _stag_eps);
+        if (is_stag) {
+          ++stag_guard;
+          if (stag_guard > 1) {
+            Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+                 "Stagnated detected at iteration %zd.", iter);
+            flag = STAGNATED;
+            break;
+          }
         } else if (iter >= maxit) {
           Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
                "Reached maxit iteration limit %zd.", maxit);
           flag = DIVERGED;
           break;
         }
+        if (!is_stag) stag_guard = 0;
         ++iter;
         Cout("  At iteration %zd (#Ax:%zd), relative residual is %g.", iter,
              innersteps, resid);

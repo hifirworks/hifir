@@ -336,7 +336,7 @@ class TGMRESR
     const size_type cycle = restart;
     auto &          x     = x0;
     int             flag  = SUCCESS;
-
+    int             stag_guard(0);
     // initialize residual
     value_type beta = beta0;
     if (!zero_start) {
@@ -391,17 +391,22 @@ class TGMRESR
         flag = BREAK_DOWN;
         break;
       }
-      if (resid >= resid_prev * (1 - _stag_eps)) {
-        Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
-             "Stagnated detected at iteration %zd.", iter);
-        flag = STAGNATED;
-        break;
+      const bool is_stag = resid >= resid_prev * (1 - _stag_eps);
+      if (is_stag) {
+        ++stag_guard;
+        if (stag_guard > 1) {
+          Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+               "Stagnated detected at iteration %zd.", iter);
+          flag = STAGNATED;
+          break;
+        }
       } else if (iter >= maxit) {
         Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
              "Reached maxit iteration limit %zd.", maxit);
         flag = DIVERGED;
         break;
       }
+      if (!is_stag) stag_guard = 0;
       ++iter;
       Cout("  At iteration %zd (#Ax:%zd), relative residual is %g.", iter,
            innersteps, resid);
