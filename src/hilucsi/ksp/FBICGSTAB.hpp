@@ -159,7 +159,7 @@ class FBICGSTAB
       // A.mv(x, _r);
       for (size_type i(0); i < n; ++i) _r[i] = b[i] - _r[i];
     }
-    if ((_resids[0] = norm2(_r) / normb) <= rtol)
+    if ((_resids[0] = norm2(_r)) <= rtol * normb)
       return std::make_pair(flag, size_type(0));
 
     value_type  omega(1), alpha(0), rho_1(0);
@@ -197,14 +197,14 @@ class FBICGSTAB
         x[i] += alpha * _p_hat[i];
         _s[i] = _r[i] - alpha * _v[i];
       }
-      const auto resid = norm2(_s) / normb;
+      auto resid = norm2(_s) / normb;
       // early convergence checking
       if (resid <= rtol) {
         Cout(
             "  Early convergence detected at iteration %zd, relative residual "
             "is %g.",
-            iter, _resids.back());
-        _resids.push_back(resid);
+            iter, resid);
+        _resids.push_back(resid * normb);
         break;
       }
 
@@ -222,18 +222,19 @@ class FBICGSTAB
         x[i] += omega * _p_hat[i];
         _r[i] = _s[i] - omega * _v[i];
       }
-      _resids.push_back(norm2(_r) / normb);
-      Cout("  At iteration %zd (inner:%zd), relative residual is %g.", iter,
-           innersteps * 2, _resids.back());
+      _resids.push_back(norm2(_r));
+      resid = _resids.back() / normb;
+      Cout("  At iteration %zd (#Ax:%zd), relative residual is %g.", iter,
+           innersteps * 2, resid);
 
-      if (_resids.back() <= rtol) break;
-      if (std::isnan(_resids.back()) || std::isinf(_resids.back())) {
+      if (resid <= rtol) break;
+      if (std::isnan(resid) || std::isinf(resid)) {
         Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
              "Solver break-down detected at iteration %zd.", iter);
         flag = BREAK_DOWN;
         break;
       }
-      if (_resids.back() > 100) {
+      if (resid > 100) {
         Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
              "Divergence encountered at iteration %zd.", iter);
         flag = DIVERGED;
@@ -247,7 +248,7 @@ class FBICGSTAB
       }
       rho_1 = rho;
     }
-    if (flag == SUCCESS && _resids.back() > rtol) {
+    if (flag == SUCCESS && _resids.back() > rtol * normb) {
       Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
            "Reached maxit iteration limit %zd.", maxit);
       flag = DIVERGED;

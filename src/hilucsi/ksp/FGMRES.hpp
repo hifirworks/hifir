@@ -186,6 +186,7 @@ class FGMRES
     auto &      x    = x0;
     int         flag = SUCCESS;
     scalar_type resid(1);
+    int         stag_guard(0);
     for (size_type it_outer = 0u; it_outer < max_outer_iters; ++it_outer) {
       Cout("Enter outer iteration %zd...", it_outer + 1);
       if (it_outer)
@@ -201,7 +202,7 @@ class FGMRES
       const auto beta     = norm2(_v);
       _y[0]               = beta;
       const auto inv_beta = 1. / beta;
-      if (!it_outer) _resids[0] = beta / beta0;
+      if (!it_outer) _resids[0] = beta;
       for (size_type i = 0u; i < n; ++i) _Q[i] = _v[i] * inv_beta;
       size_type j(0);
       auto      R_itr = _R.begin();
@@ -246,27 +247,32 @@ class FGMRES
         _w[j]                 = rho;
         R_itr                 = std::copy_n(_w.cbegin(), j + 1, R_itr);
         const auto resid_prev = resid;
-        resid                 = abs(_y[j + 1]) / beta0;
-        _resids.push_back(resid);
+        _resids.push_back(abs(_y[j + 1]));
+        resid = _resids.back() / beta0;
         if (std::isnan(resid) || std::isinf(resid)) {
           Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
                "Solver break-down detected at iteration %zd.", iter);
           flag = BREAK_DOWN;
           break;
         }
-        if (resid >= resid_prev * (1 - _stag_eps)) {
-          Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
-               "Stagnated detected at iteration %zd.", iter);
-          flag = STAGNATED;
-          break;
+        const bool is_stag = resid >= resid_prev * (1 - _stag_eps);
+        if (is_stag) {
+          ++stag_guard;
+          if (stag_guard > 1) {
+            Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+                 "Stagnated detected at iteration %zd.", iter);
+            flag = STAGNATED;
+            break;
+          }
         } else if (iter >= maxit) {
           Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
                "Reached maxit iteration limit %zd.", maxit);
           flag = DIVERGED;
           break;
         }
+        if (!is_stag) stag_guard = 0;
         ++iter;
-        Cout("  At iteration %zd (inner:%zd), relative residual is %g.", iter,
+        Cout("  At iteration %zd (#Ax:%zd), relative residual is %g.", iter,
              innersteps, resid);
         if (resid <= rtol || j + 1 >= (size_type)restart) break;
         ++j;

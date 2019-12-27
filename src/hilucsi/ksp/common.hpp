@@ -328,7 +328,16 @@ class DummyJacobi {
 
   DummyJacobi() = delete;
 
+  /// \brief constructor with preconditioner
+  /// \param[in] M reference to the preconditioner
   explicit DummyJacobi(const M_type &M) : _M(M) {}
+
+  /// \brief check if the M's address is the same
+  /// \param[in] M multilevel ILU
+  inline bool is_same_M(const M_type &M) const { return &_M == &M; }
+
+  /// \brief get reference to preconditioner
+  inline const M_type &M() const { return _M; }
 
   /// \brief wrapper around preconditioner solve
   /// \tparam Matrix matrix type, see \ref CRS
@@ -440,10 +449,10 @@ class KSP {
     const internal::DummyJacobi<M_type, value_type> M(*_M);
     if (verbose)
       hilucsi_info("Calling traditional %s kernel...", ChildSolver::repr());
-    return verbose ? _this()._this()._solve(A, M, b, 1u, !with_init_guess, x,
-                                            Cout, Cerr)
-                   : _this()._this()._solve(A, M, b, 1u, !with_init_guess, x,
-                                            Dummy_streamer, Dummy_cerr);
+    return verbose
+               ? _this()._solve(A, M, b, 1u, !with_init_guess, x, Cout, Cerr)
+               : _this()._solve(A, M, b, 1u, !with_init_guess, x,
+                                Dummy_streamer, Dummy_cerr);
   }
 
   /// \brief solve with \ref _M as Jacobi operator
@@ -538,6 +547,37 @@ class KSP {
     }
   }
 
+  /// \brief solver with user operator
+  /// \tparam Matrix user input type, see \ref CRS and \ref CCS
+  /// \tparam Operator operator M type, see \ref UserOperatorBase
+  /// \param[in] A user input matrix
+  /// \param[in] M user constructed operator
+  /// \param[in] b right-hand side vector
+  /// \param[in,out] x solution
+  /// \param[in] with_init_guess if \a false (default), then assign zero to
+  ///             \a x as starting values
+  /// \param[in] verbose if \a true (default), enable verbose printing
+  template <class Matrix, class Operator>
+  inline std::pair<int, size_type> solve_user(
+      const Matrix &A, const Operator &M, const array_type &b, array_type &x,
+      const bool with_init_guess = false, const bool verbose = true) const {
+    const static hilucsi::internal::StdoutStruct       Cout;
+    const static hilucsi::internal::StderrStruct       Cerr;
+    const static hilucsi::internal::DummyStreamer      Dummy_streamer;
+    const static hilucsi::internal::DummyErrorStreamer Dummy_cerr;
+
+    if (_this()._validate(A, b, x))
+      return std::make_pair(INVALID_ARGS, size_type(0));
+    if (verbose) _show("user", with_init_guess, restart);
+    if (!with_init_guess) std::fill(x.begin(), x.end(), value_type(0));
+    if (verbose)
+      hilucsi_info("Calling user-M %s kernel...", ChildSolver::repr());
+    return verbose ? _this()._solve(A, M, b, inner_steps, !with_init_guess, x,
+                                    Cout, Cerr)
+                   : _this()._solve(A, M, b, inner_steps, !with_init_guess, x,
+                                    Dummy_streamer, Dummy_cerr);
+  }
+
  protected:
   std::shared_ptr<M_type> _M;       ///< preconditioner operator
   mutable array_type      _resids;  ///< residual history
@@ -595,6 +635,29 @@ class KSP {
  */
 
 }  // namespace internal
+
+/// \class UserOperatorBase
+/// \tparam MType "preconditioner" operator type, see \ref HILUCSI
+/// \tparam ValueType if not given, i.e. \a void, then use value in \a MType
+/// \brief generic base class for Jacobi iterations
+/// \ingroup ksp
+///
+/// This is defined for user to inherit their customized operators without
+/// worrying about definining member types. Notice this class derives from
+/// \ref DummyJacobi, but the \a solve method is not virtual!
+template <class MType, class ValueType = void>
+class UserOperatorBase : public internal::DummyJacobi<MType, ValueType> {
+  using _base = internal::DummyJacobi<MType, ValueType>;
+
+ public:
+  using M_type = typename _base::M_type;  ///< hilucsi type
+
+  UserOperatorBase() = delete;
+
+  /// \brief constructor with preconditioner
+  /// \param[in] M reference to the preconditioner
+  explicit UserOperatorBase(const M_type &M) : _base(M) {}
+};
 
 }  // namespace ksp
 }  // namespace hilucsi
