@@ -34,6 +34,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <numeric>
 #include <type_traits>
 
+#include "hilucsi/NspFilter.hpp"
 #include "hilucsi/Options.h"
 #include "hilucsi/alg/Prec.hpp"
 #include "hilucsi/alg/factor.hpp"
@@ -246,8 +247,9 @@ class HILUCSI {
     DefaultTimer t;  // record overall time
     t.start();
     if (!empty()) {
-      hilucsi_warning(
-          "multilevel precs are not empty, wipe previous results first");
+      if (hilucsi_verbose(INFO, opts))
+        hilucsi_info(
+            "multilevel precs are not empty, wipe previous results first");
       _precs.clear();
       // also clear the previous buffer
       _prec_work.resize(0);
@@ -342,7 +344,10 @@ class HILUCSI {
       _prec_work.resize(
           compute_prec_work_space(_precs.cbegin(), _precs.cend()));
     prec_solve(_precs.cbegin(), b, x, _prec_work);
+    if (nsp) nsp->filter(x.data(), x.size());  // filter null space
   }
+
+  NspFilterPtr nsp;  ///< null space filter
 
  protected:
   template <class CsType, class CroutStreamer>
