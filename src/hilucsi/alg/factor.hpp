@@ -1033,7 +1033,11 @@ inline CsType level_factorize(const CsType &                   A,
       timer2.start();
       const size_type nnz1 = L_E.nnz(), nnz2 = U_F2.nnz();
 #ifndef HILUCSI_NO_DROP_LE_UF
-      const double a_L = opts.alpha_L, a_U = opts.alpha_U;
+      double a_L = opts.alpha_L, a_U = opts.alpha_U;
+      if (cur_level == 1u && opts.fat_schur_1st) {
+        a_L *= 2;
+        a_U *= 2;
+      }
       if (hilucsi_verbose(INFO, opts))
         hilucsi_info(
             "applying dropping on L_E and U_F with alpha_{L,U}=%g,%g...", a_L,
