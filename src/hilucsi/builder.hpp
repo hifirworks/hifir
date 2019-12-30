@@ -202,6 +202,13 @@ class HILUCSI {
     return *itr;
   }
 
+  /// \brief clear internal storage
+  inline void clear() {
+    _precs.clear();
+    _prec_work.resize(0);
+    nsp.reset();
+  }
+
   /// \brief factorize the MILU preconditioner
   /// \tparam CsType compressed storage input, either \ref CRS or \ref CCS
   /// \param[in] A input matrix
