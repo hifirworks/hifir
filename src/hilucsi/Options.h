@@ -74,8 +74,8 @@ struct hilucsi_Options {
   double tau_U;     /*!< inverse-based threshold for U (0.001) */
   double tau_d;     /*!< threshold for inverse-diagonal (3.) */
   double tau_kappa; /*!< inverse-norm threshold (3.) */
-  int    alpha_L;   /*!< growth factor of nnz per col (8) */
-  int    alpha_U;   /*!< growth factor of nnz per row (8) */
+  double alpha_L;   /*!< growth factor of nnz per col (10) */
+  double alpha_U;   /*!< growth factor of nnz per row (10) */
   double rho;       /*!< density threshold for dense LU (0.5) */
   double c_d;       /*!< size parameter for dense LU (10.0) */
   double c_h;       /*!< size parameter for H-version (2.0) */
@@ -108,8 +108,8 @@ static hilucsi_Options hilucsi_get_default_options(void) {
                            .tau_U         = 0.0001,
                            .tau_d         = 3.0,
                            .tau_kappa     = 3.0,
-                           .alpha_L       = 10,
-                           .alpha_U       = 10,
+                           .alpha_L       = 10.0,
+                           .alpha_U       = 10.0,
                            .rho           = 0.5,
                            .c_d           = 10.0,
                            .c_h           = 2.0,
@@ -239,23 +239,6 @@ inline void enable_verbose(const int flag, Options &opts) {
 inline std::string get_verbose(const Options &opt);
 
 /*!
- * \brief read control parameters from a standard input streamer
- * \tparam InStream input streamer, i.e. with input operator
- * \param[in,out] in_str input streamer, e.g. \a std::cin
- * \param[out] opt control parameters
- * \return reference to \a in_str to enable chain reaction
- * \note Read data in sequential order with default separators
- */
-template <class InStream>
-inline InStream &operator>>(InStream &in_str, Options &opt) {
-  in_str >> opt.tau_L >> opt.tau_U >> opt.tau_d >> opt.tau_kappa >>
-      opt.alpha_L >> opt.alpha_U >> opt.rho >> opt.c_d >> opt.c_h >> opt.N >>
-      opt.verbose >> opt.rf_par >> opt.reorder >> opt.saddle >> opt.check >>
-      opt.pre_scale >> opt.symm_pre_lvls >> opt.threads >> opt.mumps_blr;
-  return in_str;
-}
-
-/*!
  * \brief get the default configuration
  */
 inline Options get_default_options() { return ::hilucsi_get_default_options(); }
@@ -283,10 +266,11 @@ inline std::string opt_repr(const Options &opt) {
   return pack_double("tau_L", opt.tau_L) + pack_double("tau_U", opt.tau_U) +
          pack_double("tau_d", opt.tau_d) +
          pack_double("tau_kappa", opt.tau_kappa) +
-         pack_int("alpha_L", opt.alpha_L) + pack_int("alpha_U", opt.alpha_U) +
-         pack_double("rho", opt.rho) + pack_double("c_d", opt.c_d) +
-         pack_double("c_h", opt.c_h) + pack_int("N", opt.N) +
-         pack_name("verbose", get_verbose) + pack_int("rf_par", opt.rf_par) +
+         pack_double("alpha_L", opt.alpha_L) +
+         pack_double("alpha_U", opt.alpha_U) + pack_double("rho", opt.rho) +
+         pack_double("c_d", opt.c_d) + pack_double("c_h", opt.c_h) +
+         pack_int("N", opt.N) + pack_name("verbose", get_verbose) +
+         pack_int("rf_par", opt.rf_par) +
          pack_name("reorder", get_reorder_name) +
          pack_int("saddle", opt.saddle) +
          pack_name(
@@ -330,7 +314,7 @@ const static std::size_t option_attr_pos[_HILUCSI_TOTAL_OPTIONS] = {
 
 /* data type tags, true for double, false for int */
 const static bool option_dtypes[_HILUCSI_TOTAL_OPTIONS] = {
-    true,  true,  true,  true,  false, false, true,  true,  true,  false,
+    true,  true,  true,  true,  true,  true,  true,  true,  true,  false,
     false, false, false, false, false, false, false, false, false, false};
 
 /* using unordered map to store the string to index map */
@@ -392,6 +376,24 @@ inline bool set_option_attr(const std::string &attr, const T v, Options &opt) {
  */
 
 } /* namespace hilucsi */
+
+/*!
+ * \brief read control parameters from a standard input streamer
+ * \tparam InStream input streamer, i.e. with input operator
+ * \param[in,out] in_str input streamer, e.g. \a std::cin
+ * \param[out] opt control parameters
+ * \return reference to \a in_str to enable chain reaction
+ * \note Read data in sequential order with default separators
+ * \ingroup itr
+ */
+template <class InStream>
+inline InStream &operator>>(InStream &in_str, hilucsi::Options &opt) {
+  in_str >> opt.tau_L >> opt.tau_U >> opt.tau_d >> opt.tau_kappa >>
+      opt.alpha_L >> opt.alpha_U >> opt.rho >> opt.c_d >> opt.c_h >> opt.N >>
+      opt.verbose >> opt.rf_par >> opt.reorder >> opt.saddle >> opt.check >>
+      opt.pre_scale >> opt.symm_pre_lvls >> opt.threads >> opt.mumps_blr;
+  return in_str;
+}
 
 /*!
  * \def hilucsi_verbose2(__LVL, __opt_tag)

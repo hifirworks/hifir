@@ -84,10 +84,9 @@ namespace internal {
 /// \param[in] opts control parameters, i.e. Options
 /// \param[in] lvl levels
 /// \return refined parameters
-inline std::tuple<double, double, double, double, int, int> determine_fac_pars(
-    const Options &opts, const int lvl) {
-  double tau_d, tau_kappa, tau_U, tau_L;
-  int    alpha_L, alpha_U;
+inline std::tuple<double, double, double, double, double, double>
+determine_fac_pars(const Options &opts, const int lvl) {
+  double tau_d, tau_kappa, tau_U, tau_L, alpha_L, alpha_U;
   if (opts.rf_par) {
     const int    fac  = std::min(lvl, 2);
     const double fac2 = 1. / std::min(10.0, std::pow(10.0, lvl - 1));
@@ -622,8 +621,8 @@ inline CsType level_factorize(const CsType &                   A,
                    "memory allocation failed for U:row_start at level %zd.",
                    cur_level);
   do {
-    const size_type rsv_fac =
-        HILUCSI_RESERVE_FAC <= 0 ? opts.alpha_U : HILUCSI_RESERVE_FAC;
+    const size_type rsv_fac = HILUCSI_RESERVE_FAC <= 0 ? std::ceil(opts.alpha_U)
+                                                       : HILUCSI_RESERVE_FAC;
     U.reserve(A.nnz() * rsv_fac);
     hilucsi_error_if(
         U.col_ind().status() == DATA_UNDEF || U.vals().status() == DATA_UNDEF,
@@ -636,8 +635,8 @@ inline CsType level_factorize(const CsType &                   A,
                    "memory allocation failed for L:col_start at level %zd.",
                    cur_level);
   do {
-    const size_type rsv_fac =
-        HILUCSI_RESERVE_FAC <= 0 ? opts.alpha_L : HILUCSI_RESERVE_FAC;
+    const size_type rsv_fac = HILUCSI_RESERVE_FAC <= 0 ? std::ceil(opts.alpha_L)
+                                                       : HILUCSI_RESERVE_FAC;
     L.reserve(A.nnz() * rsv_fac);
     hilucsi_error_if(
         L.row_ind().status() == DATA_UNDEF || L.vals().status() == DATA_UNDEF,
@@ -686,8 +685,7 @@ inline CsType level_factorize(const CsType &                   A,
   L.begin_assemble_cols();
 
   // localize parameters
-  double tau_d, tau_kappa, tau_L, tau_U;
-  int    alpha_L, alpha_U;
+  double tau_d, tau_kappa, tau_L, tau_U, alpha_L, alpha_U;
   std::tie(tau_d, tau_kappa, tau_L, tau_U, alpha_L, alpha_U) =
       internal::determine_fac_pars(opts, cur_level);
 
