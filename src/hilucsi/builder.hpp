@@ -36,9 +36,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "hilucsi/NspFilter.hpp"
 #include "hilucsi/Options.h"
+#include "hilucsi/alg/IterRefine.hpp"
 #include "hilucsi/alg/Prec.hpp"
 #include "hilucsi/alg/factor.hpp"
 #include "hilucsi/alg/prec_solve.hpp"
+#include "hilucsi/utils/common.hpp"
 #include "hilucsi/utils/mt.hpp"
 
 #include "hilucsi/version.h"
@@ -205,8 +207,11 @@ class HILUCSI {
   /// \brief clear internal storage
   inline void clear() {
     _precs.clear();
-    _prec_work.resize(0);
+    // _prec_work.resize(0);
+    array_type().swap(_prec_work);
     nsp.reset();
+    _ir.clear();
+    _ir_hi.clear();
   }
 
   /// \brief factorize the MILU preconditioner
@@ -354,6 +359,38 @@ class HILUCSI {
     if (nsp) nsp->filter(x.data(), x.size());  // filter null space
   }
 
+  /// \brief solve with iterative refinement
+  /// \tparam Matrix matrix type
+  /// \tparam RhsType right-hand side type
+  /// \tparam SolType solution type
+  /// \param[in] A matrix operator
+  /// \param[in] b right-hand side vector
+  /// \param[in] N iteration count
+  /// \param[out] x solution vector
+  template <class Matrix, class RhsType, class SolType, typename T = void>
+  inline typename std::enable_if<
+      std::is_same<typename Matrix::value_type, value_type>::value, T>::type
+  solve(const Matrix &A, const RhsType &b, const size_type N,
+        SolType &x) const {
+    _ir.iter_refine(*this, A, b, N, x);
+  }
+
+  /// \brief solve with iterative refinement (high-precision)
+  /// \tparam Matrix matrix type
+  /// \tparam RhsType right-hand side type
+  /// \tparam SolType solution type
+  /// \param[in] A matrix operator
+  /// \param[in] b right-hand side vector
+  /// \param[in] N iteration count
+  /// \param[out] x solution vector
+  template <class Matrix, class RhsType, class SolType, typename T = void>
+  inline typename std::enable_if<
+      !std::is_same<typename Matrix::value_type, value_type>::value, T>::type
+  solve(const Matrix &A, const RhsType &b, const size_type N,
+        SolType &x) const {
+    _ir_hi.iter_refine(*this, A, b, N, x);
+  }
+
   NspFilterPtr nsp;  ///< null space filter
 
  protected:
@@ -394,11 +431,14 @@ class HILUCSI {
   }
 
  protected:
-  precs_type         _precs;      ///< multilevel preconditioners
-  mutable array_type _prec_work;  ///< preconditioner work space for solving
-  size_type          _stats[6];   ///< statistics
-  size_type          _nrows;      ///< number of rows from user input
-  size_type          _ncols;      ///< number of columns from user input
+  precs_type             _precs;      ///< multilevel preconditioners
+  mutable array_type     _prec_work;  ///< preconditioner work space for solving
+  size_type              _stats[6];   ///< statistics
+  size_type              _nrows;      ///< number of rows from user input
+  size_type              _ncols;      ///< number of columns from user input
+  IterRefine<value_type> _ir;         ///< iterative refinement
+  IterRefine<typename ValueTypeMixedTrait<value_type>::boost_type> _ir_hi;
+  ///< high-precision iterative refinement
 };
 
 /// \typedef DefaultHILUCSI
