@@ -30,6 +30,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _HILUCSI_ALG_THRESHOLDS_HPP
 #define _HILUCSI_ALG_THRESHOLDS_HPP
 
+#include <cmath>
+
 #include "hilucsi/utils/common.hpp"
 #include "hilucsi/utils/log.hpp"
 
@@ -66,14 +68,14 @@ inline void apply_num_dropping(const double tau, const KappaType kappa,
 /// \ingroup scl
 template <class SpVecType>
 inline void apply_space_dropping(
-    const typename SpVecType::size_type nnz, const int alpha, SpVecType &v,
+    const typename SpVecType::size_type nnz, const double alpha, SpVecType &v,
     const typename SpVecType::size_type start_size = 0u) {
   using size_type  = typename SpVecType::size_type;
   using index_type = typename SpVecType::index_type;
   using extractor  = internal::SpVInternalExtractor<SpVecType>;
 
   if (v.size()) {
-    size_type N1 = alpha * nnz;
+    size_type N1 = std::ceil(alpha * nnz);
     if (start_size >= N1) N1 = start_size + 1;
     const size_type N = N1 - start_size;
     hilucsi_assert(N != 0u, "zero number of limitation!");
