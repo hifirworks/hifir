@@ -119,6 +119,7 @@ class FBICGSTAB
   }
 
   /// \brief low level solve kernel
+  /// \tparam UseIR flag indicates whether or not enabling iterative refine
   /// \tparam Matrix user input matrix type, see \ref CRS and \ref CCS
   /// \tparam Operator "preconditioner" operator type, see
   ///         \ref internal::DummyJacobi,
@@ -134,7 +135,7 @@ class FBICGSTAB
   /// \param[in,out] x0 initial guess and solution on output
   /// \param[in] Cout "stdout" streamer
   /// \param[in] Cerr "stderr" streamer
-  template <class Matrix, class Operator, class StreamerCout,
+  template <bool UseIR, class Matrix, class Operator, class StreamerCout,
             class StreamerCerr>
   std::pair<int, size_type> _solve(const Matrix &A, const Operator &M,
                                    const array_type &b,
@@ -184,12 +185,13 @@ class FBICGSTAB
         std::copy(_r.cbegin(), _r.cend(), _p.begin());
 
       // call solve
-      if (M.solve(A, _p, innersteps, _p_hat)) {
-        Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
-             "Failed to call M operator at iteration %zd.", iter);
-        flag = M_SOLVE_ERROR;
-        break;
-      }
+      // if (M.solve(A, _p, innersteps, _p_hat)) {
+      //   Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+      //        "Failed to call M operator at iteration %zd.", iter);
+      //   flag = M_SOLVE_ERROR;
+      //   break;
+      // }
+      UseIR ? M.solve(A, _p, innersteps, _p_hat) : M.solve(_p, _p_hat);
       mt::mv_nt(A, _p_hat, _v);
       // A.mv(_p_hat, _v);
       alpha = rho / inner(r_tld, _v);
@@ -209,12 +211,13 @@ class FBICGSTAB
       }
 
       // call solve
-      if (M.solve(A, _s, innersteps, _p_hat)) {
-        Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
-             "Failed to call M operator at iteration %zd.", iter);
-        flag = M_SOLVE_ERROR;
-        break;
-      }
+      // if (M.solve(A, _s, innersteps, _p_hat)) {
+      //   Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+      //        "Failed to call M operator at iteration %zd.", iter);
+      //   flag = M_SOLVE_ERROR;
+      //   break;
+      // }
+      UseIR ? M.solve(A, _s, innersteps, _p_hat) : M.solve(_s, _p_hat);
       mt::mv_nt(A, _p_hat, _v);
       // A.mv(_p_hat, _v);
       omega = inner(_v, _s) / norm2_sq(_v);
