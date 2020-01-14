@@ -31,6 +31,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <complex>
 #include <cstddef>
+#include <functional>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -381,6 +382,8 @@ class KSP {
   typedef typename array_type::value_type value_type;  ///< value type
   typedef typename DefaultSettings<value_type>::scalar_type scalar_type;
   ///< scalar type from value_type
+  typedef std::function<void(const array_type &, array_type &)> func_type;
+  ///< callable user function wrapper for computing matrix-vector product
 
   static_assert(std::is_floating_point<scalar_type>::value,
                 "must be floating point type");
@@ -580,6 +583,18 @@ class KSP {
     if (!_M || _M->empty()) return true;
     if (_M->nrows() != A.nrows()) return true;
     if (b.size() != A.nrows()) return true;
+    if (b.size() != x.size()) return true;
+    if (rtol <= 0.0) return true;
+    if (maxit == 0u) return true;
+    if (inner_steps == 0u) return true;
+    return false;
+  }
+
+  /// \brief validation checking for user function
+  inline bool _validate(const func_type &, const array_type &b,
+                        const array_type &x) const {
+    if (!_M || _M->empty()) return true;
+    if (b.size() != _M->nrows()) return true;
     if (b.size() != x.size()) return true;
     if (rtol <= 0.0) return true;
     if (maxit == 0u) return true;

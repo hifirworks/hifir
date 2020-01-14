@@ -65,6 +65,8 @@ class KSPSolver {
   typedef CCS<value_type, typename M_type::index_type> ccs_type;  ///< crs type
   typedef typename DefaultSettings<value_type>::scalar_type scalar_type;
   ///< scalar type
+  typedef std::function<void(const array_type &, array_type &)> func_type;
+  ///< user callback for computing A*x
 
   /// \brief virtual destructor
   virtual ~KSPSolver() {}
@@ -121,6 +123,12 @@ class KSPSolver {
       const ccs_type &, const array_type &, array_type &, const int = TRADITION,
       const bool /* with_init_guess */ = false,
       const bool /* verbose */         = true) const = 0;
+
+  /// \brief solve interface for user callback
+  virtual std::pair<int, size_type> solve(
+      const func_type &, const array_type &, array_type &,
+      const int = TRADITION, const bool /* with_init_guess */ = false,
+      const bool /* verbose */ = true) const = 0;
 };
 
 /// \class KSPAdaptor
@@ -147,6 +155,7 @@ class KSPAdaptor
   using crs_type        = typename _abc_base::crs_type;  ///< \ref CRS type
   using ccs_type        = typename _abc_base::ccs_type;  ///< \ref CCS type
   using abc_solver_type = _abc_base;                     ///< abc type
+  using func_type = typename _abc_base::func_type;  ///< functor type for A*x
 
   KSPAdaptor() = default;
 
@@ -244,6 +253,21 @@ class KSPAdaptor
   /// \param[in] verbose if \a true (default), enable verbose printing
   virtual std::pair<int, size_type> solve(
       const ccs_type &A, const array_type &b, array_type &x,
+      const int kernel = TRADITION, const bool with_init_guess = false,
+      const bool verbose = true) const override final {
+    return _base::solve(A, b, x, kernel, with_init_guess, verbose);
+  }
+
+  /// \brief solve for solution with user callback for A*x
+  /// \param[in] A user callback for computing A*x
+  /// \param[in] b right-hand side vector
+  /// \param[in,out] x solution
+  /// \param[in] kernel default is TRADITION
+  /// \param[in] with_init_guess if \a false (default), then assign zero to
+  ///             \a x as starting values
+  /// \param[in] verbose if \a true (default), enable verbose printing
+  virtual std::pair<int, size_type> solve(
+      const func_type &A, const array_type &b, array_type &x,
       const int kernel = TRADITION, const bool with_init_guess = false,
       const bool verbose = true) const override final {
     return _base::solve(A, b, x, kernel, with_init_guess, verbose);
