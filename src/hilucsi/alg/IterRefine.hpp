@@ -8,7 +8,7 @@
  * \author Qiao Chen
 
 \verbatim
-Copyright (C) 2019 NumGeom Group at Stony Brook University
+Copyright (C) 2020 NumGeom Group at Stony Brook University
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
