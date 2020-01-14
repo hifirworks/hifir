@@ -143,6 +143,7 @@ class FGMRES
   }
 
   /// \brief low level solve kernel
+  /// \tparam UseIR flag indicates whether or not enabling iterative refine
   /// \tparam Matrix user input matrix type, see \ref CRS and \ref CCS
   /// \tparam Operator "preconditioner" operator type, see
   ///         \ref internal::DummyJacobi,
@@ -159,7 +160,7 @@ class FGMRES
   /// \param[in] Cout "stdout" streamer
   /// \param[in] Cerr "stderr" streamer
   /// \note This is MGS kernel
-  template <class Matrix, class Operator, class StreamerCout,
+  template <bool UseIR, class Matrix, class Operator, class StreamerCout,
             class StreamerCerr>
   std::pair<int, size_type> _solve(const Matrix &A, const Operator &M,
                                    const array_type &b,
@@ -210,12 +211,13 @@ class FGMRES
         const auto jn = j * n;
         std::copy(_Q.cbegin() + jn, _Q.cbegin() + jn + n, _v.begin());
         if (n < (size_type)restart) _w.resize(n);
-        if (M.solve(A, _v, innersteps, _w)) {
-          Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
-               "Failed to call M operator at iteration %zd.", iter);
-          flag = M_SOLVE_ERROR;
-          break;
-        }
+        // if (M.solve(A, _v, innersteps, _w)) {
+        //   Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+        //        "Failed to call M operator at iteration %zd.", iter);
+        //   flag = M_SOLVE_ERROR;
+        //   break;
+        // }
+        UseIR ? M.solve(A, _v, innersteps, _w) : M.solve(_v, _w);
         std::copy(_w.cbegin(), _w.cend(), _Z.begin() + jn);
         // A.mv(_w, _v);
         mt::mv_nt(A, _w, _v);
