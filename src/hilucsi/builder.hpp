@@ -369,9 +369,11 @@ class HILUCSI {
   /// \param[out] x solution vector
   template <class Matrix, class RhsType, class SolType, typename T = void>
   inline typename std::enable_if<
-      std::is_same<typename Matrix::value_type, value_type>::value, T>::type
+      std::is_same<typename RhsType::value_type, value_type>::value, T>::type
   solve(const Matrix &A, const RhsType &b, const size_type N,
         SolType &x) const {
+    // NOTE, do not assume A shares interface of CRS, as it can be
+    // user callback
     _ir.iter_refine(*this, A, b, N, x);
   }
 
@@ -385,7 +387,7 @@ class HILUCSI {
   /// \param[out] x solution vector
   template <class Matrix, class RhsType, class SolType, typename T = void>
   inline typename std::enable_if<
-      !std::is_same<typename Matrix::value_type, value_type>::value, T>::type
+      !std::is_same<typename RhsType::value_type, value_type>::value, T>::type
   solve(const Matrix &A, const RhsType &b, const size_type N,
         SolType &x) const {
     _ir_hi.iter_refine(*this, A, b, N, x);
