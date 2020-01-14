@@ -30,7 +30,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define _HILUCSI_DS_COMPRESSEDSTORAGE_HPP
 
 #include <algorithm>
-#include <functional>
 #include <iterator>
 #include <type_traits>
 #include <utility>
@@ -38,7 +37,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "hilucsi/ds/Array.hpp"
 #include "hilucsi/utils/common.hpp"
 #include "hilucsi/utils/io.hpp"
-#include "hilucsi/utils/mt.hpp"
+#include "hilucsi/utils/mt_mv.hpp"
 
 namespace hilucsi {
 namespace internal {
@@ -2095,102 +2094,6 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   size_type _nrows;     ///< number of rows
   using _base::_psize;  ///< number of columns (primary entries)
 };
-
-namespace mt {
-
-/*!
- * \addtogroup ds
- * @{
- */
-
-/// \brief matrix vector in parallel with openmp
-/// \tparam CsType compressed storage type, e.g. \a CRS
-/// \tparam IArray input array type
-/// \tparam OArray output array type
-/// \param[in] A input matrix
-/// \param[in] x input array
-/// \param[out] y output array
-/// \note Sizes must match
-template <class CsType, class IArray, class OArray, typename T = void>
-inline typename std::enable_if<CsType::ROW_MAJOR, T>::type mv_nt(
-    const CsType &A, const IArray &x, OArray &y) {
-  hilucsi_error_if(A.nrows() != y.size() || A.ncols() != x.size(),
-                   "matrix vector multiplication unmatched sizes!");
-  int nthreads = get_nthreads();
-  if (nthreads == 0) nthreads = get_nthreads(-1);
-  if (nthreads == 1 || (A.nrows() < 1000u && A.nnz() / (double)A.nrows() <= 20))
-    return A.mv_nt(x, y);
-#ifdef _OPENMP
-#  pragma omp parallel num_threads(nthreads)
-#endif
-  do {
-    const auto part = uniform_partition(A.nrows(), nthreads, get_thread());
-    A.mv_nt_low(x.data(), part.first, part.second - part.first, y.data());
-  } while (false);  // parallel region
-}
-
-/// \brief matrix vector in parallel with openmp
-/// \tparam CsType compressed storage type, e.g. \a CRS
-/// \tparam Vx other value type for \a x
-/// \tparam Vy other value type for \a y
-/// \param[in] A input matrix
-/// \param[in] x input array
-/// \param[out] y output array
-/// \note Sizes must match
-template <class CsType, class Vx, class Vy, typename T = void>
-inline typename std::enable_if<CsType::ROW_MAJOR, T>::type mv_nt_low(
-    const CsType &A, const Vx *x, Vy *y) {
-  int nthreads = get_nthreads();
-  if (nthreads == 0) nthreads = get_nthreads(-1);
-  if (nthreads == 1 || (A.nrows() < 1000u && A.nnz() / (double)A.nrows() <= 20))
-    return A.mv_nt_low(x, y);
-#ifdef _OPENMP
-#  pragma omp parallel num_threads(nthreads)
-#endif
-  do {
-    const auto part = uniform_partition(A.nrows(), nthreads, get_thread());
-    A.mv_nt_low(x, part.first, part.second - part.first, y);
-  } while (false);  // parallel region
-}
-
-/// \brief CCS API compatibility
-template <class CsType, class IArray, class OArray, typename T = void>
-inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type mv_nt(
-    const CsType &A, const IArray &x, OArray &y) {
-  return A.mv_nt(x, y);
-}
-
-/// \brief CCS API compatibility
-template <class CsType, class Vx, class Vy, typename T = void>
-inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type mv_nt_low(
-    const CsType &A, const Vx *x, Vy *y) {
-  A.mv_nt_low(x, y);
-}
-
-// enable mt::mv_nt, i.e., multi-threaded matrix-vector no transpose for
-// functor A. Notice that because mt::mv_nt is used in both KSP and iterative
-// refinement interfaces, thus, overloading this function is the easiest way
-// to enable user callback for computing matrix-vector product.
-// NOTE: This is for interface compatibility!
-
-/// \brief use user functor for computing "matrix"-vector product
-/// \tparam ArrayType array type, see \ref Array
-/// \param[in] A callable functor
-/// \param[in] x array to multiply with
-/// \param[out] y y=A*x
-/// \note A(x, y) should return, conceptually, y=A*x
-/// \ingroup ksp
-template <class ArrayType>
-inline void mv_nt(const std::function<void(const ArrayType &, ArrayType &)> &A,
-                  const ArrayType &x, ArrayType &y) {
-  A(x, y);
-}
-
-/*!
- * @}
- */
-
-}  // namespace mt
 
 }  // namespace hilucsi
 
