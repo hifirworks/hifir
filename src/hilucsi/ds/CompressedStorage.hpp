@@ -30,6 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define _HILUCSI_DS_COMPRESSEDSTORAGE_HPP
 
 #include <algorithm>
+#include <functional>
 #include <iterator>
 #include <type_traits>
 #include <utility>
@@ -2164,6 +2165,25 @@ template <class CsType, class Vx, class Vy, typename T = void>
 inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type mv_nt_low(
     const CsType &A, const Vx *x, Vy *y) {
   A.mv_nt_low(x, y);
+}
+
+// enable mt::mv_nt, i.e., multi-threaded matrix-vector no transpose for
+// functor A. Notice that because mt::mv_nt is used in both KSP and iterative
+// refinement interfaces, thus, overloading this function is the easiest way
+// to enable user callback for computing matrix-vector product.
+// NOTE: This is for interface compatibility!
+
+/// \brief use user functor for computing "matrix"-vector product
+/// \tparam ArrayType array type, see \ref Array
+/// \param[in] A callable functor
+/// \param[in] x array to multiply with
+/// \param[out] y y=A*x
+/// \note A(x, y) should return, conceptually, y=A*x
+/// \ingroup ksp
+template <class ArrayType>
+inline void mv_nt(const std::function<void(const ArrayType &, ArrayType &)> &A,
+                  const ArrayType &x, ArrayType &y) {
+  A(x, y);
 }
 
 /*!
