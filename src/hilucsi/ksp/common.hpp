@@ -655,8 +655,6 @@ class UserOperatorBase {
   const M_type &M() const { return _M; }
 
   /// \brief wrapper around regular M solve
-  /// \tparam Matrix matrix type, see \ref CRS
-  template <class Matrix>
   inline void solve(const array_type &b, array_type &x0) const {
     _M.solve(b, x0);
   }
