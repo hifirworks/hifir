@@ -133,10 +133,7 @@ class FQMRCGSTAB
   /// \brief low level solve kernel
   /// \tparam UseIR flag indicates whether or not enabling iterative refine
   /// \tparam Matrix user input matrix type, see \ref CRS and \ref CCS
-  /// \tparam Operator "preconditioner" operator type, see
-  ///         \ref internal::DummyJacobi,
-  ///         \ref internal::Jacobi, and
-  ///         \ref internal::ChebyshevJacobi
+  /// \tparam Operator "preconditioner" operator type, see \ref HILUCSI
   /// \tparam StreamerCout cout streamer type
   /// \tparam StreamerCerr cerr streamer type
   /// \param[in] A user matrix

@@ -57,7 +57,7 @@ namespace hilucsi {
 ///
 /// In most cases, a (partial) constant mode is enough. If user-customized
 /// behaviors are needed, then it will be easy to work with user callback
-/// in C++ and override \ref Nspfilter::user_filter in other programming
+/// in C++ and override \ref NspFilter::user_filter in other programming
 /// environments, e.g., Python.
 class NspFilter {
  public:

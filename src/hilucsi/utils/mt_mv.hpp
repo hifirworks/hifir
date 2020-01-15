@@ -4,7 +4,7 @@
 
 /*!
  * \file hilucsi/utils/mt_mv.hpp
- * \brief Multithreaded matrix-vector product for \ref CRS
+ * \brief Multithreaded matrix-vector product for \a CRS
  * \author Qiao Chen
 
 \verbatim

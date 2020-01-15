@@ -314,7 +314,7 @@ struct Prec {
 /// We choose to use STL list because adding new node is constant time without
 /// bothering copying. It's worth noting that querying the size of \a list has
 /// become constant since C++11. Also, with the constructors in \ref Prec, the
-/// following two ways can be used to construct list:
+/// following way can be used to construct list:
 ///
 /// \code{.cpp}
 /// using precs_t = Precs<double, int>;
@@ -322,22 +322,6 @@ struct Prec {
 /// precs_t precs;
 /// precs.emplace_back(m, n, /* rvalue references */);
 /// \endcode
-///
-/// and
-///
-/// \code{.cpp}
-/// using precs_t = Precs<double, int>;
-/// using prec_t = precs_t::value_type;
-/// precs_t precs;
-/// precs.push_back(prec_t::EMPTY_PREC);
-/// auto &prec = precs.back();
-/// prec.move_destroy(/* lvalue references */);
-/// prec.m = m;
-/// prec.n = n;
-/// \endcode
-///
-/// These fit into the usage for Precs. Notice that for the second way, after
-/// calling \ref Prec::move_destroy, all input arguments will be destroyed.
 template <class ValueType, class IndexType, bool IntervalBased = true>
 using Precs = std::list<Prec<ValueType, IndexType, IntervalBased>>;
 
