@@ -33,6 +33,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "hilucsi/ksp/FBICGSTAB.hpp"
 #include "hilucsi/ksp/FGMRES.hpp"
 #include "hilucsi/ksp/FQMRCGSTAB.hpp"
+#include "hilucsi/ksp/GMRES.hpp"
 #include "hilucsi/ksp/TGMRESR.hpp"
 
 namespace hilucsi {
@@ -290,6 +291,7 @@ class KSPFactory {
   using tgmresr_type    = TGMRESR<MType, ValueType>;
   using fqmrcgstab_type = FQMRCGSTAB<MType, ValueType>;
   using fbicgstab_type  = FBICGSTAB<MType, ValueType>;
+  using gmres_type      = GMRES<MType, ValueType>;
   /// @}
 
   /// \name runtime
@@ -298,6 +300,7 @@ class KSPFactory {
   using tgmresr    = KSPAdaptor<tgmresr_type>;
   using fqmrcgstab = KSPAdaptor<fqmrcgstab_type>;
   using fbicgstab  = KSPAdaptor<fbicgstab_type>;
+  using gmres      = KSPAdaptor<gmres_type>;
   using abc_solver = typename fgmres::abc_solver_type;
   /// @}
 };
