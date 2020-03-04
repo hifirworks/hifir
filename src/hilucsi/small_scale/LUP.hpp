@@ -76,27 +76,14 @@ class LUP : public internal::SmallScaleBase<ValueType> {
 
   /// \brief solve \f$\mathbf{LUx}=\mathbf{Px}\f$
   /// \param[in,out] x input rhs, output solution
-  inline void solve(Array<value_type> &x) const {
+  inline void solve(Array<value_type> &x, const bool tran = false) const {
     hilucsi_error_if(
         _mat.empty() || _ipiv.empty(),
         "either the matrix is not set or the factorization has not yet done!");
     hilucsi_error_if(x.size() != _mat.nrows(),
                      "unmatched sizes between system and rhs");
-    if (_base::full_rank()) {
-      if (lapack_kernel::getrs(_mat, _ipiv, x) < 0)
-        hilucsi_error("GETRS returned negative info!");
-    } else {
-      // Not full rank
-      const size_type n = _ipiv.size();
-      for (size_type i = 0u; i < n; ++i)
-        if (static_cast<size_type>(_ipiv[i] - 1) != i)
-          std::swap(x[i], x[_ipiv[i] - 1]);
-      // solve partially U
-      lapack_kernel::trsv('U', 'N', 'N', _rank, _mat.data(), _mat.nrows(),
-                          x.data(), 1);
-      // solve L
-      lapack_kernel::trsv('L', 'N', 'U', _mat, x);
-    }
+    if (lapack_kernel::getrs(_mat, _ipiv, x, tran ? 'T' : 'N') < 0)
+      hilucsi_error("GETRS returned negative info!");
   }
 
  protected:

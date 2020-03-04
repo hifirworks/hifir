@@ -220,12 +220,13 @@ class MUMPS {
   /// \tparam ArrayType array type, see \ref Array
   /// \param[in,out] x rhs on input and solution on output
   template <class ArrayType>
-  inline void solve(ArrayType &x) const {
+  inline void solve(ArrayType &x, const bool tran = false) const {
     hilucsi_assert(_handle.job > 0, "invalid solver stage");
     hilucsi_assert(x.size() == _handle.n, "mismatched sizes");
     _handle.job      = 3;
     _handle.rhs      = x.data();
     _handle.infog[0] = 0;
+    _handle.icntl[8] = tran ? 2 : 1;  // transpose
     _trait::call_mumps(_handle);
   }
 
