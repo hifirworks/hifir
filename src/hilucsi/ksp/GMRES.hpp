@@ -148,7 +148,7 @@ class GMRES : public internal::KSP<GMRES<MType, ValueType>, MType, ValueType> {
   /// \param[in] A user matrix
   /// \param[in] M "preconditioner" operator
   /// \param[in] b right hard size
-  /// \param[in] innersteps inner steps for jacobi-style kernels
+  /// \param[in] innersteps inner steps for jacobi-style kernels, not used
   /// \param[in] zero_start flag to indicate \a x0 starts with all zeros
   /// \param[in,out] x0 initial guess and solution on output
   /// \param[in] Cout "stdout" streamer
@@ -167,6 +167,11 @@ class GMRES : public internal::KSP<GMRES<MType, ValueType>, MType, ValueType> {
     const static scalar_type _stag_eps =
         std::pow(scalar_type(10), -(scalar_type)_D);
 
+    (void)innersteps;
+    // warn that iterative refinement doesn't work for right-prec GMRES
+    if (UseIR)
+      Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+           "Right-preconditioned GMRES doesn\'t support iterative refinement.");
     size_type       iter(0);
     const size_type n     = b.size();
     const auto      beta0 = norm2(b);
@@ -205,7 +210,7 @@ class GMRES : public internal::KSP<GMRES<MType, ValueType>, MType, ValueType> {
         const auto jn = j * n;
         std::copy(_Q.cbegin() + jn, _Q.cbegin() + jn + n, _v.begin());
         if (n < (size_type)restart) _w.resize(n);
-        UseIR ? M.solve(A, _v, innersteps, _w) : M.solve(_v, _w);
+        M.solve(_v, _w);
         // A.mv(_w, _v);
         mt::mv_nt(A, _w, _v);
         if (n < (size_type)restart) _w.resize(restart);
@@ -261,8 +266,7 @@ class GMRES : public internal::KSP<GMRES<MType, ValueType>, MType, ValueType> {
         }
         if (!is_stag) stag_guard = 0;
         ++iter;
-        Cout("  At iteration %zd (#Ax:%zd), relative residual is %g.", iter,
-             innersteps, resid);
+        Cout("  At iteration %zd, relative residual is %g.", iter, resid);
         if (resid <= rtol || j + 1 >= (size_type)restart) break;
         ++j;
       }  // inf loop
@@ -282,7 +286,7 @@ class GMRES : public internal::KSP<GMRES<MType, ValueType>, MType, ValueType> {
       }
       // compute M solve
       _w.resize(n);
-      UseIR ? M.solve(A, _v, innersteps, _w) : M.solve(_v, _w);
+      M.solve(_v, _w);
       for (size_type k(0); k < n; ++k) x[k] += _w[k];  // accumulate sol
       if (resid <= rtol || flag != SUCCESS) break;
     }
