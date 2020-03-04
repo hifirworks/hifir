@@ -359,6 +359,22 @@ class HILUCSI {
     if (nsp) nsp->filter(x.data(), x.size());  // filter null space
   }
 
+  /// \brief solve \f$\mathbf{x}=\mathbf{M}^{-T}\mathbf{b}\f$
+  /// \tparam RhsType right-hand side type
+  /// \tparam SolType solution type
+  /// \param[in] b right-hand side vector
+  /// \param[out] x solution vector
+  template <class RhsType, class SolType>
+  inline void solve_tran(const RhsType &b, SolType &x) const {
+    hilucsi_error_if(empty(), "MILU-Prec is empty!");
+    hilucsi_error_if(b.size() != x.size(), "unmatched sizes");
+    if (_prec_work.empty())
+      _prec_work.resize(
+          compute_prec_work_space(_precs.cbegin(), _precs.cend()));
+    prec_solve_tran(_precs.cbegin(), b, x, _prec_work);
+    if (nsp_tran) nsp_tran->filter(x.data(), x.size());  // filter null space
+  }
+
   /// \brief solve with iterative refinement
   /// \tparam Matrix matrix type
   /// \tparam RhsType right-hand side type
@@ -393,7 +409,8 @@ class HILUCSI {
     _ir_hi.iter_refine(*this, A, b, N, x);
   }
 
-  NspFilterPtr nsp;  ///< null space filter
+  NspFilterPtr nsp;       ///< null space filter
+  NspFilterPtr nsp_tran;  ///< transpose null space filter (left null space)
 
  protected:
   template <class CsType, class CroutStreamer>

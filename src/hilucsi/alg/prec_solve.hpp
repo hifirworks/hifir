@@ -222,6 +222,45 @@ inline void prec_solve_udl_inv(const UType &U, const DiagType &d,
 
 #endif
 
+/// \brief triangular transpose solving kernel in \a hilucsi_solve algorithm
+/// \tparam UType compressed type for U
+/// \tparam LType compressed type for L
+/// \tparam DiagType diagonal vector type, see \ref Array
+/// \tparam RhsType rhs and solution type, generial array interface
+/// \param[in] U strictly upper part
+/// \param[in] d diagonal vector
+/// \param[in] L strictly lower part
+/// \param[in,out] y input rhs and solution upon output
+/// \ingroup slv
+///
+/// This routine is to solve:
+///
+/// \f[
+///   \mathbf{y}=\mathbf{L}^{-T}\mathbf{D}^{-1}\mathbf{U}^{-T}\mathbf{y}
+/// \f]
+///
+/// The overall complexity is linear assuming the local nnz are bounded by a
+/// constant.
+template <class UType, class DiagType, class LType, class RhsType>
+inline void prec_solve_udl_inv_tran(const UType &U, const DiagType &d,
+                                    const LType &L, RhsType &y) {
+  using size_type = typename LType::size_type;
+
+  const size_type m = U.nrows();
+  hilucsi_assert(U.ncols() == m, "U must be squared");
+  hilucsi_assert(L.nrows() == L.ncols(), "L must be squared");
+  hilucsi_assert(d.size() >= m, "diagonal must be no smaller than system size");
+  if (!m) return;
+
+  // y=inv(U)'*y
+  U.solve_as_strict_lower_tran(y);
+
+  // y=inv(D)*y
+  for (size_type i = 0u; i < m; ++i) y[i] /= d[i];
+
+  // y = inv(L)'*y
+  L.solve_as_strict_upper_tran(y);
+}
 }  // namespace internal
 
 /*!
@@ -348,6 +387,90 @@ inline void prec_solve(PrecItr prec_itr, const RhsType &b, SolType &y,
   // and permutation
 
   for (size_type i = 0u; i < n; ++i) y[i] = t[i] * work[q_inv[i]];
+}
+
+/// \brief Given multilevel preconditioner and rhs, solve the solution transpose
+/// \tparam PrecItr this is std::list<Prec>::const_iterator
+/// \tparam RhsType right hand side type, see \ref Array
+/// \tparam SolType solution type, see \ref Array
+/// \tparam WorkType buffer type, generic array interface, i.e. operator[]
+/// \param[in] prec_itr current iterator of a single level preconditioner
+/// \param[in] b right-hand side vector
+/// \param[out] y solution vector
+/// \param[out] work work space
+/// \sa prec_solve
+template <class PrecItr, class RhsType, class SolType, class WorkType>
+inline void prec_solve_tran(PrecItr prec_itr, const RhsType &b, SolType &y,
+                            WorkType &work) {
+  using prec_type = typename std::remove_const<
+      typename std::iterator_traits<PrecItr>::value_type>::type;
+  using value_type = typename prec_type::value_type;
+  using interface_value_type =
+      typename std::remove_reference<decltype(y[0])>::type;
+  using size_type            = typename prec_type::size_type;
+  using array_type           = Array<value_type>;
+  using interface_array_type = Array<interface_value_type>;
+  constexpr static bool WRAP = true;
+
+  hilucsi_assert(b.size() == y.size(), "solution and rhs sizes should match");
+
+  // preparations
+  const auto &    prec = *prec_itr;
+  const size_type m = prec.m, n = prec.n, nm = n - m;
+  const auto &    p_inv = prec.p_inv, &q = prec.q;
+  const auto &    s = prec.s, &t = prec.t;
+
+  // first compute the permutated vector (1:m), and store it to work(1:m)
+  for (size_type i = 0u; i < m; ++i) work[i] = t[q[i]] * b[q[i]];
+
+  // compute the F part only if F is not empty
+  if (prec.F.ncols()) {
+    // solve B^{-T}
+    internal::prec_solve_udl_inv_tran(prec.U_B, prec.d_B, prec.L_B, work);
+    prec.F.mv_t_low(&work[0], y.data() + m);
+    for (size_type i(m); i < n; ++i) y[i] = t[q[i]] * b[q[i]] - y[i];
+  }
+
+  // check for last level dense (direct) solver
+  if (prec.is_last_level()) {
+    if (nm) {
+      // create an array wrapper with size of n-m, of y(m+1:n)
+      auto y_mn = array_type(nm, &work[0], WRAP);
+      std::copy_n(y.data() + m, nm, y_mn.begin());
+      if (prec.sparse_solver.empty())
+        prec.dense_solver.solve(y_mn, true);
+      else {
+        prec.sparse_solver.solve(y_mn, true);
+        hilucsi_error_if(prec.sparse_solver.info(), "%s returned error %d",
+                         prec.sparse_solver.backend(),
+                         prec.sparse_solver.info());
+      }
+      std::copy_n(y_mn.cbegin(), nm, y.data() + m);
+    }
+  } else {
+    // recursive call
+    auto        y_mn      = interface_array_type(nm, y.data() + m, WRAP);
+    value_type *work_next = &work[n];  // advance to next buffer region
+    auto        work_b    = array_type(nm, &work[0] + m, WRAP);
+    std::copy(y_mn.cbegin(), y_mn.cend(), work_b.begin());
+    // rec call, note that y_mn should store the solution
+    prec_solve_tran(++prec_itr, work_b, y_mn, work_next);
+  }
+
+  // copy y(m+1:n) to work(m+1:n)
+  std::copy(y.cbegin() + m, y.cend(), &work[0] + m);
+
+  // only handle the E part if it's not empty
+  if (nm) {
+    prec.E.mv_t_low(y.data() + m, &work[0]);
+    for (size_type i(0); i < m; ++i) work[i] = t[q[i]] * b[q[i]] - work[i];
+  }
+  internal::prec_solve_udl_inv_tran(prec.U_B, prec.d_B, prec.L_B, work);
+
+  // Now, we have work(1:n) storing the complete solution before final scaling
+  // and permutation
+
+  for (size_type i(0); i < n; ++i) y[i] = s[i] * work[p_inv[i]];
 }
 
 /// \brief compute the \b safe buffer size for \ref prec_solve
