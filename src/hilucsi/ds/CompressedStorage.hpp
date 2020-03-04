@@ -1210,6 +1210,17 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
     }
   }
 
+  /// \brief Assume as a strict lower matrix and solve with transpose backward
+  /// \tparam RhsType Rhs type
+  /// \param[in,out] y Input rhs, output solution
+  template <class RhsType>
+  inline void solve_as_strict_lower_tran(RhsType &y) const {
+    // "cast" to other type, i.e., CCS, and invoke upper solve
+    other_type(_ncols, (ipointer)row_start().data(), (ipointer)col_ind().data(),
+               (pointer)vals().data(), true)
+        .solve_as_strict_upper(y);
+  }
+
   /// \brief Assume as a strict upper matrix and solve with backward sub
   /// \tparam RhsType Rhs type
   /// \param[in,out] y Input rhs, output solution
@@ -1230,6 +1241,17 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
         tmp += *v_itr * y[*itr];
       y[j1] -= tmp;
     }
+  }
+
+  /// \brief Assume as a strict upper matrix and solve with transpose forward
+  /// \tparam RhsType Rhs type
+  /// \param[in] y Input rhs, output solution
+  template <class RhsType>
+  inline void solve_as_strict_upper_tran(RhsType &y) const {
+    // "cast" to other type, i.e., CCS, and invoke upper solve
+    other_type(_ncols, (ipointer)row_start().data(), (ipointer)col_ind().data(),
+               (pointer)vals().data(), true)
+        .solve_as_strict_lower(y);
   }
 
   /// \brief read a native binary file
@@ -1889,6 +1911,17 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
     }
   }
 
+  /// \brief Assume as a strict lower matrix and solve with transpose backward
+  /// \tparam RhsType Rhs type
+  /// \param[in,out] y Input rhs, output solution
+  template <class RhsType>
+  inline void solve_as_strict_lower_tran(RhsType &y) const {
+    // "cast" CRS and solve with upper
+    other_type(_nrows, (ipointer)col_start().data(), (ipointer)row_ind().data(),
+               (pointer)vals().data(), true)
+        .solve_as_strict_upper(y);
+  }
+
   /// \brief Assume as a strict upper matrix and solve with backward sub
   /// \tparam RhsType Rhs type
   /// \param[in,out] y Input rhs, output solution
@@ -1907,6 +1940,16 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
            ++itr, ++v_itr)
         y[*itr] -= *v_itr * y_j;
     }
+  }
+
+  /// \brief Assume as a strict upper matrix and solve tranpose forward
+  /// \tparam RhsType Rhs type
+  /// \param[in,out] y Input rhs, output solution
+  template <class RhsType>
+  inline void solve_as_strict_upper_tran(RhsType &y) const {
+    other_type(_nrows, (ipointer)col_start().data(), (ipointer)row_ind().data(),
+               (pointer)vals().data(), true)
+        .solve_as_strict_lower(y);
   }
 
   /// \brief read a native HILUCSI binary file
