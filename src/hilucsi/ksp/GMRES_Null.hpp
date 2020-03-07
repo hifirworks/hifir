@@ -3,8 +3,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /*!
- * \file hilucsi/ksp/GMRES.hpp
- * \brief Right-preconditioned GMRES implementation
+ * \file hilucsi/ksp/GMRES_Null.hpp
+ * \brief Right-preconditioned GMRES null space solver
  * \author Qiao Chen
 
 \verbatim
@@ -26,10 +26,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
  */
 
-#ifndef _HILUCSI_KSP_GMRES_HPP
-#define _HILUCSI_KSP_GMRES_HPP
+#ifndef _HILUCSI_KSP_GMRES_NULL_HPP
+#define _HILUCSI_KSP_GMRES_NULL_HPP
 
 #include <cmath>
+#include <functional>
 #include <limits>
 #include <utility>
 
@@ -39,15 +40,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 namespace hilucsi {
 namespace ksp {
 
-/// \class GMRES
+/// \class GMRES_Null
 /// \tparam MType preconditioner type, see \ref HILUCSI
 /// \tparam ValueType if not given, i.e. \a void, then use value in \a MType
-/// \brief right-preconditioned GMRES implementation
+/// \brief right-preconditioned GMRES for (left) null space
 /// \ingroup gmres
 template <class MType, class ValueType = void>
-class GMRES : public internal::KSP<GMRES<MType, ValueType>, MType, ValueType> {
+class GMRES_Null
+    : public internal::KSP<GMRES_Null<MType, ValueType>, MType, ValueType> {
  protected:
-  using _base = internal::KSP<GMRES<MType, ValueType>, MType, ValueType>;
+  using _base = internal::KSP<GMRES_Null<MType, ValueType>, MType, ValueType>;
   ///< base
   // grant friendship
   friend _base;
@@ -77,19 +79,18 @@ class GMRES : public internal::KSP<GMRES<MType, ValueType>, MType, ValueType> {
   using _base::lamb1;
   using _base::lamb2;
 
-  GMRES() = default;
+  GMRES_Null() = default;
 
   /// \brief constructor with all essential parameters
   /// \param[in] M multilevel ILU preconditioner
-  /// \param[in] rel_tol relative tolerance for convergence (1e-6 for double)
+  /// \param[in] rel_tol relative tolerance for convergence (1e-13 for double)
   /// \param[in] rs restart, default is 30
   /// \param[in] max_iters maximum number of iterations
   /// \param[in] max_inner_steps maximum inner iterations for jacobi kernels
-  explicit GMRES(
-      std::shared_ptr<M_type> M,
-      const scalar_type       rel_tol = DefaultSettings<value_type>::rtol,
-      const int               rs      = 30,
-      const size_type max_iters       = DefaultSettings<value_type>::max_iters,
+  explicit GMRES_Null(
+      std::shared_ptr<M_type> M, const scalar_type rel_tol = 1e-13,
+      const int       rs        = 30,
+      const size_type max_iters = DefaultSettings<value_type>::max_iters,
       const size_type max_inner_steps =
           DefaultSettings<value_type>::inner_steps)
       : _base(M, rel_tol, max_iters, max_inner_steps) {
@@ -139,6 +140,18 @@ class GMRES : public internal::KSP<GMRES<MType, ValueType>, MType, ValueType> {
     return _base::_validate(A, b, x);
   }
 
+  /// \brief helper function for applying matrix vector transpose
+  template <class Matrix>
+  static void _apply_mv_t(const Matrix &A, const array_type &x, array_type &y) {
+    A.mv_t(x, y);
+  }
+
+  static void _apply_mv_t(
+      const std::function<void(const array_type &, array_type &)> &A,
+      const array_type &x, array_type &y) {
+    A(x, y);
+  }
+
   /// \brief low level solve kernel
   /// \tparam UseIR flag indicates whether or not enabling iterative refine
   /// \tparam Matrix user input matrix type, see \ref CRS and \ref CCS
@@ -147,7 +160,7 @@ class GMRES : public internal::KSP<GMRES<MType, ValueType>, MType, ValueType> {
   /// \tparam StreamerCerr cerr streamer type
   /// \param[in] A user matrix
   /// \param[in] M "preconditioner" operator
-  /// \param[in] b right hard size
+  /// \param[in] right_null right-hand side input of (right) null space
   /// \param[in] innersteps inner steps for jacobi-style kernels, not used
   /// \param[in] zero_start flag to indicate \a x0 starts with all zeros
   /// \param[in,out] x0 initial guess and solution on output
@@ -157,7 +170,7 @@ class GMRES : public internal::KSP<GMRES<MType, ValueType>, MType, ValueType> {
   template <bool UseIR, class Matrix, class Operator, class StreamerCout,
             class StreamerCerr>
   std::pair<int, size_type> _solve(const Matrix &A, const Operator &M,
-                                   const array_type &b,
+                                   const array_type &right_null,
                                    const size_type   innersteps,
                                    const bool zero_start, array_type &x0,
                                    const StreamerCout &Cout,
@@ -172,6 +185,7 @@ class GMRES : public internal::KSP<GMRES<MType, ValueType>, MType, ValueType> {
     if (UseIR)
       Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
            "Right-preconditioned GMRES doesn\'t support iterative refinement.");
+    const auto &    b = right_null;
     size_type       iter(0);
     const size_type n     = b.size();
     const auto      beta0 = norm2(b);
@@ -193,12 +207,16 @@ class GMRES : public internal::KSP<GMRES<MType, ValueType>, MType, ValueType> {
         Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
              "Couldn\'t solve with %d restarts.", restart);
       // initial residual
-      if (iter || !zero_start) {
-        // A.mv(x, _v);
-        mt::mv_nt(A, x, _v);
-        for (size_type i = 0u; i < n; ++i) _v[i] = b[i] - _v[i];
+      if (!iter) {
+        if (!zero_start) {
+          GMRES_Null::_apply_mv_t(A, x, _v);
+          // A.mv_t(x, _v);
+          // mt::mv_nt(A, x, _v);
+          for (size_type i = 0u; i < n; ++i) _v[i] = b[i] - _v[i];
+        } else
+          std::copy_n(b.cbegin(), n, _v.begin());
       } else
-        std::copy_n(b.cbegin(), n, _v.begin());
+        for (size_type i = 0u; i < n; ++i) _v[i] = b[i] - _v[i];
       const auto beta     = norm2(_v);
       _y[0]               = beta;
       const auto inv_beta = 1. / beta;
@@ -208,11 +226,21 @@ class GMRES : public internal::KSP<GMRES<MType, ValueType>, MType, ValueType> {
       auto      R_itr = _R.begin();
       for (;;) {
         const auto jn = j * n;
-        std::copy(_Q.cbegin() + jn, _Q.cbegin() + jn + n, _v.begin());
         if (n < (size_type)restart) _w.resize(n);
-        M.solve(_v, _w);
-        // A.mv(_w, _v);
-        mt::mv_nt(A, _w, _v);
+        // test for range-symmetric
+        if (!iter) {
+          GMRES_Null::_apply_mv_t(A, _v, _w);
+          // A.mv_t_low(&_Q[0], &_w[0]);
+          if (norm2(_w) <= rtol * beta) {
+            Cout("range-symmetric system detected!");
+            flag = STAGNATED;
+            break;
+          }
+        }
+        std::copy(_Q.cbegin() + jn, _Q.cbegin() + jn + n, _v.begin());
+        M.solve_tran(_v, _w);
+        GMRES_Null::_apply_mv_t(A, _w, _v);
+        // A.mv_t(_w, _v);
         if (n < (size_type)restart) _w.resize(restart);
         for (size_type k = 0u; k <= j; ++k) {
           auto itr       = _Q.cbegin() + k * n;
@@ -249,12 +277,12 @@ class GMRES : public internal::KSP<GMRES<MType, ValueType>, MType, ValueType> {
           flag = BREAK_DOWN;
           break;
         }
-        const bool is_stag = resid >= resid_prev * (1 - _stag_eps);
+        const bool is_stag = resid >= resid_prev * (1.0 - rtol);
         if (is_stag) {
           ++stag_guard;
           if (stag_guard > 1) {
-            Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
-                 "Stagnated detected at iteration %zd.", iter);
+            Cout("Let null space solver: Stagnated detected at iteration %zd.",
+                 iter);
             flag = STAGNATED;
             break;
           }
@@ -270,25 +298,38 @@ class GMRES : public internal::KSP<GMRES<MType, ValueType>, MType, ValueType> {
         if (resid <= rtol || j + 1 >= (size_type)restart) break;
         ++j;
       }  // inf loop
-      // backsolve
-      for (int k = j; k > -1; --k) {
-        --R_itr;
-        _y[k] /= *R_itr;
-        const auto tmp = _y[k];
-        for (int i = k - 1; i > -1; --i) _y[i] -= tmp * *(--R_itr);
-      }
-      // compute Q*y
-      std::fill_n(_v.begin(), n, 0);
-      for (size_type i = 0u; i <= j; ++i) {
-        const auto tmp   = _y[i];
-        auto       Q_itr = _Q.cbegin() + i * n;
-        for (size_type k = 0u; k < n; ++k) _v[k] += tmp * Q_itr[k];
-      }
-      // compute M solve
-      _w.resize(n);
-      M.solve(_v, _w);
-      for (size_type k(0); k < n; ++k) x[k] += _w[k];  // accumulate sol
-      if (resid <= rtol || flag != SUCCESS) break;
+      value_type null_res = 0.0;
+      if (iter) {
+        // backsolve
+        for (int k = j; k > -1; --k) {
+          --R_itr;
+          _y[k] /= *R_itr;
+          const auto tmp = _y[k];
+          for (int i = k - 1; i > -1; --i) _y[i] -= tmp * *(--R_itr);
+        }
+        // compute Q*y
+        std::fill_n(_v.begin(), n, 0);
+        for (size_type i = 0u; i <= j; ++i) {
+          const auto tmp   = _y[i];
+          auto       Q_itr = _Q.cbegin() + i * n;
+          for (size_type k = 0u; k < n; ++k) _v[k] += tmp * Q_itr[k];
+        }
+        // compute M solve
+        _w.resize(n);
+        M.solve_tran(_v, _w);
+        for (size_type k(0); k < n; ++k) x[k] += _w[k];  // accumulate sol
+        // normalize x
+        const auto nrm_x = 1. / norm2(x);
+        for (size_type i(0); i < n; ++i) x[i] *= nrm_x;
+        // compute null space residual
+        GMRES_Null::_apply_mv_t(A, x, _v);
+        // A.mv_t(x, _v);
+        null_res = norm2(_v);
+      } else
+        std::copy_n(_Q.cbegin(), n, x.begin());
+      Cout("At outer iteration %zd, left null space residual is %g.",
+           it_outer + 1u, null_res);
+      if (null_res <= rtol) break;
     }
     return std::make_pair(flag, iter);
   }
@@ -296,4 +337,4 @@ class GMRES : public internal::KSP<GMRES<MType, ValueType>, MType, ValueType> {
 }  // namespace ksp
 }  // namespace hilucsi
 
-#endif  // _HILUCSI_KSP_FGMRES_HPP
+#endif  // _HILUCSI_KSP_GMRES_NULL_HPP

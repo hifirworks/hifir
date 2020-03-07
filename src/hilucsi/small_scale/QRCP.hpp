@@ -142,9 +142,10 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
   ///
   /// Notice that \f$\mathbf{R}^{-1}\mathbf{Q}^T\f$ is the
   /// pseudo-inverse of \f$\mathbf{AP}\f$.
-  inline void solve(Array<value_type> &x) const {
+  inline void solve(Array<value_type> &x, const bool tran = false) const {
     using v_t = typename ValueTypeTrait<value_type>::value_type;
 
+    hilucsi_error_if(tran, "QRCP does not support transpose solve!");
     hilucsi_error_if(
         _mat.empty() || _jpvt.empty(),
         "either the matrix is not set or the factorization has not yet done!");

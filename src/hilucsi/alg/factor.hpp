@@ -1143,7 +1143,8 @@ inline CsType level_factorize(const CsType &                   A,
 
   precs.emplace_back(m, n, std::move(L_B), std::move(d), std::move(U_B),
                      std::move(E), std::move(F), std::move(s), std::move(t),
-                     std::move(p()), std::move(q.inv()));
+                     std::move(p()), std::move(p.inv()), std::move(q()),
+                     std::move(q.inv()));
 
   // report if using interval based data structures
   if (hilucsi_verbose(INFO, opts)) {

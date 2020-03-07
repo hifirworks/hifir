@@ -54,7 +54,7 @@ struct DummySparseSolver {
   inline constexpr int         info() const { return 0; }
   inline static const char *   backend() { return "DummySparse"; }
   template <class ArrayType>
-  inline void solve(ArrayType &) {}
+  inline void solve(ArrayType &, const bool = false) {}
 };
 }  // namespace internal
 
@@ -111,11 +111,14 @@ struct Prec {
   /// \param[in] S row scaling
   /// \param[in] T column scaling
   /// \param[in] P row permutation
+  /// \param[in] P_inv inverse row permutation
+  /// \param[in] Q column permutation
   /// \param[in] Q_inv inverse column permutation
   /// \note This allows us to use emplace back in STL efficiently
   Prec(size_type mm, size_type nn, mat_type &&L_b, array_type &&d_b,
        mat_type &&U_b, mat_type &&e, mat_type &&f, array_type &&S,
-       array_type &&T, perm_type &&P, perm_type &&Q_inv)
+       array_type &&T, perm_type &&P, perm_type &&P_inv, perm_type &&Q,
+       perm_type &&Q_inv)
       : m(mm),
         n(nn),
         L_B(std::move(L_b)),
@@ -126,6 +129,8 @@ struct Prec {
         s(std::move(S)),
         t(std::move(T)),
         p(std::move(P)),
+        p_inv(std::move(P_inv)),
+        q(std::move(Q)),
         q_inv(std::move(Q_inv)) {}
 
   /// \brief get number of nonzeros
@@ -282,6 +287,8 @@ struct Prec {
   array_type                 s;      ///< row scaling vector
   array_type                 t;      ///< column scaling vector
   perm_type                  p;      ///< row permutation matrix
+  perm_type                  p_inv;  ///< row inverse permutation matrix
+  perm_type                  q;      ///< column permutation matrix
   perm_type                  q_inv;  ///< column inverse permutation matrix
   sss_solver_type            dense_solver;   ///< dense decomposition
   mutable sparse_direct_type sparse_solver;  ///< sparse solver
