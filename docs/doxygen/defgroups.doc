@@ -43,6 +43,9 @@
 /// \defgroup sparse Sparse Direct Solver
 /// \ingroup alg
 
+/// \defgroup ir Iterative Refinement
+/// \ingroup alg
+
 /// \defgroup itr HILUCSI User Interfaces
 
 /// \defgroup macros Preprocessor macros

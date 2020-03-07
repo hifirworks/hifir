@@ -2,7 +2,7 @@
 //                This file is part of HILUCSI project                       //
 //===========================================================================//
 
-// comprehensive demo
+// Demo with user callback for computing A*x
 // authors: Qiao,
 //
 // Copyright (C) 2019 NumGeom Group at Stony Brook University
@@ -36,6 +36,7 @@ using crs_t       = prec_t::crs_type;
 using array_t     = prec_t::array_type;
 using ksp_factory = ksp::KSPFactory<prec_t>;
 using solver_t    = ksp_factory::abc_solver;
+using func_t      = solver_t::func_type;
 
 // get the input data, (A, b, m)
 static std::tuple<crs_t, array_t, array_t::size_type> get_inputs(string dir);
@@ -120,13 +121,15 @@ int main(int argc, char *argv[]) {
 #endif
 
   // solve
+  // wrap user callback
+  const func_t AA = [&](const array_t &x, array_t &y) { mt::mv_nt(A, x, y); };
   timer.start();
   std::shared_ptr<solver_t> solver(create_ksp(ksp, _M));
   solver->set_rtol(rtol);
   if (solver->is_arnoldi()) solver->set_restart_or_cycle(restart);
   int                 flag;
   solver_t::size_type iters;
-  std::tie(flag, iters) = solver->solve(A, b, x, kernel, false, opts.verbose);
+  std::tie(flag, iters) = solver->solve(AA, b, x, kernel, false, opts.verbose);
   timer.finish();
   const auto   normb = norm2(b);
   const double rs    = solver->get_resids().back() / normb;

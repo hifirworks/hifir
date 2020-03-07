@@ -297,11 +297,9 @@ class TGMRESR
   }
 #endif
   /// \brief low level solve kernel
+  /// \tparam UseIR flag indicates whether or not enabling iterative refine
   /// \tparam Matrix user input matrix type, see \ref CRS and \ref CCS
-  /// \tparam Operator "preconditioner" operator type, see
-  ///         \ref internal::DummyJacobi,
-  ///         \ref internal::Jacobi, and
-  ///         \ref internal::ChebyshevJacobi
+  /// \tparam Operator "preconditioner" operator type, see \ref HILUCSI
   /// \tparam StreamerCout cout streamer type
   /// \tparam StreamerCerr cerr streamer type
   /// \param[in] A user matrix
@@ -312,7 +310,7 @@ class TGMRESR
   /// \param[in,out] x0 initial guess and solution on output
   /// \param[in] Cout "stdout" streamer
   /// \param[in] Cerr "stderr" streamer
-  template <class Matrix, class Operator, class StreamerCout,
+  template <bool UseIR, class Matrix, class Operator, class StreamerCout,
             class StreamerCerr>
   std::pair<int, size_type> _solve(const Matrix &A, const Operator &M,
                                    const array_type &b,
@@ -352,12 +350,13 @@ class TGMRESR
       const size_type j = _perm[iter], jn = j * n, j_next = _perm[iter + 1],
                       start = iter < cycle ? 0 : iter - cycle + 1;
       auto c_itr = _Q.begin() + jn, u_itr = _Z.begin() + jn;
-      if (M.solve(A, _r, innersteps, u)) {
-        Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
-             "Failed to call M operator at iteration %zd.", iter);
-        flag = M_SOLVE_ERROR;
-        break;
-      }
+      // if (M.solve(A, _r, innersteps, u)) {
+      //   Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+      //        "Failed to call M operator at iteration %zd.", iter);
+      //   flag = M_SOLVE_ERROR;
+      //   break;
+      // }
+      UseIR ? M.solve(A, _r, innersteps, u) : M.solve(_r, u);
       mt::mv_nt(A, u, c);
       // A.mv(u, c);
       for (size_type k = start; k < iter; ++k) {

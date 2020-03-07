@@ -131,11 +131,9 @@ class FQMRCGSTAB
   }
 
   /// \brief low level solve kernel
+  /// \tparam UseIR flag indicates whether or not enabling iterative refine
   /// \tparam Matrix user input matrix type, see \ref CRS and \ref CCS
-  /// \tparam Operator "preconditioner" operator type, see
-  ///         \ref internal::DummyJacobi,
-  ///         \ref internal::Jacobi, and
-  ///         \ref internal::ChebyshevJacobi
+  /// \tparam Operator "preconditioner" operator type, see \ref HILUCSI
   /// \tparam StreamerCout cout streamer type
   /// \tparam StreamerCerr cerr streamer type
   /// \param[in] A user matrix
@@ -146,7 +144,7 @@ class FQMRCGSTAB
   /// \param[in,out] x0 initial guess and solution on output
   /// \param[in] Cout "stdout" streamer
   /// \param[in] Cerr "stderr" streamer
-  template <class Matrix, class Operator, class StreamerCout,
+  template <bool UseIR, class Matrix, class Operator, class StreamerCout,
             class StreamerCerr>
   std::pair<int, size_type> _solve(const Matrix &A, const Operator &M,
                                    const array_type &b,
@@ -185,12 +183,13 @@ class FQMRCGSTAB
 
     // main loop
     for (; iter <= maxit; ++iter) {
-      if (M.solve(A, _p, innersteps, _ph)) {
-        Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
-             "Failed to call M operator at iteration %zd.", iter);
-        flag = M_SOLVE_ERROR;
-        break;
-      }
+      // if (M.solve(A, _p, innersteps, _ph)) {
+      //   Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+      //        "Failed to call M operator at iteration %zd.", iter);
+      //   flag = M_SOLVE_ERROR;
+      //   break;
+      // }
+      UseIR ? M.solve(A, _p, innersteps, _ph) : M.solve(_p, _ph);
       mt::mv_nt(A, _ph, _v);
       // A.mv(_ph, _v);
       auto rho2 = inner(r0, _v);
@@ -220,12 +219,13 @@ class FQMRCGSTAB
       }
       for (size_type i(0); i < n; ++i) _x2[i] = x[i] + eta2 * _d2[i];
 
-      if (M.solve(A, _s, innersteps, _sh)) {
-        Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
-             "Failed to call M operator at iteration %zd.", iter);
-        flag = M_SOLVE_ERROR;
-        break;
-      }
+      // if (M.solve(A, _s, innersteps, _sh)) {
+      //   Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
+      //        "Failed to call M operator at iteration %zd.", iter);
+      //   flag = M_SOLVE_ERROR;
+      //   break;
+      // }
+      UseIR ? M.solve(A, _s, innersteps, _sh) : M.solve(_s, _sh);
       mt::mv_nt(A, _sh, _t);
       // A.mv(_sh, _t);
 

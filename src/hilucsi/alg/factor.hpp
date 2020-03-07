@@ -84,10 +84,9 @@ namespace internal {
 /// \param[in] opts control parameters, i.e. Options
 /// \param[in] lvl levels
 /// \return refined parameters
-inline std::tuple<double, double, double, double, int, int> determine_fac_pars(
-    const Options &opts, const int lvl) {
-  double tau_d, tau_kappa, tau_U, tau_L;
-  int    alpha_L, alpha_U;
+inline std::tuple<double, double, double, double, double, double>
+determine_fac_pars(const Options &opts, const int lvl) {
+  double tau_d, tau_kappa, tau_U, tau_L, alpha_L, alpha_U;
   if (opts.rf_par) {
     const int    fac  = std::min(lvl, 2);
     const double fac2 = 1. / std::min(10.0, std::pow(10.0, lvl - 1));
@@ -622,8 +621,8 @@ inline CsType level_factorize(const CsType &                   A,
                    "memory allocation failed for U:row_start at level %zd.",
                    cur_level);
   do {
-    const size_type rsv_fac =
-        HILUCSI_RESERVE_FAC <= 0 ? opts.alpha_U : HILUCSI_RESERVE_FAC;
+    const size_type rsv_fac = HILUCSI_RESERVE_FAC <= 0 ? std::ceil(opts.alpha_U)
+                                                       : HILUCSI_RESERVE_FAC;
     U.reserve(A.nnz() * rsv_fac);
     hilucsi_error_if(
         U.col_ind().status() == DATA_UNDEF || U.vals().status() == DATA_UNDEF,
@@ -636,8 +635,8 @@ inline CsType level_factorize(const CsType &                   A,
                    "memory allocation failed for L:col_start at level %zd.",
                    cur_level);
   do {
-    const size_type rsv_fac =
-        HILUCSI_RESERVE_FAC <= 0 ? opts.alpha_L : HILUCSI_RESERVE_FAC;
+    const size_type rsv_fac = HILUCSI_RESERVE_FAC <= 0 ? std::ceil(opts.alpha_L)
+                                                       : HILUCSI_RESERVE_FAC;
     L.reserve(A.nnz() * rsv_fac);
     hilucsi_error_if(
         L.row_ind().status() == DATA_UNDEF || L.vals().status() == DATA_UNDEF,
@@ -686,8 +685,7 @@ inline CsType level_factorize(const CsType &                   A,
   L.begin_assemble_cols();
 
   // localize parameters
-  double tau_d, tau_kappa, tau_L, tau_U;
-  int    alpha_L, alpha_U;
+  double tau_d, tau_kappa, tau_L, tau_U, alpha_L, alpha_U;
   std::tie(tau_d, tau_kappa, tau_L, tau_U, alpha_L, alpha_U) =
       internal::determine_fac_pars(opts, cur_level);
 
@@ -1033,7 +1031,11 @@ inline CsType level_factorize(const CsType &                   A,
       timer2.start();
       const size_type nnz1 = L_E.nnz(), nnz2 = U_F2.nnz();
 #ifndef HILUCSI_NO_DROP_LE_UF
-      const double a_L = opts.alpha_L, a_U = opts.alpha_U;
+      double a_L = opts.alpha_L, a_U = opts.alpha_U;
+      if (cur_level == 1u && opts.fat_schur_1st) {
+        a_L *= 2;
+        a_U *= 2;
+      }
       if (hilucsi_verbose(INFO, opts))
         hilucsi_info(
             "applying dropping on L_E and U_F with alpha_{L,U}=%g,%g...", a_L,
@@ -1141,7 +1143,8 @@ inline CsType level_factorize(const CsType &                   A,
 
   precs.emplace_back(m, n, std::move(L_B), std::move(d), std::move(U_B),
                      std::move(E), std::move(F), std::move(s), std::move(t),
-                     std::move(p()), std::move(q.inv()));
+                     std::move(p()), std::move(p.inv()), std::move(q()),
+                     std::move(q.inv()));
 
   // report if using interval based data structures
   if (hilucsi_verbose(INFO, opts)) {

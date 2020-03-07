@@ -34,9 +34,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <type_traits>
 #include <utility>
 #include <vector>
-
-#include <mkl_spblas.h>
-
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+#  include <mkl_spblas.h>
+#endif  // DOXYGEN_SHOULD_SKIP_THIS
 #include "hilucsi/ds/Array.hpp"
 #include "hilucsi/utils/log.hpp"
 

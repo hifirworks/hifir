@@ -34,10 +34,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <numeric>
 #include <type_traits>
 
+#include "hilucsi/NspFilter.hpp"
 #include "hilucsi/Options.h"
+#include "hilucsi/alg/IterRefine.hpp"
 #include "hilucsi/alg/Prec.hpp"
 #include "hilucsi/alg/factor.hpp"
 #include "hilucsi/alg/prec_solve.hpp"
+#include "hilucsi/utils/common.hpp"
 #include "hilucsi/utils/mt.hpp"
 
 #include "hilucsi/version.h"
@@ -201,6 +204,16 @@ class HILUCSI {
     return *itr;
   }
 
+  /// \brief clear internal storage
+  inline void clear() {
+    _precs.clear();
+    // _prec_work.resize(0);
+    array_type().swap(_prec_work);
+    nsp.reset();
+    _ir.clear();
+    _ir_hi.clear();
+  }
+
   /// \brief factorize the MILU preconditioner
   /// \tparam CsType compressed storage input, either \ref CRS or \ref CCS
   /// \param[in] A input matrix
@@ -246,8 +259,9 @@ class HILUCSI {
     DefaultTimer t;  // record overall time
     t.start();
     if (!empty()) {
-      hilucsi_warning(
-          "multilevel precs are not empty, wipe previous results first");
+      if (hilucsi_verbose(INFO, opts))
+        hilucsi_info(
+            "multilevel precs are not empty, wipe previous results first");
       _precs.clear();
       // also clear the previous buffer
       _prec_work.resize(0);
@@ -342,7 +356,61 @@ class HILUCSI {
       _prec_work.resize(
           compute_prec_work_space(_precs.cbegin(), _precs.cend()));
     prec_solve(_precs.cbegin(), b, x, _prec_work);
+    if (nsp) nsp->filter(x.data(), x.size());  // filter null space
   }
+
+  /// \brief solve \f$\mathbf{x}=\mathbf{M}^{-T}\mathbf{b}\f$
+  /// \tparam RhsType right-hand side type
+  /// \tparam SolType solution type
+  /// \param[in] b right-hand side vector
+  /// \param[out] x solution vector
+  template <class RhsType, class SolType>
+  inline void solve_tran(const RhsType &b, SolType &x) const {
+    hilucsi_error_if(empty(), "MILU-Prec is empty!");
+    hilucsi_error_if(b.size() != x.size(), "unmatched sizes");
+    if (_prec_work.empty())
+      _prec_work.resize(
+          compute_prec_work_space(_precs.cbegin(), _precs.cend()));
+    prec_solve_tran(_precs.cbegin(), b, x, _prec_work);
+    if (nsp_tran) nsp_tran->filter(x.data(), x.size());  // filter null space
+  }
+
+  /// \brief solve with iterative refinement
+  /// \tparam Matrix matrix type
+  /// \tparam RhsType right-hand side type
+  /// \tparam SolType solution type
+  /// \param[in] A matrix operator
+  /// \param[in] b right-hand side vector
+  /// \param[in] N iteration count
+  /// \param[out] x solution vector
+  template <class Matrix, class RhsType, class SolType, typename T = void>
+  inline typename std::enable_if<
+      std::is_same<typename RhsType::value_type, value_type>::value, T>::type
+  solve(const Matrix &A, const RhsType &b, const size_type N,
+        SolType &x) const {
+    // NOTE, do not assume A shares interface of CRS, as it can be
+    // user callback
+    _ir.iter_refine(*this, A, b, N, x);
+  }
+
+  /// \brief solve with iterative refinement (high-precision)
+  /// \tparam Matrix matrix type
+  /// \tparam RhsType right-hand side type
+  /// \tparam SolType solution type
+  /// \param[in] A matrix operator
+  /// \param[in] b right-hand side vector
+  /// \param[in] N iteration count
+  /// \param[out] x solution vector
+  template <class Matrix, class RhsType, class SolType, typename T = void>
+  inline typename std::enable_if<
+      !std::is_same<typename RhsType::value_type, value_type>::value, T>::type
+  solve(const Matrix &A, const RhsType &b, const size_type N,
+        SolType &x) const {
+    _ir_hi.iter_refine(*this, A, b, N, x);
+  }
+
+  NspFilterPtr nsp;       ///< null space filter
+  NspFilterPtr nsp_tran;  ///< transpose null space filter (left null space)
 
  protected:
   template <class CsType, class CroutStreamer>
@@ -382,11 +450,14 @@ class HILUCSI {
   }
 
  protected:
-  precs_type         _precs;      ///< multilevel preconditioners
-  mutable array_type _prec_work;  ///< preconditioner work space for solving
-  size_type          _stats[6];   ///< statistics
-  size_type          _nrows;      ///< number of rows from user input
-  size_type          _ncols;      ///< number of columns from user input
+  precs_type             _precs;      ///< multilevel preconditioners
+  mutable array_type     _prec_work;  ///< preconditioner work space for solving
+  size_type              _stats[6];   ///< statistics
+  size_type              _nrows;      ///< number of rows from user input
+  size_type              _ncols;      ///< number of columns from user input
+  IterRefine<value_type> _ir;         ///< iterative refinement
+  IterRefine<typename ValueTypeMixedTrait<value_type>::boost_type> _ir_hi;
+  ///< high-precision iterative refinement
 };
 
 /// \typedef DefaultHILUCSI

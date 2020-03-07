@@ -31,6 +31,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <complex>
 #include <cstddef>
+#include <functional>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -90,26 +91,28 @@ class DefaultSettings {
   ///< default relative tolerance for residual convergence
   static constexpr std::size_t max_iters = 500u;
   ///< maximum number of iterations
-  static constexpr std::size_t inner_steps = 4u;  ///< inner flexible iterations
+  static constexpr std::size_t inner_steps = 2u;  ///< inner flexible iterations
 };
 
 /// \brief flags for flexible kernels
 enum {
   TRADITION = 0,     ///< traditional kernel
-  JACOBI,            ///< with inner jacobi iterations
-  CHEBYSHEV_JACOBI,  ///< with inner Jacobi plus Chebyshev accelerations
+  ITERATIVE_REFINE,  ///< with inner IR iterations
+  CHEBYSHEV_ITERATIVE_REFINE,
+  ///< with inner IR plus Chebyshev accelerations (not used for now)
 };
 
 /*!
  * @}
  */
-
 namespace internal {
 
 /*!
  * \addtogroup ksp
  * @{
  */
+
+#if 0
 
 /// \class JacobiBase
 /// \tparam Child child jacobi iteration object, either \ref Jacobi or
@@ -352,6 +355,8 @@ class DummyJacobi {
   const M_type &_M;  ///< reference to preconditioner
 };
 
+#endif
+
 /// \class KSP
 /// \brief Krylov subspace method base
 /// \tparam ChildSolver child solver type
@@ -377,6 +382,8 @@ class KSP {
   typedef typename array_type::value_type value_type;  ///< value type
   typedef typename DefaultSettings<value_type>::scalar_type scalar_type;
   ///< scalar type from value_type
+  typedef std::function<void(const array_type &, array_type &)> func_type;
+  ///< callable user function wrapper for computing matrix-vector product
 
   static_assert(std::is_floating_point<scalar_type>::value,
                 "must be floating point type");
@@ -392,8 +399,8 @@ class KSP {
   ///< max numer of iterations
   size_type inner_steps = DefaultSettings<value_type>::inner_steps;
   ///< inner flexible iterations
-  value_type lamb1   = 0.9;  ///< est of largest eigenvalue
-  value_type lamb2   = 0.0;  ///< est of smallest eigenvalue
+  value_type lamb1   = 0.9;  ///< est of largest eigenvalue (not used)
+  value_type lamb2   = 0.0;  ///< est of smallest eigenvalue (not used)
   int        restart = 0;    ///< restart
 
   KSP() = default;
@@ -446,16 +453,16 @@ class KSP {
       return std::make_pair(INVALID_ARGS, size_type(0));
     if (verbose) _show("tradition", with_init_guess, restart);
     if (!with_init_guess) std::fill(x.begin(), x.end(), value_type(0));
-    const internal::DummyJacobi<M_type, value_type> M(*_M);
     if (verbose)
       hilucsi_info("Calling traditional %s kernel...", ChildSolver::repr());
     return verbose
-               ? _this()._solve(A, M, b, 1u, !with_init_guess, x, Cout, Cerr)
-               : _this()._solve(A, M, b, 1u, !with_init_guess, x,
-                                Dummy_streamer, Dummy_cerr);
+               ? _this().template _solve<false>(A, *_M, b, 1u, !with_init_guess,
+                                                x, Cout, Cerr)
+               : _this().template _solve<false>(A, *_M, b, 1u, !with_init_guess,
+                                                x, Dummy_streamer, Dummy_cerr);
   }
 
-  /// \brief solve with \ref _M as Jacobi operator
+  /// \brief solve with \ref _M as iterative refinement operator
   /// \tparam Matrix user input type, see \ref CRS and \ref CCS
   /// \param[in] A user input matrix
   /// \param[in] b right-hand side vector
@@ -464,9 +471,10 @@ class KSP {
   ///             \a x as starting values
   /// \param[in] verbose if \a true (default), enable verbose printing
   template <class Matrix>
-  inline std::pair<int, size_type> solve_jacobi(
-      const Matrix &A, const array_type &b, array_type &x,
-      const bool with_init_guess = false, const bool verbose = true) const {
+  inline std::pair<int, size_type> solve_IR(const Matrix &    A,
+                                            const array_type &b, array_type &x,
+                                            const bool with_init_guess = false,
+                                            const bool verbose = true) const {
     const static hilucsi::internal::StdoutStruct       Cout;
     const static hilucsi::internal::StderrStruct       Cerr;
     const static hilucsi::internal::DummyStreamer      Dummy_streamer;
@@ -475,76 +483,15 @@ class KSP {
     if (_this()._validate(A, b, x))
       return std::make_pair(INVALID_ARGS, size_type(0));
     if (verbose) _show("jacobi", with_init_guess, restart);
-    const internal::Jacobi<M_type, value_type> M(*_M);
     if (!with_init_guess) std::fill(x.begin(), x.end(), value_type(0));
     if (verbose)
       hilucsi_info("Calling Jacobi %s kernel...", ChildSolver::repr());
-    return verbose ? _this()._solve(A, M, b, inner_steps, !with_init_guess, x,
-                                    Cout, Cerr)
-                   : _this()._solve(A, M, b, inner_steps, !with_init_guess, x,
-                                    Dummy_streamer, Dummy_cerr);
-  }
-
-  /// \brief solve with \ref _M as Jacobi operator plus Chebyshev acceleration
-  /// \tparam Matrix user input type, see \ref CRS and \ref CCS
-  /// \param[in] A user input matrix
-  /// \param[in] b right-hand side vector
-  /// \param[in,out] x solution
-  /// \param[in] with_init_guess if \a false (default), then assign zero to
-  ///             \a x as starting values
-  /// \param[in] verbose if \a true (default), enable verbose printing
-  template <class Matrix>
-  inline std::pair<int, size_type> solve_chebyshev(
-      const Matrix &A, const array_type &b, array_type &x,
-      const bool with_init_guess = false, const bool verbose = true) const {
-    const static hilucsi::internal::StdoutStruct       Cout;
-    const static hilucsi::internal::StderrStruct       Cerr;
-    const static hilucsi::internal::DummyStreamer      Dummy_streamer;
-    const static hilucsi::internal::DummyErrorStreamer Dummy_cerr;
-
-    if (_this()._validate(A, b, x))
-      return std::make_pair(INVALID_ARGS, size_type(0));
-    const internal::ChebyshevJacobi<M_type, value_type> M(*_M, lamb1, lamb2);
-    if (verbose) {
-      _show("Chebyshev", with_init_guess, restart);
-      hilucsi_info("Calling Chebyshev-Jacobi %s kernel...",
-                   ChildSolver::repr());
-      hilucsi_warning("Chebyshev-Jacobi is experiemental...");
-    }
-    if (!with_init_guess) std::fill(x.begin(), x.end(), value_type(0));
-    return verbose ? _this()._solve(A, M, b, inner_steps, !with_init_guess, x,
-                                    Cout, Cerr)
-                   : _this()._solve(A, M, b, inner_steps, !with_init_guess, x,
-                                    Dummy_streamer, Dummy_cerr);
-  }
-
-  /// \brief solve for solution
-  /// \tparam Matrix user input type, see \ref CRS and \ref CCS
-  /// \param[in] A user input matrix
-  /// \param[in] b right-hand side vector
-  /// \param[in,out] x solution
-  /// \param[in] kernel default is TRADITION, i.e. \ref solve_precond
-  /// \param[in] with_init_guess if \a false (default), then assign zero to
-  ///             \a x as starting values
-  /// \param[in] verbose if \a true (default), enable verbose printing
-  template <class Matrix>
-  inline std::pair<int, size_type> solve(const Matrix &A, const array_type &b,
-                                         array_type &x,
-                                         const int   kernel = TRADITION,
-                                         const bool  with_init_guess = false,
-                                         const bool  verbose = true) const {
-    switch (kernel) {
-      case TRADITION:
-        return solve_precond(A, b, x, with_init_guess, verbose);
-      case JACOBI:
-        return solve_jacobi(A, b, x, with_init_guess, verbose);
-      case CHEBYSHEV_JACOBI:
-        return solve_chebyshev(A, b, x, with_init_guess, verbose);
-      default:
-        hilucsi_warning("Unknown choice of %s kernel %d", ChildSolver::repr(),
-                        kernel);
-        return std::make_pair(-99, size_type(0));
-    }
+    return verbose
+               ? _this().template _solve<true>(A, *_M, b, inner_steps,
+                                               !with_init_guess, x, Cout, Cerr)
+               : _this().template _solve<true>(A, *_M, b, inner_steps,
+                                               !with_init_guess, x,
+                                               Dummy_streamer, Dummy_cerr);
   }
 
   /// \brief solver with user operator
@@ -572,10 +519,42 @@ class KSP {
     if (!with_init_guess) std::fill(x.begin(), x.end(), value_type(0));
     if (verbose)
       hilucsi_info("Calling user-M %s kernel...", ChildSolver::repr());
-    return verbose ? _this()._solve(A, M, b, inner_steps, !with_init_guess, x,
-                                    Cout, Cerr)
-                   : _this()._solve(A, M, b, inner_steps, !with_init_guess, x,
-                                    Dummy_streamer, Dummy_cerr);
+    return verbose ? _this().template _solve<true>(
+                         A, M, b, inner_steps, !with_init_guess, x, Cout, Cerr)
+                   : _this().template _solve<true>(A, M, b, inner_steps,
+                                                   !with_init_guess, x,
+                                                   Dummy_streamer, Dummy_cerr);
+  }
+
+  /// \brief solve for solution
+  /// \tparam Matrix user input type, see \ref CRS and \ref CCS
+  /// \param[in] A user input matrix
+  /// \param[in] b right-hand side vector
+  /// \param[in,out] x solution
+  /// \param[in] kernel default is TRADITION, i.e. \ref solve_precond
+  /// \param[in] with_init_guess if \a false (default), then assign zero to
+  ///             \a x as starting values
+  /// \param[in] verbose if \a true (default), enable verbose printing
+  template <class Matrix>
+  inline std::pair<int, size_type> solve(const Matrix &A, const array_type &b,
+                                         array_type &x,
+                                         const int   kernel = TRADITION,
+                                         const bool  with_init_guess = false,
+                                         const bool  verbose = true) const {
+    switch (kernel) {
+      case TRADITION:
+        return solve_precond(A, b, x, with_init_guess, verbose);
+      case ITERATIVE_REFINE:
+        return solve_IR(A, b, x, with_init_guess, verbose);
+      case CHEBYSHEV_ITERATIVE_REFINE:
+        hilucsi_warning(
+            "Chebyshev acceleration is not implemented, use regular IR");
+        return solve_IR(A, b, x, with_init_guess, verbose);
+      default:
+        hilucsi_warning("Unknown choice of %s kernel %d", ChildSolver::repr(),
+                        kernel);
+        return std::make_pair(-99, size_type(0));
+    }
   }
 
  protected:
@@ -604,6 +583,18 @@ class KSP {
     if (!_M || _M->empty()) return true;
     if (_M->nrows() != A.nrows()) return true;
     if (b.size() != A.nrows()) return true;
+    if (b.size() != x.size()) return true;
+    if (rtol <= 0.0) return true;
+    if (maxit == 0u) return true;
+    if (inner_steps == 0u) return true;
+    return false;
+  }
+
+  /// \brief validation checking for user function
+  inline bool _validate(const func_type &, const array_type &b,
+                        const array_type &x) const {
+    if (!_M || _M->empty()) return true;
+    if (b.size() != _M->nrows()) return true;
     if (b.size() != x.size()) return true;
     if (rtol <= 0.0) return true;
     if (maxit == 0u) return true;
@@ -643,20 +634,41 @@ class KSP {
 /// \ingroup ksp
 ///
 /// This is defined for user to inherit their customized operators without
-/// worrying about definining member types. Notice this class derives from
-/// \ref DummyJacobi, but the \a solve method is not virtual!
+/// worrying about definining member types.
 template <class MType, class ValueType = void>
-class UserOperatorBase : public internal::DummyJacobi<MType, ValueType> {
-  using _base = internal::DummyJacobi<MType, ValueType>;
-
+class UserOperatorBase {
  public:
-  using M_type = typename _base::M_type;  ///< hilucsi type
+  typedef MType                                             M_type;  ///< M type
+  typedef typename std::conditional<std::is_void<ValueType>::value,
+                                    typename M_type::array_type,
+                                    Array<ValueType>>::type array_type;
+  ///< value array type
+  typedef typename M_type::size_type size_type;  ///< size
 
   UserOperatorBase() = delete;
 
   /// \brief constructor with preconditioner
   /// \param[in] M reference to the preconditioner
-  explicit UserOperatorBase(const M_type &M) : _base(M) {}
+  explicit UserOperatorBase(const M_type &M) : _M(M) {}
+
+  /// \brief get reference to preconditioner
+  const M_type &M() const { return _M; }
+
+  /// \brief wrapper around regular M solve
+  inline void solve(const array_type &b, array_type &x0) const {
+    _M.solve(b, x0);
+  }
+
+  /// \brief wrapper around preconditioner solve
+  /// \tparam Matrix matrix type, see \ref CRS
+  template <class Matrix>
+  inline void solve(const Matrix &, const array_type &b, const size_type,
+                    array_type &x0) const {
+    _M.solve(b, x0);
+  }
+
+ protected:
+  const M_type &_M;  ///< reference to preconditioner
 };
 
 }  // namespace ksp
