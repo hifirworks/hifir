@@ -34,6 +34,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "hilucsi/ksp/FGMRES.hpp"
 #include "hilucsi/ksp/FQMRCGSTAB.hpp"
 #include "hilucsi/ksp/GMRES.hpp"
+#include "hilucsi/ksp/GMRES_Null.hpp"
 #include "hilucsi/ksp/TGMRESR.hpp"
 
 namespace hilucsi {
@@ -292,6 +293,7 @@ class KSPFactory {
   using fqmrcgstab_type = FQMRCGSTAB<MType, ValueType>;
   using fbicgstab_type  = FBICGSTAB<MType, ValueType>;
   using gmres_type      = GMRES<MType, ValueType>;
+  using gmres_null_type = GMRES_Null<MType, ValueType>;
   /// @}
 
   /// \name runtime
@@ -301,6 +303,7 @@ class KSPFactory {
   using fqmrcgstab = KSPAdaptor<fqmrcgstab_type>;
   using fbicgstab  = KSPAdaptor<fbicgstab_type>;
   using gmres      = KSPAdaptor<gmres_type>;
+  using gmres_null = KSPAdaptor<gmres_null_type>;
   using abc_solver = typename fgmres::abc_solver_type;
   /// @}
 };
