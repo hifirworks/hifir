@@ -200,7 +200,6 @@ class GMRES_Null
     auto &      x    = x0;
     int         flag = SUCCESS;
     scalar_type resid(1);
-    int         stag_guard(0);
     for (size_type it_outer = 0u; it_outer < max_outer_iters; ++it_outer) {
       Cout("Enter outer iteration %zd...", it_outer + 1);
       if (it_outer)
@@ -238,7 +237,7 @@ class GMRES_Null
           }
         }
         std::copy(_Q.cbegin() + jn, _Q.cbegin() + jn + n, _v.begin());
-        M.solve_tran(_v, _w);
+        M.solve(_v, _w);
         GMRES_Null::_apply_mv_t(A, _w, _v);
         // A.mv_t(_w, _v);
         if (n < (size_type)restart) _w.resize(restart);
@@ -278,27 +277,23 @@ class GMRES_Null
           break;
         }
         const bool is_stag = resid >= resid_prev * (1.0 - rtol);
-        if (is_stag) {
-          ++stag_guard;
-          if (stag_guard > 1) {
-            Cout("Let null space solver: Stagnated detected at iteration %zd.",
-                 iter);
-            flag = STAGNATED;
-            break;
-          }
+        if (resid <= 1.0 - 1e-8) {
+          Cout("Let null space solver: Stagnated detected at iteration %zd.",
+               iter);
+          flag = STAGNATED;
+          break;
         } else if (iter >= maxit) {
           Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
                "Reached maxit iteration limit %zd.", maxit);
           flag = DIVERGED;
           break;
         }
-        if (!is_stag) stag_guard = 0;
         ++iter;
-        Cout("  At iteration %zd, relative residual is %g.", iter, resid);
+        Cout("  At iteration %zd, relative residual is %.16g.", iter, resid);
         if (resid <= rtol || j + 1 >= (size_type)restart) break;
         ++j;
       }  // inf loop
-      value_type null_res = 0.0;
+      value_type null_res = 0.0, norm_x = 0.0;
       if (iter) {
         // backsolve
         for (int k = j; k > -1; --k) {
@@ -316,20 +311,23 @@ class GMRES_Null
         }
         // compute M solve
         _w.resize(n);
-        M.solve_tran(_v, _w);
+        M.solve(_v, _w);
         for (size_type k(0); k < n; ++k) x[k] += _w[k];  // accumulate sol
         // normalize x
-        const auto nrm_x = 1. / norm2(x);
-        for (size_type i(0); i < n; ++i) x[i] *= nrm_x;
+        norm_x = 1. / norm2(x);
+        // for (size_type i(0); i < n; ++i) x[i] *= nrm_x;
         // compute null space residual
         GMRES_Null::_apply_mv_t(A, x, _v);
         // A.mv_t(x, _v);
-        null_res = norm2(_v);
+        null_res = norm2(_v) * norm_x;
       } else
         std::copy_n(_Q.cbegin(), n, x.begin());
       Cout("At outer iteration %zd, left null space residual is %g.",
            it_outer + 1u, null_res);
-      if (null_res <= rtol) break;
+      if (null_res <= rtol) {
+        for (size_type i(0); i < n; ++i) x[i] *= norm_x;
+        break;
+      }
     }
     return std::make_pair(flag, iter);
   }
