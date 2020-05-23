@@ -67,7 +67,7 @@ class QMRCGSTAB_Null
                 "must be floating point type");
 
   /// \brief get the solver name
-  inline static const char *repr() { return "FQMRCGSTAB"; }
+  inline static const char *repr() { return "QMRCGSTAB_Null"; }
 
   using _base::rtol;
 
@@ -309,7 +309,7 @@ class QMRCGSTAB_Null
       rho1 = rho2;
     }  // for
 
-    if (flag == SUCCESS && _resids.back() > rtol * normb) {
+    if (flag == DIVERGED) {
       Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
            "Reached maxit iteration limit %zd.", maxit);
       flag = DIVERGED;

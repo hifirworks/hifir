@@ -1153,13 +1153,13 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
     if (!_psize) return;
     std::fill_n(y, ncols(), Vy(0));
     for (size_type i = 0u; i < _psize; ++i) {
-      const auto temp  = x[i];
-      auto       v_itr = _base::val_cbegin(i);
-      auto       i_itr = col_ind_cbegin(i);
+      const Vy temp  = x[i];
+      auto     v_itr = _base::val_cbegin(i);
+      auto     i_itr = col_ind_cbegin(i);
       for (auto last = col_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
         const size_type j = *i_itr;
         hilucsi_assert(j < _ncols, "%zd exceeds column size", j);
-        y[j] += *v_itr * temp;
+        y[j] += temp * *v_itr;
       }
     }
   }
@@ -1856,14 +1856,16 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   template <class Vx, class Vy>
   inline void mv_t_low(const Vx *x, Vy *y) const {
     for (size_type i = 0u; i < _psize; ++i) {
-      y[i]       = 0;
       auto v_itr = _base::val_cbegin(i);
       auto i_itr = row_ind_cbegin(i);
+      Vy   tmp(0);
       for (auto last = row_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
         hilucsi_assert(size_type(*i_itr) < _nrows, "%zd exceeds the size bound",
                        size_type(*i_itr));
-        y[i] += x[*i_itr] * *v_itr;
+        Vy xi = x[*i_itr];
+        tmp += (xi *= *v_itr);
       }
+      y[i] = tmp;
     }
   }
 

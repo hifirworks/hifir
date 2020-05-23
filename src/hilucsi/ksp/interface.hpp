@@ -37,6 +37,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "hilucsi/ksp/GMRES_Null.hpp"
 #include "hilucsi/ksp/QMRCGSTAB_Null.hpp"
 #include "hilucsi/ksp/TGMRESR.hpp"
+#include "hilucsi/ksp/TGMRESR_Null.hpp"
 
 namespace hilucsi {
 namespace ksp {
@@ -296,6 +297,7 @@ class KSPFactory {
   using gmres_type          = GMRES<MType, ValueType>;
   using gmres_null_type     = GMRES_Null<MType, ValueType>;
   using qmrcgstab_null_type = QMRCGSTAB_Null<MType, ValueType>;
+  using tgmresr_null_type   = TGMRESR_Null<MType, ValueType>;
   /// @}
 
   /// \name runtime
@@ -307,6 +309,7 @@ class KSPFactory {
   using gmres          = KSPAdaptor<gmres_type>;
   using gmres_null     = KSPAdaptor<gmres_null_type>;
   using qmrcgstab_null = KSPAdaptor<qmrcgstab_null_type>;
+  using tgmresr_null   = KSPAdaptor<tgmresr_null_type>;
   using abc_solver     = typename fgmres::abc_solver_type;
   /// @}
 };

@@ -34,6 +34,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <limits>
 #include <utility>
 
+#include "hilucsi/ds/Array.hpp"
 #include "hilucsi/ksp/common.hpp"
 #include "hilucsi/utils/math.hpp"
 
@@ -67,7 +68,7 @@ class GMRES_Null
                 "must be floating point type");
 
   /// \brief get the solver name
-  inline static const char *repr() { return "GMRES"; }
+  inline static const char *repr() { return "GMRES_Null"; }
 
   using _base::rtol;
 
@@ -106,9 +107,11 @@ class GMRES_Null
   mutable array_type _y;
   mutable array_type _R;
   mutable array_type _Q;  ///< Q space
+  mutable array_type _Z;
   mutable array_type _J;
   mutable array_type _v;
   mutable array_type _w;
+  mutable array_type _kappa;
   /// @}
   using _base::_M;
   using _base::_resids;
@@ -126,9 +129,11 @@ class GMRES_Null
     _y.resize(restart + 1);
     _R.resize(restart * (restart + 1) / 2);  // packed storage
     _Q.resize(n * restart);
+    _Z.resize(_Q.size());
     _J.resize(2 * restart);
     _v.resize(n);
     _w.resize(std::max(n, size_type(restart)));
+    _kappa.resize(restart);
     _base::_init_resids();
   }
 
@@ -150,6 +155,23 @@ class GMRES_Null
       const std::function<void(const array_type &, array_type &)> &A,
       const array_type &x, array_type &y) {
     A(x, y);
+  }
+
+  template <class R_Iter>
+  static void _estimate_abs_cond_R(const R_Iter r_row, const int len,
+                                   array_type &kappa) {
+    if (len == 1)
+      kappa[0] = 1. / *r_row;
+    else {
+      value_type s(0);
+      int        i(0);
+      for (; i < len - 1; ++i) s += kappa[i] * r_row[i];
+      const value_type k1 = value_type(1) - s, k2 = -value_type(1) - s;
+      if (std::abs(k1) < std::abs(k2))
+        kappa[i] = k2 / r_row[i];
+      else
+        kappa[i] = k1 / r_row[i];
+    }
   }
 
   /// \brief low level solve kernel
@@ -237,7 +259,8 @@ class GMRES_Null
           }
         }
         std::copy(_Q.cbegin() + jn, _Q.cbegin() + jn + n, _v.begin());
-        M.solve(_v, _w);
+        it_outer ? M.solve(A, _v, 6, _w) : M.solve(_v, _w);
+        std::copy(_w.cbegin(), _w.cend(), _Z.begin() + jn);
         GMRES_Null::_apply_mv_t(A, _w, _v);
         // A.mv_t(_w, _v);
         if (n < (size_type)restart) _w.resize(restart);
@@ -276,7 +299,11 @@ class GMRES_Null
           flag = BREAK_DOWN;
           break;
         }
-        const bool is_stag = resid >= resid_prev * (1.0 - rtol);
+        GMRES_Null::_estimate_abs_cond_R(R_itr - j - 1, j + 1, _kappa);
+        if (std::abs(_kappa[j]) >= 1e9) {
+          flag = STAGNATED;
+          break;
+        }
         if (resid <= 1.0 - 1e-8) {
           Cout("Let null space solver: Stagnated detected at iteration %zd.",
                iter);
@@ -303,16 +330,21 @@ class GMRES_Null
           for (int i = k - 1; i > -1; --i) _y[i] -= tmp * *(--R_itr);
         }
         // compute Q*y
-        std::fill_n(_v.begin(), n, 0);
+        // std::fill_n(_v.begin(), n, 0);
+        // for (size_type i = 0u; i <= j; ++i) {
+        //   const auto tmp   = _y[i];
+        //   auto       Q_itr = _Q.cbegin() + i * n;
+        //   for (size_type k = 0u; k < n; ++k) _v[k] += tmp * Q_itr[k];
+        // }
         for (size_type i = 0u; i <= j; ++i) {
           const auto tmp   = _y[i];
-          auto       Q_itr = _Q.cbegin() + i * n;
-          for (size_type k = 0u; k < n; ++k) _v[k] += tmp * Q_itr[k];
+          auto       Z_itr = _Z.cbegin() + i * n;
+          for (size_type k = 0u; k < n; ++k) x[k] += tmp * Z_itr[k];
         }
         // compute M solve
         _w.resize(n);
-        M.solve(_v, _w);
-        for (size_type k(0); k < n; ++k) x[k] += _w[k];  // accumulate sol
+        // M.solve(_v, _w);
+        // for (size_type k(0); k < n; ++k) x[k] += _w[k];  // accumulate sol
         // normalize x
         norm_x = 1. / norm2(x);
         // for (size_type i(0); i < n; ++i) x[i] *= nrm_x;
