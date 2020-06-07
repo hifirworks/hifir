@@ -244,7 +244,8 @@ class GMRES_Null
       if (!it_outer) _resids[0] = beta;
       for (size_type i = 0u; i < n; ++i) _Q[i] = _v[i] * inv_beta;
       size_type j(0);
-      auto      R_itr = _R.begin();
+      auto      R_itr  = _R.begin();
+      const int min_ir = std::min(8, 1 << it_outer);
       for (;;) {
         const auto jn = j * n;
         if (n < (size_type)restart) _w.resize(n);
@@ -259,7 +260,7 @@ class GMRES_Null
           }
         }
         std::copy(_Q.cbegin() + jn, _Q.cbegin() + jn + n, _v.begin());
-        it_outer ? M.solve(A, _v, 6, _w) : M.solve(_v, _w);
+        it_outer ? M.solve(A, _v, min_ir, _w) : M.solve(_v, _w);
         std::copy(_w.cbegin(), _w.cend(), _Z.begin() + jn);
         GMRES_Null::_apply_mv_t(A, _w, _v);
         // A.mv_t(_w, _v);
@@ -299,11 +300,11 @@ class GMRES_Null
           flag = BREAK_DOWN;
           break;
         }
-        GMRES_Null::_estimate_abs_cond_R(R_itr - j - 1, j + 1, _kappa);
-        if (std::abs(_kappa[j]) >= 1e9) {
-          flag = STAGNATED;
-          break;
-        }
+        // GMRES_Null::_estimate_abs_cond_R(R_itr - j - 1, j + 1, _kappa);
+        // if (std::abs(_kappa[j]) >= 1e9) {
+        //   flag = STAGNATED;
+        //   break;
+        // }
         if (resid <= 1.0 - 1e-8) {
           Cout("Let null space solver: Stagnated detected at iteration %zd.",
                iter);
