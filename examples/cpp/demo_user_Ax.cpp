@@ -154,7 +154,8 @@ int main(int argc, char *argv[]) {
 
 static std::tuple<crs_t, array_t, array_t::size_type> get_inputs(string dir) {
   if (dir.back() != '/') dir += "/";
-  const std::string  A_file = dir + "A.psmilu", b_file = dir + "b.txt";
+  std::string A_file = dir + "A.psmilu", b_file = dir + "b.txt";
+  if (!std::ifstream(A_file).good()) A_file = dir + "A.hilucsi";
   array_t::size_type m(0);
   crs_t              A = crs_t::from_bin(A_file.c_str(), &m);
   array_t            b(A.nrows());
