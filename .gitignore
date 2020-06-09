@@ -37,3 +37,4 @@ docs/hilucsi4py/README.rst
 _build
 CMakeCache.txt
 CMakeFiles
+*.dSYM
