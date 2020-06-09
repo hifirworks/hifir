@@ -37,9 +37,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "hilucsi/ds/DenseMatrix.hpp"
 #include "hilucsi/utils/log.hpp"
 
-#include "lup.hpp"
-#include "qrcp.hpp"
-#include "trsv.hpp"
+#include "hilucsi/small_scale/lup_lapack.hpp"
+#include "hilucsi/small_scale/qrcp_lapack.hpp"
+#include "hilucsi/small_scale/trsv_lapack.hpp"
 
 namespace hilucsi {
 
