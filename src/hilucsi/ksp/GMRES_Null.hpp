@@ -151,12 +151,6 @@ class GMRES_Null
     A.mv_t(x, y);
   }
 
-  static void _apply_mv_t(
-      const std::function<void(const array_type &, array_type &)> &A,
-      const array_type &x, array_type &y) {
-    A(x, y);
-  }
-
   template <class R_Iter>
   static void _estimate_abs_cond_R(const R_Iter r_row, const int len,
                                    array_type &kappa) {
@@ -230,7 +224,7 @@ class GMRES_Null
       // initial residual
       if (!iter) {
         if (!zero_start) {
-          GMRES_Null::_apply_mv_t(A, x, _v);
+          mt::mv_nt(A, x, _v);
           // A.mv_t(x, _v);
           // mt::mv_nt(A, x, _v);
           for (size_type i = 0u; i < n; ++i) _v[i] = b[i] - _v[i];
@@ -251,7 +245,7 @@ class GMRES_Null
         if (n < (size_type)restart) _w.resize(n);
         // test for range-symmetric
         if (!iter) {
-          GMRES_Null::_apply_mv_t(A, _v, _w);
+          mt::mv_nt(A, _v, _w);
           // A.mv_t_low(&_Q[0], &_w[0]);
           if (norm2(_w) <= rtol * beta) {
             Cout("range-symmetric system detected!");
@@ -262,7 +256,7 @@ class GMRES_Null
         std::copy(_Q.cbegin() + jn, _Q.cbegin() + jn + n, _v.begin());
         it_outer ? M.solve(A, _v, min_ir, _w) : M.solve(_v, _w);
         std::copy(_w.cbegin(), _w.cend(), _Z.begin() + jn);
-        GMRES_Null::_apply_mv_t(A, _w, _v);
+        mt::mv_nt(A, _w, _v);
         // A.mv_t(_w, _v);
         if (n < (size_type)restart) _w.resize(restart);
         for (size_type k = 0u; k <= j; ++k) {
@@ -350,7 +344,7 @@ class GMRES_Null
         norm_x = 1. / norm2(x);
         // for (size_type i(0); i < n; ++i) x[i] *= nrm_x;
         // compute null space residual
-        GMRES_Null::_apply_mv_t(A, x, _v);
+        mt::mv_nt(A, x, _v);
         // A.mv_t(x, _v);
         null_res = norm2(_v) * norm_x;
       } else
