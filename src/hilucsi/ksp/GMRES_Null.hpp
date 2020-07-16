@@ -195,6 +195,7 @@ class GMRES_Null
         std::numeric_limits<scalar_type>::digits10 / 2 + 1;
     const static scalar_type _stag_eps =
         std::pow(scalar_type(10), -(scalar_type)_D);
+    constexpr static int _MAX_INNER = 32;
 
     (void)innersteps;
     // warn that iterative refinement doesn't work for right-prec GMRES
@@ -239,7 +240,7 @@ class GMRES_Null
       for (size_type i = 0u; i < n; ++i) _Q[i] = _v[i] * inv_beta;
       size_type j(0);
       auto      R_itr  = _R.begin();
-      const int min_ir = std::min(8, 1 << it_outer);
+      const int min_ir = std::min(_MAX_INNER, 1 << it_outer);
       for (;;) {
         const auto jn = j * n;
         if (n < (size_type)restart) _w.resize(n);
@@ -351,7 +352,7 @@ class GMRES_Null
         std::copy_n(_Q.cbegin(), n, x.begin());
       Cout("At outer iteration %zd, left null space residual is %g.",
            it_outer + 1u, null_res);
-      if (null_res <= rtol) {
+      if (null_res <= rtol || flag == STAGNATED) {
         for (size_type i(0); i < n; ++i) x[i] *= norm_x;
         break;
       }
