@@ -133,7 +133,7 @@ class GMRES_Null
     _J.resize(2 * restart);
     _v.resize(n);
     _w.resize(std::max(n, size_type(restart)));
-    _kappa.resize(restart);
+    _kappa.resize(_y.size());
     _base::_init_resids();
   }
 
@@ -310,7 +310,7 @@ class GMRES_Null
         }
         ++iter;
         Cout("  At iteration %zd, relative residual is %.16g.", iter, resid);
-        // if (resid <= rtol || j + 1 >= (size_type)restart) break;
+        if (j + 1 >= (size_type)restart) break;
         ++j;
       }  // inf loop
       value_type null_res = 0.0, norm_x = 0.0;
