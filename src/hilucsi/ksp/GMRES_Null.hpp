@@ -145,26 +145,27 @@ class GMRES_Null
     return _base::_validate(A, b, x);
   }
 
-  /// \brief helper function for applying matrix vector transpose
-  template <class Matrix>
-  static void _apply_mv_t(const Matrix &A, const array_type &x, array_type &y) {
-    A.mv_t(x, y);
-  }
-
+  /// \brief Estimate the absolute conditioning of R in GMRES Arnoldi
+  /// \tparam R_Iter Iterator type of current column in R matrix
+  /// \param[in] rt_row current row in \f$\mathbf{R}^{T}\f$
+  /// \param[in] len length of current row, correlated to current inner iter
+  /// \param[in,out] kappa history of conditioning data
+  /// \note This function estimate the conditioning based on
+  ///       \f$\Vert\mathbf{R}^{-T}\Vert\f$.
   template <class R_Iter>
-  static void _estimate_abs_cond_R(const R_Iter r_row, const int len,
+  static void _estimate_abs_cond_R(const R_Iter rt_row, const int len,
                                    array_type &kappa) {
     if (len == 1)
-      kappa[0] = 1. / *r_row;
+      kappa[0] = 1. / *rt_row;
     else {
       value_type s(0);
       int        i(0);
-      for (; i < len - 1; ++i) s += kappa[i] * r_row[i];
+      for (; i < len - 1; ++i) s += kappa[i] * rt_row[i];
       const value_type k1 = value_type(1) - s, k2 = -value_type(1) - s;
       if (std::abs(k1) < std::abs(k2))
-        kappa[i] = k2 / r_row[i];
+        kappa[i] = k2 / rt_row[i];
       else
-        kappa[i] = k1 / r_row[i];
+        kappa[i] = k1 / rt_row[i];
     }
   }
 
@@ -295,14 +296,10 @@ class GMRES_Null
           flag = BREAK_DOWN;
           break;
         }
-        // GMRES_Null::_estimate_abs_cond_R(R_itr - j - 1, j + 1, _kappa);
-        // if (std::abs(_kappa[j]) >= 1e9) {
-        //   flag = STAGNATED;
-        //   break;
-        // }
-        if (resid <= 1.0 - 1e-8) {
-          Cout("Let null space solver: Stagnated detected at iteration %zd.",
-               iter);
+        // estimate abs conditioning of R in Arnoldi
+        GMRES_Null::_estimate_abs_cond_R(R_itr - j - 1, j + 1, _kappa);
+        if (std::abs(_kappa[j]) * rtol >= 1.0) {
+          // NOTE we use stangation as "proper" termination flag.
           flag = STAGNATED;
           break;
         } else if (iter >= maxit) {
@@ -313,7 +310,7 @@ class GMRES_Null
         }
         ++iter;
         Cout("  At iteration %zd, relative residual is %.16g.", iter, resid);
-        if (resid <= rtol || j + 1 >= (size_type)restart) break;
+        // if (resid <= rtol || j + 1 >= (size_type)restart) break;
         ++j;
       }  // inf loop
       value_type null_res = 0.0, norm_x = 0.0;
@@ -325,13 +322,6 @@ class GMRES_Null
           const auto tmp = _y[k];
           for (int i = k - 1; i > -1; --i) _y[i] -= tmp * *(--R_itr);
         }
-        // compute Q*y
-        // std::fill_n(_v.begin(), n, 0);
-        // for (size_type i = 0u; i <= j; ++i) {
-        //   const auto tmp   = _y[i];
-        //   auto       Q_itr = _Q.cbegin() + i * n;
-        //   for (size_type k = 0u; k < n; ++k) _v[k] += tmp * Q_itr[k];
-        // }
         for (size_type i = 0u; i <= j; ++i) {
           const auto tmp   = _y[i];
           auto       Z_itr = _Z.cbegin() + i * n;
@@ -350,9 +340,9 @@ class GMRES_Null
         null_res = norm2(_v) * norm_x;
       } else
         std::copy_n(_Q.cbegin(), n, x.begin());
-      Cout("At outer iteration %zd, left null space residual is %g.",
-           it_outer + 1u, null_res);
-      if (null_res <= rtol || flag == STAGNATED) {
+      Cout("At outer iteration %zd, null space residual is %g.", it_outer + 1u,
+           null_res);
+      if (null_res <= rtol || flag != SUCCESS) {
         for (size_type i(0); i < n; ++i) x[i] *= norm_x;
         break;
       }
