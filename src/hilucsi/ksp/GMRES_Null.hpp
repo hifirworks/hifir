@@ -422,6 +422,7 @@ class GMRES_NullHi
   mutable hi_array_type _J;
   mutable hi_array_type _v;
   mutable hi_array_type _w;
+  mutable hi_array_type _x;
   mutable hi_array_type _kappa;
   /// @}
   using _base::_M;
@@ -445,6 +446,7 @@ class GMRES_NullHi
     _v.resize(n);
     _w.resize(std::max(n, size_type(restart)));
     _kappa.resize(_y.size());
+    _x.resize(n);
     _base::_init_resids();
   }
 
@@ -522,7 +524,9 @@ class GMRES_NullHi
     _ensure_data_capacities(n);
     const size_type max_outer_iters =
         (size_type)std::ceil((scalar_type)maxit / restart);
-    auto &         x    = x0;
+    // use internal hi-precision solution buffer
+    std::copy(x0.cbegin(), x0.cend(), _x.begin());
+    auto &         x    = _x;
     int            flag = SUCCESS;
     hi_scalar_type resid(1);
     for (size_type it_outer = 0u; it_outer < max_outer_iters; ++it_outer) {
@@ -541,9 +545,9 @@ class GMRES_NullHi
           std::copy_n(b.cbegin(), n, _v.begin());
       } else
         for (size_type i = 0u; i < n; ++i) _v[i] = b[i] - _v[i];
-      const auto beta     = norm2(_v);
-      _y[0]               = beta;
-      const auto inv_beta = hi_scalar_type(1) / beta;
+      const hi_scalar_type beta = norm2(_v);
+      _y[0]                     = beta;
+      const auto inv_beta       = hi_scalar_type(1) / beta;
       if (!it_outer) _resids[0] = beta;
       for (size_type i = 0u; i < n; ++i) _Q[i] = _v[i] * inv_beta;
       size_type j(0);
@@ -620,7 +624,7 @@ class GMRES_NullHi
         if (j + 1 >= (size_type)restart) break;
         ++j;
       }  // inf loop
-      value_type null_res = 0.0, norm_x = 0.0;
+      hi_scalar_type null_res = 0.0, norm_x = 0.0;
       if (iter) {
         // backsolve
         for (int k = j; k > -1; --k) {
@@ -650,7 +654,7 @@ class GMRES_NullHi
       Cout("At outer iteration %zd, null space residual is %g.", it_outer + 1u,
            null_res);
       if (null_res <= rtol || flag != SUCCESS) {
-        for (size_type i(0); i < n; ++i) x[i] *= norm_x;
+        for (size_type i(0); i < n; ++i) x0[i] = x[i] * norm_x;
         break;
       }
     }
