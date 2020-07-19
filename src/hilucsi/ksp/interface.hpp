@@ -288,23 +288,25 @@ class KSPFactory {
  public:
   /// \name static
   /// @{
-  using fgmres_type     = FGMRES<MType, ValueType>;
-  using tgmresr_type    = TGMRESR<MType, ValueType>;
-  using fqmrcgstab_type = FQMRCGSTAB<MType, ValueType>;
-  using fbicgstab_type  = FBICGSTAB<MType, ValueType>;
-  using gmres_type      = GMRES<MType, ValueType>;
-  using gmres_null_type = GMRES_Null<MType, ValueType>;
+  using fgmres_type        = FGMRES<MType, ValueType>;
+  using tgmresr_type       = TGMRESR<MType, ValueType>;
+  using fqmrcgstab_type    = FQMRCGSTAB<MType, ValueType>;
+  using fbicgstab_type     = FBICGSTAB<MType, ValueType>;
+  using gmres_type         = GMRES<MType, ValueType>;
+  using gmres_null_type    = GMRES_Null<MType, ValueType>;
+  using gmres_null_hi_type = GMRES_NullHi<MType, ValueType>;
   /// @}
 
   /// \name runtime
   /// @{
-  using fgmres     = KSPAdaptor<fgmres_type>;
-  using tgmresr    = KSPAdaptor<tgmresr_type>;
-  using fqmrcgstab = KSPAdaptor<fqmrcgstab_type>;
-  using fbicgstab  = KSPAdaptor<fbicgstab_type>;
-  using gmres      = KSPAdaptor<gmres_type>;
-  using gmres_null = KSPAdaptor<gmres_null_type>;
-  using abc_solver = typename fgmres::abc_solver_type;
+  using fgmres        = KSPAdaptor<fgmres_type>;
+  using tgmresr       = KSPAdaptor<tgmresr_type>;
+  using fqmrcgstab    = KSPAdaptor<fqmrcgstab_type>;
+  using fbicgstab     = KSPAdaptor<fbicgstab_type>;
+  using gmres         = KSPAdaptor<gmres_type>;
+  using gmres_null    = KSPAdaptor<gmres_null_type>;
+  using gmres_null_hi = KSPAdaptor<gmres_null_hi_type>;
+  using abc_solver    = typename fgmres::abc_solver_type;
   /// @}
 };
 

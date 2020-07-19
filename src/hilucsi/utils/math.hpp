@@ -30,6 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define _HILUCSI_UTILS_MATH_HPP
 
 #include <algorithm>
+#include <cmath>
 #include <complex>
 
 #include "hilucsi/utils/common.hpp"
@@ -129,6 +130,12 @@ norm2(const ArrayType &v) {
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
+// long double
+template <>
+inline long double conj(const long double &v) {
+  return v;
+}
+
 // double
 template <>
 inline double conj(const double &v) {
@@ -144,6 +151,12 @@ inline float conj(const float &v) {
 template <class T>
 inline std::complex<T> conj(const std::complex<T> &v) {
   return std::conj(v);
+}
+
+// long double
+template <>
+inline long double abs(const long double &v) {
+  return std::abs(v);
 }
 
 // double

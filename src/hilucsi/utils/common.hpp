@@ -185,6 +185,12 @@ struct ValueTypeMixedTrait {
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
+// long double
+template <>
+struct ValueTypeTrait<long double> {
+  using value_type = long double;
+};
+
 // double
 template <>
 struct ValueTypeTrait<double> {
@@ -206,7 +212,7 @@ struct ValueTypeTrait<std::complex<T>> {
 // mixed traits double
 template <>
 struct ValueTypeMixedTrait<double> {
-  using boost_type  = double;  // no long double supported
+  using boost_type  = long double;
   using reduce_type = float;
 };
 
