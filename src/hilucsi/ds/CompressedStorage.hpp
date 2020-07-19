@@ -1073,17 +1073,6 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   template <class Vx, class Vy>
   inline void mv_nt_low(const Vx *x, Vy *y) const {
     mv_nt_low(x, size_type(0), _psize, y);
-    for (size_type i = 0u; i < _psize; ++i) {
-      auto v_itr = _base::val_cbegin(i);
-      auto i_itr = col_ind_cbegin(i);
-      Vy   tmp(0);
-      for (auto last = col_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
-        hilucsi_assert(size_type(*i_itr) < _ncols, "%zd exceeds column size",
-                       size_type(*i_itr));
-        tmp += *v_itr * x[*i_itr];
-      }
-      y[i] = tmp;
-    }
   }
 
   /// \brief matrix vector for kernel MT compatibility with different type
@@ -1096,14 +1085,19 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   template <class Vx, class Vy>
   inline void mv_nt_low(const Vx *x, const size_type istart,
                         const size_type len, Vy *y) const {
-    for (size_type i = istart, n = istart + len; i < n; ++i) {
-      Vy   tmp(0);
+    using v1_t =
+        typename std::conditional<(sizeof(Vx) > sizeof(Vy)), Vx, Vy>::type;
+    using v_t = typename std::conditional<(sizeof(v1_t) > sizeof(value_type)),
+                                          v1_t, value_type>::type;
+    const size_type n = istart + len;
+    for (size_type i = istart; i < n; ++i) {
+      v_t  tmp(0);
       auto v_itr = _base::val_cbegin(i);
       auto i_itr = col_ind_cbegin(i);
       for (auto last = col_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
         hilucsi_assert(size_type(*i_itr) < _ncols, "%zd exceeds column size",
                        size_type(*i_itr));
-        tmp += *v_itr * x[*i_itr];
+        tmp += static_cast<v_t>(*v_itr) * x[*i_itr];
       }
       y[i] = tmp;
     }
@@ -1150,12 +1144,16 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \warning User's responsibility to maintain valid pointers
   template <class Vx, class Vy>
   inline void mv_t_low(const Vx *x, Vy *y) const {
+    using v1_t =
+        typename std::conditional<(sizeof(Vx) > sizeof(Vy)), Vx, Vy>::type;
+    using v_t = typename std::conditional<(sizeof(v1_t) > sizeof(value_type)),
+                                          v1_t, value_type>::type;
     if (!_psize) return;
     std::fill_n(y, ncols(), Vy(0));
     for (size_type i = 0u; i < _psize; ++i) {
-      const Vy temp  = x[i];
-      auto     v_itr = _base::val_cbegin(i);
-      auto     i_itr = col_ind_cbegin(i);
+      const v_t temp  = x[i];
+      auto      v_itr = _base::val_cbegin(i);
+      auto      i_itr = col_ind_cbegin(i);
       for (auto last = col_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
         const size_type j = *i_itr;
         hilucsi_assert(j < _ncols, "%zd exceeds column size", j);
@@ -1820,12 +1818,16 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \warning User's responsibilty to ensure valid pointers
   template <class Vx, class Vy>
   inline void mv_nt_low(const Vx *x, Vy *y) const {
+    using v1_t =
+        typename std::conditional<(sizeof(Vx) > sizeof(Vy)), Vx, Vy>::type;
+    using v_t = typename std::conditional<(sizeof(v1_t) > sizeof(value_type)),
+                                          v1_t, value_type>::type;
     if (!_psize) return;
     std::fill_n(y, nrows(), Vy(0));
     for (size_type i = 0u; i < _psize; ++i) {
-      const auto temp  = x[i];
-      auto       v_itr = _base::val_cbegin(i);
-      auto       i_itr = row_ind_cbegin(i);
+      const v_t temp  = x[i];
+      auto      v_itr = _base::val_cbegin(i);
+      auto      i_itr = row_ind_cbegin(i);
       for (auto last = row_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
         hilucsi_assert(size_type(*i_itr) < _nrows, "%zd exceeds the size bound",
                        size_type(*i_itr));
@@ -1855,14 +1857,18 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \warning User's responsibilty to ensure valid pointers
   template <class Vx, class Vy>
   inline void mv_t_low(const Vx *x, Vy *y) const {
+    using v1_t =
+        typename std::conditional<(sizeof(Vx) > sizeof(Vy)), Vx, Vy>::type;
+    using v_t = typename std::conditional<(sizeof(v1_t) > sizeof(value_type)),
+                                          v1_t, value_type>::type;
     for (size_type i = 0u; i < _psize; ++i) {
       auto v_itr = _base::val_cbegin(i);
       auto i_itr = row_ind_cbegin(i);
-      Vy   tmp(0);
+      v_t  tmp(0);
       for (auto last = row_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
         hilucsi_assert(size_type(*i_itr) < _nrows, "%zd exceeds the size bound",
                        size_type(*i_itr));
-        Vy xi = x[*i_itr];
+        v_t xi = x[*i_itr];
         tmp += (xi *= *v_itr);
       }
       y[i] = tmp;
