@@ -29,6 +29,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _HILUCSI_SPARSEDIRECT_MUMPS_HPP
 #define _HILUCSI_SPARSEDIRECT_MUMPS_HPP
 
+#include <algorithm>
 #include <tuple>
 #include <type_traits>
 
@@ -69,6 +70,7 @@ class MumpsStructTrait {
 };
 
 /// \brief convert \ref CRS to \a assembly \a format
+/// \tparam ValueType value type
 /// \tparam CrsType crs matrix type
 /// \param[in] A input matrix
 /// \return \a tuple of row, column indices, and values
@@ -76,14 +78,13 @@ class MumpsStructTrait {
 /// HILUCSI uses the assembly format in MUMPS, which is aka coordinate format
 /// or IJV format. It contains three nnz arrays, where the row and column
 /// indices are stored in pair. In addition, MUMPS uses Fortran index.
-template <class CrsType>
-inline std::tuple<Array<MUMPS_INT>, Array<MUMPS_INT>,
-                  Array<typename CrsType::value_type>>
+template <class ValueType, class CrsType>
+inline std::tuple<Array<MUMPS_INT>, Array<MUMPS_INT>, Array<ValueType>>
 convert2ijv(const CrsType &A) {
   static_assert(CrsType::ROW_MAJOR, "must be CRS");
 
   using size_type  = typename CrsType::size_type;
-  using value_type = typename CrsType::value_type;
+  using value_type = ValueType;
 
   const size_type n = A.nrows();
   hilucsi_error_if(n != A.ncols(), "must be squared matrix");
@@ -195,10 +196,8 @@ class MUMPS {
   /// \param[in] A input \ref CRS matrix
   template <class CrsType>
   inline void factorize(const CrsType &A) const {
-    using value_type = typename CrsType::value_type;
-
     // convert to ijv
-    std::tie(_rows, _cols, _vs) = internal::convert2ijv(A);
+    std::tie(_rows, _cols, _vs) = internal::convert2ijv<scalar_type>(A);
 
     _handle.job = 4;  // symbolic + factorization
     _handle.n   = A.nrows();
@@ -221,13 +220,20 @@ class MUMPS {
   /// \param[in,out] x rhs on input and solution on output
   template <class ArrayType>
   inline void solve(ArrayType &x, const bool tran = false) const {
+    static constexpr bool SAME_TYPE =
+        std::is_same<typename ArrayType::value_type, scalar_type>::value;
     hilucsi_assert(_handle.job > 0, "invalid solver stage");
     hilucsi_assert(x.size() == _handle.n, "mismatched sizes");
+    if (!SAME_TYPE) {
+      _x.resize(x.size());
+      std::copy(x.cbegin(), x.cend(), _x.begin());
+    }
     _handle.job      = 3;
-    _handle.rhs      = x.data();
+    _handle.rhs      = SAME_TYPE ? (scalar_type *)x.data() : _x.data();
     _handle.infog[0] = 0;
     _handle.icntl[8] = tran ? 2 : 1;  // transpose
     _trait::call_mumps(_handle);
+    if (!SAME_TYPE) std::copy(_x.cbegin(), _x.cend(), x.begin());
   }
 
  protected:
@@ -235,6 +241,7 @@ class MUMPS {
   mutable Array<MUMPS_INT>             _rows;    ///< row indices
   mutable Array<MUMPS_INT>             _cols;    ///< column indices
   mutable Array<ScalarType>            _vs;      ///< values
+  mutable Array<ScalarType>            _x;       ///< solution buffer
 };
 
 }  // namespace hilucsi

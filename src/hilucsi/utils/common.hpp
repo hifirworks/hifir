@@ -209,6 +209,13 @@ struct ValueTypeTrait<std::complex<T>> {
   typedef typename ValueTypeTrait<T>::value_type value_type;
 };
 
+// mixed traits for long double
+template <>
+struct ValueTypeMixedTrait<long double> {
+  using boost_type  = long double;
+  using reduce_type = double;
+};
+
 // mixed traits double
 template <>
 struct ValueTypeMixedTrait<double> {

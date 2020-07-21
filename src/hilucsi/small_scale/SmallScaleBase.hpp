@@ -68,6 +68,13 @@ class SmallScaleBase {
   /// \param[in,out] mat input matrix, the data is \b destroyed upon output
   inline void set_matrix(dense_type &&mat) { _mat = std::move(mat); }
 
+  /// \brief set a dense operator from other data type
+  /// \tparam T value type
+  template <class T>
+  inline void set_matrix(const DenseMatrix<T> &mat) {
+    _mat = dense_type(mat);
+  }
+
  protected:
   dense_type _mat;   ///< matrix
   size_type  _rank;  ///< rank

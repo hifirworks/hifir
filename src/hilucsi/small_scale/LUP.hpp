@@ -86,10 +86,20 @@ class LUP : public internal::SmallScaleBase<ValueType> {
       hilucsi_error("GETRS returned negative info!");
   }
 
+  /// \brief wrapper if \a value_type is different from input's
+  template <class ArrayType>
+  inline void solve(ArrayType &x, const bool tran = false) const {
+    _x.resize(x.size());
+    std::copy(x.cbegin(), x.cend(), _x.begin());
+    solve(_x, tran);
+    std::copy(_x.cbegin(), _x.cend(), x.begin());
+  }
+
  protected:
   using _base::_mat;                ///< matrix
   using _base::_rank;               ///< rank
   Array<hilucsi_lapack_int> _ipiv;  ///< row pivoting array
+  mutable Array<value_type> _x;     ///< buffer if type is different
 };
 
 }  // namespace hilucsi

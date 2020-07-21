@@ -76,8 +76,13 @@ struct Prec {
   typedef typename ccs_type::size_type  size_type;   ///< size
   typedef typename ccs_type::array_type array_type;  ///< array
   typedef ccs_type                      mat_type;    ///< interface type
+  typedef typename std::conditional<
+      std::is_same<typename ValueTypeTrait<value_type>::value_type,
+                   long double>::value,
+      typename ValueTypeMixedTrait<value_type>::reduce_type, value_type>::type
+      last_level_type;
 #ifdef HILUCSI_ENABLE_MUMPS
-  using sparse_direct_type = MUMPS<ValueType>;
+  using sparse_direct_type = MUMPS<last_level_type>;
 #else
   using sparse_direct_type = internal::DummySparseSolver;
 #endif                                                   // HILUCSI_ENABLE_MUMPS
@@ -91,7 +96,8 @@ struct Prec {
   typedef SmallScaleSolverTrait<SMALLSCALE_LUP> _sss_trait;
   ///< small scale trait
  public:
-  typedef typename _sss_trait::template solver_type<value_type> sss_solver_type;
+  typedef typename _sss_trait::template solver_type<last_level_type>
+      sss_solver_type;
   ///< small scaled solver type
 
   /// \brief default constructor

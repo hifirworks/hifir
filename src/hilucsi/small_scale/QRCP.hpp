@@ -181,6 +181,15 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
     std::copy_n(_work.cbegin(), n, x.begin());
   }
 
+  /// \brief wrapper if input is different from \a value_type
+  template <class ArrayType>
+  inline void solve(ArrayType &x, const bool tran = false) const {
+    _x.resize(x.size());
+    std::copy(x.cbegin(), x.cend(), _x.begin());
+    solve(_x, tran);
+    std::copy(_x.cbegin(), _x.cend(), x.begin());
+  }
+
  protected:
   using _base::_mat;                         ///< matrix
   using _base::_rank;                        ///< rank
@@ -188,6 +197,7 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
   Array<value_type>                 _tau;    ///< tau array
   mutable Array<value_type>         _work;   ///< work buffer
   mutable Array<hilucsi_lapack_int> _iwork;  ///< integer work buffer
+  mutable Array<value_type>         _x;      ///< buffer for different type
 };
 
 }  // namespace hilucsi

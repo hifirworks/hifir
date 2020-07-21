@@ -167,6 +167,23 @@ class NspFilter {
     }
   }
 
+  /// \brief filter null space components with long double precision
+  /// \note called via HILUCSI
+  inline void filter(long double *x, const std::size_t n) const {
+    switch (_type) {
+      case CONSTANT:
+        _const_filter(x, n);
+        break;
+      case USER_OR:
+        user_filter((void *)x, n, 'l');
+        break;
+      default:
+        if (!_user_f) hilucsi_error("user callback was not attached!");
+        _user_f((void *)x, n, 'l');
+        break;
+    }
+  }
+
   /// \brief overridable routine for filtering
   virtual void user_filter(void *, const std::size_t, const char) const {
     hilucsi_error("user routine was not overrided!");
