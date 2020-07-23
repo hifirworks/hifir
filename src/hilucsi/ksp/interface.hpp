@@ -67,7 +67,9 @@ class KSPSolver {
   typedef CCS<value_type, typename M_type::index_type> ccs_type;  ///< crs type
   typedef typename DefaultSettings<value_type>::scalar_type scalar_type;
   ///< scalar type
-  typedef std::function<void(const array_type &, array_type &)> func_type;
+  typedef std::function<void(const void *, const size_type, const char, void *,
+                             const char)>
+      func_type;
   ///< user callback for computing A*x
 
   /// \brief virtual destructor

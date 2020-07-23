@@ -1197,13 +1197,15 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   inline void solve_as_strict_lower(RhsType &y) const {
     // retrieve value type from rhs
     using value_type_ = typename std::remove_reference<decltype(y[0])>::type;
+    using v_t =
+        typename std::conditional<(sizeof(value_type_) < sizeof(value_type)),
+                                  value_type, value_type_>::type;
     for (size_type j(1); j < _psize; ++j) {
       auto itr   = col_ind_cbegin(j);
       auto v_itr = _base::val_cbegin(j);
-      typename std::conditional<(sizeof(value_type_) < sizeof(value_type)),
-                                value_type, value_type_>::type tmp(0);
+      v_t  tmp(0);
       for (auto last = col_ind_cend(j); itr != last; ++itr, ++v_itr)
-        tmp += *v_itr * y[*itr];
+        tmp += static_cast<v_t>(*v_itr) * y[*itr];
       y[j] -= tmp;
     }
   }
@@ -1228,15 +1230,17 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   inline void solve_as_strict_upper(RhsType &y) const {
     // retrieve value type from rhs
     using value_type_ = typename std::remove_reference<decltype(y[0])>::type;
+    using v_t =
+        typename std::conditional<(sizeof(value_type_) < sizeof(value_type)),
+                                  value_type, value_type_>::type;
     hilucsi_assert(_psize, "cannot be empty");
     for (size_type j = _psize - 1; j != 0u; --j) {
       const size_type j1    = j - 1;
       auto            itr   = col_ind_cbegin(j1);
       auto            v_itr = _base::val_cbegin(j1);
-      typename std::conditional<(sizeof(value_type_) < sizeof(value_type)),
-                                value_type, value_type_>::type tmp(0);
+      v_t             tmp(0);
       for (auto last = col_ind_cend(j1); itr != last; ++itr, ++v_itr)
-        tmp += *v_itr * y[*itr];
+        tmp += static_cast<v_t>(*v_itr) * y[*itr];
       y[j1] -= tmp;
     }
   }

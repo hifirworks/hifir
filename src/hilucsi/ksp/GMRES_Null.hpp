@@ -237,7 +237,7 @@ class GMRES_Null
       for (size_type i = 0u; i < n; ++i) _Q[i] = _v[i] * inv_beta;
       size_type j(0);
       auto      R_itr  = _R.begin();
-      const int min_ir = std::min(_MAX_INNER, 1 << it_outer);
+      const int min_ir = std::min(_MAX_INNER, 1 << (it_outer + 1));
       for (;;) {
         const auto jn = j * n;
         if (n < (size_type)restart) _w.resize(n);
@@ -252,7 +252,7 @@ class GMRES_Null
           }
         }
         std::copy(_Q.cbegin() + jn, _Q.cbegin() + jn + n, _v.begin());
-        it_outer ? M.solve(A, _v, min_ir, _w) : M.solve(_v, _w);
+        M.solve(A, _v, min_ir, _w);
         std::copy(_w.cbegin(), _w.cend(), _Z.begin() + jn);
         mt::mv_nt(A, _w, _v);
         // A.mv_t(_w, _v);
@@ -353,9 +353,9 @@ class GMRES_Null
 /// \ingroup gmres
 template <class MType, class ValueType = void>
 class GMRES_NullHi
-    : public internal::KSP<GMRES_Null<MType, ValueType>, MType, ValueType> {
+    : public internal::KSP<GMRES_NullHi<MType, ValueType>, MType, ValueType> {
  protected:
-  using _base = internal::KSP<GMRES_Null<MType, ValueType>, MType, ValueType>;
+  using _base = internal::KSP<GMRES_NullHi<MType, ValueType>, MType, ValueType>;
   ///< base
   // grant friendship
   friend _base;
@@ -378,7 +378,7 @@ class GMRES_NullHi
                 "must be floating point type");
 
   /// \brief get the solver name
-  inline static const char *repr() { return "GMRES_Null"; }
+  inline static const char *repr() { return "GMRES_NullHi"; }
 
   using _base::rtol;
 
@@ -422,6 +422,7 @@ class GMRES_NullHi
   mutable hi_array_type _v;
   mutable hi_array_type _w;
   mutable hi_array_type _x;
+  mutable hi_array_type _b;
   mutable hi_array_type _kappa;
   /// @}
   using _base::_M;
@@ -446,6 +447,7 @@ class GMRES_NullHi
     _w.resize(std::max(n, size_type(restart)));
     _kappa.resize(_y.size());
     _x.resize(n);
+    _b.resize(n);
     _base::_init_resids();
   }
 
@@ -511,7 +513,9 @@ class GMRES_NullHi
     if (UseIR)
       Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
            "Right-preconditioned GMRES doesn\'t support iterative refinement.");
-    const auto &    b = right_null;
+    _b.resize(right_null.size());
+    std::copy(right_null.cbegin(), right_null.cend(), _b.begin());
+    const auto &    b = _b;
     size_type       iter(0);
     const size_type n     = b.size();
     const auto      beta0 = norm2(b);
@@ -524,7 +528,8 @@ class GMRES_NullHi
     const size_type max_outer_iters =
         (size_type)std::ceil((scalar_type)maxit / restart);
     // use internal hi-precision solution buffer
-    std::copy(x0.cbegin(), x0.cend(), _x.begin());
+    // std::copy(x0.cbegin(), x0.cend(), _x.begin());
+    std::fill_n(_x.begin(), n, hi_value_type(0));
     auto &         x    = _x;
     int            flag = SUCCESS;
     hi_scalar_type resid(1);
@@ -551,7 +556,7 @@ class GMRES_NullHi
       for (size_type i = 0u; i < n; ++i) _Q[i] = _v[i] * inv_beta;
       size_type j(0);
       auto      R_itr  = _R.begin();
-      const int min_ir = std::min(_MAX_INNER, 1 << it_outer);
+      const int min_ir = std::min(_MAX_INNER, 1 << (it_outer + 1));
       for (;;) {
         const auto jn = j * n;
         if (n < (size_type)restart) _w.resize(n);
@@ -566,7 +571,8 @@ class GMRES_NullHi
           }
         }
         std::copy(_Q.cbegin() + jn, _Q.cbegin() + jn + n, _v.begin());
-        it_outer ? M.solve(A, _v, min_ir, _w) : M.solve(_v, _w);
+        M.solve(A, _v, min_ir, _w);
+        // M.solve(_v, _w);
         std::copy(_w.cbegin(), _w.cend(), _Z.begin() + jn);
         mt::mv_nt(A, _w, _v);
         // A.mv_t(_w, _v);
@@ -618,8 +624,8 @@ class GMRES_NullHi
           break;
         }
         ++iter;
-        Cout("  At iteration %zd, |R^{-T}|_\\infty is %.16e.", iter,
-             (double)resid);
+        Cout("  At iteration %zd, high |R^{-T}|_\\infty is %.16e.", iter,
+             (scalar_type)resid);
         if (j + 1 >= (size_type)restart) break;
         ++j;
       }  // inf loop
@@ -651,7 +657,7 @@ class GMRES_NullHi
       } else
         std::copy_n(_Q.cbegin(), n, x.begin());
       Cout("At outer iteration %zd, null space residual is %g.", it_outer + 1u,
-           null_res);
+           (scalar_type)null_res);
       if (null_res <= rtol || flag != SUCCESS) {
         for (size_type i(0); i < n; ++i) x0[i] = x[i] * norm_x;
         break;

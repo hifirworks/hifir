@@ -299,6 +299,8 @@ inline void prec_solve(PrecItr prec_itr, const RhsType &b, SolType &y,
   using size_type            = typename prec_type::size_type;
   using array_type           = Array<value_type>;
   using interface_array_type = Array<interface_value_type>;
+  using work_array_type =
+      Array<typename std::remove_reference<decltype(work[0])>::type>;
   constexpr static bool WRAP = true;
 
   // NOTE that we cannot assume the data types are the same, but in general,
@@ -338,7 +340,7 @@ inline void prec_solve(PrecItr prec_itr, const RhsType &b, SolType &y,
   if (prec.is_last_level()) {
     if (nm) {
       // create an array wrapper with size of n-m, of y(m+1:n)
-      auto y_mn = array_type(nm, &work[0], WRAP);
+      auto y_mn = work_array_type(nm, &work[0], WRAP);
       std::copy_n(y.data() + m, nm, y_mn.begin());
       if (prec.sparse_solver.empty())
         prec.dense_solver.solve(y_mn);
@@ -351,9 +353,9 @@ inline void prec_solve(PrecItr prec_itr, const RhsType &b, SolType &y,
       std::copy_n(y_mn.cbegin(), nm, y.data() + m);
     }
   } else {
-    auto        y_mn      = interface_array_type(nm, y.data() + m, WRAP);
-    value_type *work_next = &work[n];  // advance to next buffer region
-    auto        work_b    = array_type(nm, &work[0] + m, WRAP);
+    auto  y_mn      = interface_array_type(nm, y.data() + m, WRAP);
+    auto *work_next = &work[n];  // advance to next buffer region
+    auto  work_b    = work_array_type(nm, &work[0] + m, WRAP);
     std::copy(y_mn.cbegin(), y_mn.cend(), work_b.begin());
     // rec call, note that y_mn should store the solution
     prec_solve(++prec_itr, work_b, y_mn, work_next);
@@ -410,6 +412,8 @@ inline void prec_solve_tran(PrecItr prec_itr, const RhsType &b, SolType &y,
   using size_type            = typename prec_type::size_type;
   using array_type           = Array<value_type>;
   using interface_array_type = Array<interface_value_type>;
+  using work_array_type =
+      Array<typename std::remove_reference<decltype(work[0])>::type>;
   constexpr static bool WRAP = true;
 
   hilucsi_assert(b.size() == y.size(), "solution and rhs sizes should match");
@@ -435,7 +439,7 @@ inline void prec_solve_tran(PrecItr prec_itr, const RhsType &b, SolType &y,
   if (prec.is_last_level()) {
     if (nm) {
       // create an array wrapper with size of n-m, of y(m+1:n)
-      auto y_mn = array_type(nm, &work[0], WRAP);
+      auto y_mn = work_array_type(nm, &work[0], WRAP);
       std::copy_n(y.data() + m, nm, y_mn.begin());
       if (prec.sparse_solver.empty())
         prec.dense_solver.solve(y_mn, true);
@@ -449,9 +453,9 @@ inline void prec_solve_tran(PrecItr prec_itr, const RhsType &b, SolType &y,
     }
   } else {
     // recursive call
-    auto        y_mn      = interface_array_type(nm, y.data() + m, WRAP);
-    value_type *work_next = &work[n];  // advance to next buffer region
-    auto        work_b    = array_type(nm, &work[0] + m, WRAP);
+    auto  y_mn      = interface_array_type(nm, y.data() + m, WRAP);
+    auto *work_next = &work[n];  // advance to next buffer region
+    auto  work_b    = work_array_type(nm, &work[0] + m, WRAP);
     std::copy(y_mn.cbegin(), y_mn.cend(), work_b.begin());
     // rec call, note that y_mn should store the solution
     prec_solve_tran(++prec_itr, work_b, y_mn, work_next);
