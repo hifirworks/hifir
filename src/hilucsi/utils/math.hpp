@@ -124,6 +124,33 @@ norm2(const ArrayType &v) {
   return tmp;
 }
 
+/// \brief normalize an array
+/// \tparam ArrayType array type, see, for instance, \ref Array
+/// \param[in,out] v array input, upon output, it will be normalized
+template <class ArrayType>
+inline void normalize(ArrayType &v) {
+  // get the scalar type
+  using scalar_type =
+      typename ValueTypeTrait<typename ArrayType::value_type>::value_type;
+  const auto inv_nrm = scalar_type(1) / norm2(v);
+  for (auto iter = v.begin(); iter != v.end(); ++iter) *iter *= inv_nrm;
+}
+
+/// \brief normalize an array and save the result to another array
+/// \tparam ArrayType array type, see, for instance, \ref Array
+/// \tparam Iter Iterator type
+/// \param[in] v array input
+/// \param[out] w iterator output
+template <class ArrayType, class Iter>
+inline void normalize2(const ArrayType &v, Iter &w) {
+  // get the scalar type
+  using scalar_type =
+      typename ValueTypeTrait<typename ArrayType::value_type>::value_type;
+  const auto inv_nrm = scalar_type(1) / norm2(v);
+  const auto n       = v.size();
+  for (auto i(0ul); i < n; ++i) w[i] = v[i] * inv_nrm;
+}
+
 /*!
  * @}
  */
