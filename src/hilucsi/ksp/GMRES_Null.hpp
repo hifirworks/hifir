@@ -276,25 +276,24 @@ class GMRES_Null
           _w[colJ]       = conj(J1[colJ]) * tmp + conj(J2[colJ]) * _w[colJ + 1];
           _w[colJ + 1]   = -J2[colJ] * tmp + J1[colJ] * _w[colJ + 1];
         }
-        const auto rho        = std::sqrt(_w[j] * _w[j] + v_norm2);
-        J1[j]                 = _w[j] / rho;
-        J2[j]                 = v_norm / rho;
-        _y[j + 1]             = -J2[j] * _y[j];
-        _y[j]                 = conj(J1[j]) * _y[j];
-        _w[j]                 = rho;
-        R_itr                 = std::copy_n(_w.cbegin(), j + 1, R_itr);
-        const auto resid_prev = resid;
-        _resids.push_back(abs(_y[j + 1]));
-        resid = _resids.back() / beta0;
+        const auto rho = std::sqrt(_w[j] * _w[j] + v_norm2);
+        J1[j]          = _w[j] / rho;
+        J2[j]          = v_norm / rho;
+        _y[j + 1]      = -J2[j] * _y[j];
+        _y[j]          = conj(J1[j]) * _y[j];
+        _w[j]          = rho;
+        R_itr          = std::copy_n(_w.cbegin(), j + 1, R_itr);
+        // estimate abs conditioning of R in Arnoldi
+        GMRES_Null::_estimate_abs_cond_R(R_itr - j - 1, j + 1, _kappa);
+        resid = std::abs(_kappa[j]);
+        _resids.push_back(resid);
         if (std::isnan(resid) || std::isinf(resid)) {
           Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
                "Solver break-down detected at iteration %zd.", iter);
           flag = BREAK_DOWN;
           break;
         }
-        // estimate abs conditioning of R in Arnoldi
-        GMRES_Null::_estimate_abs_cond_R(R_itr - j - 1, j + 1, _kappa);
-        if (std::abs(_kappa[j]) * rtol >= 1.0) {
+        if (resid * rtol >= 1.0) {
           // NOTE we use stangation as "proper" termination flag.
           flag = STAGNATED;
           break;
@@ -305,7 +304,7 @@ class GMRES_Null
           break;
         }
         ++iter;
-        Cout("  At iteration %zd, relative residual is %.16g.", iter, resid);
+        Cout("  At iteration %zd, |R^{-T}|_\\infty is %.16e.", iter, resid);
         if (j + 1 >= (size_type)restart) break;
         ++j;
       }  // inf loop
@@ -591,25 +590,24 @@ class GMRES_NullHi
           _w[colJ]       = conj(J1[colJ]) * tmp + conj(J2[colJ]) * _w[colJ + 1];
           _w[colJ + 1]   = -J2[colJ] * tmp + J1[colJ] * _w[colJ + 1];
         }
-        const auto rho        = std::sqrt(_w[j] * _w[j] + v_norm2);
-        J1[j]                 = _w[j] / rho;
-        J2[j]                 = v_norm / rho;
-        _y[j + 1]             = -J2[j] * _y[j];
-        _y[j]                 = conj(J1[j]) * _y[j];
-        _w[j]                 = rho;
-        R_itr                 = std::copy_n(_w.cbegin(), j + 1, R_itr);
-        const auto resid_prev = resid;
-        _resids.push_back(abs(_y[j + 1]));
-        resid = abs(_y[j + 1]) / beta0;
+        const auto rho = std::sqrt(_w[j] * _w[j] + v_norm2);
+        J1[j]          = _w[j] / rho;
+        J2[j]          = v_norm / rho;
+        _y[j + 1]      = -J2[j] * _y[j];
+        _y[j]          = conj(J1[j]) * _y[j];
+        _w[j]          = rho;
+        R_itr          = std::copy_n(_w.cbegin(), j + 1, R_itr);
+        // estimate abs conditioning of R in Arnoldi
+        GMRES_NullHi::_estimate_abs_cond_R(R_itr - j - 1, j + 1, _kappa);
+        resid = std::abs(_kappa[j]);
+        _resids.push_back(resid);
         if (std::isnan(resid) || std::isinf(resid)) {
           Cerr(__HILUCSI_FILE__, __HILUCSI_FUNC__, __LINE__,
                "Solver break-down detected at iteration %zd.", iter);
           flag = BREAK_DOWN;
           break;
         }
-        // estimate abs conditioning of R in Arnoldi
-        GMRES_NullHi::_estimate_abs_cond_R(R_itr - j - 1, j + 1, _kappa);
-        if (std::abs(_kappa[j]) * rtol >= 1) {
+        if (resid * rtol >= 1) {
           // NOTE we use stangation as "proper" termination flag.
           flag = STAGNATED;
           break;
@@ -620,7 +618,8 @@ class GMRES_NullHi
           break;
         }
         ++iter;
-        Cout("  At iteration %zd, relative residual is %.16g.", iter, resid);
+        Cout("  At iteration %zd, |R^{-T}|_\\infty is %.16e.", iter,
+             (double)resid);
         if (j + 1 >= (size_type)restart) break;
         ++j;
       }  // inf loop
