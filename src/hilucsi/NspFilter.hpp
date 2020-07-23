@@ -34,6 +34,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <memory>
 #include <numeric>
 
+#include "hilucsi/utils/common.hpp"
 #include "hilucsi/utils/log.hpp"
 
 namespace hilucsi {
@@ -133,53 +134,19 @@ class NspFilter {
     _type = USER_CB;
   }
 
-  /// \brief filter null space components with double precision
-  /// \note called via HILUCSI
-  inline void filter(double *x, const std::size_t n) const {
+  /// \brief filtering out null space component from \a x
+  template <class T>
+  inline void filter(T *x, const std::size_t n) const {
     switch (_type) {
       case CONSTANT:
         _const_filter(x, n);
         break;
       case USER_OR:
-        user_filter((void *)x, n, 'd');
+        user_filter((void *)x, n, ValueTypeTrait<T>::signature);
         break;
       default:
         if (!_user_f) hilucsi_error("user callback was not attached!");
-        _user_f((void *)x, n, 'd');
-        break;
-    }
-  }
-
-  /// \brief filter null space components with single precision
-  /// \note called via HILUCSI
-  inline void filter(float *x, const std::size_t n) const {
-    switch (_type) {
-      case CONSTANT:
-        _const_filter(x, n);
-        break;
-      case USER_OR:
-        user_filter((void *)x, n, 's');
-        break;
-      default:
-        if (!_user_f) hilucsi_error("user callback was not attached!");
-        _user_f((void *)x, n, 's');
-        break;
-    }
-  }
-
-  /// \brief filter null space components with long double precision
-  /// \note called via HILUCSI
-  inline void filter(long double *x, const std::size_t n) const {
-    switch (_type) {
-      case CONSTANT:
-        _const_filter(x, n);
-        break;
-      case USER_OR:
-        user_filter((void *)x, n, 'l');
-        break;
-      default:
-        if (!_user_f) hilucsi_error("user callback was not attached!");
-        _user_f((void *)x, n, 'l');
+        _user_f((void *)x, n, ValueTypeTrait<T>::signature);
         break;
     }
   }

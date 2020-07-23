@@ -125,7 +125,8 @@ inline void rotate_right(const typename ArrayType::size_type n,
 /// By default, the value type is \a void for compilation error handling
 template <class T>
 struct ValueTypeTrait {
-  typedef void value_type;  ///< value type
+  typedef void          value_type;       ///< value type
+  static constexpr char signature = 'x';  ///< signature value
 };
 
 /// \class Const
@@ -188,25 +189,29 @@ struct ValueTypeMixedTrait {
 // long double
 template <>
 struct ValueTypeTrait<long double> {
-  using value_type = long double;
+  using value_type                = long double;
+  static constexpr char signature = 'l';
 };
 
 // double
 template <>
 struct ValueTypeTrait<double> {
-  using value_type = double;
+  using value_type                = double;
+  static constexpr char signature = 'd';
 };
 
 // float
 template <>
 struct ValueTypeTrait<float> {
-  using value_type = float;
+  using value_type                = float;
+  static constexpr char signature = 's';
 };
 
 // for standard complex numbers
 template <class T>
 struct ValueTypeTrait<std::complex<T>> {
   typedef typename ValueTypeTrait<T>::value_type value_type;
+  static constexpr char signature = ValueTypeTrait<T>::signature;  // for now
 };
 
 // mixed traits for long double

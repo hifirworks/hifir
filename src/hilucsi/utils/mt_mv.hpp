@@ -32,6 +32,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <functional>
 #include <type_traits>
 
+#include "hilucsi/utils/common.hpp"
 #include "hilucsi/utils/log.hpp"
 #include "hilucsi/utils/mt.hpp"
 
@@ -116,16 +117,22 @@ inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type mv_nt_low(
 // NOTE: This is for interface compatibility!
 
 /// \brief use user functor for computing "matrix"-vector product
-/// \tparam ArrayType array type, see \ref Array
+/// \tparam IArray input array type
+/// \tparam OArray output array type
 /// \param[in] A callable functor
 /// \param[in] x array to multiply with
 /// \param[out] y y=A*x
 /// \note A(x, y) should return, conceptually, y=A*x
 /// \ingroup ksp
-template <class ArrayType>
-inline void mv_nt(const std::function<void(const ArrayType &, ArrayType &)> &A,
-                  const ArrayType &x, ArrayType &y) {
-  A(x, y);
+template <class IArray, class OArray>
+inline void mv_nt(
+    const std::function<void(const void *, const typename IArray::size_type,
+                             const char, void *, const char)> &A,
+    const IArray &x, OArray &y) {
+  using i_value_type = typename IArray::value_type;
+  using o_value_type = typename OArray::value_type;
+  A((const void *)x.data(), x.size(), ValueTypeTrait<i_value_type>::signature,
+    (void *)y.data(), ValueTypeTrait<o_value_type>::signature);
 }
 
 /*!
