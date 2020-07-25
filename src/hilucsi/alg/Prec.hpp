@@ -93,7 +93,7 @@ struct Prec {
       mat_type>::type;  ///< data matrix type
 
  private:
-  typedef SmallScaleSolverTrait<SMALLSCALE_LUP> _sss_trait;
+  typedef SmallScaleSolverTrait<SMALLSCALE_QRCP> _sss_trait;
   ///< small scale trait
  public:
   typedef typename _sss_trait::template solver_type<last_level_type>
