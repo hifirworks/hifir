@@ -163,6 +163,7 @@ class CompressedStorage {
   inline const iarray_type &inds() const { return _indices; }
   inline iarray_type &      ind_start() { return _ind_start; }
   inline const iarray_type &ind_start() const { return _ind_start; }
+  inline const size_type    primary_size() const { return _psize; }
 
   /// \brief reserve space for nnz
   /// \param[in] nnz total number of nonzeros
@@ -2149,6 +2150,27 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   size_type _nrows;     ///< number of rows
   using _base::_psize;  ///< number of columns (primary entries)
 };
+
+/// \brief Export data
+/// \tparam ExportCSType compressed format for exporting data
+/// \tparam CSCopiedType compressed format for being copied
+/// \param[in] A sparse matrix being copied
+/// \param[out] ind_start starting position array in compressed format
+/// \param[out] indices index array in compressed format
+/// \param[out] vals value array in compressed format, same length as \a indices
+/// \warning The user must query the sizes and allocate the buffers beforehand
+/// \ingroup ds
+template <class ExportCSType, class CSCopiedType>
+inline void export_compressed_data(const CSCopiedType &            A,
+                                   typename ExportCSType::ipointer ind_start,
+                                   typename ExportCSType::ipointer indices,
+                                   typename ExportCSType::pointer  vals) {
+  // if export is same as copied, then this is shallow copy
+  const ExportCSType AA(A);
+  std::copy_n(AA.ind_start().cbegin(), AA.primary_size() + 1, ind_start);
+  std::copy_n(AA.inds().cbegin(), AA.nnz(), indices);
+  std::copy_n(AA.vals().cbegin(), AA.nnz(), vals);
+}
 
 }  // namespace hilucsi
 
