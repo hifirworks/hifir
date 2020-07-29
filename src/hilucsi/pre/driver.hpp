@@ -92,7 +92,7 @@ inline typename CcsType::size_type do_preprocessing(
     hilucsi_info("matching took %gs.", (double)timer.time());
 
   const size_type m = match_res.second;
-  if (opt.reorder != REORDER_OFF) {
+  if (opt.reorder != REORDER_OFF && m) {
     if (hilucsi_verbose(PRE, opt)) hilucsi_info("performing reordering step");
     timer.start();
 
@@ -134,7 +134,9 @@ inline typename CcsType::size_type do_preprocessing(
     reorder_finalize_perm(p);
     reorder_finalize_perm(q);
   } else {
-    if (hilucsi_verbose(PRE, opt)) hilucsi_info("reordering skipped");
+    if (hilucsi_verbose(PRE, opt))
+      m ? hilucsi_info("reordering skipped")
+        : hilucsi_info("reordering skipped due to empty leading block");
     p.build_inv();
     q.build_inv();
   }
