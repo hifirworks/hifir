@@ -63,8 +63,8 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
     using v_t = typename ValueTypeTrait<value_type>::value_type;
     constexpr static bool IS_DOUBLE = std::is_same<v_t, double>::value;
 
-    constexpr static v_t diag_tol = IS_DOUBLE ? 1e-7 : 1e-4f;
-    constexpr static v_t cond_tol = IS_DOUBLE ? 1e-12 : 1e-6f;
+    constexpr static v_t diag_tol = std::sqrt(Const<v_t>::EPS);
+    constexpr static v_t cond_tol = static_cast<v_t>(IS_DOUBLE ? 1e-12 : 1e-5);
 
     hilucsi_error_if(_mat.empty(), "matrix is still empty!");
     hilucsi_error_if(_mat.nrows() < _mat.ncols(),
