@@ -53,6 +53,8 @@ class SmallScaleBase {
   inline size_type         rank() const { return _rank; }
   inline const dense_type &mat() const { return _mat; }
   inline dense_type &      mat() { return _mat; }
+  inline const dense_type &mat_backup() const { return _mat_backup; }
+  inline dense_type &      mat_backup() { return _mat_backup; }
   inline bool              is_squared() const { return _mat.is_squared(); }
   inline bool full_rank() const { return _rank != 0u && _rank == _mat.ncols(); }
 
@@ -66,18 +68,27 @@ class SmallScaleBase {
 
   /// \brief set a dense operator, this is needed for H version
   /// \param[in,out] mat input matrix, the data is \b destroyed upon output
-  inline void set_matrix(dense_type &&mat) { _mat = std::move(mat); }
+  inline void set_matrix(dense_type &&mat) {
+    _mat = std::move(mat);
+    _mat_backup.resize(_mat.nrows(), _mat.ncols());
+    std::copy(_mat.array().cbegin(), _mat.array().cend(),
+              _mat_backup.array().begin());
+  }
 
   /// \brief set a dense operator from other data type
   /// \tparam T value type
   template <class T>
   inline void set_matrix(const DenseMatrix<T> &mat) {
     _mat = dense_type(mat);
+    _mat_backup.resize(_mat.nrows(), _mat.ncols());
+    std::copy(_mat.array().cbegin(), _mat.array().cend(),
+              _mat_backup.array().begin());
   }
 
  protected:
-  dense_type _mat;   ///< matrix
-  size_type  _rank;  ///< rank
+  dense_type _mat;         ///< matrix
+  dense_type _mat_backup;  ///< backup matrix
+  size_type  _rank;        ///< rank
 };
 
 }  // namespace internal
