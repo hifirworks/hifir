@@ -1826,8 +1826,8 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
         typename std::conditional<(sizeof(Vx) > sizeof(Vy)), Vx, Vy>::type;
     using v_t = typename std::conditional<(sizeof(v1_t) > sizeof(value_type)),
                                           v1_t, value_type>::type;
-    if (!_psize) return;
     std::fill_n(y, nrows(), Vy(0));
+    if (!_psize) return;
     for (size_type i = 0u; i < _psize; ++i) {
       const v_t temp  = x[i];
       auto      v_itr = _base::val_cbegin(i);
