@@ -1010,74 +1010,84 @@ inline CsType level_factorize(const CsType &                   A,
   const auto L_nnz = L.nnz(), U_nnz = U.nnz();
 
   ccs_type L_B, U_B;
-  do {
-    DefaultTimer timer2;
-    timer2.start();
-    auto L_E = L.template split_crs<true>(m, L_start);
-    L_B      = L.template split<false>(m, L_start);
-    L.destroy();
-    timer2.finish();
-    if (hilucsi_verbose(INFO, opts))
-      hilucsi_info("splitting LB and freeing L took %gs.", timer2.time());
-    crs_type U_F;
+  if (m) {
+    // TODO: need to handle the case where m is too small comparing to n, thus
+    // we need to resort to direct factorizations.
     do {
+      DefaultTimer timer2;
       timer2.start();
-      auto U_F2 = U.template split_ccs<true>(m, U_start);
-      U_B       = U.template split_ccs<false>(m, U_start);
-      U.destroy();
+      auto L_E = L.template split_crs<true>(m, L_start);
+      L_B      = L.template split<false>(m, L_start);
+      L.destroy();
       timer2.finish();
       if (hilucsi_verbose(INFO, opts))
-        hilucsi_info("splitting UB and freeing U took %gs.", timer2.time());
-      timer2.start();
-      const size_type nnz1 = L_E.nnz(), nnz2 = U_F2.nnz();
+        hilucsi_info("splitting LB and freeing L took %gs.", timer2.time());
+      crs_type U_F;
+      do {
+        timer2.start();
+        auto U_F2 = U.template split_ccs<true>(m, U_start);
+        U_B       = U.template split_ccs<false>(m, U_start);
+        U.destroy();
+        timer2.finish();
+        if (hilucsi_verbose(INFO, opts))
+          hilucsi_info("splitting UB and freeing U took %gs.", timer2.time());
+        timer2.start();
+        const size_type nnz1 = L_E.nnz(), nnz2 = U_F2.nnz();
 #ifndef HILUCSI_NO_DROP_LE_UF
-      double a_L = opts.alpha_L, a_U = opts.alpha_U;
-      if (cur_level == 1u && opts.fat_schur_1st) {
-        a_L *= 2;
-        a_U *= 2;
-      }
-      if (hilucsi_verbose(INFO, opts))
-        hilucsi_info(
-            "applying dropping on L_E and U_F with alpha_{L,U}=%g,%g...", a_L,
-            a_U);
-      if (m < n) {
-        // use P and Q as buffers
-        P[0] = Q[0] = 0;
-        for (size_type i(m); i < n; ++i) {
-          P[i - m + 1] = P[i - m] + row_sizes[p[i]];
-          Q[i - m + 1] = Q[i - m] + col_sizes[q[i]];
+        double a_L = opts.alpha_L, a_U = opts.alpha_U;
+        if (cur_level == 1u && opts.fat_schur_1st) {
+          a_L *= 2;
+          a_U *= 2;
         }
+        if (hilucsi_verbose(INFO, opts))
+          hilucsi_info(
+              "applying dropping on L_E and U_F with alpha_{L,U}=%g,%g...", a_L,
+              a_U);
+        if (m < n) {
+          // use P and Q as buffers
+          P[0] = Q[0] = 0;
+          for (size_type i(m); i < n; ++i) {
+            P[i - m + 1] = P[i - m] + row_sizes[p[i]];
+            Q[i - m + 1] = Q[i - m] + col_sizes[q[i]];
+          }
 #  ifndef _OPENMP
-        drop_L_E(P, a_L, L_E, l.vals(), l.inds());
-        drop_U_F(Q, a_U, U_F2, ut.vals(), ut.inds());
+          drop_L_E(P, a_L, L_E, l.vals(), l.inds());
+          drop_U_F(Q, a_U, U_F2, ut.vals(), ut.inds());
 #  else
-        mt::drop_L_E_and_U_F(P, a_L, Q, a_U, L_E, U_F2, l.vals(), l.inds(),
-                             ut.vals(), ut.inds(), schur_threads);
+          mt::drop_L_E_and_U_F(P, a_L, Q, a_U, L_E, U_F2, l.vals(), l.inds(),
+                               ut.vals(), ut.inds(), schur_threads);
 #  endif
-      }
+        }
 #endif  // HILUCSI_NO_DROP_LE_UF
-      timer2.finish();
-      U_F = crs_type(U_F2);
-      if (hilucsi_verbose(INFO, opts))
-        hilucsi_info("nnz(L_E)=%zd/%zd, nnz(U_F)=%zd/%zd, time: %gs...", nnz1,
-                     L_E.nnz(), nnz2, U_F.nnz(), timer2.time());
-    } while (false);  // U_F2 got freed
+        timer2.finish();
+        U_F = crs_type(U_F2);
+        if (hilucsi_verbose(INFO, opts))
+          hilucsi_info("nnz(L_E)=%zd/%zd, nnz(U_F)=%zd/%zd, time: %gs...", nnz1,
+                       L_E.nnz(), nnz2, U_F.nnz(), timer2.time());
+      } while (false);  // U_F2 got freed
 
-    timer2.start();
+      timer2.start();
 // compute S version of Schur complement
 #ifndef _OPENMP
-    (void)schur_threads;
-    S = compute_Schur_simple(s, A_crs, t, p, q, m, L_E, d, U_F, l);
+      (void)schur_threads;
+      S = compute_Schur_simple(s, A_crs, t, p, q, m, L_E, d, U_F, l);
 #else
-    if (hilucsi_verbose(INFO, opts))
-      hilucsi_info("using %d for Schur computation...", schur_threads);
-    S = mt::compute_Schur_simple(s, A_crs, t, p, q, m, L_E, d, U_F, l,
-                                 schur_threads);
+      if (hilucsi_verbose(INFO, opts))
+        hilucsi_info("using %d for Schur computation...", schur_threads);
+      S = mt::compute_Schur_simple(s, A_crs, t, p, q, m, L_E, d, U_F, l,
+                                   schur_threads);
 #endif
-    timer2.finish();
-    if (hilucsi_verbose(INFO, opts))
-      hilucsi_info("pure Schur computation time: %gs...", timer2.time());
-  } while (false);
+      timer2.finish();
+      if (hilucsi_verbose(INFO, opts))
+        hilucsi_info("pure Schur computation time: %gs...", timer2.time());
+    } while (false);
+  } else {
+    S = A;
+    p.make_eye();
+    q.make_eye();
+    std::fill(s.begin(), s.end(), 1);
+    std::fill(t.begin(), t.end(), 1);
+  }
 
   // compute the nnz(A)-nnz(B) from the first level
   size_type AmB_nnz(0);
