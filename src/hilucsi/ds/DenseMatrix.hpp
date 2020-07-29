@@ -315,7 +315,7 @@ class DenseMatrix {
   }
   inline const_col_iterator col_end(const size_type col) const {
     hilucsi_assert(col < _ncols, "%zd exceeds column bound %zd", col, _ncols);
-    return _data.cbegin() + col * _nrows;
+    return _data.cbegin() + (col + 1) * _nrows;
   }
   inline const_col_iterator col_cbegin(const size_type col) const {
     return col_begin(col);
