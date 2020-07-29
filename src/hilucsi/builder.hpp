@@ -123,6 +123,17 @@ class HILUCSI {
       boost2_value_type;
   ///< we need this in float+long double mixed for null space solver
 
+  /// \brief check if or not we can export data
+  /// \note Sparse last level or IntervalBased compressed formats are not
+  ///       allowed to export their data attributes.
+  constexpr bool can_export() const {
+#ifdef HILUCSI_ENABLE_MUMPS
+    return false;
+#else
+    return !IntervalBased;
+#endif  // HILUCSI_ENABLE_MUMPS
+  }
+
   /// \brief check empty or not
   inline bool empty() const { return _precs.empty(); }
 
@@ -140,6 +151,9 @@ class HILUCSI {
 
   /// \brief get constant reference to preconditioners
   inline const precs_type &precs() const { return _precs; }
+
+  /// \brief get normal reference to preconditioners
+  inline precs_type &precs() { return _precs; }
 
   /// \brief compute the overall nnz of the multilevel preconditioners
   inline size_type nnz() const {

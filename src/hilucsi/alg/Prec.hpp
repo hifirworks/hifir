@@ -283,6 +283,105 @@ struct Prec {
     return !sparse_solver.empty() || !dense_solver.empty() || m == n;
   }
 
+  /// \brief query size information
+  inline void inquire_sizes(size_type &m_, size_type &n_, size_type &nnz_L,
+                            size_type &nnz_U, size_type &nnz_E,
+                            size_type &nnz_F) const {
+    m_    = m;
+    n_    = n;
+    nnz_L = L_B.nnz();
+    nnz_U = U_B.nnz();
+    nnz_E = E.nnz();
+    nnz_F = F.nnz();
+  }
+
+  /// \brief export all numerical data
+  template <class ExportType, typename T = void>
+  inline typename std::enable_if<!INTERVAL_BASED, T>::type export_sparse_data(
+      typename ExportType::ipointer L_indptr,
+      typename ExportType::ipointer L_indices,
+      typename ExportType::pointer L_vals, typename ExportType::pointer D_vals,
+      typename ExportType::ipointer U_indptr,
+      typename ExportType::ipointer U_indices,
+      typename ExportType::pointer  U_vals,
+      typename ExportType::ipointer E_indptr,
+      typename ExportType::ipointer E_indices,
+      typename ExportType::pointer  E_vals,
+      typename ExportType::ipointer F_indptr,
+      typename ExportType::ipointer F_indices,
+      typename ExportType::pointer F_vals, typename ExportType::pointer s_vals,
+      typename ExportType::pointer t_vals, typename ExportType::ipointer p_vals,
+      typename ExportType::ipointer pinv_vals,
+      typename ExportType::ipointer q_vals,
+      typename ExportType::ipointer qinv_vals, const bool jit_destroy = false) {
+    // leading block
+    export_compressed_data<ExportType>(L_B, L_indptr, L_indices, L_vals);  // L
+    std::copy_n(d_B.cbegin(), m, D_vals);                                  // D
+    if (jit_destroy) array_type().swap(d_B);
+    export_compressed_data<ExportType>(U_B, U_indptr, U_indices, U_vals);  // U
+    if (jit_destroy) U_B.destroy();
+    // off-diagonal blocks
+    export_compressed_data<ExportType>(E, E_indptr, E_indices, E_vals);  // E
+    if (jit_destroy) E.destroy();
+    export_compressed_data<ExportType>(F, F_indptr, F_indices, F_vals);  // F
+    if (jit_destroy) F.destroy();
+    // row/column scaling
+    std::copy_n(s.cbegin(), n, s_vals);  // s
+    std::copy_n(t.cbegin(), n, t_vals);  // t
+    // row/column permutations
+    std::copy_n(p.cbegin(), n, p_vals);         // P
+    std::copy_n(p_inv.cbegin(), n, pinv_vals);  // P^T
+    std::copy_n(q.cbegin(), n, q_vals);         // Q
+    std::copy_n(q_inv.cbegin(), n, qinv_vals);  // Q^T
+    if (jit_destroy) {
+      // destroy all 1D arrays
+      array_type().swap(d_B);
+      array_type().swap(s);
+      array_type().swap(t);
+      perm_type().swap(p);
+      perm_type().swap(p_inv);
+      perm_type().swap(q);
+      perm_type().swap(q_inv);
+      m = n = 0;
+    }
+  }
+
+  template <class ExportType, typename T = void>
+  inline typename std::enable_if<INTERVAL_BASED, T>::type export_sparse_data(
+      typename ExportType::ipointer, typename ExportType::ipointer,
+      typename ExportType::pointer, typename ExportType::pointer,
+      typename ExportType::ipointer, typename ExportType::ipointer,
+      typename ExportType::pointer, typename ExportType::ipointer,
+      typename ExportType::ipointer, typename ExportType::pointer,
+      typename ExportType::ipointer, typename ExportType::ipointer,
+      typename ExportType::pointer, typename ExportType::pointer,
+      typename ExportType::pointer, typename ExportType::ipointer,
+      typename ExportType::ipointer, typename ExportType::ipointer,
+      typename ExportType::ipointer, const bool = false) const {
+    hilucsi_error("cannot export data for interval-based compressed formats!");
+  }
+
+  template <class T>
+  inline void inquire_or_export_dense(T *mat, size_type &nrows,
+                                      size_type &ncols,
+                                      const bool destroy = false) {
+#ifdef HILUCSI_ENABLE_MUMPS
+    hilucsi_error("cannot export data for direct sparse last level!");
+#endif
+    if (!mat) {
+      nrows = dense_solver.mat_backup().nrows();
+      ncols = dense_solver.mat_backup().ncols();
+      return;
+    }
+    // assume mat is properly allocated
+    std::copy(dense_solver.mat_backup().array().cbegin(),
+              dense_solver.mat_backup().array().cend(), mat);
+    if (destroy) {
+      array_type().swap(dense_solver.mat_backup().array());
+      array_type().swap(dense_solver.mat().array());
+    }
+  }
+
   size_type                  m;      ///< leading block size
   size_type                  n;      ///< system size
   mat_type                   L_B;    ///< lower part of leading block
