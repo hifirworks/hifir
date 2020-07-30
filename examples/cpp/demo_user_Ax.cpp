@@ -121,8 +121,22 @@ int main(int argc, char *argv[]) {
 #endif
 
   // solve
-  // wrap user callback
-  const func_t AA = [&](const array_t &x, array_t &y) { mt::mv_nt(A, x, y); };
+  // wrap user callback, the interfaces are
+  //   opaque pointer x: input array
+  //   n: length of the array
+  //   xdtype: data type for x, 'd' for double, 's' for float
+  //   opaque pointer y: output array
+  //   ydtype: data type for y
+  // User needs to ensure data types are correct, and then cast x and y to
+  // proper target types.
+  const func_t AA = [&](const void *x, const std::size_t n, const char xdtype,
+                        void *y, const char ydtype) {
+    hilucsi_error_if(n != A.nrows(), "mismatched sizes");  // sizes must match
+    hilucsi_error_if(xdtype != 'd', "input array must be double");
+    hilucsi_error_if(ydtype != 'd', "output array must be double");
+    A.mv_nt_low(reinterpret_cast<const double *>(x),
+                reinterpret_cast<double *>(y));
+  };
   timer.start();
   std::shared_ptr<solver_t> solver(create_ksp(ksp, _M));
   solver->set_rtol(rtol);
