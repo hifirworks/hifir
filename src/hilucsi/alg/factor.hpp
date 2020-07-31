@@ -968,7 +968,7 @@ inline CsType level_factorize(const CsType &                   A,
         "\tmin |kappa_l|=%g\n"
         "\tmax |kappa_l|=%g\n"
         "\tmax |d|=%g",
-        step.defers(), m2, m, m2 - m, (size_type)info_counter[0],
+        step.defers(), m0, m, m0 - m, (size_type)info_counter[0],
         (size_type)info_counter[1], (size_type)info_counter[5],
         (size_type)info_counter[3], (size_type)info_counter[6],
         (size_type)info_counter[4],
