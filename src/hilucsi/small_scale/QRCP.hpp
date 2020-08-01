@@ -35,6 +35,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "hilucsi/small_scale/SmallScaleBase.hpp"
 #include "hilucsi/small_scale/lapack.hpp"
 #include "hilucsi/utils/common.hpp"
+#include "hilucsi/utils/math.hpp"
 
 namespace hilucsi {
 
@@ -50,6 +51,8 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
   typedef ValueType                 value_type;     ///< value type
   typedef Lapack<value_type>        lapack_kernel;  ///< lapack backend
   typedef typename _base::size_type size_type;      ///< size type
+  typedef typename ValueTypeTrait<value_type>::value_type scalar_type;
+  ///< scalar type
 
   /// \brief get the solver type
   inline static const char *method() { return "QRCP"; }
@@ -60,11 +63,9 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
   /// \brief compute decomposition and determine the rank
   inline void factorize() {
     // get tolerance
-    using v_t = typename ValueTypeTrait<value_type>::value_type;
-    constexpr static bool IS_DOUBLE = std::is_same<v_t, double>::value;
-
-    constexpr static v_t diag_tol = std::sqrt(Const<v_t>::EPS);
-    constexpr static v_t cond_tol = static_cast<v_t>(IS_DOUBLE ? 1e-12 : 1e-5);
+    constexpr static scalar_type diag_tol = std::sqrt(Const<scalar_type>::EPS);
+    constexpr static scalar_type cond_tol =
+        std::sqrt(1 / Const<scalar_type>::EPS);
 
     hilucsi_error_if(_mat.empty(), "matrix is still empty!");
     hilucsi_error_if(_mat.nrows() < _mat.ncols(),
@@ -76,7 +77,7 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
     _tau.resize(std::min(_mat.nrows(), _mat.ncols()));
 
     // query the buffer size
-    v_t lwork;
+    value_type lwork;
     lapack_kernel::geqp3(_mat.nrows(), _mat.ncols(), _mat.data(), _mat.nrows(),
                          _jpvt.data(), _tau.data(), &lwork, -1);
     _work.resize((size_type)lwork);
@@ -89,9 +90,12 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
     // fast filtering to test diagonal entries
     bool            do_cond_test = false;
     const size_type N            = _tau.size();  // min (row, col)
-    const v_t       diag_eps     = diag_tol * std::abs(_mat[0]);
-    for (size_type i = 0u; i < N; ++i)
-      if (std::abs(_mat(i, i)) < diag_eps) {
+    // we first check if we have too small diagonals, use this as a safe guard
+    // to see if we need to call more expensive condition # estimator
+    // weighted by R(0,0)
+    const scalar_type diag_eps = diag_tol * std::abs(_mat[0]);
+    for (size_type i = N; i != 0u; --i)
+      if (std::abs(_mat(i - 1, i - 1)) < diag_eps) {
         hilucsi_warning(
             "System ill-conditioned (diagonal %zd is smaller than tolerance "
             "%g), switch to condition number estimator to "
@@ -103,26 +107,30 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
     // initial rank to be full rank
     _rank = _mat.ncols();
     if (do_cond_test) {
-      const v_t cond_eps = cond_tol * std::abs(_mat[0]);
+#if 0
       // allocate buffer
       _work.resize(3 * _mat.ncols());
       _iwork.resize(_mat.ncols());
-      v_t rcond;  // reciprocal of condition number
+      scalar_type rcond;  // reciprocal of condition number
       for (;;) {
         // use 1 norm
         const auto info = lapack_kernel::trcon('1', 'U', 'N', _rank,
                                                _mat.data(), _mat.nrows(), rcond,
                                                _work.data(), _iwork.data());
         hilucsi_error_if(info < 0, "TRCON returned negative info!");
-        if (rcond >= cond_eps) break;
+        if (rcond * cond_tol >= scalar_type(1)) break;
         if (_rank == 0u) break;
         --_rank;
       }
+#else
+      // _est_rank(cond_tol);
+      _est_rank_2norm(cond_tol);
+#endif
       hilucsi_warning_if(
           _rank != _mat.ncols(),
           "The system is rank deficient with rank=%zd, the tolerance used "
           "for thresholding reciprocal of 1-norm based condition number was %g",
-          _rank, (double)cond_eps);
+          _rank, (double)cond_tol);
     }
   }
 
@@ -143,7 +151,7 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
   /// Notice that \f$\mathbf{R}^{-1}\mathbf{Q}^T\f$ is the
   /// pseudo-inverse of \f$\mathbf{AP}\f$.
   inline void solve(Array<value_type> &x, const bool tran = false) const {
-    using v_t = typename ValueTypeTrait<value_type>::value_type;
+    using v_t = scalar_type;
 
     hilucsi_error_if(tran, "QRCP does not support transpose solve!");
     hilucsi_error_if(
@@ -188,6 +196,87 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
     std::copy(x.cbegin(), x.cend(), _x.begin());
     solve(_x, tran);
     std::copy(_x.cbegin(), _x.cend(), x.begin());
+  }
+
+ protected:
+  /// \brief Incrementally estimate the condition number of R
+  /// \param[in] cond_tol condition number threshold
+  /// \note We incrementally check based on \f$\mathbf{R}^{T}\f$ by 1-norm
+  inline void _est_rank(const scalar_type cond_tol) {
+    const size_type n = _mat.ncols();
+    _work.resize(n);  // allocate buffer, used in _est_cond1
+    scalar_type nrm, inrm;
+    for (_rank = 0u; _rank < n; ++_rank) {
+      // esimate norm of the current leading block
+      if (_mat(_rank, _rank) == 0) break;
+      _est_cond1(inrm, nrm);
+      if (inrm * nrm >= cond_tol) break;
+    }
+  }
+
+  /// \brief helper function to estimate the norms of \f$\mathbf{R}^T\f$ and
+  ///        \f$\mathbf{R}^{-T}\f$.
+  /// \param[in,out] inrm invser norm at step _rank
+  /// \param[in,out] nrm norm at step _rank
+  inline void _est_cond1(scalar_type &inrm, scalar_type &nrm) {
+    // NOTE, the upper part in _mat is R
+    // NOTE, keep in mind that we are dealing with $R^{T}$
+    if (_rank == 0u) {
+      _work[0] = value_type(1) / _mat(0, 0);
+      inrm     = abs(_work[0]);
+      nrm      = abs(_mat(0, 0));
+    } else {
+      value_type  s(0);
+      scalar_type nn(0);
+      // backsolve
+      for (size_type j(0); j < _rank; ++j) {
+        s += _work[j] * _mat(j, _rank);
+        nn += abs(_mat(j, _rank));
+      }
+      const value_type k1 = value_type(1) - s, k2 = -value_type(1) - s;
+      _work[_rank] =
+          abs(k1) < abs(k2) ? k2 / _mat(_rank, _rank) : k1 / _mat(_rank, _rank);
+      // compute the invser 1-norm for R^T_{0:rank,0:rank}
+      inrm = std::max(inrm, abs(_work[_rank]));
+      // compute the 1-norm for R^T_{0:rank,0:rank}
+      nrm = std::max(nrm, nn + abs(_mat(_rank, _rank)));
+    }
+  }
+
+  /// \brief esimate rank based on 2-norm condition numbers
+  /// \param[out] cond_tol condition number threshold
+  /// \note This is calling after QRCP by using \a ?laic1 auxiliary routine
+  /// \note This implemention is adapted based on ?gelsy driver routine
+  inline void _est_rank_2norm(const scalar_type cond_tol) {
+    static constexpr typename lapack_kernel::int_type JOB_MIN = 2, JOB_MAX = 1;
+
+    const size_type n = _mat.ncols();
+    _work.resize(2 * n);                 // allocate buffer
+    auto *x = _work.data(), *y = x + n;  // used in ?laic1
+    x[0] = y[0] = value_type(1);
+    value_type smax(abs(_mat(0, 0))), smin(smax);  // initial singular values
+    value_type s1, c1, s2, c2, sminpr, smaxpr;     // needed in ?laic1
+    for (_rank = 0u; _rank < n; ++_rank) {
+      // esimate smaller
+      lapack_kernel::laic1(JOB_MIN, _rank, x, smin, &_mat(0, _rank),
+                           _mat(_rank, _rank), sminpr, s1, c1);
+      // esimate larger
+      lapack_kernel::laic1(JOB_MAX, _rank, y, smax, &_mat(0, _rank),
+                           _mat(_rank, _rank), smaxpr, s2, c2);
+      if (smaxpr <= sminpr * cond_tol) {
+        // still well-conditioned
+        for (size_type i(0); i < _rank; ++i) {
+          x[i] *= s1;
+          y[i] *= s2;
+        }
+        x[_rank] = c1;
+        y[_rank] = c2;
+        smin     = sminpr;
+        smax     = smaxpr;
+        continue;
+      }
+      break;
+    }
   }
 
  protected:

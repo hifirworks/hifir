@@ -211,6 +211,14 @@ class Lapack {
                  work.data(), iwork.data());
   }
 
+  inline static int_type laic1(const int_type job, const int_type j,
+                               const value_type *x, const value_type sest,
+                               const value_type *w, const value_type gamma,
+                               value_type &sestpr, value_type &s,
+                               value_type &c) {
+    return internal::laic1(job, j, x, sest, w, gamma, sestpr, s, c);
+  }
+
   ///@}
 
   /// \name common
