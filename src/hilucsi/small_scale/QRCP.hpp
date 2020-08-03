@@ -65,7 +65,7 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
     // get tolerance
     constexpr static scalar_type diag_tol = std::sqrt(Const<scalar_type>::EPS);
     constexpr static scalar_type cond_tol =
-        std::sqrt(1 / Const<scalar_type>::EPS);
+        scalar_type(1) / std::pow(Const<scalar_type>::EPS, 2. / 3);
 
     hilucsi_error_if(_mat.empty(), "matrix is still empty!");
     hilucsi_error_if(_mat.nrows() < _mat.ncols(),
