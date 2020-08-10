@@ -88,12 +88,14 @@ struct Prec {
 #endif                                                   // HILUCSI_ENABLE_MUMPS
   static constexpr char EMPTY_PREC     = '\0';           ///< empty prec
   static constexpr bool INTERVAL_BASED = IntervalBased;  ///< interval
+  static constexpr bool USE_TQRCP      = true;  ///< use TQRCP for dense level
   using data_mat_type                  = typename std::conditional<
       INTERVAL_BASED, typename using_interval_from_classical<mat_type>::type,
       mat_type>::type;  ///< data matrix type
 
  private:
-  typedef SmallScaleSolverTrait<SMALLSCALE_QRCP> _sss_trait;
+  typedef SmallScaleSolverTrait<(USE_TQRCP ? SMALLSCALE_QRCP : SMALLSCALE_LUP)>
+      _sss_trait;
   ///< small scale trait
  public:
   typedef typename _sss_trait::template solver_type<last_level_type>

@@ -88,9 +88,10 @@ struct hilucsi_Options {
   int    pre_scale; /*!< prescale (default 0 (off)) */
   int    symm_pre_lvls;
   /*!< levels to be applied with symm preprocessing (default is 1) */
-  int threads;       /*!< user specified threads (default 0) */
-  int mumps_blr;     /*!< MUMPS BLR options (default 2) */
-  int fat_schur_1st; /*!< double alpha for dropping L_E and U_F on 1st lvl */
+  int    threads;       /*!< user specified threads (default 0) */
+  int    mumps_blr;     /*!< MUMPS BLR options (default 2) */
+  int    fat_schur_1st; /*!< double alpha for dropping L_E and U_F on 1st lvl */
+  double qrcp_cond;     /*!< condition number threshold for TQRCP (default 0) */
 };
 
 /*!
@@ -123,7 +124,8 @@ static hilucsi_Options hilucsi_get_default_options(void) {
                            .symm_pre_lvls = 1,
                            .threads       = 0,
                            .mumps_blr     = 1,
-                           .fat_schur_1st = 0};
+                           .fat_schur_1st = 0,
+                           .qrcp_cond     = 0.0};
 }
 
 /*!
@@ -280,12 +282,13 @@ inline std::string opt_repr(const Options &opt) {
          pack_int("symm_pre_lvls", opt.symm_pre_lvls) +
          pack_int("threads", opt.threads) +
          pack_int("mumps_blr", opt.mumps_blr) +
-         pack_int("fat_schur_1st", opt.fat_schur_1st);
+         pack_int("fat_schur_1st", opt.fat_schur_1st) +
+         pack_double("qrcp_cond", opt.qrcp_cond);
 }
 
 #  ifndef DOXYGEN_SHOULD_SKIP_THIS
 namespace internal {
-#    define _HILUCSI_TOTAL_OPTIONS 20
+#    define _HILUCSI_TOTAL_OPTIONS 21
 /*
  * build a byte map, i.e. the value is the leading byte position of the attrs
  * in Options
@@ -310,12 +313,13 @@ const static std::size_t option_attr_pos[_HILUCSI_TOTAL_OPTIONS] = {
     option_attr_pos[15] + sizeof(int),
     option_attr_pos[16] + sizeof(int),
     option_attr_pos[17] + sizeof(int),
-    option_attr_pos[18] + sizeof(int)};
+    option_attr_pos[18] + sizeof(int),
+    option_attr_pos[19] + sizeof(double)};
 
 /* data type tags, true for double, false for int */
 const static bool option_dtypes[_HILUCSI_TOTAL_OPTIONS] = {
-    true,  true,  true,  true,  true,  true,  true,  true,  true,  false,
-    false, false, false, false, false, false, false, false, false, false};
+    true,  true,  true,  true,  true,  true,  true,  true,  true,  false, false,
+    false, false, false, false, false, false, false, false, false, true};
 
 /* using unordered map to store the string to index map */
 const static std::unordered_map<std::string, int> option_tag2pos = {
@@ -338,7 +342,8 @@ const static std::unordered_map<std::string, int> option_tag2pos = {
     {"symm_pre_lvls", 16},
     {"threads", 17},
     {"mumps_blr", 18},
-    {"fat_schur_1st", 19}};
+    {"fat_schur_1st", 19},
+    {"qrcp_cond", 20}};
 
 } /* namespace internal */
 #  endif /* DOXYGEN_SHOULD_SKIP_THIS */
@@ -391,7 +396,8 @@ inline InStream &operator>>(InStream &in_str, hilucsi::Options &opt) {
   in_str >> opt.tau_L >> opt.tau_U >> opt.tau_d >> opt.tau_kappa >>
       opt.alpha_L >> opt.alpha_U >> opt.rho >> opt.c_d >> opt.c_h >> opt.N >>
       opt.verbose >> opt.rf_par >> opt.reorder >> opt.saddle >> opt.check >>
-      opt.pre_scale >> opt.symm_pre_lvls >> opt.threads >> opt.mumps_blr;
+      opt.pre_scale >> opt.symm_pre_lvls >> opt.threads >> opt.mumps_blr >>
+      opt.fat_schur_1st >> opt.qrcp_cond;
   return in_str;
 }
 

@@ -57,7 +57,7 @@ class LUP : public internal::SmallScaleBase<ValueType> {
   LUP() = default;
 
   /// \brief perform LU with partial pivoting
-  inline void factorize() {
+  inline void factorize(const double = 0.0) {
     hilucsi_error_if(_mat.empty(), "matrix is still empty!");
     hilucsi_error_if(!_base::is_squared(), "the matrix must be squared!");
     _ipiv.resize(_mat.nrows());

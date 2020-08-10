@@ -61,7 +61,8 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
   QRCP() = default;
 
   /// \brief compute decomposition and determine the rank
-  inline void factorize() {
+  /// \param[in] cond_thres (optional) condition number threshold
+  inline void factorize(const double cond_thres = 0.0) {
     // get tolerance
     constexpr static scalar_type diag_tol = std::sqrt(Const<scalar_type>::EPS);
     constexpr static scalar_type cond_tol =
@@ -123,14 +124,13 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
         --_rank;
       }
 #else
-      // _est_rank(cond_tol);
-      _est_rank_2norm(cond_tol);
+      _est_rank_2norm(cond_thres <= 0.0 ? cond_tol : scalar_type(cond_thres));
 #endif
       hilucsi_warning_if(
           _rank != _mat.ncols(),
           "The system is rank deficient with rank=%zd, the tolerance used "
           "for thresholding reciprocal of 1-norm based condition number was %g",
-          _rank, (double)cond_tol);
+          _rank, cond_thres <= 0.0 ? (double)cond_tol : cond_thres);
     }
   }
 
