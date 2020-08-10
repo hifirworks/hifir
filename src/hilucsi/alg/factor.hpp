@@ -511,12 +511,13 @@ inline CsType level_factorize(const CsType &                   A,
   typedef CsType                      input_type;
   typedef typename CsType::other_type other_type;
   using cs_trait = internal::CompressedTypeTrait<input_type, other_type>;
-  typedef typename cs_trait::crs_type crs_type;
-  typedef typename cs_trait::ccs_type ccs_type;
-  typedef typename CsType::index_type index_type;
-  typedef typename CsType::size_type  size_type;
-  typedef typename CsType::value_type value_type;
-  typedef DenseMatrix<value_type>     dense_type;
+  typedef typename cs_trait::crs_type    crs_type;
+  typedef typename cs_trait::ccs_type    ccs_type;
+  typedef typename CsType::index_type    index_type;
+  typedef typename CsType::size_type     size_type;
+  typedef typename CsType::value_type    value_type;
+  typedef DenseMatrix<value_type>        dense_type;
+  typedef typename PrecsType::value_type prec_type;  // precs is std::list
 
   hilucsi_error_if(A.nrows() != A.ncols(),
                    "only squared systems are supported");
@@ -584,8 +585,17 @@ inline CsType level_factorize(const CsType &                   A,
 
   timer.finish();  // prefile pre-processing
 
+  int post_flag = 0;
+  if ((double)m <= 0.25 * m0) post_flag = 1;
+
   if (hilucsi_verbose(INFO, opts)) {
     hilucsi_info("preprocessing done with leading block size %zd...", m);
+    if (post_flag == 1) {
+      hilucsi_info(
+          "too many static deferrals, resort to complete factorization...");
+      // NOTE we set m to 0 to automatically resort to direct factorization
+      m = 0;
+    }
     hilucsi_info("time: %gs", timer.time());
   }
 
@@ -949,6 +959,11 @@ inline CsType level_factorize(const CsType &                   A,
   stats[4] += info_counter[5] + info_counter[6];  // total droppings
   stats[5] += info_counter[3] + info_counter[4];  // space-based droppings
 
+  if (!post_flag && (double)m <= 0.25 * m0)
+    post_flag = 2;  // check after factorization
+  else if ((double)m <= 0.4 * m0)
+    post_flag = -1;
+
   // now we are done
   if (hilucsi_verbose(INFO, opts)) {
     hilucsi_info(
@@ -997,6 +1012,10 @@ inline CsType level_factorize(const CsType &                   A,
                               [](const value_type l, const value_type r) {
                                 return std::abs(l) < std::abs(r);
                               })));
+    if (post_flag == 2)
+      hilucsi_info(
+          "too many static+dynamic deferrals, resort to complete "
+          "factorization");
     hilucsi_info("time: %gs", timer.time());
   }
 
@@ -1010,7 +1029,7 @@ inline CsType level_factorize(const CsType &                   A,
   const auto L_nnz = L.nnz(), U_nnz = U.nnz();
 
   ccs_type L_B, U_B;
-  if (m) {
+  if (m && post_flag <= 0) {
     // TODO: need to handle the case where m is too small comparing to n, thus
     // we need to resort to direct factorizations.
     do {
@@ -1114,7 +1133,8 @@ inline CsType level_factorize(const CsType &                   A,
   dense_type      S_D;
   hilucsi_assert(S_D.empty(), "fatal!");
 
-  if ((size_type)std::ceil(nm * nm * opts.rho) <= dense_thres1 ||
+  if (post_flag < 0 ||
+      (size_type)std::ceil(nm * nm * opts.rho) <= dense_thres1 ||
       nm <= dense_thres2 || !m) {
     S_D = dense_type::from_sparse(S);
     if (hilucsi_verbose(INFO, opts))
@@ -1164,9 +1184,19 @@ inline CsType level_factorize(const CsType &                   A,
 
   // if dense is not empty, then push it back
   if (!S_D.empty()) {
+    if (hilucsi_verbose(INFO, opts)) {
+      if (prec_type::USE_TQRCP) {
+        // for user-specified threshold, we format and log it
+        char value_buf[20];
+        if (opts.qrcp_cond > 0.0) std::sprintf(value_buf, "%g", opts.qrcp_cond);
+        hilucsi_info("factorizing dense level by TQRCP with cond-thres %s...",
+                     (opts.qrcp_cond <= 0.0 ? "(default)" : value_buf));
+      } else
+        hilucsi_info("factorizing dense level by LU...");
+    }
     auto &last_level = precs.back().dense_solver;
     last_level.set_matrix(std::move(S_D));
-    last_level.factorize();
+    last_level.factorize(opts.qrcp_cond);
     if (hilucsi_verbose(INFO, opts))
       hilucsi_info("successfully factorized the dense component...");
   }
