@@ -586,6 +586,13 @@ inline CsType level_factorize(const CsType &                   A,
   timer.finish();  // prefile pre-processing
 
   int post_flag = 0;
+  // if post flag is 0, means we do standard Schur treatment after ILU
+  // if post flag is 1, means we have too many static deferrals, thus we
+  //    set S=A
+  // if post flag is 2, means we have too many static and dynamic deferrals,
+  //    thus we set S=A
+  // if post flag is -1, means we have moderate many deferrals, thus we
+  //    directly factorize S with complete factorization.
   if ((double)m <= 0.25 * m0) post_flag = 1;
 
   if (hilucsi_verbose(INFO, opts)) {
@@ -949,6 +956,12 @@ inline CsType level_factorize(const CsType &                   A,
 
   timer.finish();  // profile Crout update
 
+  if (!post_flag && (double)m <= 0.25 * m0) {
+    post_flag = 2;  // check after factorization
+    m         = 0;
+  } else if ((double)m <= 0.4 * m0)
+    post_flag = -1;
+
   // collecting stats for deferrals
   stats[0] += m0 - m;           // total deferals
   stats[1] += step.defers();    // dynamic deferrals
@@ -958,11 +971,6 @@ inline CsType level_factorize(const CsType &                   A,
   // collecting stats for dropping
   stats[4] += info_counter[5] + info_counter[6];  // total droppings
   stats[5] += info_counter[3] + info_counter[4];  // space-based droppings
-
-  if (!post_flag && (double)m <= 0.25 * m0)
-    post_flag = 2;  // check after factorization
-  else if ((double)m <= 0.4 * m0)
-    post_flag = -1;
 
   // now we are done
   if (hilucsi_verbose(INFO, opts)) {
