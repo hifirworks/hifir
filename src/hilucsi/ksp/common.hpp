@@ -382,7 +382,9 @@ class KSP {
   typedef typename array_type::value_type value_type;  ///< value type
   typedef typename DefaultSettings<value_type>::scalar_type scalar_type;
   ///< scalar type from value_type
-  typedef std::function<void(const array_type &, array_type &)> func_type;
+  typedef std::function<void(const void *, const size_type, const char, void *,
+                             const char)>
+      func_type;
   ///< callable user function wrapper for computing matrix-vector product
 
   static_assert(std::is_floating_point<scalar_type>::value,

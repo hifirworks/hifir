@@ -76,6 +76,16 @@ void HILUCSI_FC(sormqr, SORMQR)(char *, char *, hilucsi_lapack_int *,
                                 float *, hilucsi_lapack_int *, float *,
                                 float *c, hilucsi_lapack_int *, float *,
                                 hilucsi_lapack_int *, hilucsi_lapack_int *);
+
+// increment 2-norm condition number estimator
+void HILUCSI_FC(dlaic1, DLAIC1)(hilucsi_lapack_int *, hilucsi_lapack_int *,
+                                double *, double *, double *, double *,
+                                double *, double *, double *);
+
+// single
+void HILUCSI_FC(slaic1, SLAIC1)(hilucsi_lapack_int *, hilucsi_lapack_int *,
+                                float *, float *, float *, float *, float *,
+                                float *, float *);
 }
 #  endif
 #endif  // DOXYGEN_SHOULD_SKIP_THIS
@@ -176,6 +186,30 @@ inline hilucsi_lapack_int ormqr(const char side, const char trans,
    (hilucsi_lapack_int *)&lda, (float *)tau, c, (hilucsi_lapack_int *)&ldc,
    work, (hilucsi_lapack_int *)&lwork, &info);
   return info;
+}
+
+/// \brief double version of incremental 2-norm condition number estimator
+inline hilucsi_lapack_int laic1(const hilucsi_lapack_int job,
+                                const hilucsi_lapack_int j, const double *x,
+                                const double sest, const double *w,
+                                const double gamma, double &sestpr, double &s,
+                                double &c) {
+  HILUCSI_FC(dlaic1, DLAIC1)
+  ((hilucsi_lapack_int *)&job, (hilucsi_lapack_int *)&j, (double *)x,
+   (double *)&sest, (double *)w, (double *)&gamma, &sestpr, &s, &c);
+  return 0;
+}
+
+/// \brief single version of incremental 2-norm condition number estimator
+inline hilucsi_lapack_int laic1(const hilucsi_lapack_int job,
+                                const hilucsi_lapack_int j, const float *x,
+                                const float sest, const float *w,
+                                const float gamma, float &sestpr, float &s,
+                                float &c) {
+  HILUCSI_FC(slaic1, SLAIC1)
+  ((hilucsi_lapack_int *)&job, (hilucsi_lapack_int *)&j, (float *)x,
+   (float *)&sest, (float *)w, (float *)&gamma, &sestpr, &s, &c);
+  return 0;
 }
 
 /*!

@@ -29,6 +29,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _HILUCSI_PRE_MATCHINGSCALING_HPP
 #define _HILUCSI_PRE_MATCHINGSCALING_HPP
 
+#include <algorithm>
+#include <cmath>
+
 #include "hilucsi/Options.h"
 #include "hilucsi/ds/CompressedStorage.hpp"
 #include "hilucsi/pre/EqlDriver.hpp"
@@ -45,11 +48,17 @@ namespace internal {
 
 /// \brief defer any zero diags to the end
 /// \tparam IsSymm if \a true, then assume a symmetric leading block
-/// \tparam CcsType ccs storage for intermidiate matrix after matching
+/// \tparam CcsType ccs storage for input matrix
+/// \tparam CrsType crs storage for the input matrix
+/// \tparam ScalingArray scaling array type, see \ref Array
 /// \tparam PermType permutation matrix, see \ref BiPermMatrix
 /// \tparam BufType buffer used to stored deferred entries
-/// \param[in] A input matrix after calling matching
+/// \param[in] A input matrix
+/// \param[in] A_crs input matrix of CRS storage
 /// \param[in] m0 initial leading block size
+/// \param[in,out] s row scaling
+/// \param[in,out] t column scaling
+/// \param[in] level current factorization level
 /// \param[in,out] p row permutation matrix
 /// \param[in,out] q column permutation matrix
 /// \param[out] work_p workspace
@@ -60,16 +69,37 @@ namespace internal {
 /// search to locate the diagonal entries. For symmetric cases, on the other
 /// side, since only the \b lower part is stored, we just need to test the first
 /// entry of each column.
-template <bool IsSymm, class CcsType, class PermType, class BufType>
+template <bool IsSymm, class CcsType, class CrsType, class ScalingArray,
+          class PermType, class BufType>
 inline typename CcsType::size_type defer_zero_diags(
-    const CcsType &A, const typename CcsType::size_type m0, PermType &p,
-    PermType &q, BufType &work_p, BufType &work_q) {
-  using value_type                 = typename CcsType::value_type;
-  using size_type                  = typename CcsType::size_type;
-  constexpr static value_type ZERO = Const<value_type>::ZERO;
+    const CcsType &A, const CrsType &A_crs,
+    const typename CcsType::size_type m0, ScalingArray &s, ScalingArray &t,
+    const typename CcsType::size_type level, PermType &p, PermType &q,
+    BufType &work_p, BufType &work_q) {
+  using value_type                = typename CcsType::value_type;
+  using size_type                 = typename CcsType::size_type;
+  constexpr static value_type EPS = Const<value_type>::EPS;
 
-  // kernel
-  const auto is_valid_entry = [&](const size_type col) -> bool {
+  const auto compute_max_mag = [&](const size_type i) -> value_type {
+    value_type v(0);
+    if (A_crs.nnz_in_primary(p[i]))
+      v = std::max(v, std::abs(*std::max_element(
+                          A_crs.val_cbegin(p[i]), A_crs.val_cend(p[i]),
+                          [](const value_type a, const value_type b) -> bool {
+                            return std::abs(a) < std::abs(b);
+                          })));
+    if (A.nnz_in_primary(q[i]))
+      v = std::max(v, std::abs(*std::max_element(
+                          A.val_cbegin(q[i]), A.val_cend(q[i]),
+                          [](const value_type a, const value_type b) -> bool {
+                            return std::abs(a) < std::abs(b);
+                          })));
+    if (v == Const<value_type>::ZERO) v = value_type(1);
+    return v;
+  };
+
+  // kernel for determining small diagonals
+  const auto is_good_diag = [&](const size_type col) -> bool {
     const auto q_col = q[col];
     if (IsSymm) {
       // NOTE that since we only store the lower part, and due to the the
@@ -80,15 +110,30 @@ inline typename CcsType::size_type defer_zero_diags(
       auto itr = A.row_ind_cbegin(q_col);
       if (itr == A.row_ind_cend(q_col)) return false;
       if (*itr != q_col) return false;
-      if (*A.val_cbegin(q_col) == ZERO) return false;
+      if (std::abs(*A.val_cbegin(q_col)) <= compute_max_mag(col) * EPS)
+        return false;
     } else {
       const auto p_diag = p[col];
       auto       info =
           find_sorted(A.row_ind_cbegin(q_col), A.row_ind_cend(q_col), p_diag);
       if (!info.first) return false;
       // test numerical value
-      if (*(A.vals().cbegin() + (info.second - A.row_ind().cbegin())) == ZERO)
+      if (std::abs(
+              *(A.vals().cbegin() + (info.second - A.row_ind().cbegin()))) <=
+          compute_max_mag(col) * EPS)
         return false;
+    }
+    return true;
+  };
+
+  // kernel for determine row and column scaling quality
+  auto is_good_scaling = [&](const size_type i) -> bool {
+    if (level == 1u) return true;  // first level is from user input
+    if (std::min(s[p[i]], t[q[i]]) * 100.0 < std::max(s[p[i]], t[q[i]])) {
+      // TODO: This threshold of 100 needs to be fine tuned.
+      // bad scaling, fix it by setting it to be sqrt(s*t)
+      s[p[i]] = t[q[i]] = std::sqrt(s[p[i]] * t[q[i]]);
+      return false;
     }
     return true;
   };
@@ -96,7 +141,8 @@ inline typename CcsType::size_type defer_zero_diags(
 
   size_type deferrals(0);
   for (size_type i(0); i < m; ++i) {
-    while (!is_valid_entry(i + deferrals)) {
+    // check deferring
+    while (!is_good_diag(i + deferrals) || !is_good_scaling(i + deferrals)) {
       --m;
       work_p[deferrals] = p[i + deferrals];
       work_q[deferrals] = q[i + deferrals];
@@ -284,6 +330,7 @@ inline CcsType compute_perm_leading_block(const CcsType &A,
 /// \param[out] p row permutation vector
 /// \param[out] q column permutation vector
 /// \param[in] opts control parameters
+/// \param[in] level current factorization level
 /// \param[in] hdl_zero_diags if \a false (default), the routine won't handle
 ///            zero diagonal entries.
 /// \return A \a pair of \ref CCS matrix in \b C-index and the actual leading
@@ -297,7 +344,8 @@ inline std::pair<
 do_maching(const CcsType &A, const CrsType &A_crs,
            const typename CcsType::size_type m0, const int verbose,
            ScalingArray &s, ScalingArray &t, PermType &p, PermType &q,
-           const Options &opts, const bool hdl_zero_diags = false) {
+           const Options &opts, const typename CcsType::size_type level,
+           const bool hdl_zero_diags = false) {
   static_assert(!CcsType::ROW_MAJOR, "input must be CCS type");
   static_assert(CrsType::ROW_MAJOR, "input A_crs must be CRS type");
   using value_type                = typename CcsType::value_type;
@@ -366,11 +414,12 @@ do_maching(const CcsType &A, const CrsType &A_crs,
 
   // then determine zero diags
   // using the inverse mappings are buffers since we don't need them for now
-  const size_type m = !hdl_zero_diags ? m0
-                                      : internal::defer_zero_diags<false>(
-                                            A, m0, p, q, p.inv(), q.inv());
+  const size_type m =
+      !hdl_zero_diags ? m0
+                      : internal::defer_zero_diags<false>(
+                            A, A_crs, m0, s, t, level, p, q, p.inv(), q.inv());
   return_type BB;
-  if (compute_perm) {
+  if (compute_perm && m) {
     p.build_inv();
     // to see if we need to build A^T+A pattern
     const bool build_apat = !IsSymm && opts.reorder == REORDER_RCM;

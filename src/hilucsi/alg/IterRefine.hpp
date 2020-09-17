@@ -67,9 +67,9 @@ class IterRefine {
   ///   \mathbf{x}&=&\mathbf{M}^{-1}(\mathbf{r}+\mathbf{Mx}) \\
   ///   \mathbf{x}_{k+1}&=&\mathbf{M}^{-1}\mathbf{r}+\mathbf{x}_k
   /// \f}
-  template <class MType, class Matrix>
-  inline void iter_refine(const MType &M, const Matrix &A, const array_type &b,
-                          const size_type N, array_type &x) const {
+  template <class MType, class Matrix, class IArrayType, class OArrayType>
+  inline void iter_refine(const MType &M, const Matrix &A, const IArrayType &b,
+                          const size_type N, OArrayType &x) const {
     if (N <= 1) {
       // if iteration is less than 2, then use original interface
       M.solve(b, x);

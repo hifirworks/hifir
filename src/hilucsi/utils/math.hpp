@@ -30,6 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define _HILUCSI_UTILS_MATH_HPP
 
 #include <algorithm>
+#include <cmath>
 #include <complex>
 
 #include "hilucsi/utils/common.hpp"
@@ -123,11 +124,44 @@ norm2(const ArrayType &v) {
   return tmp;
 }
 
+/// \brief normalize an array
+/// \tparam ArrayType array type, see, for instance, \ref Array
+/// \param[in,out] v array input, upon output, it will be normalized
+template <class ArrayType>
+inline void normalize(ArrayType &v) {
+  // get the scalar type
+  using scalar_type =
+      typename ValueTypeTrait<typename ArrayType::value_type>::value_type;
+  const auto inv_nrm = scalar_type(1) / norm2(v);
+  for (auto iter = v.begin(); iter != v.end(); ++iter) *iter *= inv_nrm;
+}
+
+/// \brief normalize an array and save the result to another array
+/// \tparam ArrayType array type, see, for instance, \ref Array
+/// \tparam Iter Iterator type
+/// \param[in] v array input
+/// \param[out] w iterator output
+template <class ArrayType, class Iter>
+inline void normalize2(const ArrayType &v, Iter &w) {
+  // get the scalar type
+  using scalar_type =
+      typename ValueTypeTrait<typename ArrayType::value_type>::value_type;
+  const auto inv_nrm = scalar_type(1) / norm2(v);
+  const auto n       = v.size();
+  for (auto i(0ul); i < n; ++i) w[i] = v[i] * inv_nrm;
+}
+
 /*!
  * @}
  */
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
+
+// long double
+template <>
+inline long double conj(const long double &v) {
+  return v;
+}
 
 // double
 template <>
@@ -144,6 +178,12 @@ inline float conj(const float &v) {
 template <class T>
 inline std::complex<T> conj(const std::complex<T> &v) {
   return std::conj(v);
+}
+
+// long double
+template <>
+inline long double abs(const long double &v) {
+  return std::abs(v);
 }
 
 // double

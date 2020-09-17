@@ -511,12 +511,13 @@ inline CsType level_factorize(const CsType &                   A,
   typedef CsType                      input_type;
   typedef typename CsType::other_type other_type;
   using cs_trait = internal::CompressedTypeTrait<input_type, other_type>;
-  typedef typename cs_trait::crs_type crs_type;
-  typedef typename cs_trait::ccs_type ccs_type;
-  typedef typename CsType::index_type index_type;
-  typedef typename CsType::size_type  size_type;
-  typedef typename CsType::value_type value_type;
-  typedef DenseMatrix<value_type>     dense_type;
+  typedef typename cs_trait::crs_type    crs_type;
+  typedef typename cs_trait::ccs_type    ccs_type;
+  typedef typename CsType::index_type    index_type;
+  typedef typename CsType::size_type     size_type;
+  typedef typename CsType::value_type    value_type;
+  typedef DenseMatrix<value_type>        dense_type;
+  typedef typename PrecsType::value_type prec_type;  // precs is std::list
 
   hilucsi_error_if(A.nrows() != A.ncols(),
                    "only squared systems are supported");
@@ -584,8 +585,24 @@ inline CsType level_factorize(const CsType &                   A,
 
   timer.finish();  // prefile pre-processing
 
+  int post_flag = 0;
+  // if post flag is 0, means we do standard Schur treatment after ILU
+  // if post flag is 1, means we have too many static deferrals, thus we
+  //    set S=A
+  // if post flag is 2, means we have too many static and dynamic deferrals,
+  //    thus we set S=A
+  // if post flag is -1, means we have moderate many deferrals, thus we
+  //    directly factorize S with complete factorization.
+  if ((double)m <= 0.25 * m0) post_flag = 1;
+
   if (hilucsi_verbose(INFO, opts)) {
     hilucsi_info("preprocessing done with leading block size %zd...", m);
+    if (post_flag == 1) {
+      hilucsi_info(
+          "too many static deferrals, resort to complete factorization...");
+      // NOTE we set m to 0 to automatically resort to direct factorization
+      m = 0;
+    }
     hilucsi_info("time: %gs", timer.time());
   }
 
@@ -939,6 +956,12 @@ inline CsType level_factorize(const CsType &                   A,
 
   timer.finish();  // profile Crout update
 
+  if (!post_flag && (double)m <= 0.25 * m0) {
+    post_flag = 2;  // check after factorization
+    m         = 0;
+  } else if ((double)m <= 0.4 * m0)
+    post_flag = -1;
+
   // collecting stats for deferrals
   stats[0] += m0 - m;           // total deferals
   stats[1] += step.defers();    // dynamic deferrals
@@ -968,7 +991,7 @@ inline CsType level_factorize(const CsType &                   A,
         "\tmin |kappa_l|=%g\n"
         "\tmax |kappa_l|=%g\n"
         "\tmax |d|=%g",
-        step.defers(), m2, m, m2 - m, (size_type)info_counter[0],
+        step.defers(), m0, m, m0 - m, (size_type)info_counter[0],
         (size_type)info_counter[1], (size_type)info_counter[5],
         (size_type)info_counter[3], (size_type)info_counter[6],
         (size_type)info_counter[4],
@@ -997,6 +1020,10 @@ inline CsType level_factorize(const CsType &                   A,
                               [](const value_type l, const value_type r) {
                                 return std::abs(l) < std::abs(r);
                               })));
+    if (post_flag == 2)
+      hilucsi_info(
+          "too many static+dynamic deferrals, resort to complete "
+          "factorization");
     hilucsi_info("time: %gs", timer.time());
   }
 
@@ -1010,74 +1037,84 @@ inline CsType level_factorize(const CsType &                   A,
   const auto L_nnz = L.nnz(), U_nnz = U.nnz();
 
   ccs_type L_B, U_B;
-  do {
-    DefaultTimer timer2;
-    timer2.start();
-    auto L_E = L.template split_crs<true>(m, L_start);
-    L_B      = L.template split<false>(m, L_start);
-    L.destroy();
-    timer2.finish();
-    if (hilucsi_verbose(INFO, opts))
-      hilucsi_info("splitting LB and freeing L took %gs.", timer2.time());
-    crs_type U_F;
+  if (m && post_flag <= 0) {
+    // TODO: need to handle the case where m is too small comparing to n, thus
+    // we need to resort to direct factorizations.
     do {
+      DefaultTimer timer2;
       timer2.start();
-      auto U_F2 = U.template split_ccs<true>(m, U_start);
-      U_B       = U.template split_ccs<false>(m, U_start);
-      U.destroy();
+      auto L_E = L.template split_crs<true>(m, L_start);
+      L_B      = L.template split<false>(m, L_start);
+      L.destroy();
       timer2.finish();
       if (hilucsi_verbose(INFO, opts))
-        hilucsi_info("splitting UB and freeing U took %gs.", timer2.time());
-      timer2.start();
-      const size_type nnz1 = L_E.nnz(), nnz2 = U_F2.nnz();
+        hilucsi_info("splitting LB and freeing L took %gs.", timer2.time());
+      crs_type U_F;
+      do {
+        timer2.start();
+        auto U_F2 = U.template split_ccs<true>(m, U_start);
+        U_B       = U.template split_ccs<false>(m, U_start);
+        U.destroy();
+        timer2.finish();
+        if (hilucsi_verbose(INFO, opts))
+          hilucsi_info("splitting UB and freeing U took %gs.", timer2.time());
+        timer2.start();
+        const size_type nnz1 = L_E.nnz(), nnz2 = U_F2.nnz();
 #ifndef HILUCSI_NO_DROP_LE_UF
-      double a_L = opts.alpha_L, a_U = opts.alpha_U;
-      if (cur_level == 1u && opts.fat_schur_1st) {
-        a_L *= 2;
-        a_U *= 2;
-      }
-      if (hilucsi_verbose(INFO, opts))
-        hilucsi_info(
-            "applying dropping on L_E and U_F with alpha_{L,U}=%g,%g...", a_L,
-            a_U);
-      if (m < n) {
-        // use P and Q as buffers
-        P[0] = Q[0] = 0;
-        for (size_type i(m); i < n; ++i) {
-          P[i - m + 1] = P[i - m] + row_sizes[p[i]];
-          Q[i - m + 1] = Q[i - m] + col_sizes[q[i]];
+        double a_L = opts.alpha_L, a_U = opts.alpha_U;
+        if (cur_level == 1u && opts.fat_schur_1st) {
+          a_L *= 2;
+          a_U *= 2;
         }
+        if (hilucsi_verbose(INFO, opts))
+          hilucsi_info(
+              "applying dropping on L_E and U_F with alpha_{L,U}=%g,%g...", a_L,
+              a_U);
+        if (m < n) {
+          // use P and Q as buffers
+          P[0] = Q[0] = 0;
+          for (size_type i(m); i < n; ++i) {
+            P[i - m + 1] = P[i - m] + row_sizes[p[i]];
+            Q[i - m + 1] = Q[i - m] + col_sizes[q[i]];
+          }
 #  ifndef _OPENMP
-        drop_L_E(P, a_L, L_E, l.vals(), l.inds());
-        drop_U_F(Q, a_U, U_F2, ut.vals(), ut.inds());
+          drop_L_E(P, a_L, L_E, l.vals(), l.inds());
+          drop_U_F(Q, a_U, U_F2, ut.vals(), ut.inds());
 #  else
-        mt::drop_L_E_and_U_F(P, a_L, Q, a_U, L_E, U_F2, l.vals(), l.inds(),
-                             ut.vals(), ut.inds(), schur_threads);
+          mt::drop_L_E_and_U_F(P, a_L, Q, a_U, L_E, U_F2, l.vals(), l.inds(),
+                               ut.vals(), ut.inds(), schur_threads);
 #  endif
-      }
+        }
 #endif  // HILUCSI_NO_DROP_LE_UF
-      timer2.finish();
-      U_F = crs_type(U_F2);
-      if (hilucsi_verbose(INFO, opts))
-        hilucsi_info("nnz(L_E)=%zd/%zd, nnz(U_F)=%zd/%zd, time: %gs...", nnz1,
-                     L_E.nnz(), nnz2, U_F.nnz(), timer2.time());
-    } while (false);  // U_F2 got freed
+        timer2.finish();
+        U_F = crs_type(U_F2);
+        if (hilucsi_verbose(INFO, opts))
+          hilucsi_info("nnz(L_E)=%zd/%zd, nnz(U_F)=%zd/%zd, time: %gs...", nnz1,
+                       L_E.nnz(), nnz2, U_F.nnz(), timer2.time());
+      } while (false);  // U_F2 got freed
 
-    timer2.start();
+      timer2.start();
 // compute S version of Schur complement
 #ifndef _OPENMP
-    (void)schur_threads;
-    S = compute_Schur_simple(s, A_crs, t, p, q, m, L_E, d, U_F, l);
+      (void)schur_threads;
+      S = compute_Schur_simple(s, A_crs, t, p, q, m, L_E, d, U_F, l);
 #else
-    if (hilucsi_verbose(INFO, opts))
-      hilucsi_info("using %d for Schur computation...", schur_threads);
-    S = mt::compute_Schur_simple(s, A_crs, t, p, q, m, L_E, d, U_F, l,
-                                 schur_threads);
+      if (hilucsi_verbose(INFO, opts))
+        hilucsi_info("using %d for Schur computation...", schur_threads);
+      S = mt::compute_Schur_simple(s, A_crs, t, p, q, m, L_E, d, U_F, l,
+                                   schur_threads);
 #endif
-    timer2.finish();
-    if (hilucsi_verbose(INFO, opts))
-      hilucsi_info("pure Schur computation time: %gs...", timer2.time());
-  } while (false);
+      timer2.finish();
+      if (hilucsi_verbose(INFO, opts))
+        hilucsi_info("pure Schur computation time: %gs...", timer2.time());
+    } while (false);
+  } else {
+    S = A;
+    p.make_eye();
+    q.make_eye();
+    std::fill(s.begin(), s.end(), 1);
+    std::fill(t.begin(), t.end(), 1);
+  }
 
   // compute the nnz(A)-nnz(B) from the first level
   size_type AmB_nnz(0);
@@ -1104,7 +1141,8 @@ inline CsType level_factorize(const CsType &                   A,
   dense_type      S_D;
   hilucsi_assert(S_D.empty(), "fatal!");
 
-  if ((size_type)std::ceil(nm * nm * opts.rho) <= dense_thres1 ||
+  if (post_flag < 0 ||
+      (size_type)std::ceil(nm * nm * opts.rho) <= dense_thres1 ||
       nm <= dense_thres2 || !m) {
     S_D = dense_type::from_sparse(S);
     if (hilucsi_verbose(INFO, opts))
@@ -1154,9 +1192,19 @@ inline CsType level_factorize(const CsType &                   A,
 
   // if dense is not empty, then push it back
   if (!S_D.empty()) {
+    if (hilucsi_verbose(INFO, opts)) {
+      if (prec_type::USE_TQRCP) {
+        // for user-specified threshold, we format and log it
+        char value_buf[20];
+        if (opts.qrcp_cond > 0.0) std::sprintf(value_buf, "%g", opts.qrcp_cond);
+        hilucsi_info("factorizing dense level by TQRCP with cond-thres %s...",
+                     (opts.qrcp_cond <= 0.0 ? "(default)" : value_buf));
+      } else
+        hilucsi_info("factorizing dense level by LU...");
+    }
     auto &last_level = precs.back().dense_solver;
     last_level.set_matrix(std::move(S_D));
-    last_level.factorize();
+    last_level.factorize(opts.qrcp_cond);
     if (hilucsi_verbose(INFO, opts))
       hilucsi_info("successfully factorized the dense component...");
   }

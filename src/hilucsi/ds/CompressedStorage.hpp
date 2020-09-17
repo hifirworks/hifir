@@ -163,6 +163,7 @@ class CompressedStorage {
   inline const iarray_type &inds() const { return _indices; }
   inline iarray_type &      ind_start() { return _ind_start; }
   inline const iarray_type &ind_start() const { return _ind_start; }
+  inline const size_type    primary_size() const { return _psize; }
 
   /// \brief reserve space for nnz
   /// \param[in] nnz total number of nonzeros
@@ -1073,17 +1074,6 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   template <class Vx, class Vy>
   inline void mv_nt_low(const Vx *x, Vy *y) const {
     mv_nt_low(x, size_type(0), _psize, y);
-    for (size_type i = 0u; i < _psize; ++i) {
-      auto v_itr = _base::val_cbegin(i);
-      auto i_itr = col_ind_cbegin(i);
-      Vy   tmp(0);
-      for (auto last = col_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
-        hilucsi_assert(size_type(*i_itr) < _ncols, "%zd exceeds column size",
-                       size_type(*i_itr));
-        tmp += *v_itr * x[*i_itr];
-      }
-      y[i] = tmp;
-    }
   }
 
   /// \brief matrix vector for kernel MT compatibility with different type
@@ -1096,14 +1086,19 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   template <class Vx, class Vy>
   inline void mv_nt_low(const Vx *x, const size_type istart,
                         const size_type len, Vy *y) const {
-    for (size_type i = istart, n = istart + len; i < n; ++i) {
-      Vy   tmp(0);
+    using v1_t =
+        typename std::conditional<(sizeof(Vx) > sizeof(Vy)), Vx, Vy>::type;
+    using v_t = typename std::conditional<(sizeof(v1_t) > sizeof(value_type)),
+                                          v1_t, value_type>::type;
+    const size_type n = istart + len;
+    for (size_type i = istart; i < n; ++i) {
+      v_t  tmp(0);
       auto v_itr = _base::val_cbegin(i);
       auto i_itr = col_ind_cbegin(i);
       for (auto last = col_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
         hilucsi_assert(size_type(*i_itr) < _ncols, "%zd exceeds column size",
                        size_type(*i_itr));
-        tmp += *v_itr * x[*i_itr];
+        tmp += static_cast<v_t>(*v_itr) * x[*i_itr];
       }
       y[i] = tmp;
     }
@@ -1150,16 +1145,20 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \warning User's responsibility to maintain valid pointers
   template <class Vx, class Vy>
   inline void mv_t_low(const Vx *x, Vy *y) const {
+    using v1_t =
+        typename std::conditional<(sizeof(Vx) > sizeof(Vy)), Vx, Vy>::type;
+    using v_t = typename std::conditional<(sizeof(v1_t) > sizeof(value_type)),
+                                          v1_t, value_type>::type;
     if (!_psize) return;
     std::fill_n(y, ncols(), Vy(0));
     for (size_type i = 0u; i < _psize; ++i) {
-      const auto temp  = x[i];
-      auto       v_itr = _base::val_cbegin(i);
-      auto       i_itr = col_ind_cbegin(i);
+      const v_t temp  = x[i];
+      auto      v_itr = _base::val_cbegin(i);
+      auto      i_itr = col_ind_cbegin(i);
       for (auto last = col_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
         const size_type j = *i_itr;
         hilucsi_assert(j < _ncols, "%zd exceeds column size", j);
-        y[j] += *v_itr * temp;
+        y[j] += temp * *v_itr;
       }
     }
   }
@@ -1199,13 +1198,15 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   inline void solve_as_strict_lower(RhsType &y) const {
     // retrieve value type from rhs
     using value_type_ = typename std::remove_reference<decltype(y[0])>::type;
+    using v_t =
+        typename std::conditional<(sizeof(value_type_) < sizeof(value_type)),
+                                  value_type, value_type_>::type;
     for (size_type j(1); j < _psize; ++j) {
       auto itr   = col_ind_cbegin(j);
       auto v_itr = _base::val_cbegin(j);
-      typename std::conditional<(sizeof(value_type_) < sizeof(value_type)),
-                                value_type, value_type_>::type tmp(0);
+      v_t  tmp(0);
       for (auto last = col_ind_cend(j); itr != last; ++itr, ++v_itr)
-        tmp += *v_itr * y[*itr];
+        tmp += static_cast<v_t>(*v_itr) * y[*itr];
       y[j] -= tmp;
     }
   }
@@ -1230,15 +1231,17 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   inline void solve_as_strict_upper(RhsType &y) const {
     // retrieve value type from rhs
     using value_type_ = typename std::remove_reference<decltype(y[0])>::type;
+    using v_t =
+        typename std::conditional<(sizeof(value_type_) < sizeof(value_type)),
+                                  value_type, value_type_>::type;
     hilucsi_assert(_psize, "cannot be empty");
     for (size_type j = _psize - 1; j != 0u; --j) {
       const size_type j1    = j - 1;
       auto            itr   = col_ind_cbegin(j1);
       auto            v_itr = _base::val_cbegin(j1);
-      typename std::conditional<(sizeof(value_type_) < sizeof(value_type)),
-                                value_type, value_type_>::type tmp(0);
+      v_t             tmp(0);
       for (auto last = col_ind_cend(j1); itr != last; ++itr, ++v_itr)
-        tmp += *v_itr * y[*itr];
+        tmp += static_cast<v_t>(*v_itr) * y[*itr];
       y[j1] -= tmp;
     }
   }
@@ -1820,12 +1823,16 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \warning User's responsibilty to ensure valid pointers
   template <class Vx, class Vy>
   inline void mv_nt_low(const Vx *x, Vy *y) const {
-    if (!_psize) return;
+    using v1_t =
+        typename std::conditional<(sizeof(Vx) > sizeof(Vy)), Vx, Vy>::type;
+    using v_t = typename std::conditional<(sizeof(v1_t) > sizeof(value_type)),
+                                          v1_t, value_type>::type;
     std::fill_n(y, nrows(), Vy(0));
+    if (!_psize) return;
     for (size_type i = 0u; i < _psize; ++i) {
-      const auto temp  = x[i];
-      auto       v_itr = _base::val_cbegin(i);
-      auto       i_itr = row_ind_cbegin(i);
+      const v_t temp  = x[i];
+      auto      v_itr = _base::val_cbegin(i);
+      auto      i_itr = row_ind_cbegin(i);
       for (auto last = row_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
         hilucsi_assert(size_type(*i_itr) < _nrows, "%zd exceeds the size bound",
                        size_type(*i_itr));
@@ -1855,15 +1862,21 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \warning User's responsibilty to ensure valid pointers
   template <class Vx, class Vy>
   inline void mv_t_low(const Vx *x, Vy *y) const {
+    using v1_t =
+        typename std::conditional<(sizeof(Vx) > sizeof(Vy)), Vx, Vy>::type;
+    using v_t = typename std::conditional<(sizeof(v1_t) > sizeof(value_type)),
+                                          v1_t, value_type>::type;
     for (size_type i = 0u; i < _psize; ++i) {
-      y[i]       = 0;
       auto v_itr = _base::val_cbegin(i);
       auto i_itr = row_ind_cbegin(i);
+      v_t  tmp(0);
       for (auto last = row_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
         hilucsi_assert(size_type(*i_itr) < _nrows, "%zd exceeds the size bound",
                        size_type(*i_itr));
-        y[i] += x[*i_itr] * *v_itr;
+        v_t xi = x[*i_itr];
+        tmp += (xi *= *v_itr);
       }
+      y[i] = tmp;
     }
   }
 
@@ -2137,6 +2150,27 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   size_type _nrows;     ///< number of rows
   using _base::_psize;  ///< number of columns (primary entries)
 };
+
+/// \brief Export data
+/// \tparam ExportCSType compressed format for exporting data
+/// \tparam CSCopiedType compressed format for being copied
+/// \param[in] A sparse matrix being copied
+/// \param[out] ind_start starting position array in compressed format
+/// \param[out] indices index array in compressed format
+/// \param[out] vals value array in compressed format, same length as \a indices
+/// \warning The user must query the sizes and allocate the buffers beforehand
+/// \ingroup ds
+template <class ExportCSType, class CSCopiedType>
+inline void export_compressed_data(const CSCopiedType &            A,
+                                   typename ExportCSType::ipointer ind_start,
+                                   typename ExportCSType::ipointer indices,
+                                   typename ExportCSType::pointer  vals) {
+  // if export is same as copied, then this is shallow copy
+  const ExportCSType AA(A);
+  std::copy_n(AA.ind_start().cbegin(), AA.primary_size() + 1, ind_start);
+  std::copy_n(AA.inds().cbegin(), AA.nnz(), indices);
+  std::copy_n(AA.vals().cbegin(), AA.nnz(), vals);
+}
 
 }  // namespace hilucsi
 

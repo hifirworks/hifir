@@ -116,6 +116,23 @@ class HILUCSI {
   ///< multilevel preconditioner type
   typedef typename precs_type::value_type prec_type;  ///< single level prec
   typedef typename prec_type::size_type   size_type;  ///< size type
+  typedef typename ValueTypeMixedTrait<value_type>::boost_type boost_value_type;
+  ///< high-precision value type
+  typedef Array<boost_value_type> work_array_type;  ///< work array type
+  typedef typename ValueTypeMixedTrait<boost_value_type>::boost_type
+      boost2_value_type;
+  ///< we need this in float+long double mixed for null space solver
+
+  /// \brief check if or not we can export data
+  /// \note Sparse last level or IntervalBased compressed formats are not
+  ///       allowed to export their data attributes.
+  constexpr bool can_export() const {
+#ifdef HILUCSI_ENABLE_MUMPS
+    return false;
+#else
+    return !IntervalBased;
+#endif  // HILUCSI_ENABLE_MUMPS
+  }
 
   /// \brief check empty or not
   inline bool empty() const { return _precs.empty(); }
@@ -134,6 +151,9 @@ class HILUCSI {
 
   /// \brief get constant reference to preconditioners
   inline const precs_type &precs() const { return _precs; }
+
+  /// \brief get normal reference to preconditioners
+  inline precs_type &precs() { return _precs; }
 
   /// \brief compute the overall nnz of the multilevel preconditioners
   inline size_type nnz() const {
@@ -208,10 +228,10 @@ class HILUCSI {
   inline void clear() {
     _precs.clear();
     // _prec_work.resize(0);
-    array_type().swap(_prec_work);
+    work_array_type().swap(_prec_work);
     nsp.reset();
+    nsp_tran.reset();
     _ir.clear();
-    _ir_hi.clear();
   }
 
   /// \brief factorize the MILU preconditioner
@@ -383,30 +403,12 @@ class HILUCSI {
   /// \param[in] b right-hand side vector
   /// \param[in] N iteration count
   /// \param[out] x solution vector
-  template <class Matrix, class RhsType, class SolType, typename T = void>
-  inline typename std::enable_if<
-      std::is_same<typename RhsType::value_type, value_type>::value, T>::type
-  solve(const Matrix &A, const RhsType &b, const size_type N,
-        SolType &x) const {
+  template <class Matrix, class RhsType, class SolType>
+  void solve(const Matrix &A, const RhsType &b, const size_type N,
+             SolType &x) const {
     // NOTE, do not assume A shares interface of CRS, as it can be
     // user callback
     _ir.iter_refine(*this, A, b, N, x);
-  }
-
-  /// \brief solve with iterative refinement (high-precision)
-  /// \tparam Matrix matrix type
-  /// \tparam RhsType right-hand side type
-  /// \tparam SolType solution type
-  /// \param[in] A matrix operator
-  /// \param[in] b right-hand side vector
-  /// \param[in] N iteration count
-  /// \param[out] x solution vector
-  template <class Matrix, class RhsType, class SolType, typename T = void>
-  inline typename std::enable_if<
-      !std::is_same<typename RhsType::value_type, value_type>::value, T>::type
-  solve(const Matrix &A, const RhsType &b, const size_type N,
-        SolType &x) const {
-    _ir_hi.iter_refine(*this, A, b, N, x);
   }
 
   NspFilterPtr nsp;       ///< null space filter
@@ -450,14 +452,13 @@ class HILUCSI {
   }
 
  protected:
-  precs_type             _precs;      ///< multilevel preconditioners
-  mutable array_type     _prec_work;  ///< preconditioner work space for solving
-  size_type              _stats[6];   ///< statistics
-  size_type              _nrows;      ///< number of rows from user input
-  size_type              _ncols;      ///< number of columns from user input
-  IterRefine<value_type> _ir;         ///< iterative refinement
-  IterRefine<typename ValueTypeMixedTrait<value_type>::boost_type> _ir_hi;
-  ///< high-precision iterative refinement
+  precs_type              _precs;  ///< multilevel preconditioners
+  mutable work_array_type _prec_work;
+  ///< preconditioner work space for solving
+  size_type                    _stats[6];  ///< statistics
+  size_type                    _nrows;     ///< number of rows from user input
+  size_type                    _ncols;  ///< number of columns from user input
+  IterRefine<boost_value_type> _ir;     ///< high-precision iterative refinement
 };
 
 /// \typedef DefaultHILUCSI

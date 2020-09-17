@@ -67,7 +67,9 @@ class KSPSolver {
   typedef CCS<value_type, typename M_type::index_type> ccs_type;  ///< crs type
   typedef typename DefaultSettings<value_type>::scalar_type scalar_type;
   ///< scalar type
-  typedef std::function<void(const array_type &, array_type &)> func_type;
+  typedef std::function<void(const void *, const size_type, const char, void *,
+                             const char)>
+      func_type;
   ///< user callback for computing A*x
 
   /// \brief virtual destructor
@@ -288,23 +290,25 @@ class KSPFactory {
  public:
   /// \name static
   /// @{
-  using fgmres_type     = FGMRES<MType, ValueType>;
-  using tgmresr_type    = TGMRESR<MType, ValueType>;
-  using fqmrcgstab_type = FQMRCGSTAB<MType, ValueType>;
-  using fbicgstab_type  = FBICGSTAB<MType, ValueType>;
-  using gmres_type      = GMRES<MType, ValueType>;
-  using gmres_null_type = GMRES_Null<MType, ValueType>;
+  using fgmres_type        = FGMRES<MType, ValueType>;
+  using tgmresr_type       = TGMRESR<MType, ValueType>;
+  using fqmrcgstab_type    = FQMRCGSTAB<MType, ValueType>;
+  using fbicgstab_type     = FBICGSTAB<MType, ValueType>;
+  using gmres_type         = GMRES<MType, ValueType>;
+  using gmres_null_type    = GMRES_Null<MType, ValueType>;
+  using gmres_null_hi_type = GMRES_NullHi<MType, ValueType>;
   /// @}
 
   /// \name runtime
   /// @{
-  using fgmres     = KSPAdaptor<fgmres_type>;
-  using tgmresr    = KSPAdaptor<tgmresr_type>;
-  using fqmrcgstab = KSPAdaptor<fqmrcgstab_type>;
-  using fbicgstab  = KSPAdaptor<fbicgstab_type>;
-  using gmres      = KSPAdaptor<gmres_type>;
-  using gmres_null = KSPAdaptor<gmres_null_type>;
-  using abc_solver = typename fgmres::abc_solver_type;
+  using fgmres        = KSPAdaptor<fgmres_type>;
+  using tgmresr       = KSPAdaptor<tgmresr_type>;
+  using fqmrcgstab    = KSPAdaptor<fqmrcgstab_type>;
+  using fbicgstab     = KSPAdaptor<fbicgstab_type>;
+  using gmres         = KSPAdaptor<gmres_type>;
+  using gmres_null    = KSPAdaptor<gmres_null_type>;
+  using gmres_null_hi = KSPAdaptor<gmres_null_hi_type>;
+  using abc_solver    = typename fgmres::abc_solver_type;
   /// @}
 };
 
