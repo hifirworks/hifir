@@ -69,7 +69,7 @@ namespace internal {
 /// constant.
 // The CRS version
 template <class CrsType, class DiagType, class RhsType, typename T = void>
-inline typename std::enable_if<CrsType::ROW_MAJOR, T>::type prec_solve_udl_inv(
+inline typename std::enable_if<CrsType::ROW_MAJOR, T>::type prec_solve_ldu(
     const CrsType &U, const DiagType &d, const CrsType &L, RhsType &y) {
   using size_type = typename CrsType::size_type;
   // use the rhs value type as default value type
@@ -127,7 +127,7 @@ inline typename std::enable_if<CrsType::ROW_MAJOR, T>::type prec_solve_udl_inv(
 /// constant.
 // CCS version
 template <class CcsType, class DiagType, class RhsType, typename T = void>
-inline typename std::enable_if<!CcsType::ROW_MAJOR, T>::type prec_solve_udl_inv(
+inline typename std::enable_if<!CcsType::ROW_MAJOR, T>::type prec_solve_ldu(
     const CcsType &U, const DiagType &d, const CcsType &L, RhsType &y) {
   using size_type = typename CcsType::size_type;
   static_assert(!CcsType::ROW_MAJOR, "must be ccs");
@@ -200,8 +200,8 @@ inline typename std::enable_if<!CcsType::ROW_MAJOR, T>::type prec_solve_udl_inv(
 /// The overall complexity is linear assuming the local nnz are bounded by a
 /// constant.
 template <class UType, class DiagType, class LType, class RhsType>
-inline void prec_solve_udl_inv(const UType &U, const DiagType &d,
-                               const LType &L, RhsType &y) {
+inline void prec_solve_ldu(const UType &U, const DiagType &d, const LType &L,
+                           RhsType &y) {
   using size_type = typename LType::size_type;
 
   const size_type m = U.nrows();
@@ -242,8 +242,8 @@ inline void prec_solve_udl_inv(const UType &U, const DiagType &d,
 /// The overall complexity is linear assuming the local nnz are bounded by a
 /// constant.
 template <class UType, class DiagType, class LType, class RhsType>
-inline void prec_solve_udl_inv_tran(const UType &U, const DiagType &d,
-                                    const LType &L, RhsType &y) {
+inline void prec_solve_utdlt(const UType &U, const DiagType &d, const LType &L,
+                             RhsType &y) {
   using size_type = typename LType::size_type;
 
   const size_type m = U.nrows();
@@ -275,6 +275,7 @@ inline void prec_solve_udl_inv_tran(const UType &U, const DiagType &d,
 /// \tparam WorkType buffer type, generic array interface, i.e. operator[]
 /// \param[in] prec_itr current iterator of a single level preconditioner
 /// \param[in] b right-hand side vector
+/// \param[in] last_dim dimension for last level
 /// \param[out] y solution vector
 /// \param[out] work work space
 ///
@@ -289,8 +290,8 @@ inline void prec_solve_udl_inv_tran(const UType &U, const DiagType &d,
 ///
 /// \sa compute_prec_work_space
 template <class PrecItr, class RhsType, class SolType, class WorkType>
-inline void prec_solve(PrecItr prec_itr, const RhsType &b, SolType &y,
-                       WorkType &work) {
+inline void prec_solve(PrecItr prec_itr, const RhsType &b,
+                       const std::size_t last_dim, SolType &y, WorkType &work) {
   using prec_type = typename std::remove_const<
       typename std::iterator_traits<PrecItr>::value_type>::type;
   using value_type = typename prec_type::value_type;
@@ -323,13 +324,13 @@ inline void prec_solve(PrecItr prec_itr, const RhsType &b, SolType &y,
   if (nm) {
     // solve for work(1:m)=inv(U)*inv(B)*inv(L)*work(1:m), this is done inplace
     if (!prec.ls_U.empty())
-      internal::prec_solve_udl_inv(prec.ls_U, prec.d_B, prec.ls_L, work);
+      internal::prec_solve_ldu(prec.ls_U, prec.d_B, prec.ls_L, work);
 #if HILUCSI_HAS_SPARSE_MKL
     else if (!prec.mkl_U.empty())
-      internal::prec_solve_udl_inv(prec.mkl_U, prec.d_B, prec.mkl_L, work);
+      internal::prec_solve_ldu(prec.mkl_U, prec.d_B, prec.mkl_L, work);
 #endif
     else
-      internal::prec_solve_udl_inv(prec.U_B, prec.d_B, prec.L_B, work);
+      internal::prec_solve_ldu(prec.U_B, prec.d_B, prec.L_B, work);
 
     // then compute y(m+1:n) = E*work(1:m)
     prec.E.mv_nt_low(&work[0], y.data() + m);
@@ -343,7 +344,7 @@ inline void prec_solve(PrecItr prec_itr, const RhsType &b, SolType &y,
       auto y_mn = work_array_type(nm, &work[0], WRAP);
       std::copy_n(y.data() + m, nm, y_mn.begin());
       if (prec.sparse_solver.empty())
-        prec.dense_solver.solve(y_mn);
+        prec.dense_solver.solve(y_mn, last_dim);
       else {
         prec.sparse_solver.solve(y_mn);
         hilucsi_error_if(prec.sparse_solver.info(), "%s returned error %d",
@@ -358,7 +359,7 @@ inline void prec_solve(PrecItr prec_itr, const RhsType &b, SolType &y,
     auto  work_b    = work_array_type(nm, &work[0] + m, WRAP);
     std::copy(y_mn.cbegin(), y_mn.cend(), work_b.begin());
     // rec call, note that y_mn should store the solution
-    prec_solve(++prec_itr, work_b, y_mn, work_next);
+    prec_solve(++prec_itr, work_b, last_dim, y_mn, work_next);
   }
 
   // copy y(m+1:n) to work(m+1:n)
@@ -377,13 +378,13 @@ inline void prec_solve(PrecItr prec_itr, const RhsType &b, SolType &y,
 
   // solve for work(1:m)=inv(U)*inv(B)*inv(L)*work(1:m), inplace
   if (!prec.ls_U.empty())
-    internal::prec_solve_udl_inv(prec.ls_U, prec.d_B, prec.ls_L, work);
+    internal::prec_solve_ldu(prec.ls_U, prec.d_B, prec.ls_L, work);
 #if HILUCSI_HAS_SPARSE_MKL
   else if (!prec.mkl_U.empty())
-    internal::prec_solve_udl_inv(prec.mkl_U, prec.d_B, prec.mkl_L, work);
+    internal::prec_solve_ldu(prec.mkl_U, prec.d_B, prec.mkl_L, work);
 #endif
   else
-    internal::prec_solve_udl_inv(prec.U_B, prec.d_B, prec.L_B, work);
+    internal::prec_solve_ldu(prec.U_B, prec.d_B, prec.L_B, work);
 
   // Now, we have work(1:n) storing the complete solution before final scaling
   // and permutation
@@ -398,11 +399,13 @@ inline void prec_solve(PrecItr prec_itr, const RhsType &b, SolType &y,
 /// \tparam WorkType buffer type, generic array interface, i.e. operator[]
 /// \param[in] prec_itr current iterator of a single level preconditioner
 /// \param[in] b right-hand side vector
+/// \param[in] last_dim dimension for last level
 /// \param[out] y solution vector
 /// \param[out] work work space
 /// \sa prec_solve
 template <class PrecItr, class RhsType, class SolType, class WorkType>
-inline void prec_solve_tran(PrecItr prec_itr, const RhsType &b, SolType &y,
+inline void prec_solve_tran(PrecItr prec_itr, const RhsType &b,
+                            const std::size_t last_dim, SolType &y,
                             WorkType &work) {
   using prec_type = typename std::remove_const<
       typename std::iterator_traits<PrecItr>::value_type>::type;
@@ -430,7 +433,7 @@ inline void prec_solve_tran(PrecItr prec_itr, const RhsType &b, SolType &y,
   // compute the F part only if F is not empty
   if (prec.F.ncols()) {
     // solve B^{-T}
-    internal::prec_solve_udl_inv_tran(prec.U_B, prec.d_B, prec.L_B, work);
+    internal::prec_solve_utdlt(prec.U_B, prec.d_B, prec.L_B, work);
     prec.F.mv_t_low(&work[0], y.data() + m);
     for (size_type i(m); i < n; ++i) y[i] = t[q[i]] * b[q[i]] - y[i];
   }
@@ -442,7 +445,7 @@ inline void prec_solve_tran(PrecItr prec_itr, const RhsType &b, SolType &y,
       auto y_mn = work_array_type(nm, &work[0], WRAP);
       std::copy_n(y.data() + m, nm, y_mn.begin());
       if (prec.sparse_solver.empty())
-        prec.dense_solver.solve(y_mn, true);
+        prec.dense_solver.solve(y_mn, last_dim, true);
       else {
         prec.sparse_solver.solve(y_mn, true);
         hilucsi_error_if(prec.sparse_solver.info(), "%s returned error %d",
@@ -458,7 +461,7 @@ inline void prec_solve_tran(PrecItr prec_itr, const RhsType &b, SolType &y,
     auto  work_b    = work_array_type(nm, &work[0] + m, WRAP);
     std::copy(y_mn.cbegin(), y_mn.cend(), work_b.begin());
     // rec call, note that y_mn should store the solution
-    prec_solve_tran(++prec_itr, work_b, y_mn, work_next);
+    prec_solve_tran(++prec_itr, work_b, last_dim, y_mn, work_next);
   }
 
   // copy y(m+1:n) to work(m+1:n)
@@ -469,7 +472,7 @@ inline void prec_solve_tran(PrecItr prec_itr, const RhsType &b, SolType &y,
     prec.E.mv_t_low(y.data() + m, &work[0]);
     for (size_type i(0); i < m; ++i) work[i] = t[q[i]] * b[q[i]] - work[i];
   }
-  internal::prec_solve_udl_inv_tran(prec.U_B, prec.d_B, prec.L_B, work);
+  internal::prec_solve_utdlt(prec.U_B, prec.d_B, prec.L_B, work);
 
   // Now, we have work(1:n) storing the complete solution before final scaling
   // and permutation
