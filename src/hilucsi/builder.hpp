@@ -116,7 +116,11 @@ class HILUCSI {
   ///< multilevel preconditioner type
   typedef typename precs_type::value_type prec_type;  ///< single level prec
   typedef typename prec_type::size_type   size_type;  ///< size type
+#ifdef HILUCSI_HIGH_PRECISION_SOLVE
   typedef typename ValueTypeMixedTrait<value_type>::boost_type boost_value_type;
+#else
+  typedef value_type boost_value_type;
+#endif
   ///< high-precision value type
   typedef Array<boost_value_type> work_array_type;  ///< work array type
   typedef typename ValueTypeMixedTrait<boost_value_type>::boost_type
