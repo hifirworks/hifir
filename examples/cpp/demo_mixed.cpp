@@ -105,8 +105,8 @@ int main(int argc, char *argv[]) {
       "\tlevels: %zd\n"
       "\tspace-dropping ratio=%.2f%%\n"
       "\ttime: %.4gs\n",
-      100.0 * M.nnz() / A.nnz(), 100.0 * M.nnz_EF() / A.nnz(),
-      100.0 * M.nnz_EF() / M.nnz(), M.levels(), 100.0 * M.stats(5) / M.stats(4),
+      100.0 * M.nnz() / A.nnz(), 100.0 * M.nnz_ef() / A.nnz(),
+      100.0 * M.nnz_ef() / M.nnz(), M.levels(), 100.0 * M.stats(5) / M.stats(4),
       timer.time());
 
 #if 0
