@@ -164,17 +164,25 @@ class HILUCSI {
     return n;
   }
 
+  /// \brief get the numerical rank
+  inline size_type rank() const {
+    if (empty()) return 0u;
+    const auto &prec_last = precs().back();
+    return std::min(nrows(), ncols()) -
+           ((prec_last.n - prec_last.m) - prec_last.last_rank());
+  }
+
   /// \brief compute the nnz in \a E and \a F components
-  inline size_type nnz_EF() const {
+  inline size_type nnz_ef() const {
     if (empty()) return 0u;
     size_type n(0);
     for (auto itr = _precs.cbegin(); itr != _precs.cend(); ++itr)
-      n += itr->nnz_EF();
+      n += itr->nnz_ef();
     return n;
   }
 
   /// \brief compute the nnz in \a L, \a D, and \a U
-  inline size_type nnz_LDU() const { return nnz() - nnz_EF(); }
+  inline size_type nnz_ldu() const { return nnz() - nnz_ef(); }
 
   /// \brief get number of rows
   inline size_type nrows() const { return _nrows; }

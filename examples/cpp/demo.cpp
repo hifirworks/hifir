@@ -99,14 +99,15 @@ int main(int argc, char *argv[]) {
   timer.finish();
   hilucsi_info(
       "\nMLILU done!\n"
+      "\tnum. rank: %zd\n"
       "\tfill-in: %.2f%%\n"
       "\tfill-in (E and F): %.2f%%\n"
       "\tnnz(E+F)/nnz(M)=%.2f%%\n"
       "\tlevels: %zd\n"
       "\tspace-dropping ratio=%.2f%%\n"
       "\ttime: %.4gs\n",
-      100.0 * M.nnz() / A.nnz(), 100.0 * M.nnz_EF() / A.nnz(),
-      100.0 * M.nnz_EF() / M.nnz(), M.levels(), 100.0 * M.stats(5) / M.stats(4),
+      M.rank(), 100.0 * M.nnz() / A.nnz(), 100.0 * M.nnz_ef() / A.nnz(),
+      100.0 * M.nnz_ef() / M.nnz(), M.levels(), 100.0 * M.stats(5) / M.stats(4),
       timer.time());
 
 #if 0

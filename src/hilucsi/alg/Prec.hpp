@@ -151,7 +151,7 @@ struct Prec {
   }
 
   /// \brief get the number of nonzeros in \a E and \a F components
-  inline size_type nnz_EF() const {
+  inline size_type nnz_ef() const {
     if (n - m) return E.nnz() + F.nnz();
     return 0;
   }
@@ -283,6 +283,14 @@ struct Prec {
   /// \note Currently, we test m == n, which is fine for squared systems.
   inline bool is_last_level() const {
     return !sparse_solver.empty() || !dense_solver.empty() || m == n;
+  }
+
+  /// \brief check the (numerical) rank for last level (if applicable)
+  inline size_type last_rank() const {
+    if (!is_last_level() || m == n) return 0u;
+    // NOTE: For sparse last level, we currently don't have QR, thus full rank
+    if (!sparse_solver.empty()) return n - m;
+    return dense_solver.rank();
   }
 
   /// \brief query size information
