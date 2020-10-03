@@ -77,6 +77,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 /// \note default is on (implicit)
 #  define HILUCSI_FC_APPEND_
 
+/// \def HILUCSI_HIGH_PRECISION_SOLVE
+/// \brief Use higher precision in the back solve in hilucsi
+/// \note default is off
+#  define HILUCSI_HIGH_PRECISION_SOLVE
+
 /// \def HILUCSI_NO_DROP_LE_UF
 /// \brief disable applying dropping on L_E and U_F parts for computing Schur
 /// \note default is off
