@@ -116,7 +116,11 @@ class HILUCSI {
   ///< multilevel preconditioner type
   typedef typename precs_type::value_type prec_type;  ///< single level prec
   typedef typename prec_type::size_type   size_type;  ///< size type
+#ifdef HILUCSI_HIGH_PRECISION_SOLVE
   typedef typename ValueTypeMixedTrait<value_type>::boost_type boost_value_type;
+#else
+  typedef value_type boost_value_type;
+#endif
   ///< high-precision value type
   typedef Array<boost_value_type> work_array_type;  ///< work array type
   typedef typename ValueTypeMixedTrait<boost_value_type>::boost_type
@@ -170,6 +174,12 @@ class HILUCSI {
     const auto &prec_last = precs().back();
     return std::min(nrows(), ncols()) -
            ((prec_last.n - prec_last.m) - prec_last.last_rank());
+  }
+
+  /// \brief get the numerical rank for last level
+  inline size_type last_rank() const {
+    if (empty()) return 0u;
+    return precs().back().last_rank();
   }
 
   /// \brief compute the nnz in \a E and \a F components
@@ -376,14 +386,17 @@ class HILUCSI {
   /// \tparam SolType solution type
   /// \param[in] b right-hand side vector
   /// \param[out] x solution vector
+  /// \param[in] last_dim (optional) dimension for back solve for last level
+  ///                     default is its numerical rank
   template <class RhsType, class SolType>
-  inline void solve(const RhsType &b, SolType &x) const {
+  inline void solve(const RhsType &b, SolType &x,
+                    const size_type last_dim = 0u) const {
     hilucsi_error_if(empty(), "MILU-Prec is empty!");
     hilucsi_error_if(b.size() != x.size(), "unmatched sizes");
     if (_prec_work.empty())
       _prec_work.resize(
           compute_prec_work_space(_precs.cbegin(), _precs.cend()));
-    prec_solve(_precs.cbegin(), b, x, _prec_work);
+    prec_solve(_precs.cbegin(), b, last_dim, x, _prec_work);
     if (nsp) nsp->filter(x.data(), x.size());  // filter null space
   }
 
@@ -392,14 +405,17 @@ class HILUCSI {
   /// \tparam SolType solution type
   /// \param[in] b right-hand side vector
   /// \param[out] x solution vector
+  /// \param[in] last_dim (optional) dimension for back solve for last level
+  ///                     default is its numerical rank
   template <class RhsType, class SolType>
-  inline void solve_tran(const RhsType &b, SolType &x) const {
+  inline void solve_tran(const RhsType &b, SolType &x,
+                         const size_type last_dim = 0u) const {
     hilucsi_error_if(empty(), "MILU-Prec is empty!");
     hilucsi_error_if(b.size() != x.size(), "unmatched sizes");
     if (_prec_work.empty())
       _prec_work.resize(
           compute_prec_work_space(_precs.cbegin(), _precs.cend()));
-    prec_solve_tran(_precs.cbegin(), b, x, _prec_work);
+    prec_solve_tran(_precs.cbegin(), b, last_dim, x, _prec_work);
     if (nsp_tran) nsp_tran->filter(x.data(), x.size());  // filter null space
   }
 
@@ -411,12 +427,14 @@ class HILUCSI {
   /// \param[in] b right-hand side vector
   /// \param[in] N iteration count
   /// \param[out] x solution vector
+  /// \param[in] last_dim (optional) dimension for back solve for last level
+  ///                     default is its numerical rank
   template <class Matrix, class RhsType, class SolType>
-  void solve(const Matrix &A, const RhsType &b, const size_type N,
-             SolType &x) const {
+  void solve(const Matrix &A, const RhsType &b, const size_type N, SolType &x,
+             const size_type last_dim = 0u) const {
     // NOTE, do not assume A shares interface of CRS, as it can be
     // user callback
-    _ir.iter_refine(*this, A, b, N, x);
+    _ir.iter_refine(*this, A, b, N, x, last_dim);
   }
 
   NspFilterPtr nsp;       ///< null space filter

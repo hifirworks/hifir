@@ -57,6 +57,8 @@ class IterRefine {
   /// \param[in] b right-hand side vector
   /// \param[in] N number of iterations
   /// \param[out] x solution of Jacobi after \a N iterations
+  /// \param[in] last_dim (optional) dimension for back solve for last level
+  ///                     default is its numerical rank in \a M
   ///
   /// This function implements the abstracted Jacobi processes as follows
   ///
@@ -69,7 +71,8 @@ class IterRefine {
   /// \f}
   template <class MType, class Matrix, class IArrayType, class OArrayType>
   inline void iter_refine(const MType &M, const Matrix &A, const IArrayType &b,
-                          const size_type N, OArrayType &x) const {
+                          const size_type N, OArrayType &x,
+                          const size_type last_dim = 0u) const {
     if (N <= 1) {
       // if iteration is less than 2, then use original interface
       M.solve(b, x);
@@ -87,7 +90,7 @@ class IterRefine {
         for (size_type i(0); i < n; ++i) x[i] = b[i] - x[i];  // residual
       } else
         std::copy_n(b.cbegin(), n, x.begin());
-      M.solve(x, _r);  // compute inv(M)*x=r
+      M.solve(x, _r, last_dim);  // compute inv(M)*x=r
       for (size_type i(0); i < n; ++i) x[i] = _r[i] + _xk[i];  // update
     }
   }
