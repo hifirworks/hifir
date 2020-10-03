@@ -108,21 +108,8 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
     // initial rank to be full rank
     _rank = _mat.ncols();
     if (do_cond_test) {
-#if 0
-      // allocate buffer
-      _work.resize(3 * _mat.ncols());
-      _iwork.resize(_mat.ncols());
-      scalar_type rcond;  // reciprocal of condition number
-      for (;;) {
-        // use 1 norm
-        const auto info = lapack_kernel::trcon('1', 'U', 'N', _rank,
-                                               _mat.data(), _mat.nrows(), rcond,
-                                               _work.data(), _iwork.data());
-        hilucsi_error_if(info < 0, "TRCON returned negative info!");
-        if (rcond * cond_tol >= scalar_type(1)) break;
-        if (_rank == 0u) break;
-        --_rank;
-      }
+#ifdef HILUCSI_TQRCP_USE_1NORM
+      _est_rank(cond_thres <= 0.0 ? cond_tol : scalar_type(cond_thres));
 #else
       _est_rank_2norm(cond_thres <= 0.0 ? cond_tol : scalar_type(cond_thres));
 #endif
@@ -136,6 +123,7 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
 
   /// \brief solve system
   /// \param[in,out] x input rhs, output solution
+  /// \param[in] rank (optional) rank for back solve, default is \a _rank
   ///
   /// First, QRCP returns \f$\mathbf{AP}=\mathbf{QR}\f$, thus when we
   /// have \f$\mathbf{Ax}=\mathbf{b}\f$, the derivation is:
@@ -150,7 +138,8 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
   ///
   /// Notice that \f$\mathbf{R}^{-1}\mathbf{Q}^T\f$ is the
   /// pseudo-inverse of \f$\mathbf{AP}\f$.
-  inline void solve(Array<value_type> &x, const bool tran = false) const {
+  inline void solve(Array<value_type> &x, const size_type rank = 0u,
+                    const bool tran = false) const {
     using v_t = scalar_type;
 
     hilucsi_error_if(tran, "QRCP does not support transpose solve!");
@@ -159,22 +148,24 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
         "either the matrix is not set or the factorization has not yet done!");
     hilucsi_error_if(x.size() != _mat.nrows(),
                      "unmatched sizes between system and rhs");
+    // determine rank, assume row size is no smaller than column size
+    const size_type rk =
+        rank == 0u ? _rank : (rank > _mat.nrows() ? _mat.nrows() : rank);
     // query the optimal work space
     v_t lwork;
-    lapack_kernel::ormqr('L', 'T', x.size(), 1, _rank, _mat.data(),
-                         _mat.nrows(), _tau.data(), x.data(), x.size(), &lwork,
-                         -1);
+    lapack_kernel::ormqr('L', 'T', x.size(), 1, rk, _mat.data(), _mat.nrows(),
+                         _tau.data(), x.data(), x.size(), &lwork, -1);
     _work.resize((size_type)lwork);
 
     // compute x=Q(:,1:_rank)'*x
     const auto info = lapack_kernel::ormqr(
-        'L', 'T', x.size(), 1, _rank, _mat.data(), _mat.nrows(), _tau.data(),
+        'L', 'T', x.size(), 1, rk, _mat.data(), _mat.nrows(), _tau.data(),
         x.data(), x.size(), _work.data(), (size_type)lwork);
     hilucsi_error_if(info < 0, "ORMQR returned negative info (Q'*x)");
 
     // compute x(1:_rank)=inv(R(1:_rank,1:_rank))*x(1:_rank)
-    lapack_kernel::trsv('U', 'N', 'N', _rank, _mat.data(), _mat.nrows(),
-                        x.data(), 1);
+    lapack_kernel::trsv('U', 'N', 'N', rk, _mat.data(), _mat.nrows(), x.data(),
+                        1);
 
     // permutation, need to loop thru all entries in jpvt. Also, note that jpvt
     // is column pivoting, thus we actually need the inverse mapping while
@@ -191,10 +182,11 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
 
   /// \brief wrapper if input is different from \a value_type
   template <class ArrayType>
-  inline void solve(ArrayType &x, const bool tran = false) const {
+  inline void solve(ArrayType &x, const size_type rank = 0u,
+                    const bool tran = false) const {
     _x.resize(x.size());
     std::copy(x.cbegin(), x.cend(), _x.begin());
-    solve(_x, tran);
+    solve(_x, rank, tran);
     std::copy(_x.cbegin(), _x.cend(), x.begin());
   }
 

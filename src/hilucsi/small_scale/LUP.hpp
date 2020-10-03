@@ -76,7 +76,9 @@ class LUP : public internal::SmallScaleBase<ValueType> {
 
   /// \brief solve \f$\mathbf{LUx}=\mathbf{Px}\f$
   /// \param[in,out] x input rhs, output solution
-  inline void solve(Array<value_type> &x, const bool tran = false) const {
+  /// \param[in] tran (optional) tranpose flag
+  inline void solve(Array<value_type> &x, const size_type /* rank */ = 0,
+                    const bool         tran = false) const {
     hilucsi_error_if(
         _mat.empty() || _ipiv.empty(),
         "either the matrix is not set or the factorization has not yet done!");
