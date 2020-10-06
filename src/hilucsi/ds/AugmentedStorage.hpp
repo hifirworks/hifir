@@ -454,16 +454,32 @@ class AugCRS : public CrsType,
     return _base::_start_node(col);
   }
 
+  /// \brief unified interface to get starting augmented ID
+  inline index_type start_aug_id(const size_type col) const {
+    return start_col_id(col);
+  }
+
   /// \brief given a column handle, get its next location
   /// \param[in] col_id column handle/ID
   inline index_type next_col_id(const size_type col_id) const {
     return _base::_next_node(col_id);
   }
 
+  /// \brief unified interface for advancing augmented ID
+  /// \param[in] aug_id augmented ID
+  inline index_type next_aug_id(const size_type aug_id) const {
+    return next_col_id(aug_id);
+  }
+
   /// \brief given a column handle/ID, get its corresponding row index
   /// \param[in] col_id column handle/ID
   inline index_type row_idx(const size_type col_id) const {
     return _base::_node_ind(col_id);
+  }
+
+  /// \brief unified interface for getting primary index
+  inline index_type primary_idx(const size_type aug_id) const {
+    return row_idx(aug_id);
   }
 
   /// \brief reserve space for nnz arrays
@@ -487,10 +503,22 @@ class AugCRS : public CrsType,
     return vals()[val_pos_idx(col_id)];
   }
 
+  /// \brief unified interface for getting value from augmented ID
+  /// \param[in] aug_id augmented ID
+  inline value_type val_from_aug_id(const size_type aug_id) const {
+    return val_from_col_id(aug_id);
+  }
+
   /// \brief get the total number of nonzeros columnwise
   /// \param[in] col column index
   inline size_type nnz_in_col(const size_type col) const {
     return _base::_nodes_in_list(col);
+  }
+
+  /// \brief unified interface for getting in secondary (col) direction
+  /// \param[in] col column index
+  inline size_type nnz_in_secondary(const size_type col) const {
+    return nnz_in_col(col);
   }
 
   /// \brief interchange two columns
@@ -618,6 +646,12 @@ class AugCRS : public CrsType,
     _base::_interchange_ik_head_tail(i, k);
   }
 
+  /// \brief unified interface for interchanging entries
+  /// \sa interchange_cols
+  inline void interchange_entries(const size_type i, const size_type k) {
+    interchange_cols(i, k);
+  }
+
   /// \brief defer a column to the end
   /// \param[in] from which column to defer
   /// \param[in] to the current pass-of-end column index
@@ -645,6 +679,12 @@ class AugCRS : public CrsType,
     // NOTE that the start/end should not been visited, thus we can directly
     // reuse the routine "swap"
     _base::_interchange_ik_head_tail(from, to);
+  }
+
+  /// \brief unified interface for deferring
+  /// \sa defer_col
+  inline void defer_entry(const size_type from, const size_type to) {
+    defer_col(from, to);
   }
 
   // utilities
@@ -791,11 +831,17 @@ class AugCCS : public CcsType,
     hilucsi_error_if(ccs_type::nnz() != row_ind().size(), "inconsistent nnz");
     _base::_build_aug(nrows(), ccs_type::col_start(), row_ind());
   }
+
   /// \brief given row index, get the starting row handle/ID
   /// \param[in] row row index
   /// \return first row handle in the augmented data structure
   inline index_type start_row_id(const size_type row) const {
     return _base::_start_node(row);
+  }
+
+  /// \brief unified interface for getting starting augmented ID
+  inline index_type start_aug_id(const size_type row) const {
+    return start_row_id(row);
   }
 
   /// \brief given a row handle, get its next location
@@ -804,10 +850,22 @@ class AugCCS : public CcsType,
     return _base::_next_node(row_id);
   }
 
+  /// \brief unified interface for advancing to next augmented ID
+  /// \param[in] aug_id augmented ID
+  inline index_type next_aug_id(const size_type aug_id) const {
+    return next_row_id(aug_id);
+  }
+
   /// \brief given a row handle/ID, get its corresponding column index
   /// \param[in] row_id row handle/ID
   inline index_type col_idx(const size_type row_id) const {
     return _base::_node_ind(row_id);
+  }
+
+  /// \brief unified interface for getting primary (col) index
+  /// \param[in] aug_id augmented ID
+  inline index_type primary_idx(const size_type aug_id) const {
+    return col_idx(aug_id);
   }
 
   /// \brief reserve space for nnz arrays
@@ -830,10 +888,21 @@ class AugCCS : public CcsType,
     return vals()[val_pos_idx(row_id)];
   }
 
+  /// \brief unified interface for value from augmented ID
+  /// \param[in] aug_id row augmented ID
+  inline value_type val_from_aug_id(const size_type aug_id) const {
+    return val_from_row_id(aug_id);
+  }
+
   /// \brief get the total number of nonzeros in row
   /// \param[in] row row index
   inline size_type nnz_in_row(const size_type row) const {
     return _base::_nodes_in_list(row);
+  }
+
+  /// \brief unified interface for nnz in secondary direction
+  inline size_type nnz_in_secondary(const size_type row) const {
+    return nnz_in_row(row);
   }
 
   /// \brief interchange two rows
@@ -950,6 +1019,12 @@ class AugCCS : public CcsType,
     _base::_interchange_ik_head_tail(i, k);
   }
 
+  /// \brief unified interface for interchanging
+  /// \sa interchange_rows
+  inline void interchange_entries(const size_type i, const size_type k) {
+    interchange_rows(i, k);
+  }
+
   /// \brief defer a row to the end
   /// \param[in] from which row to defer
   /// \param[in] to the current pass-of-end row index
@@ -977,6 +1052,12 @@ class AugCCS : public CcsType,
     // NOTE that the start/end should not been visited, thus we can directly
     // reuse the routine "swap"
     _base::_interchange_ik_head_tail(from, to);
+  }
+
+  /// \brief unified interface for deferring
+  /// \sa defer_row
+  inline void defer_entry(const size_type from, const size_type to) {
+    defer_row(from, to);
   }
 
   // utilities
