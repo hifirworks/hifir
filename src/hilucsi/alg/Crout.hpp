@@ -179,7 +179,7 @@ class Crout {
     ut.reset_counter();
 
     // first load the A row
-    _load_A2ut(s, crs_A, t, pk, q, ut);
+    _load_arow(s, crs_A, t, pk, q, ut);
 
     // if not first step
     if (_step) {
@@ -281,7 +281,7 @@ class Crout {
 
     if (!IsSymm || (_defers || m != ccs_A.nrows())) {
       // load A column
-      _load_A2l<IsSymm>(s, ccs_A, t, p, qk, m, l);
+      _load_acol<IsSymm>(s, ccs_A, t, p, qk, m, l);
 
       // if not first step
       if (_step) {
@@ -379,9 +379,9 @@ class Crout {
   /// \param[in] m leading block size
   /// \param[out] L_start offset starting positions
   template <class CcsType, class PosArray>
-  inline void update_L_start_offset_symm(const CcsType &                   L,
-                                         const typename CcsType::size_type m,
-                                         PosArray &L_start) const {
+  inline void symm_update_lstart(const CcsType &                   L,
+                                 const typename CcsType::size_type m,
+                                 PosArray &L_start) const {
     static_assert(!CcsType::ROW_MAJOR, "must be CCS");
 
     auto info = find_sorted(L.row_ind_cbegin(_step), L.row_ind_cend(_step), m);
@@ -454,9 +454,10 @@ class Crout {
   ///     \textrm{nnz}(\mathbf{u}_k)))
   ///\f]
   template <bool IsSymm, class SpVecType, class DiagType>
-  inline typename std::enable_if<!IsSymm>::type update_B_diag(
-      const SpVecType &l, const SpVecType &ut, const size_type m,
-      DiagType &d) const {
+  inline typename std::enable_if<!IsSymm>::type update_diag(const SpVecType &l,
+                                                            const SpVecType &ut,
+                                                            const size_type  m,
+                                                            DiagType &d) const {
     // NOTE that we need the internal dense tag from sparse vector
     // thus, we can either:
     //    1) make this function a friend of SparseVec, or
@@ -524,7 +525,7 @@ class Crout {
   ///   \mathcal{O}(\textrm{nnz}(\mathbf{u}_k))
   ///\f]
   template <bool IsSymm, class SpVecType, class DiagType>
-  inline typename std::enable_if<IsSymm>::type update_B_diag(
+  inline typename std::enable_if<IsSymm>::type update_diag(
       const SpVecType & /* l */, const SpVecType &ut, const size_type m,
       DiagType &d) const {
     hilucsi_assert(m, "fatal, symmetric block cannot be empty!");
@@ -628,10 +629,9 @@ class Crout {
   /// \param[out] L_offsets offsets of asymmetric potions
   /// \ingroup defer
   template <class CcsType, class PosArray>
-  inline void defer_L_and_fix_offsets(const size_type to_idx,
-                                      const PosArray &L_start, CcsType &L,
-                                      PosArray &L_list,
-                                      PosArray &L_offsets) const {
+  inline void symm_defer_l(const size_type to_idx, const PosArray &L_start,
+                           CcsType &L, PosArray &L_list,
+                           PosArray &L_offsets) const {
     static_assert(!CcsType::ROW_MAJOR, "must be CCS");
     using index_type                = typename PosArray::value_type;
     constexpr static index_type nil = static_cast<index_type>(-1);
@@ -667,9 +667,9 @@ class Crout {
   /// \param[in] pk row permuted index
   /// \param[in] q_inv column inverse permutation matrix
   /// \param[out] ut output sparse vector of row vector for A
-  /// \sa _load_A2l
+  /// \sa _load_acol
   template <class ScaleArray, class CrsType, class PermType, class SpVecType>
-  inline void _load_A2ut(const ScaleArray &s, const CrsType &crs_A,
+  inline void _load_arow(const ScaleArray &s, const CrsType &crs_A,
                          const ScaleArray &t, const size_type &pk,
                          const PermType &q_inv, SpVecType &ut) const {
     // ut should be empty
@@ -708,13 +708,13 @@ class Crout {
   /// \param[in] qk permuted column index
   /// \param[in] m leading size
   /// \param[out] l output sparse vector of column vector for A
-  /// \sa _load_A2ut
+  /// \sa _load_arow
   template <bool IsSymm, class ScaleArray, class CcsType, class PermType,
             class SpVecType>
-  inline void _load_A2l(const ScaleArray &s, const CcsType &ccs_A,
-                        const ScaleArray &t, const PermType &p_inv,
-                        const size_type &qk, const size_type m,
-                        SpVecType &l) const {
+  inline void _load_acol(const ScaleArray &s, const CcsType &ccs_A,
+                         const ScaleArray &t, const PermType &p_inv,
+                         const size_type &qk, const size_type m,
+                         SpVecType &l) const {
     // runtime
     hilucsi_assert(l.empty(), "l should be empty while loading A");
     const size_type defer_thres = deferred_step();
