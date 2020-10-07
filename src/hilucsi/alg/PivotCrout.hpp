@@ -59,25 +59,44 @@ class PivotCrout : public Crout {
  public:
   using size_type = Crout::size_type;  ///< size type
 
-  /// \brief dual of the \ref compute_l, i.e. computing the row of U
+  /// \brief load current row of A into the buffer space \a ut
   /// \tparam ScaleArray row scaling diagonal matrix type, see \ref Array
   /// \tparam CrsType crs format, see \ref CRS
   /// \tparam PermType permutation matrix type, see \ref Array
-  /// \tparam PosArray position array type, see \ref Array
-  /// \tparam DiagType diagonal matrix type, see \ref Array
-  /// \tparam AugCcsType ccs format, see \ref AugCCS
-  /// \tparam AugCrsType crs format, see \ref AugCRS
   /// \tparam SpVecType work array for current row vector, see \ref SparseVector
   /// \param[in] s row scaling matrix from preprocessing
   /// \param[in] crs_A input matrix in crs scheme
   /// \param[in] t column scaling matrix from preprocessing
   /// \param[in] pk permutated row index
   /// \param[in] q column inverse permutation (deferred)
+  /// \param[out] ut workspace for row vector of U at current step
+  /// \sa compute_ut
+  ///
+  /// Regarding the complexity cost, it takes
+  /// \f$\mathcal{O}(\textrm{nnz}(\mathbf{A}_{p_k,:}))\f$ to load the row of A
+  /// to \f$\mathbf{u}_k^T\f$
+  template <class ScaleArray, class CrsType, class PermType, class SpVecType>
+  inline void load_arow(const ScaleArray &s, const CrsType &crs_A,
+                        const ScaleArray &t, const size_type pk,
+                        const PermType &q, SpVecType &ut) const {
+    static_assert(CrsType::ROW_MAJOR, "input A must be CRS for loading ut");
+    ut.reset_counter();                  // reset sparse buffer
+    _load_arow(s, crs_A, t, pk, q, ut);  // first load the A row
+  }
+
+  /// \brief dual of the \ref compute_l, i.e. computing the row of U
+  /// \tparam AugCcsType ccs format, see \ref AugCCS
+  /// \tparam DiagType diagonal matrix type, see \ref Array
+  /// \tparam AugCrsType crs format, see \ref AugCRS
+  /// \tparam PosArray position array type, see \ref Array
+  /// \tparam SpVecType work array for current row vector, see \ref SparseVector
   /// \param[in] L lower part
   /// \param[in] d diagonal vector
   /// \param[in] U upper part
   /// \param[in] U_start leading row positions of current \ref _step
-  /// \param[out] ut current row vector of U
+  /// \param[in,out] ut upon input, it contains preloaded row in A via
+  ///                   \ref load_arow; upon output, it contains the factor of
+  ///                   \f$\mathbf{u}_k^T\f$.
   /// \sa compute_l
   ///
   /// This routine computes the current row vector of \f$\mathbf{U}\f$
@@ -98,27 +117,16 @@ class PivotCrout : public Crout {
   /// is in the fashion that loops through \f$\mathbf{U}\f$ in row major
   /// while keeping \f$\mathbf{L}\f$ as much static as possible.
   ///
-  /// Regarding the complexity cost, it takes
-  /// \f$\mathcal{O}(\textrm{nnz}(\mathbf{A}_{p_k,:}))\f$ to first load the
-  /// row of A to \f$\mathbf{u}_k^T\f$, and takes
+  /// Regarding computation cost, it takes
   /// \f$\mathcal{O}(\cup_j \textrm{nnz}(\mathbf{U}_{j,:}))\f$, where
   /// \f$l_{kj}\neq 0\f$ for computing the vector matrix operation.
-  template <class ScaleArray, class CrsType, class PermType, class PosArray,
-            class DiagType, class AugCcsType, class AugCrsType, class SpVecType>
-  void compute_ut(const ScaleArray &s, const CrsType &crs_A,
-                  const ScaleArray &t, const size_type pk, const PermType &q,
-                  const AugCcsType &L, const DiagType &d, const AugCrsType &U,
+  template <class AugCcsType, class DiagType, class AugCrsType, class PosArray,
+            class SpVecType>
+  void compute_ut(const AugCcsType &L, const DiagType &d, const AugCrsType &U,
                   const PosArray &U_start, SpVecType &ut) const {
     // compilation checking
-    static_assert(CrsType::ROW_MAJOR, "input A must be CRS for loading ut");
     using index_type                = typename PosArray::value_type;
     constexpr static index_type nil = static_cast<index_type>(-1);
-
-    // reset sparse buffer
-    ut.reset_counter();
-
-    // first load the A row
-    _load_A2ut(s, crs_A, t, pk, q, ut);
 
     // if not first step
     if (_step) {
@@ -162,26 +170,45 @@ class PivotCrout : public Crout {
     }
   }
 
-  /// \brief compute the column vector of L of current step
+  /// \brief load current column of A into workspace \a l
   /// \tparam ScaleArray row/column scaling diagonal matrix type, see \ref Array
   /// \tparam CcsType ccs format, see \ref CCS
   /// \tparam PermType permutation matrix type, see \ref Array
-  /// \tparam PosArray position array type, see \ref Array
-  /// \tparam AugCcsType ccs format, see \ref AugCCS
-  /// \tparam DiagType array used for storing diagonal array, see \ref Array
-  /// \tparam AugCrsType crs format, see \ref AugCRS
   /// \tparam SpVecType sparse vector for storing l, see \ref SparseVector
   /// \param[in] s row scaling matrix from preprocessing
   /// \param[in] ccs_A input matrix in ccs scheme
   /// \param[in] t column scaling matrix from preprocessing
   /// \param[in] p row inverse permutation matrix (deferred)
   /// \param[in] qk permutated column index
-  /// \param[in] m leading block size
+  /// \param[out] l column vector of L at current \ref _step
+  /// \sa compute_l
+  ///
+  /// Regarding the complexity cost, it takes
+  /// \f$\mathcal{O}(\textrm{nnz}(\mathbf{A}_{:,q_k}))\f$ to load the column of
+  /// A to \f$\mathbf{\ell}_k\f$
+  template <class ScaleArray, class CcsType, class PermType, class SpVecType>
+  inline void load_acol(const ScaleArray &s, const CcsType &ccs_A,
+                        const ScaleArray &t, const PermType &p,
+                        const size_type qk, SpVecType &l) const {
+    // compilation checking
+    static_assert(!CcsType::ROW_MAJOR, "input A must be CCS for loading l");
+    l.reset_counter();                             // clear sparse counter
+    _load_acol<false>(s, ccs_A, t, p, qk, 0u, l);  // load A column
+  }
+
+  /// \brief compute the column vector of L of current step
+  /// \tparam AugCcsType ccs format, see \ref AugCCS
+  /// \tparam PosArray position array type, see \ref Array
+  /// \tparam DiagType array used for storing diagonal array, see \ref Array
+  /// \tparam AugCrsType crs format, see \ref AugCRS
+  /// \tparam SpVecType sparse vector for storing l, see \ref SparseVector
   /// \param[in] L lower part of decomposition
   /// \param[in] L_start position array storing the starting locations of \a L
   /// \param[in] d diagonal entries
   /// \param[in] U augmented U matrix
-  /// \param[out] l column vector of L at current \ref _step
+  /// \param[in,out] l upon input, it contains preloaded column in A via
+  ///                  \ref load_acol; upon output, it contains the factor of
+  ///                  \f$\mathbf{\ell}_k\f$.
   /// \sa compute_ut
   ///
   /// This routine computes the current column vector of \f$\mathbf{L}\f$
@@ -203,26 +230,15 @@ class PivotCrout : public Crout {
   /// while keeping \f$\mathbf{U}\f$ as much static as possible.
   ///
   /// Regarding the complexity cost, it takes
-  /// \f$\mathcal{O}(\textrm{nnz}(\mathbf{A}_{:,q_k}))\f$ to first load the
-  /// column of A to \f$\mathbf{\ell}_k\f$, and takes
   /// \f$\mathcal{O}(\cup_i \textrm{nnz}(\mathbf{L}_{:,i}))\f$, where
   /// \f$u_{ik}\neq 0\f$ for computing the matrix vector operation.
-  template <class ScaleArray, class CcsType, class PermType, class PosArray,
-            class AugCcsType, class DiagType, class AugCrsType, class SpVecType>
-  void compute_l(const ScaleArray &s, const CcsType &ccs_A, const ScaleArray &t,
-                 const PermType &p, const size_type qk, const size_type m,
-                 const AugCcsType &L, const PosArray &L_start,
+  template <class AugCcsType, class PosArray, class DiagType, class AugCrsType,
+            class SpVecType>
+  void compute_l(const AugCcsType &L, const PosArray &L_start,
                  const DiagType &d, const AugCrsType &U, SpVecType &l) const {
     // compilation checking
-    static_assert(!CcsType::ROW_MAJOR, "input A must be CCS for loading l");
     using index_type                = typename PosArray::value_type;
     constexpr static index_type nil = static_cast<index_type>(-1);
-
-    // clear sparse counter
-    l.reset_counter();
-
-    // load A column
-    _load_A2l<false>(s, ccs_A, t, p, qk, m, l);
 
     // if not first step
     if (_step) {
@@ -346,6 +362,33 @@ class PivotCrout : public Crout {
   template <class CsType>
   inline void defer_entry(const size_type to_idx, CsType &T) const {
     T.defer_entry(deferred_step(), to_idx);
+  }
+
+  /// \brief interchagen with pivot for pivoting with Crout LU
+  /// \tparam AugCsType Augmented compressed data types, see \ref AugCRS or
+  ///         \ref AugCCS
+  /// \tparam PermType Permutation array type
+  /// \tparam InvPermType Inverse permutation type
+  /// \tparam DiagArrayType Diagonal array type, see \ref Array
+  /// \tparam AArrayType Array type for storing current row or column of A
+  /// \param[in] pivot Pivoting position
+  /// \param[in,out] T Either lower or upper factors from Crout LU and step k
+  /// \param[in,out] p Permutation array
+  /// \param[in,out] p_inv Inverse permutation array
+  /// \param[in,out] d diagonal array
+  /// \param[in,out] a_k k-th row or column of A (scaled and permuted)
+  template <class AugCsType, class PermType, class InvPermType,
+            class DiagArrayType, class AArrayType>
+  inline void interchange(const size_type pivot, AugCsType &T, PermType &p,
+                          InvPermType &p_inv, DiagArrayType &d,
+                          AArrayType &a_k) const {
+    // swap permutation
+    std::swap(p[deferred_step()], p[pivot]);
+    std::swap(p_inv[p[deferred_step()]], p_inv[p[pivot]]);
+    // interchanage in the L or U factors
+    T.interchange_entries(deferred_step(), pivot);
+    // swap current diagonal with the pivot entry in k-th row or column of A
+    std::swap(d[deferred_step()], a_k[pivot]);
   }
 };
 }  // namespace hilucsi

@@ -360,9 +360,11 @@ inline CsType pivot_level_factorize(
     step.compress_array(q);
 
     // compute ut
-    step.compute_ut(s, A_crs, t, p[step], Q_inv, L, d, U, U_start, ut);
+    step.load_arow(s, A_crs, t, p[step], Q_inv, ut);
+    step.compute_ut(L, d, U, U_start, ut);
     // compute l
-    step.compute_l(s, A_ccs, t, P_inv, q[step], m2, L, L_start, d, U, l);
+    step.load_acol(s, A_ccs, t, P_inv, q[step], l);
+    step.compute_l(L, L_start, d, U, l);
 
     // update diagonal entries for u first
 #ifndef NDEBUG
