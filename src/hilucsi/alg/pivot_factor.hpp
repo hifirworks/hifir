@@ -375,7 +375,7 @@ inline CsType pivot_level_factorize(
                    cur_level, step);
 
     // update diagonals b4 dropping
-    step.update_B_diag<false>(l, ut, m2, d);
+    step.update_diag<false>(l, ut, m2, d);
 
 #ifndef NDEBUG
     const bool l_is_nonsingular =
