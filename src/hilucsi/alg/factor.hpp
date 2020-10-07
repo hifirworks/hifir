@@ -760,7 +760,7 @@ inline CsType level_factorize(const CsType &                   A,
         if (!IsSymm)
           step.defer_entry(tail_pos, L_start, L, L_list);
         else
-          step.defer_L_and_fix_offsets(tail_pos, L_start, L, L_list, L_offsets);
+          step.symm_defer_l(tail_pos, L_start, L, L_list, L_offsets);
         P[tail_pos]        = p[step.deferred_step()];
         Q[tail_pos]        = q[step.deferred_step()];
         P_inv[P[tail_pos]] = tail_pos;
@@ -846,7 +846,7 @@ inline CsType level_factorize(const CsType &                   A,
                    cur_level, step);
 
     // update diagonals b4 dropping
-    step.update_B_diag<IsSymm>(l, ut, m2, d);
+    step.update_diag<IsSymm>(l, ut, m2, d);
 
 #ifndef NDEBUG
     const bool l_is_nonsingular =
@@ -926,7 +926,7 @@ inline CsType level_factorize(const CsType &                   A,
       if (!step.defers() && m2 == n)
         L_offsets[step] = L.nnz_in_col(step);
       else
-        step.update_L_start_offset_symm(L, m2, L_offsets);
+        step.symm_update_lstart(L, m2, L_offsets);
     }
     Crout_info(" Crout step %zd done!", step);
   }  // for
