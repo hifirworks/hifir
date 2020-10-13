@@ -142,6 +142,13 @@ class AugmentedCore {
     _val_pos_inv.reserve(nnz);
   }
 
+  inline iarray_type &      secondary_start() { return _node_start; }
+  inline const iarray_type &secondary_start() const { return _node_start; }
+  inline iarray_type &      secondary_end() { return _node_end; }
+  inline const iarray_type &secondary_end() const { return _node_end; }
+  inline iarray_type &      secondary_counts() { return _node_counts; }
+  inline const iarray_type &secondary_counts() const { return _node_counts; }
+
  protected:
   /// \brief begin assemble nodes
   /// \param[in] nlist number of lists
