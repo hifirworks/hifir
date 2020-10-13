@@ -190,8 +190,11 @@ inline CsType pivot_level_factorize(
 
   timer.start();
 
-  // extract diagonal
-  auto d = internal::extract_perm_diag(s, A_ccs, t, m, p, q);
+  // create array for diagonal entries
+  // auto d = internal::extract_perm_diag(s, A_ccs, t, m, p, q);
+  Array<value_type> d(m);
+  hilucsi_error_if(d.status() == DATA_UNDEF,
+                   "memory allocation failed for d at level %zd.", cur_level);
 
   // create U storage with deferred
   aug_crs_type U(m, A.ncols() * 2);
@@ -263,18 +266,32 @@ inline CsType pivot_level_factorize(
   auto &P_inv = p.inv(), &Q_inv = q.inv();
 
   // 0 for defer due to diagonal, 1 for defer due to bad inverse conditioning
-  index_type info_counter[] = {0, 0, 0, 0, 0, 0, 0};
+  index_type info_counter[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
   if (hilucsi_verbose(INFO, opts)) hilucsi_info("start Crout update...");
   PivotCrout step;
   for (; step < m; ++step) {
-    // first check diagonal
-    bool            pvt         = is_bad_diag(d[step.deferred_step()]);
     const size_type m_prev      = m;
     const size_type defers_prev = step.defers();
-    info_counter[0] += pvt;
 
     Crout_info(" Crout step %zd, leading block size %zd", step, m);
+
+    //----------------------
+    // thresholded pivoting
+    //----------------------
+
+    const auto n_pivots = step.apply_thres_pivot(
+        s, t, A_ccs, A_crs, m2, 1.0, 4, Crout_info, L_start, U_start, p, P_inv,
+        q, Q_inv, L, d, U, l, ut);
+    const bool do_pivot = n_pivots.first || n_pivots.second;
+    info_counter[9] += do_pivot;
+    Crout_info("  perform pivoting=%s", (do_pivot ? "yes" : "no"));
+    info_counter[7] += n_pivots.first;   // # of L pivoting
+    info_counter[8] += n_pivots.second;  // # of U pivoting
+
+    // first check diagonal
+    bool do_defer = is_bad_diag(d[step.deferred_step()]);
+    info_counter[0] += do_defer;
 
     // compute kappa for u wrt deferred index
     step.update_kappa(U, kappa_ut);
@@ -282,14 +299,20 @@ inline CsType pivot_level_factorize(
     step.update_kappa(L, kappa_l);
 
     // check condition number if diagonal doesn't satisfy
-    if (!pvt) {
-      pvt = std::abs(kappa_ut[step]) > tau_kappa ||
-            std::abs(kappa_l[step]) > tau_kappa;
-      info_counter[1] += pvt;
+    if (!do_defer) {
+      do_defer = std::abs(kappa_ut[step]) > tau_kappa ||
+                 std::abs(kappa_l[step]) > tau_kappa;
+      info_counter[1] += do_defer;
     }
 
+    // note if both pivoting and deferring occur
+    info_counter[10] += do_pivot && do_defer;
+
+    const bool do_defer2 = do_defer;
+    Crout_info("  perform deferring=%s", (do_defer2 ? "yes" : "no"));
+
     // handle defer
-    if (pvt) {
+    if (do_defer) {
       while (m > step) {
         --m;
         const auto tail_pos = n + step.defers();
@@ -308,19 +331,21 @@ inline CsType pivot_level_factorize(
           m = step;
           break;
         }
-        pvt = is_bad_diag(d[step.deferred_step()]);
-        if (pvt) {
-          ++info_counter[0];
-          continue;
-        }
-        // compute kappa for u wrt deferred index
+        // compute kappa for u wrp deferred index
         step.update_kappa(U, kappa_ut);
         // then compute kappa for l
         step.update_kappa(L, kappa_l);
-        pvt = std::abs(kappa_ut[step]) > tau_kappa ||
-              std::abs(kappa_l[step]) > tau_kappa;
-        if (pvt) {
+        do_defer = std::abs(kappa_ut[step]) > tau_kappa ||
+                   std::abs(kappa_l[step]) > tau_kappa;
+        if (do_defer) {
           ++info_counter[1];
+          continue;
+        }
+        // compute diagonal
+        d[step.deferred_step()] = step.compute_dk(
+            s, A_ccs, t, P_inv, q[step.deferred_step()], L, L_start, d, U);
+        if (is_bad_diag(d[step.deferred_step()])) {
+          ++info_counter[0];
           continue;
         }
         break;
@@ -333,10 +358,6 @@ inline CsType pivot_level_factorize(
     //----------------
 
     const auto k_ut = kappa_ut[step], k_l = kappa_l[step];
-
-    // check pivoting
-    hilucsi_assert(!(std::abs(k_ut) > tau_kappa || std::abs(k_l) > tau_kappa),
-                   "should not happen!");
 
     Crout_info("  kappa_ut=%g, kappa_l=%g", (double)std::abs(k_ut),
                (double)std::abs(k_l));
@@ -352,19 +373,24 @@ inline CsType pivot_level_factorize(
 
     Crout_info("  updating L_start/U_start and performing Crout update");
 
+    // compute ut and l if deferring occurs
+    if (do_defer2) {
+      // recompute l
+      l.restore_cur_state();
+      step.compute_l(s, A_ccs, t, P_inv, q[step.deferred_step()], L, L_start, d,
+                     U, l);
+      // recompute ut
+      ut.restore_cur_state();  // must restore to initial state as used in pvt
+      step.compute_ut(s, A_crs, t, p[step.deferred_step()], Q_inv, L, d, U,
+                      U_start, ut);
+    }
+
     // compress diagonal
     step.compress_array(d);
 
     // compress permutation vectors
     step.compress_array(p);
     step.compress_array(q);
-
-    // compute ut
-    step.load_arow(s, A_crs, t, p[step], Q_inv, ut);
-    step.compute_ut(L, d, U, U_start, ut);
-    // compute l
-    step.load_acol(s, A_ccs, t, P_inv, q[step], l);
-    step.compute_l(L, L_start, d, U, l);
 
     // update diagonal entries for u first
 #ifndef NDEBUG
@@ -376,8 +402,8 @@ inline CsType pivot_level_factorize(
     hilucsi_assert(!u_is_nonsingular, "u is singular at level %zd step %zd",
                    cur_level, step);
 
-    // update diagonals b4 dropping
-    step.update_diag<false>(l, ut, m2, d);
+    // Diagonal is maintained in JIT fashion due to pivoting
+    // step.update_diag<false>(l, ut, m2, d);
 
 #ifndef NDEBUG
     const bool l_is_nonsingular =
@@ -395,7 +421,7 @@ inline CsType pivot_level_factorize(
     const size_type ori_ut_size = ut.size(), ori_l_size = l.size();
 
     // apply drop for U
-    apply_num_dropping(tau_U, std::abs(k_ut) * tau_d, ut);
+    // apply_num_dropping(tau_U, std::abs(k_ut) * tau_d, ut);
 #ifndef HILUCSI_DISABLE_SPACE_DROP
     const size_type n_ut = ut.size();
     apply_space_dropping(row_sizes[p[step]], alpha_U, ut);
@@ -412,7 +438,7 @@ inline CsType pivot_level_factorize(
                ori_ut_size, ut.size(), ori_ut_size - ut.size());
 
     // apply numerical dropping on L
-    apply_num_dropping(tau_L, std::abs(k_l) * tau_d, l);
+    // apply_num_dropping(tau_L, std::abs(k_l) * tau_d, l);
 #ifndef HILUCSI_DISABLE_SPACE_DROP
     const size_type n_l = l.size();
     apply_space_dropping(col_sizes[q[step]], alpha_L, l);
@@ -486,6 +512,10 @@ inline CsType pivot_level_factorize(
         "\tspace drop ut=%zd\n"
         "\tdrop l=%zd\n"
         "\tspace drop l=%zd\n"
+        "\tpivoting in L=%zd\n"
+        "\tpivoting in U=%zd\n"
+        "\tsteps with pivoting=%zd\n"
+        "\tsteps with both pivoting & deferring=%zd\n"
         "\tmin |kappa_u|=%g\n"
         "\tmax |kappa_u|=%g\n"
         "\tmin |kappa_l|=%g\n"
@@ -494,7 +524,9 @@ inline CsType pivot_level_factorize(
         step.defers(), m0, m, m0 - m, (size_type)info_counter[0],
         (size_type)info_counter[1], (size_type)info_counter[5],
         (size_type)info_counter[3], (size_type)info_counter[6],
-        (size_type)info_counter[4],
+        (size_type)info_counter[4], (size_type)info_counter[7],
+        (size_type)info_counter[8], (size_type)info_counter[9],
+        (size_type)info_counter[10],
         (double)std::abs(
             *std::min_element(kappa_ut.cbegin(), kappa_ut.cbegin() + m,
                               [](const value_type l, const value_type r) {
