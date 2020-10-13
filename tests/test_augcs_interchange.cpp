@@ -25,6 +25,13 @@ const static RandRealGen r_rand(1.0, 2.0);
     m = i_rand() % nrows;         \
   } while (m == k)
 
+#define GET_RANDOM_K_M_NCOLS      \
+  const int k = i_rand() % ncols; \
+  int       m;                    \
+  do {                            \
+    m = i_rand() % ncols;         \
+  } while (m == k)
+
 TEST(AUG_CS_SWAP, ccs) {
   aug_ccs_t aug_ccs;
   int       nrows = i_rand(), ncols = i_rand();
@@ -91,6 +98,17 @@ TEST(AUG_CS_SWAP, ccs) {
     load_aug_ccs_row(m, aug_ccs, buf2);  // load sparse
     for (int j = 0; j < ncols; ++j)
       ASSERT_EQ(buf1[j], buf2[j]) << "row " << m << " did not match!\n";
+    std::cout << "interchange rows " << k << " and " << m << '\n';
+    aug_ccs.interchange_rows(k, m);
+    interchange_dense_rows(mat1, k, m);
+    load_dense_row(k, mat1, buf1);       // load dense
+    load_aug_ccs_row(k, aug_ccs, buf2);  // load sparse
+    for (int j = 0; j < ncols; ++j)
+      ASSERT_EQ(buf1[j], buf2[j]) << "row " << k << " did not match!\n";
+    load_dense_row(m, mat1, buf1);       // load dense
+    load_aug_ccs_row(m, aug_ccs, buf2);  // load sparse
+    for (int j = 0; j < ncols; ++j)
+      ASSERT_EQ(buf1[j], buf2[j]) << "row " << m << " did not match!\n";
   }
 }
 
@@ -133,7 +151,7 @@ TEST(AUG_CS_SWAP, crs) {
     aug_crs.push_back_row(i, col_ind.cbegin(), col_ind.cend(), mat1[i]);
     ASSERT_EQ(aug_crs.nnz_in_row(i), col_ind.size());
     // swap here
-    GET_RANDOM_K_M;
+    GET_RANDOM_K_M_NCOLS;
     std::cout << "interchange columns " << k << " and " << m << '\n';
     aug_crs.interchange_cols(k, m);
     interchange_dense_cols(mat1, k, m);
@@ -149,7 +167,7 @@ TEST(AUG_CS_SWAP, crs) {
   aug_crs.end_assemble_rows();
   // test static interchanges
   for (int i = 0; i < std::min(nrows, 20); ++i) {
-    GET_RANDOM_K_M;
+    GET_RANDOM_K_M_NCOLS;
     std::cout << "interchange columns " << k << " and " << m << '\n';
     aug_crs.interchange_cols(k, m);
     interchange_dense_cols(mat1, k, m);
