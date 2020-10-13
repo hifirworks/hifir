@@ -421,7 +421,7 @@ inline CsType pivot_level_factorize(
     const size_type ori_ut_size = ut.size(), ori_l_size = l.size();
 
     // apply drop for U
-    // apply_num_dropping(tau_U, std::abs(k_ut) * tau_d, ut);
+    apply_num_dropping(tau_U, std::abs(k_ut) * tau_d, ut);
 #ifndef HILUCSI_DISABLE_SPACE_DROP
     const size_type n_ut = ut.size();
     apply_space_dropping(row_sizes[p[step]], alpha_U, ut);
@@ -438,7 +438,7 @@ inline CsType pivot_level_factorize(
                ori_ut_size, ut.size(), ori_ut_size - ut.size());
 
     // apply numerical dropping on L
-    // apply_num_dropping(tau_L, std::abs(k_l) * tau_d, l);
+    apply_num_dropping(tau_L, std::abs(k_l) * tau_d, l);
 #ifndef HILUCSI_DISABLE_SPACE_DROP
     const size_type n_l = l.size();
     apply_space_dropping(col_sizes[q[step]], alpha_L, l);
