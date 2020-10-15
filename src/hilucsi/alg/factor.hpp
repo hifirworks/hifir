@@ -472,6 +472,36 @@ inline void compress_tails(U_Type &U, L_Type &L, const PosArray &U_start,
 #endif
 }
 
+/// \brief print out information regarding handling Schur complement
+inline void print_post_flag(const int flag) {
+  hilucsi_info("\t=================================");
+  switch (flag) {
+    case 0:
+      hilucsi_info("\tthe Schur compl. has good size");
+      break;
+    case 1:
+      hilucsi_info(
+          "\tresort to complete factorization\n"
+          "\ton the input due to too many\n"
+          "\tstatic deferrals");
+      break;
+    case 2:
+      hilucsi_info(
+          "\tresort to complete factorization\n"
+          "\ton the input due to too many\n"
+          "\tstatic+dynamic deferrals");
+      break;
+    default:
+      hilucsi_info(
+          "\tuse complete factorization on\n"
+          "\tthe Schur compl. due to its size\n"
+          "\tis relatively large compared to\n"
+          "\tthe input");
+      break;
+  }
+  hilucsi_info("\t=================================");
+}
+
 /*!
  * @}
  */ // fac group
@@ -959,14 +989,16 @@ inline CsType level_factorize(const CsType &                   A,
   if (!post_flag && (double)m <= 0.25 * m0) {
     post_flag = 2;  // check after factorization
     m         = 0;
+    for (size_type i(0); i < sizeof(info_counter) / sizeof(index_type); ++i)
+      info_counter[i] = 0;
   } else if ((double)m <= 0.4 * m0)
     post_flag = -1;
 
   // collecting stats for deferrals
-  stats[0] += m0 - m;           // total deferals
-  stats[1] += step.defers();    // dynamic deferrals
-  stats[2] += info_counter[0];  // diagonal deferrals
-  stats[3] += info_counter[1];  // conditioning deferrals
+  stats[0] += m0 - m;                            // total deferals
+  stats[1] += m ? step.defers() : size_type(0);  // dynamic deferrals
+  stats[2] += info_counter[0];                   // diagonal deferrals
+  stats[3] += info_counter[1];                   // conditioning deferrals
 
   // collecting stats for dropping
   stats[4] += info_counter[5] + info_counter[6];  // total droppings
@@ -1027,8 +1059,10 @@ inline CsType level_factorize(const CsType &                   A,
     hilucsi_info("time: %gs", timer.time());
   }
 
-  if (hilucsi_verbose(INFO, opts))
+  if (hilucsi_verbose(INFO, opts)) {
     hilucsi_info("computing Schur complement and assembling Prec...");
+    internal::print_post_flag(post_flag);
+  }
 
   timer.start();
 
