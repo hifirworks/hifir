@@ -65,6 +65,13 @@ const static char *help =
     "\t\t0: off (default)\n"
     "\t\t1: local extreme scale\n"
     "\t\t2: iterative scaling based on inf-norm (experimental)\n"
+    " -p|--pivoting\n"
+    "\tpivoting strategy:\n"
+    "\t\t0: off (default)\n"
+    "\t\t1: on\n"
+    "\t\t2: auto\n"
+    " -g|--gamma\n"
+    "\tpivoting threshold (1.0)\n"
     " -P|--ksp\n"
     "\tKSP methods:\n"
     "\t\t0: FGMRES (default)\n"
@@ -206,6 +213,14 @@ static std::tuple<hilucsi::Options, int, double, bool, int, int> parse_args(
       ++i;
       if (i >= argc) fatal_exit("missing KSP kernel choice!");
       kernel = std::atoi(argv[i]);
+    } else if (arg == string("-p") || arg == string("--pivoting")) {
+      ++i;
+      if (i >= argc) fatal_exit("missing pivoting strategy!");
+      opts.pivot = std::atoi(argv[i]);
+    } else if (arg == string("-g") || arg == string("--gamma")) {
+      ++i;
+      if (i >= argc) fatal_exit("missing pivoting threshold!");
+      opts.gamma = std::atof(argv[i]);
     }
     ++i;
   }
