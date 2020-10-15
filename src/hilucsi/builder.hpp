@@ -39,6 +39,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "hilucsi/alg/IterRefine.hpp"
 #include "hilucsi/alg/Prec.hpp"
 #include "hilucsi/alg/factor.hpp"
+#include "hilucsi/alg/pivot_factor.hpp"
 #include "hilucsi/alg/prec_solve.hpp"
 #include "hilucsi/utils/common.hpp"
 #include "hilucsi/utils/mt.hpp"
@@ -463,13 +464,18 @@ class HILUCSI {
     const bool sym = cur_level == 1u && m > 0u;
     if (!sym) m = A.nrows();  // IMPORTANT! If asymmetric, set m = n
 
-    // instantiate IsSymm here
-    CsType S =
-        sym ? level_factorize<true>(A, m, N, opts, Crout_info, _precs,
-                                    row_sizes, col_sizes, _stats, schur_threads)
-            : level_factorize<false>(A, m, N, opts, Crout_info, _precs,
-                                     row_sizes, col_sizes, _stats,
-                                     schur_threads);
+    CsType S;
+    if (opts.pivot == PIVOTING_OFF)
+      // instantiate IsSymm here
+      S = sym ? level_factorize<true>(A, m, N, opts, Crout_info, _precs,
+                                      row_sizes, col_sizes, _stats,
+                                      schur_threads)
+              : level_factorize<false>(A, m, N, opts, Crout_info, _precs,
+                                       row_sizes, col_sizes, _stats,
+                                       schur_threads);
+    else
+      S = pivot_level_factorize(A, m, N, opts, Crout_info, _precs, row_sizes,
+                                col_sizes, _stats, schur_threads);
 
     // check last level
     if (!_precs.back().is_last_level())

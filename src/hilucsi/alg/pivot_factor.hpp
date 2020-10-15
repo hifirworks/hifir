@@ -485,14 +485,16 @@ inline CsType pivot_level_factorize(
   if (!post_flag && (double)m <= 0.25 * m0) {
     post_flag = 2;  // check after factorization
     m         = 0;
+    for (size_type i(0); i < sizeof(info_counter) / sizeof(index_type); ++i)
+      info_counter[i] = 0;
   } else if ((double)m <= 0.4 * m0)
     post_flag = -1;
 
   // collecting stats for deferrals
-  stats[0] += m0 - m;           // total deferals
-  stats[1] += step.defers();    // dynamic deferrals
-  stats[2] += info_counter[0];  // diagonal deferrals
-  stats[3] += info_counter[1];  // conditioning deferrals
+  stats[0] += m0 - m;                            // total deferals
+  stats[1] += m ? step.defers() : size_type(0);  // dynamic deferrals
+  stats[2] += info_counter[0];                   // diagonal deferrals
+  stats[3] += info_counter[1];                   // conditioning deferrals
 
   // collecting stats for dropping
   stats[4] += info_counter[5] + info_counter[6];  // total droppings
@@ -559,8 +561,10 @@ inline CsType pivot_level_factorize(
     hilucsi_info("time: %gs", timer.time());
   }
 
-  if (hilucsi_verbose(INFO, opts))
+  if (hilucsi_verbose(INFO, opts)) {
     hilucsi_info("computing Schur complement and assembling Prec...");
+    internal::print_post_flag(post_flag);
+  }
 
   timer.start();
 
