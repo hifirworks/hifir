@@ -105,6 +105,8 @@ const static char *help =
     "\ttreat as symmetric problems\n"
     " -\n"
     "\tindicator for reading Options from stdin\n"
+    " -1|--one\n"
+    "\tset rhs as A*1 to ensure the system is consistent\n"
     "\n"
     "examples:\n"
     "\n"
@@ -116,14 +118,15 @@ const static char *help =
     " solve with rtol=1e-12 and drop-tol=1e-4\n"
     "\n";
 
-static std::tuple<hilucsi::Options, int, double, bool, int, int> parse_args(
-    int argc, char *argv[]) {
+static std::tuple<hilucsi::Options, int, double, bool, int, int, bool>
+parse_args(int argc, char *argv[]) {
   hilucsi::Options opts    = hilucsi::get_default_options();
   int              restart = 30;
   double           tol     = 1e-6;
   bool             symm    = false;
   int              kernel  = hilucsi::ksp::TRADITION;
   int              ksp     = 0;
+  bool             rhs_a1  = false;
   opts.verbose             = hilucsi::VERBOSE_NONE;
   if (argc < 2) {
     std::cerr << "Missing input directory!\n" << help;
@@ -197,6 +200,8 @@ static std::tuple<hilucsi::Options, int, double, bool, int, int> parse_args(
       std::cin >> opts;
     } else if (arg == string("-s") || arg == string("--symm")) {
       symm = true;
+    } else if (arg == string("-1") || arg == string("--one")) {
+      rhs_a1 = true;
     } else if (arg == string("-P") || arg == string("--ksp")) {
       ++i;
       if (i >= argc) fatal_exit("missing KSP solver choice!");
@@ -224,5 +229,5 @@ static std::tuple<hilucsi::Options, int, double, bool, int, int> parse_args(
     }
     ++i;
   }
-  return std::make_tuple(opts, restart, tol, symm, kernel, ksp);
+  return std::make_tuple(opts, restart, tol, symm, kernel, ksp, rhs_a1);
 }
