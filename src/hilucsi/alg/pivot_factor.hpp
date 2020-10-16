@@ -146,24 +146,15 @@ inline CsType pivot_level_factorize(
 
   timer.finish();  // prefile pre-processing
 
-  int post_flag = 0;
   // if post flag is 0, means we do standard Schur treatment after ILU
-  // if post flag is 1, means we have too many static deferrals, thus we
-  //    set S=A
   // if post flag is 2, means we have too many static and dynamic deferrals,
   //    thus we set S=A
   // if post flag is -1, means we have moderate many deferrals, thus we
   //    directly factorize S with complete factorization.
-  if ((double)m <= 0.25 * m0) post_flag = 1;
+  int post_flag = 0;
 
   if (hilucsi_verbose(INFO, opts)) {
     hilucsi_info("preprocessing done with leading block size %zd...", m);
-    if (post_flag == 1) {
-      hilucsi_info(
-          "too many static deferrals, resort to complete factorization...");
-      // NOTE we set m to 0 to automatically resort to direct factorization
-      m = 0;
-    }
     hilucsi_info("time: %gs", timer.time());
   }
 
@@ -482,12 +473,13 @@ inline CsType pivot_level_factorize(
 
   timer.finish();  // profile Crout update
 
-  if (!post_flag && (double)m <= 0.25 * m0) {
+  // analyze reminder size
+  if (!post_flag && (double)m <= 0.25 * m2) {
     post_flag = 2;  // check after factorization
     m         = 0;
     for (size_type i(0); i < sizeof(info_counter) / sizeof(index_type); ++i)
       info_counter[i] = 0;
-  } else if ((double)m <= 0.4 * m0)
+  } else if ((double)m <= 0.4 * m2)
     post_flag = -1;
 
   // collecting stats for deferrals
@@ -556,8 +548,7 @@ inline CsType pivot_level_factorize(
                               })));
     if (post_flag == 2)
       hilucsi_info(
-          "too many static+dynamic deferrals, resort to complete "
-          "factorization");
+          "too many dynamic deferrals, resort to complete factorization");
     hilucsi_info("time: %gs", timer.time());
   }
 
