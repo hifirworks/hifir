@@ -540,14 +540,9 @@ class PivotCrout : public Crout {
       } else
         break;
     }
-    // if we failed to finish pivoting, then we need to refactorize l
-    if (pivot_step > max_steps) {
+    if (pivot_step > max_steps)
       Crout_info("  could not satisfy pivoting requirement in %d iterations",
                  max_steps);
-      l.restore_cur_state();
-      compute_l(s, A_ccs, t, p_inv, q[k], L, L_start, d, U, l);
-      d[k] = compute_dk(s, A_ccs, t, p_inv, q[k], L, L_start, d, U);
-    }
     return std::make_pair(col_pivots, row_pivots);
   }
 };
