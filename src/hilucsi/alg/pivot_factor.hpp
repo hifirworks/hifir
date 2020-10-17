@@ -272,8 +272,8 @@ inline CsType pivot_level_factorize(
     //----------------------
 
     const auto n_pivots = step.apply_thres_pivot(
-        s, t, A_ccs, A_crs, m2, 1.0, 4, Crout_info, L_start, U_start, p, P_inv,
-        q, Q_inv, L, d, U, l, ut);
+        s, t, A_ccs, A_crs, m2, opts.gamma, 4, Crout_info, L_start, U_start, p,
+        P_inv, q, Q_inv, L, d, U, l, ut);
     const bool do_pivot = n_pivots.first || n_pivots.second;
     info_counter[9] += do_pivot;
     Crout_info("  perform pivoting=%s", (do_pivot ? "yes" : "no"));
@@ -364,17 +364,14 @@ inline CsType pivot_level_factorize(
 
     Crout_info("  updating L_start/U_start and performing Crout update");
 
-    // compute ut and l if deferring occurs
-    if (do_defer2) {
-      // recompute l
-      l.restore_cur_state();
-      step.compute_l(s, A_ccs, t, P_inv, q[step.deferred_step()], L, L_start, d,
-                     U, l);
-      // recompute ut
-      ut.restore_cur_state();  // must restore to initial state as used in pvt
-      step.compute_ut(s, A_crs, t, p[step.deferred_step()], Q_inv, L, d, U,
-                      U_start, ut);
-    }
+    // recompute l
+    l.restore_cur_state();
+    step.compute_l(s, A_ccs, t, P_inv, q[step.deferred_step()], L, L_start, d,
+                   U, l);
+    // recompute ut
+    ut.restore_cur_state();  // must restore to initial state as used in pvt
+    step.compute_ut(s, A_crs, t, p[step.deferred_step()], Q_inv, L, d, U,
+                    U_start, ut);
 
     // compress diagonal
     step.compress_array(d);
