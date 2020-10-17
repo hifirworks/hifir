@@ -459,6 +459,39 @@ class PivotCrout : public Crout {
     std::swap(d[deferred_step()], a_k[pivot]);
   }
 
+  /// \brief Apply thresholded rook pivoting
+  /// \tparam ScaleArray Row/column scaling array, see \ref Array
+  /// \tparam PermType Permutation array type
+  /// \tparam PermType2 Inverse permutation array type
+  /// \tparam CcsType Ccs storage type, see \ref CCS
+  /// \tparam CrsType Crs storage type, see \ref CRS
+  /// \tparam CroutInfoStreamer Crout update information streamer
+  /// \tparam PosArray Integer array type for storing position information
+  /// \tparam AugCcsType Augmented ccs storage type, see \ref AugCCS
+  /// \tparam DiagType Diagonal array type, see \ref Array
+  /// \tparam AugCrsType Augmented crs storage type, see \ref AugCRS
+  /// \tparam SpVecType Sparse vector workspace, see \ref SparseVector
+  /// \param[in] s row scaling vector
+  /// \param[in] t column scaling vector
+  /// \param[in] A_ccs input coefficient matrix in CCS
+  /// \param[in] A_crs input coefficient matrix in CRS
+  /// \param[in] m leading dimension size
+  /// \param[in] gamma thresholding for rook pivoting
+  /// \param[in] max_steps maximum number of pivoting steps
+  /// \param[in] Crout_info information streamer (empty for non-verbose mode)
+  /// \param[in] L_start starting positions in columns for \a L
+  /// \param[in] U_start starting positions in rows for \a U
+  /// \param[in,out] p row permutation array, will be updated due to pivoting
+  /// \param[in,out] p_inv inverse of row permutation, will be updated
+  /// \param[in,out] q column permutation array, will be updated due to pivoting
+  /// \param[in,out] q_inv inverse of column permutation, will be updated
+  /// \param[in,out] L lower factor, will be permuted if necessary
+  /// \param[in,out] d diagonal factor (vector), will be updated for current
+  /// step \param[in,out] U upper factor, will be permuted if ncessary
+  /// \param[out] l sparse vector work space for computing \f$\mathbf{\ell}_k\f$
+  /// \param[out] ut sparse vector work space for computing \f$\mathbf{u}_k^T\f$
+  /// \return number of pivots in row and column swappings.
+  /// \sa interchange
   template <class ScaleArray, class PermType, class PermType2, class CcsType,
             class CrsType, class CroutInfoStreamer, class PosArray,
             class AugCcsType, class DiagType, class AugCrsType, class SpVecType>
