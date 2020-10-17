@@ -61,10 +61,10 @@ inline void fix_poor_scaling(const typename ScalingArray::size_type m0,
                              const typename ScalingArray::size_type level,
                              const PermType &p, const PermType &q,
                              ScalingArray &s, ScalingArray &t,
-                             const double beta = 100.0) {
+                             const double beta = 1e5) {
   using size_type = typename ScalingArray::size_type;
 
-  const double beta0 = beta < 0.0 ? 100.0 : beta;
+  const double beta0 = beta < 0.0 ? 1e5 : beta;
   // Fix poorly scaled row and column scaling due to MC64
   // We consider a combo of row (s_i) and column (t_i) scaling is bad if
   // beta*min(s_i,t_i)<max(s_i,t_i). We fix it by setting s_i=t_i=sqrt(s_i*t_i)
@@ -429,10 +429,10 @@ do_maching(const CcsType &A, const CrsType &A_crs,
 
   // then determine tiny diags
   // using the inverse mappings are buffers since we don't need them for now
-  const size_type m = !hdl_zero_diags
-                          ? m0
-                          : internal::defer_tiny_diags<false>(
-                                A, A_crs, m0, p, q, p.inv(), q.inv());
+  auto &          p_buf = p.inv(), &q_buf = q.inv();
+  const size_type m = !hdl_zero_diags ? m0
+                                      : internal::defer_tiny_diags<false>(
+                                            A, A_crs, m0, p, q, p_buf, q_buf);
   return_type BB;
   if (compute_perm && m) {
     p.build_inv();
