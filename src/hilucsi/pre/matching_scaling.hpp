@@ -61,10 +61,10 @@ inline void fix_poor_scaling(const typename ScalingArray::size_type m0,
                              const typename ScalingArray::size_type level,
                              const PermType &p, const PermType &q,
                              ScalingArray &s, ScalingArray &t,
-                             const double beta = 1e5) {
+                             const double beta = 1e3) {
   using size_type = typename ScalingArray::size_type;
 
-  const double beta0 = beta < 0.0 ? 1e5 : beta;
+  const double beta0 = beta < 0.0 ? 1e3 : beta;
   // Fix poorly scaled row and column scaling due to MC64
   // We consider a combo of row (s_i) and column (t_i) scaling is bad if
   // beta*min(s_i,t_i)<max(s_i,t_i). We fix it by setting s_i=t_i=sqrt(s_i*t_i)
