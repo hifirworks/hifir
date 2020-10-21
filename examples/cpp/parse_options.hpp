@@ -50,6 +50,8 @@ const static char *help =
     "\tdrop tolerance (1e-4)\n"
     " -k|--kappa kappa\n"
     "\tinverse norm threshold (3)\n"
+    " -d|--diag kappa\n"
+    "\tinverse norm threshold (3) for diagonal factors\n"
     " -a|--alpha alpha\n"
     "\tlocal space control parameter (10)\n"
     " -v|--verbose level\n"
@@ -65,14 +67,14 @@ const static char *help =
     "\t\t0: off (default)\n"
     "\t\t1: local extreme scale\n"
     "\t\t2: iterative scaling based on inf-norm (experimental)\n"
-    " -p|--pivoting\n"
+    " -p|--pivoting method\n"
     "\tpivoting strategy:\n"
     "\t\t0: off (default)\n"
     "\t\t1: on\n"
     "\t\t2: auto\n"
-    " -g|--gamma\n"
+    " -g|--gamma gamma\n"
     "\tpivoting threshold (1.0)\n"
-    " -P|--ksp\n"
+    " -P|--ksp method\n"
     "\tKSP methods:\n"
     "\t\t0: FGMRES (default)\n"
     "\t\t1: FQMRCGSTAB\n"
@@ -169,7 +171,12 @@ parse_args(int argc, char *argv[]) {
     } else if (arg == string("-k") || arg == string("--kappa")) {
       ++i;
       if (i >= argc) fatal_exit("missing inverse norm thres (kappa) value!");
-      opts.tau_d = opts.tau_kappa = std::atof(argv[i]);
+      opts.tau_kappa = std::atof(argv[i]);
+    } else if (arg == string("-d") || arg == string("--diag")) {
+      ++i;
+      if (i >= argc)
+        fatal_exit("missing diagonal inverse norm thres (kappa) value!");
+      opts.tau_d = std::atof(argv[i]);
     } else if (arg == string("-a") || arg == string("--alpha")) {
       ++i;
       if (i >= argc) fatal_exit("missing space control (alpha) value!");
