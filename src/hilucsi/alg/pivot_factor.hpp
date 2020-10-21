@@ -239,6 +239,9 @@ inline CsType pivot_level_factorize(
   double tau_d, tau_kappa, tau_L, tau_U, alpha_L, alpha_U;
   std::tie(tau_d, tau_kappa, tau_L, tau_U, alpha_L, alpha_U) =
       internal::determine_fac_pars(opts, cur_level);
+  // for pivoting, we double alpha's
+  alpha_L *= 4;
+  alpha_U *= 4;
 
   // Removing bounding the large diagonal values
   const auto is_bad_diag = [=](const value_type a) -> bool {
@@ -257,10 +260,25 @@ inline CsType pivot_level_factorize(
   auto &P_inv = p.inv(), &Q_inv = q.inv();
 
   // 0 for defer due to diagonal, 1 for defer due to bad inverse conditioning
-  index_type info_counter[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  index_type info_counter[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
   if (hilucsi_verbose(INFO, opts)) hilucsi_info("start Crout update...");
   PivotCrout step;
+  // define pivot unary predictors that ensure every pivot is within the leading
+  // block range, and their corresponding incremental inverse norm estimations
+  // for L and U are bounded bay tau_kappa.
+  auto pvt_l_op = [&](const index_type i) {
+    if (i >= m2) return false;  // pivots must be in the leading block
+    value_type kv;
+    step.update_kappa(L, kappa_l, i);
+    return std::abs(kappa_l[step]) <= tau_kappa;
+  };
+  auto pvt_u_op = [&](const index_type i) {
+    if (i >= m2) return false;  // pivots must be in the leading block
+    value_type kv;
+    step.update_kappa(U, kappa_ut, i);
+    return std::abs(kappa_ut[step]) <= tau_kappa;
+  };
   for (; step < m; ++step) {
     const size_type m_prev      = m;
     const size_type defers_prev = step.defers();
@@ -272,16 +290,16 @@ inline CsType pivot_level_factorize(
     //----------------------
 
     const auto n_pivots = step.apply_thres_pivot(
-        s, t, A_ccs, A_crs, m2, opts.gamma, 4, Crout_info, L_start, U_start, p,
-        P_inv, q, Q_inv, L, d, U, l, ut);
+        s, t, A_ccs, A_crs, m2, opts.gamma, 4, Crout_info, L_start, U_start,
+        pvt_l_op, pvt_u_op, p, P_inv, q, Q_inv, L, d, U, l, ut);
     const bool do_pivot = n_pivots.first || n_pivots.second;
     info_counter[9] += do_pivot;
-    Crout_info("  perform pivoting=%s", (do_pivot ? "yes" : "no"));
     info_counter[7] += n_pivots.first;   // # of L pivoting
     info_counter[8] += n_pivots.second;  // # of U pivoting
 
     // first check diagonal
     bool do_defer = is_bad_diag(d[step.deferred_step()]);
+    info_counter[10] += do_pivot && do_defer;
     info_counter[0] += do_defer;
 
     // compute kappa for u wrt deferred index
@@ -293,14 +311,15 @@ inline CsType pivot_level_factorize(
     if (!do_defer) {
       do_defer = std::abs(kappa_ut[step]) > tau_kappa ||
                  std::abs(kappa_l[step]) > tau_kappa;
+      if (do_defer) {
+        info_counter[11] += do_pivot && std::abs(kappa_l[step]) > tau_kappa;
+        info_counter[12] += do_pivot && std::abs(kappa_ut[step]) > tau_kappa;
+      }
       info_counter[1] += do_defer;
     }
 
-    // note if both pivoting and deferring occur
-    info_counter[10] += do_pivot && do_defer;
-
-    const bool do_defer2 = do_defer;
-    Crout_info("  perform deferring=%s", (do_defer2 ? "yes" : "no"));
+    Crout_info("  perform pivoting=%s, perform deferring=%s",
+               (do_pivot ? "yes" : "no"), (do_defer ? "yes" : "no"));
 
     // handle defer
     if (do_defer) {
@@ -506,7 +525,9 @@ inline CsType pivot_level_factorize(
         "\tpivoting in L=%zd\n"
         "\tpivoting in U=%zd\n"
         "\tsteps with pivoting=%zd\n"
-        "\tsteps with both pivoting & deferring=%zd\n"
+        "\tsteps with both pivoting & inv(D) deferring=%zd\n"
+        "\tsteps with both pivoting & inv(L) deferring=%zd\n"
+        "\tsteps with both pivoting & inv(U) deferring=%zd\n"
         "\tmin |kappa_u|=%g\n"
         "\tmax |kappa_u|=%g\n"
         "\tmin |kappa_l|=%g\n"
@@ -517,7 +538,8 @@ inline CsType pivot_level_factorize(
         (size_type)info_counter[3], (size_type)info_counter[6],
         (size_type)info_counter[4], (size_type)info_counter[7],
         (size_type)info_counter[8], (size_type)info_counter[9],
-        (size_type)info_counter[10],
+        (size_type)info_counter[10], (size_type)info_counter[11],
+        (size_type)info_counter[12],
         (double)std::abs(
             *std::min_element(kappa_ut.cbegin(), kappa_ut.cbegin() + m,
                               [](const value_type l, const value_type r) {
@@ -585,7 +607,7 @@ inline CsType pivot_level_factorize(
         timer2.start();
         const size_type nnz1 = L_E.nnz(), nnz2 = U_F2.nnz();
 #ifndef HILUCSI_NO_DROP_LE_UF
-        double a_L = opts.alpha_L, a_U = opts.alpha_U;
+        double a_L = 4 * opts.alpha_L, a_U = 4 * opts.alpha_U;
         if (cur_level == 1u && opts.fat_schur_1st) {
           a_L *= 2;
           a_U *= 2;

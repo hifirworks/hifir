@@ -388,7 +388,8 @@ class PivotCrout : public Crout {
   /// \param[in] T Augmented compressed storage input
   /// \param[in,out] kappa history of inverse norms
   template <class AugCsType, class KappaArray>
-  inline bool update_kappa(const AugCsType &T, KappaArray &kappa) {
+  inline bool update_kappa(const AugCsType &T, KappaArray &kappa,
+                           const size_type entry = 0u) {
     using value_type          = typename AugCsType::value_type;
     using index_type          = typename AugCsType::index_type;
     using size_type           = typename AugCsType::size_type;
@@ -403,7 +404,7 @@ class PivotCrout : public Crout {
     value_type sum(0);
 
     // start augmented ID
-    index_type aug_id = T.start_aug_id(deferred_step());
+    index_type aug_id = T.start_aug_id(entry ? entry : deferred_step());
     while (!T.is_nil(aug_id)) {
       const index_type primary_idx = T.primary_idx(aug_id);
       hilucsi_assert((size_type)primary_idx < kappa.size(),
@@ -467,6 +468,8 @@ class PivotCrout : public Crout {
   /// \tparam CrsType Crs storage type, see \ref CRS
   /// \tparam CroutInfoStreamer Crout update information streamer
   /// \tparam PosArray Integer array type for storing position information
+  /// \tparam PivotUnaryOpL Unary predictor for finding pivot in L
+  /// \tparam PivotUnaryOpU Unary predictor for finding pivot in U
   /// \tparam AugCcsType Augmented ccs storage type, see \ref AugCCS
   /// \tparam DiagType Diagonal array type, see \ref Array
   /// \tparam AugCrsType Augmented crs storage type, see \ref AugCRS
@@ -481,6 +484,8 @@ class PivotCrout : public Crout {
   /// \param[in] Crout_info information streamer (empty for non-verbose mode)
   /// \param[in] L_start starting positions in columns for \a L
   /// \param[in] U_start starting positions in rows for \a U
+  /// \param[in] op_l unary operator for finding a pivot in L
+  /// \param[in] op_u unary operator for finding a pivot in U
   /// \param[in,out] p row permutation array, will be updated due to pivoting
   /// \param[in,out] p_inv inverse of row permutation, will be updated
   /// \param[in,out] q column permutation array, will be updated due to pivoting
@@ -492,18 +497,24 @@ class PivotCrout : public Crout {
   /// \param[out] ut sparse vector work space for computing \f$\mathbf{u}_k^T\f$
   /// \return number of pivots in row and column swappings.
   /// \sa interchange
+  ///
+  /// Regarding \a op_l and \a op_u, we find a pivot in L if and only if it
+  /// satisfies op_l condition, i.e., op_l(pivot_l)==true.
   template <class ScaleArray, class PermType, class PermType2, class CcsType,
             class CrsType, class CroutInfoStreamer, class PosArray,
-            class AugCcsType, class DiagType, class AugCrsType, class SpVecType>
+            class PivotUnaryOpL, class PivotUnaryOpU, class AugCcsType,
+            class DiagType, class AugCrsType, class SpVecType>
   inline std::pair<int, int> apply_thres_pivot(
       const ScaleArray &s, const ScaleArray &t, const CcsType &A_ccs,
       const CrsType &A_crs, const size_type m, const double gamma,
       const int max_steps, const CroutInfoStreamer &Crout_info,
-      const PosArray &L_start, const PosArray &U_start, PermType &p,
+      const PosArray &L_start, const PosArray &U_start,
+      const PivotUnaryOpL &op_l, const PivotUnaryOpU &op_ut, PermType &p,
       PermType2 &p_inv, PermType &q, PermType2 &q_inv, AugCcsType &L,
       DiagType &d, AugCrsType &U, SpVecType &l, SpVecType &ut) const {
     static_assert(!CcsType::ROW_MAJOR, "must be CCS");
     static_assert(CrsType::ROW_MAJOR, "must be CRS");
+    using index_type = typename CcsType::index_type;
 
     int        pivot_step(0), col_pivots(0), row_pivots(0);
     const auto k = deferred_step();  // current step (with gap considerred)
@@ -518,8 +529,12 @@ class PivotCrout : public Crout {
       // important! we need to reset dense flags in l
       if (pivot_step) l.restore_cur_state();
       compute_l(s, A_ccs, t, p_inv, q[k], L, L_start, d, U, l);
+      // sort indices based on magnitude
+      l.sort_indices([&](const index_type a, const index_type b) {
+        return std::abs(l[a]) > std::abs(l[b]);
+      });
       // find pivot
-      const auto pivot_col = l.imax_mag(m);
+      const auto pivot_col = l.find_if(op_l);
       // compute diagonal
       d[k] = compute_dk(s, A_ccs, t, p_inv, q[k], L, L_start, d, U);
       if (pivot_col != std::numeric_limits<size_type>::max()) {
@@ -549,8 +564,12 @@ class PivotCrout : public Crout {
       // important! we need to reset dense flags in ut
       if (pivot_step) ut.restore_cur_state();
       compute_ut(s, A_crs, t, p[k], q_inv, L, d, U, U_start, ut);
+      // sort indices based on magnitude
+      ut.sort_indices([&](const index_type a, const index_type b) {
+        return std::abs(ut[a]) > std::abs(ut[b]);
+      });
       // find pivot
-      const auto pivot_row = ut.imax_mag(m);
+      const auto pivot_row = ut.find_if(op_ut);
       // compute diagonal if necessary
       if (l_pivot)
         d[k] = compute_dk(s, A_ccs, t, p_inv, q[k], L, L_start, d, U);
@@ -574,8 +593,11 @@ class PivotCrout : public Crout {
         break;
     }
     if (pivot_step > max_steps)
-      Crout_info("  could not satisfy pivoting requirement in %d iterations",
-                 max_steps);
+      hilucsi_warning(
+          "  could not satisfy pivoting requirement in %d iterations",
+          max_steps);
+    // Crout_info("  could not satisfy pivoting requirement in %d iterations",
+    //            max_steps);
     return std::make_pair(col_pivots, row_pivots);
   }
 };
