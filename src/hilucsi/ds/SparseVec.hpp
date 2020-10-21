@@ -108,6 +108,13 @@ class IndexValueArray {
     std::sort(_inds.begin(), _inds.begin() + _counts);
   }
 
+  /// \brief sort the indices given a unary operator
+  /// \tparam UnaryOp unary operator type
+  template <class UnaryOp>
+  inline void sort_indices(const UnaryOp &op) {
+    std::sort(_inds.begin(), _inds.begin() + _counts, op);
+  }
+
   /// \brief push back an index
   /// \param[in] i index
   inline void push_back(const size_type i) {
@@ -163,38 +170,39 @@ class IndexValueArray {
   }
 
   /// \brief get the index corresponding maximum magnitude with index bound
-  inline size_type imax_mag(const index_type imax) const {
+  template <class UnaryOp>
+  inline size_type imax_mag(const UnaryOp &op) const {
     // if empty, return max value of size_t
     if (!_counts) return std::numeric_limits<size_type>::max();
     // find a starting position, where it is within the bound, i.e., typically
     // the size of leading block
-    auto pos = std::find_if(_inds.cbegin(), _inds.cbegin() + _counts,
-                            [=](const index_type i) { return i < imax; });
+    auto pos = std::find_if(_inds.cbegin(), _inds.cbegin() + _counts, op);
     // if all tail region, return max value of size_t
     if (pos == _inds.cbegin() + _counts)
       return std::numeric_limits<size_type>::max();
     size_type j(*pos);
-    for (size_type i(1); i < _counts; ++i) {
-      if (_inds[i] >= imax) continue;
+    for (size_type i(0); i < _counts; ++i) {
+      if (!op(_inds[i])) continue;
       if (std::abs(_vals[j]) < std::abs(_vals[_inds[i]])) j = _inds[i];
     }
     return j;
+  }
+
+  /// \brief find the first entry given a unary operator
+  template <class UnaryOp>
+  inline size_type find_if(const UnaryOp &op) const {
+    if (!_counts) return std::numeric_limits<size_type>::max();
+    auto pos = std::find_if(_inds.cbegin(), _inds.cbegin() + _counts, op);
+    // if all tail region, return max value of size_t
+    if (pos == _inds.cbegin() + _counts)
+      return std::numeric_limits<size_type>::max();
+    return *pos;
   }
 
   /// \brief inplace scaling
   /// \param[in] alpha scaling factor, i.e., v=alpha*v
   inline void scale(const value_type alpha) {
     for (size_type i(0); i < _counts; ++i) _vals[_inds[i]] *= alpha;
-  }
-
-  /// \brief get the index corresponding minimum magnitude with index bound
-  inline size_type imin_mag(const index_type imax) const {
-    if (!_counts) return 0;
-    return *std::min_element(_inds.cbegin(), _inds.cbegin() + _counts,
-                             [&, imax](const index_type i, const index_type j) {
-                               return std::abs(_vals[i]) < std::abs(_vals[j]) &&
-                                      i < imax;
-                             });
   }
 
   /// \brief operator access
