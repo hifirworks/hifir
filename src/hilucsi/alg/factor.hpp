@@ -86,12 +86,12 @@ namespace internal {
 /// \return refined parameters
 inline std::tuple<double, double, double, double, double, double>
 determine_fac_pars(const Options &opts, const int lvl) {
-  double tau_d, tau_kappa, tau_U, tau_L, alpha_L, alpha_U;
+  double kappa_d, kappa, tau_U, tau_L, alpha_L, alpha_U;
   if (opts.rf_par) {
     const int    fac  = std::min(lvl, 2);
     const double fac2 = 1. / std::min(10.0, std::pow(10.0, lvl - 1));
-    tau_d             = std::max(2.0, std::pow(opts.tau_d, 1. / fac));
-    tau_kappa         = std::max(2.0, std::pow(opts.tau_kappa, 1. / fac));
+    kappa_d           = std::max(2.0, std::pow(opts.kappa_d, 1. / fac));
+    kappa             = std::max(2.0, std::pow(opts.kappa, 1. / fac));
     tau_U             = opts.tau_U * fac2;
     tau_L             = opts.tau_L * fac2;
     if (lvl > 2) {
@@ -102,14 +102,14 @@ determine_fac_pars(const Options &opts, const int lvl) {
       alpha_U = opts.alpha_U * fac;
     }
   } else {
-    tau_d     = opts.tau_d;
-    tau_kappa = opts.tau_kappa;
-    tau_U     = opts.tau_U;
-    tau_L     = opts.tau_L;
-    alpha_L   = opts.alpha_L;
-    alpha_U   = opts.alpha_U;
+    kappa_d = opts.kappa_d;
+    kappa   = opts.kappa;
+    tau_U   = opts.tau_U;
+    tau_L   = opts.tau_L;
+    alpha_L = opts.alpha_L;
+    alpha_U = opts.alpha_U;
   }
-  return std::make_tuple(tau_d, tau_kappa, tau_U, tau_L, alpha_L, alpha_U);
+  return std::make_tuple(kappa_d, kappa, tau_U, tau_L, alpha_L, alpha_U);
 }
 
 /// \brief extract permutated diagonal
@@ -723,13 +723,13 @@ inline CsType level_factorize(const CsType &                   A,
   L.begin_assemble_cols();
 
   // localize parameters
-  double tau_d, tau_kappa, tau_L, tau_U, alpha_L, alpha_U;
-  std::tie(tau_d, tau_kappa, tau_L, tau_U, alpha_L, alpha_U) =
+  double kappa_d, kappa, tau_L, tau_U, alpha_L, alpha_U;
+  std::tie(kappa_d, kappa, tau_L, tau_U, alpha_L, alpha_U) =
       internal::determine_fac_pars(opts, cur_level);
 
   // Removing bounding the large diagonal values
   const auto is_bad_diag = [=](const value_type a) -> bool {
-    return std::abs(1. / a) > tau_d;  // || std::abs(a) > tau_d;
+    return std::abs(1. / a) > kappa_d;  // || std::abs(a) > tau_d;
   };
 
   const size_type m2(m), n(A.nrows());
@@ -767,8 +767,7 @@ inline CsType level_factorize(const CsType &                   A,
 
     // check condition number if diagonal doesn't satisfy
     if (!pvt) {
-      pvt = std::abs(kappa_ut[step]) > tau_kappa ||
-            std::abs(kappa_l[step]) > tau_kappa;
+      pvt = std::abs(kappa_ut[step]) > kappa || std::abs(kappa_l[step]) > kappa;
       info_counter[1] += pvt;
     }
 
@@ -807,8 +806,8 @@ inline CsType level_factorize(const CsType &                   A,
           step.update_kappa(L, L_list, L_start, kappa_l);
         else
           kappa_l[step] = kappa_ut[step];
-        pvt = std::abs(kappa_ut[step]) > tau_kappa ||
-              std::abs(kappa_l[step]) > tau_kappa;
+        pvt =
+            std::abs(kappa_ut[step]) > kappa || std::abs(kappa_l[step]) > kappa;
         if (pvt) {
           ++info_counter[1];
           continue;
@@ -825,7 +824,7 @@ inline CsType level_factorize(const CsType &                   A,
     const auto k_ut = kappa_ut[step], k_l = kappa_l[step];
 
     // check pivoting
-    hilucsi_assert(!(std::abs(k_ut) > tau_kappa || std::abs(k_l) > tau_kappa),
+    hilucsi_assert(!(std::abs(k_ut) > kappa || std::abs(k_l) > kappa),
                    "should not happen!");
 
     Crout_info("  kappa_ut=%g, kappa_l=%g", (double)std::abs(k_ut),
@@ -885,7 +884,7 @@ inline CsType level_factorize(const CsType &                   A,
     const size_type ori_ut_size = ut.size(), ori_l_size = l.size();
 
     // apply drop for U
-    apply_num_dropping(tau_U, std::abs(k_ut) * tau_d, ut);
+    apply_num_dropping(tau_U, std::abs(k_ut) * kappa_d, ut);
 #ifndef HILUCSI_DISABLE_SPACE_DROP
     const size_type n_ut = ut.size();
     apply_space_dropping(row_sizes[p[step]], alpha_U, ut);
@@ -902,7 +901,7 @@ inline CsType level_factorize(const CsType &                   A,
                ori_ut_size, ut.size(), ori_ut_size - ut.size());
 
     // apply numerical dropping on L
-    apply_num_dropping(tau_L, std::abs(k_l) * tau_d, l);
+    apply_num_dropping(tau_L, std::abs(k_l) * kappa_d, l);
 
     if (IsSymm) {
 #ifndef HILUCSI_DISABLE_SPACE_DROP
@@ -1221,15 +1220,15 @@ inline CsType level_factorize(const CsType &                   A,
       if (prec_type::USE_TQRCP) {
         // for user-specified threshold, we format and log it
         char value_buf[20];
-        if (opts.qrcp_cond > 0.0) std::sprintf(value_buf, "%g", opts.qrcp_cond);
-        hilucsi_info("factorizing dense level by TQRCP with cond-thres %s...",
-                     (opts.qrcp_cond <= 0.0 ? "(default)" : value_buf));
+        if (opts.rrqr_cond > 0.0) std::sprintf(value_buf, "%g", opts.rrqr_cond);
+        hilucsi_info("factorizing dense level by RRQR with cond-thres %s...",
+                     (opts.rrqr_cond <= 0.0 ? "(default)" : value_buf));
       } else
         hilucsi_info("factorizing dense level by LU...");
     }
     auto &last_level = precs.back().dense_solver;
     last_level.set_matrix(std::move(S_D));
-    last_level.factorize(opts.qrcp_cond);
+    last_level.factorize(opts.rrqr_cond);
     if (hilucsi_verbose(INFO, opts))
       hilucsi_info("successfully factorized the dense component...");
   }

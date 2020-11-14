@@ -485,7 +485,7 @@ class PivotCrout : public Crout {
   /// \param[in] L_start starting positions in columns for \a L
   /// \param[in] U_start starting positions in rows for \a U
   /// \param[in] op_l unary operator for finding a pivot in L
-  /// \param[in] op_u unary operator for finding a pivot in U
+  /// \param[in] op_ut unary operator for finding a pivot in U
   /// \param[in,out] p row permutation array, will be updated due to pivoting
   /// \param[in,out] p_inv inverse of row permutation, will be updated
   /// \param[in,out] q column permutation array, will be updated due to pivoting

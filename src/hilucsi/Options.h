@@ -79,10 +79,10 @@ enum {
  * \note Values in parentheses are default settings
  */
 struct hilucsi_Options {
-  double tau_L;     /*!< inverse-based threshold for L (0.001) */
-  double tau_U;     /*!< inverse-based threshold for U (0.001) */
-  double tau_d;     /*!< threshold for inverse-diagonal (3.) */
-  double tau_kappa; /*!< inverse-norm threshold (3.) */
+  double tau_L;     /*!< inverse-based droptol for L (0.001) */
+  double tau_U;     /*!< inverse-based droptol for U (0.001) */
+  double kappa_d;   /*!< threshold for inverse-diagonal (3.) */
+  double kappa;     /*!< inverse-norm threshold (3.) */
   double alpha_L;   /*!< growth factor of nnz per col (10) */
   double alpha_U;   /*!< growth factor of nnz per row (10) */
   double rho;       /*!< density threshold for dense LU (0.5) */
@@ -100,9 +100,10 @@ struct hilucsi_Options {
   int    threads;       /*!< user specified threads (default 0) */
   int    mumps_blr;     /*!< MUMPS BLR options (default 2) */
   int    fat_schur_1st; /*!< double alpha for dropping L_E and U_F on 1st lvl */
-  double qrcp_cond;     /*!< condition number threshold for TQRCP (default 0) */
+  double rrqr_cond;     /*!< condition number threshold for RRQR (default 0) */
   int    pivot;         /*!< pivoting flag (default is OFF (0)) */
   double gamma;         /*!< threshold for thresholded pivoting (1.0) */
+  double beta;          /*!< safeguard factor for equlibrition scaling (1e3) */
 };
 
 /*!
@@ -118,8 +119,8 @@ typedef struct hilucsi_Options hilucsi_Options;
 static hilucsi_Options hilucsi_get_default_options(void) {
   return (hilucsi_Options){.tau_L         = 0.0001,
                            .tau_U         = 0.0001,
-                           .tau_d         = 3.0,
-                           .tau_kappa     = 3.0,
+                           .kappa_d       = 3.0,
+                           .kappa         = 3.0,
                            .alpha_L       = 10.0,
                            .alpha_U       = 10.0,
                            .rho           = 0.5,
@@ -136,9 +137,10 @@ static hilucsi_Options hilucsi_get_default_options(void) {
                            .threads       = 0,
                            .mumps_blr     = 1,
                            .fat_schur_1st = 0,
-                           .qrcp_cond     = 0.0,
+                           .rrqr_cond     = 0.0,
                            .pivot         = HILUCSI_PIVOTING_OFF,
-                           .gamma         = 1.0};
+                           .gamma         = 1.0,
+                           .beta          = 1e3};
 }
 
 /*!
@@ -289,8 +291,7 @@ inline std::string opt_repr(const Options &opt) {
     return cat + string(leading_size - cat.size(), ' ') + dec(opt) + "\n";
   };
   return pack_double("tau_L", opt.tau_L) + pack_double("tau_U", opt.tau_U) +
-         pack_double("tau_d", opt.tau_d) +
-         pack_double("tau_kappa", opt.tau_kappa) +
+         pack_double("kappa_d", opt.kappa_d) + pack_double("kappa", opt.kappa) +
          pack_double("alpha_L", opt.alpha_L) +
          pack_double("alpha_U", opt.alpha_U) + pack_double("rho", opt.rho) +
          pack_double("c_d", opt.c_d) + pack_double("c_h", opt.c_h) +
@@ -306,19 +307,19 @@ inline std::string opt_repr(const Options &opt) {
          pack_int("threads", opt.threads) +
          pack_int("mumps_blr", opt.mumps_blr) +
          pack_int("fat_schur_1st", opt.fat_schur_1st) +
-         pack_double("qrcp_cond", opt.qrcp_cond) +
+         pack_double("rrqr_cond", opt.rrqr_cond) +
          pack_name("pivot",
                    [](const Options &opt_) {
                      return opt_.pivot == PIVOTING_OFF
                                 ? "off"
                                 : (opt_.pivot == PIVOTING_ON ? "on" : "auto");
                    }) +
-         pack_double("gamma", opt.gamma);
+         pack_double("gamma", opt.gamma) + pack_double("beta", opt.beta);
 }
 
 #  ifndef DOXYGEN_SHOULD_SKIP_THIS
 namespace internal {
-#    define _HILUCSI_TOTAL_OPTIONS 23
+#    define _HILUCSI_TOTAL_OPTIONS 24
 /*
  * build a byte map, i.e. the value is the leading byte position of the attrs
  * in Options
@@ -346,20 +347,21 @@ const static std::size_t option_attr_pos[_HILUCSI_TOTAL_OPTIONS] = {
     option_attr_pos[18] + sizeof(int),
     option_attr_pos[19] + sizeof(double),
     option_attr_pos[20] + sizeof(int),
-    option_attr_pos[21] + sizeof(double)};
+    option_attr_pos[21] + sizeof(double),
+    option_attr_pos[22] + sizeof(double)};
 
 /* data type tags, true for double, false for int */
 const static bool option_dtypes[_HILUCSI_TOTAL_OPTIONS] = {
     true,  true,  true,  true,  true,  true,  true,  true,
     true,  false, false, false, false, false, false, false,
-    false, false, false, false, true,  false, true};
+    false, false, false, false, true,  false, true,  true};
 
 /* using unordered map to store the string to index map */
 const static std::unordered_map<std::string, int> option_tag2pos = {
     {"tau_L", 0},
     {"tau_U", 1},
-    {"tau_d", 2},
-    {"tau_kappa", 3},
+    {"kappa_d", 2},
+    {"kappa", 3},
     {"alpha_L", 4},
     {"alpha_U", 5},
     {"rho", 6},
@@ -376,9 +378,10 @@ const static std::unordered_map<std::string, int> option_tag2pos = {
     {"threads", 17},
     {"mumps_blr", 18},
     {"fat_schur_1st", 19},
-    {"qrcp_cond", 20},
+    {"rrqr_cond", 20},
     {"pivot", 21},
-    {"gamma", 22}};
+    {"gamma", 22},
+    {"beta", 23}};
 
 } /* namespace internal */
 #  endif /* DOXYGEN_SHOULD_SKIP_THIS */
@@ -428,11 +431,11 @@ inline bool set_option_attr(const std::string &attr, const T v, Options &opt) {
  */
 template <class InStream>
 inline InStream &operator>>(InStream &in_str, hilucsi::Options &opt) {
-  in_str >> opt.tau_L >> opt.tau_U >> opt.tau_d >> opt.tau_kappa >>
-      opt.alpha_L >> opt.alpha_U >> opt.rho >> opt.c_d >> opt.c_h >> opt.N >>
-      opt.verbose >> opt.rf_par >> opt.reorder >> opt.saddle >> opt.check >>
-      opt.pre_scale >> opt.symm_pre_lvls >> opt.threads >> opt.mumps_blr >>
-      opt.fat_schur_1st >> opt.qrcp_cond;
+  in_str >> opt.tau_L >> opt.tau_U >> opt.kappa_d >> opt.kappa >> opt.alpha_L >>
+      opt.alpha_U >> opt.rho >> opt.c_d >> opt.c_h >> opt.N >> opt.verbose >>
+      opt.rf_par >> opt.reorder >> opt.saddle >> opt.check >> opt.pre_scale >>
+      opt.symm_pre_lvls >> opt.threads >> opt.mumps_blr >> opt.fat_schur_1st >>
+      opt.rrqr_cond >> opt.gamma >> opt.beta;
   return in_str;
 }
 
