@@ -134,14 +134,12 @@ inline CsType pivot_level_factorize(
     if (hilucsi_verbose(INFO, opts))
       hilucsi_info(
           "performing asymm preprocessing with leading block size %zd...", m0);
-    m = do_preprocessing<false>(A_ccs, A_crs, m0, opts, cur_level, s, t, p, q,
-                                opts.saddle);
+    m = do_preprocessing<false>(A_ccs, A_crs, m0, cur_level, opts, s, t, p, q);
   } else {
     if (hilucsi_verbose(INFO, opts))
       hilucsi_info(
           "performing symm preprocessing with leading block size %zd...", m0);
-    m = do_preprocessing<true>(A_ccs, A_crs, m0, opts, cur_level, s, t, p, q,
-                               opts.saddle);
+    m = do_preprocessing<true>(A_ccs, A_crs, m0, cur_level, opts, s, t, p, q);
   }
 
   timer.finish();  // prefile pre-processing
@@ -738,19 +736,9 @@ inline CsType pivot_level_factorize(
 
   // if dense is not empty, then push it back
   if (!S_D.empty()) {
-    if (hilucsi_verbose(INFO, opts)) {
-      if (prec_type::USE_TQRCP) {
-        // for user-specified threshold, we format and log it
-        char value_buf[20];
-        if (opts.rrqr_cond > 0.0) std::sprintf(value_buf, "%g", opts.rrqr_cond);
-        hilucsi_info("factorizing dense level by RRQR with cond-thres %s...",
-                     (opts.rrqr_cond <= 0.0 ? "(default)" : value_buf));
-      } else
-        hilucsi_info("factorizing dense level by LU...");
-    }
     auto &last_level = precs.back().dense_solver;
     last_level.set_matrix(std::move(S_D));
-    last_level.factorize(opts.rrqr_cond);
+    last_level.factorize(opts);
     if (hilucsi_verbose(INFO, opts))
       hilucsi_info("successfully factorized the dense component...");
   }

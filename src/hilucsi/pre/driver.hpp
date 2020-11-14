@@ -49,15 +49,14 @@ namespace hilucsi {
 /// \tparam ScalingArray array type for scaling vectors, see \ref Array
 /// \tparam PermType permutation type, see \ref BiPermMatrix
 /// \param[in] A input matrix
-/// \param[in] A_crs \ref CRS format of input \a A
+/// \param[in] A_crs CRS format of input \a A
 /// \param[in] m0 leading block size
-/// \param[in] opt control parameters
 /// \param[in] level current factorization level
+/// \param[in] opt control parameters
 /// \param[out] s row scaling vector
 /// \param[out] t column scaling vector
 /// \param[out] p row permutation
 /// \param[out] q column permutation
-/// \param[in] hdl_zero_diag if \a false (default), assume not saddle point
 /// \return The actual leading block size, no larger than \a m0
 /// \ingroup pre
 ///
@@ -68,9 +67,9 @@ template <bool IsSymm, class CcsType, class CrsType, class ScalingArray,
           class PermType>
 inline typename CcsType::size_type do_preprocessing(
     const CcsType &A, const CrsType &A_crs,
-    const typename CcsType::size_type m0, const Options &opt,
-    const typename CcsType::size_type level, ScalingArray &s, ScalingArray &t,
-    PermType &p, PermType &q, const bool hdl_zero_diag = false) {
+    const typename CcsType::size_type m0,
+    const typename CcsType::size_type level, const Options &opt,
+    ScalingArray &s, ScalingArray &t, PermType &p, PermType &q) {
   static_assert(!CcsType::ROW_MAJOR, "must be CCS");
   using index_type = typename CcsType::index_type;
   using size_type  = typename CcsType::size_type;
@@ -84,8 +83,7 @@ inline typename CcsType::size_type do_preprocessing(
 
   timer.start();
 
-  auto match_res = do_maching<IsSymm>(A, A_crs, m0, opt.verbose, s, t, p, q,
-                                      opt, level, hdl_zero_diag);
+  auto match_res = do_maching<IsSymm>(A, A_crs, m0, level, opt, s, t, p, q);
 
   timer.finish();
   if (hilucsi_verbose(PRE_TIME, opt))
