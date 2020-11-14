@@ -134,6 +134,7 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
   /// \brief solve system
   /// \param[in,out] x input rhs, output solution
   /// \param[in] rank (optional) rank for back solve, default is \a _rank
+  /// \param[in] tran (optional) transpose flag, default is false
   ///
   /// First, QRCP returns \f$\mathbf{AP}=\mathbf{QR}\f$, thus when we
   /// have \f$\mathbf{Ax}=\mathbf{b}\f$, the derivation is:

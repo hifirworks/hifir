@@ -164,7 +164,7 @@ class PivotCrout : public Crout {
   /// \param[in] U upper part
   /// \param[in] U_start leading row positions of current \ref _step
   /// \param[in,out] ut upon input, it contains preloaded row in A via
-  ///                   \ref load_arow; upon output, it contains the factor of
+  ///                   load_arow; upon output, it contains the factor of
   ///                   \f$\mathbf{u}_k^T\f$.
   /// \sa compute_l
   ///
@@ -266,7 +266,7 @@ class PivotCrout : public Crout {
   /// \param[in] d diagonal entries
   /// \param[in] U augmented U matrix
   /// \param[in,out] l upon input, it contains preloaded column in A via
-  ///                  \ref load_acol; upon output, it contains the factor of
+  ///                  load_acol; upon output, it contains the factor of
   ///                  \f$\mathbf{\ell}_k\f$.
   /// \sa compute_ut
   ///
@@ -387,6 +387,9 @@ class PivotCrout : public Crout {
   /// \tparam KappaArray Inverse norm array type, see \ref Array
   /// \param[in] T Augmented compressed storage input
   /// \param[in,out] kappa history of inverse norms
+  /// \param[in] entry (optional) concatenate \a entry to T_{k-1} for computing
+  ///                  the absolute conditioning of leading block of T, default
+  ///                  value is k, i.e., \a _step
   template <class AugCsType, class KappaArray>
   inline bool update_kappa(const AugCsType &T, KappaArray &kappa,
                            const size_type entry = 0u) {
@@ -444,6 +447,7 @@ class PivotCrout : public Crout {
   /// \param[in] pivot Pivoting position
   /// \param[in,out] T Either lower or upper factors from Crout LU and step k
   /// \param[in,out] p Permutation array
+  /// \param[in,out] p_inv Inverse permutation mapping of \a p
   /// \param[in,out] d diagonal array
   /// \param[in,out] a_k k-th row or column of A (scaled and permuted)
   template <class AugCsType, class PermType, class InvPermType,
