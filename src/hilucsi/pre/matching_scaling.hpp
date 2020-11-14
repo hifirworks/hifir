@@ -46,19 +46,44 @@ namespace internal {
  * @{
  */
 
+/// \brief fix poorly scaled row and column weights due to MC64
+/// \tparam PermType permutation matrix, see \ref BiPermMatrix
+/// \tparam ScalingArray scaling array type, see \ref Array
+/// \param[in] m0 leading block size
+/// \param[in] level current factorization level
+/// \param[in] p row permutation matrix
+/// \param[in] q column permutation matrix
+/// \param[in,out] s row scaling
+/// \param[in,out] t column scaling
+/// \param[in] beta (optional) threshold for determining bad scaling factors
+template <class PermType, class ScalingArray>
+inline void fix_poor_scaling(const typename ScalingArray::size_type m0,
+                             const typename ScalingArray::size_type level,
+                             const PermType &p, const PermType &q,
+                             ScalingArray &s, ScalingArray &t,
+                             const double beta = 1e3) {
+  using size_type = typename ScalingArray::size_type;
+
+  const double beta0 = beta < 0.0 ? 1e3 : beta;
+  // Fix poorly scaled row and column scaling due to MC64
+  // We consider a combo of row (s_i) and column (t_i) scaling is bad if
+  // beta*min(s_i,t_i)<max(s_i,t_i). We fix it by setting s_i=t_i=sqrt(s_i*t_i)
+  // TODO: we need to fine tune beta. 100 for now.
+  if (level > 1u && beta0 > 1.0)  // starting from 2nd level only
+    for (size_type i(0); i < m0; ++i)
+      if (std::min(s[p[i]], t[q[i]]) * beta0 < std::max(s[p[i]], t[q[i]]))
+        s[p[i]] = t[q[i]] = std::sqrt(s[p[i]] * t[q[i]]);
+}
+
 /// \brief defer any zero diags to the end
 /// \tparam IsSymm if \a true, then assume a symmetric leading block
 /// \tparam CcsType ccs storage for input matrix
 /// \tparam CrsType crs storage for the input matrix
-/// \tparam ScalingArray scaling array type, see \ref Array
 /// \tparam PermType permutation matrix, see \ref BiPermMatrix
 /// \tparam BufType buffer used to stored deferred entries
 /// \param[in] A input matrix
 /// \param[in] A_crs input matrix of CRS storage
 /// \param[in] m0 initial leading block size
-/// \param[in,out] s row scaling
-/// \param[in,out] t column scaling
-/// \param[in] level current factorization level
 /// \param[in,out] p row permutation matrix
 /// \param[in,out] q column permutation matrix
 /// \param[out] work_p workspace
@@ -69,17 +94,17 @@ namespace internal {
 /// search to locate the diagonal entries. For symmetric cases, on the other
 /// side, since only the \b lower part is stored, we just need to test the first
 /// entry of each column.
-template <bool IsSymm, class CcsType, class CrsType, class ScalingArray,
-          class PermType, class BufType>
-inline typename CcsType::size_type defer_zero_diags(
+template <bool IsSymm, class CcsType, class CrsType, class PermType,
+          class BufType>
+inline typename CcsType::size_type defer_tiny_diags(
     const CcsType &A, const CrsType &A_crs,
-    const typename CcsType::size_type m0, ScalingArray &s, ScalingArray &t,
-    const typename CcsType::size_type level, PermType &p, PermType &q,
+    const typename CcsType::size_type m0, PermType &p, PermType &q,
     BufType &work_p, BufType &work_q) {
   using value_type                = typename CcsType::value_type;
   using size_type                 = typename CcsType::size_type;
   constexpr static value_type EPS = Const<value_type>::EPS;
 
+  // lambda for computing local maximum magnitude for a given row *and* column
   const auto compute_max_mag = [&](const size_type i) -> value_type {
     value_type v(0);
     if (A_crs.nnz_in_primary(p[i]))
@@ -98,7 +123,7 @@ inline typename CcsType::size_type defer_zero_diags(
     return v;
   };
 
-  // kernel for determining small diagonals
+  // lambda for determining small diagonals and perform statical deferring
   const auto is_good_diag = [&](const size_type col) -> bool {
     const auto q_col = q[col];
     if (IsSymm) {
@@ -126,23 +151,11 @@ inline typename CcsType::size_type defer_zero_diags(
     return true;
   };
 
-  // kernel for determine row and column scaling quality
-  auto is_good_scaling = [&](const size_type i) -> bool {
-    if (level == 1u) return true;  // first level is from user input
-    if (std::min(s[p[i]], t[q[i]]) * 100.0 < std::max(s[p[i]], t[q[i]])) {
-      // TODO: This threshold of 100 needs to be fine tuned.
-      // bad scaling, fix it by setting it to be sqrt(s*t)
-      s[p[i]] = t[q[i]] = std::sqrt(s[p[i]] * t[q[i]]);
-      return false;
-    }
-    return true;
-  };
   size_type m = m0;
-
   size_type deferrals(0);
   for (size_type i(0); i < m; ++i) {
     // check deferring
-    while (!is_good_diag(i + deferrals) || !is_good_scaling(i + deferrals)) {
+    while (!is_good_diag(i + deferrals)) {
       --m;
       work_p[deferrals] = p[i + deferrals];
       work_q[deferrals] = q[i + deferrals];
@@ -182,11 +195,10 @@ inline typename CcsType::size_type defer_zero_diags(
 /// \note It's worth noting that \a p must be bi-directional mapping
 /// \note If \a apat is \a true, then \a q must be bi-directional mapping
 template <class CcsType, class CrsType, class PermType>
-inline CcsType compute_perm_leading_block(const CcsType &A,
-                                          const CrsType &A_crs,
-                                          const typename CcsType::size_type m,
-                                          const PermType &p, const PermType &q,
-                                          const bool apat = false) {
+inline CcsType compute_leading_block(const CcsType &A, const CrsType &A_crs,
+                                     const typename CcsType::size_type m,
+                                     const PermType &p, const PermType &q,
+                                     const bool apat = false) {
   using size_type  = typename CcsType::size_type;
   using index_type = typename CcsType::index_type;
 
@@ -412,19 +424,22 @@ do_maching(const CcsType &A, const CrsType &A_crs,
     for (auto &v : B.col_ind()) --v;
   }
 
-  // then determine zero diags
+  // fix potentially poorly scaled row and column weights
+  internal::fix_poor_scaling(m0, level, p, q, s, t);
+
+  // then determine tiny diags
   // using the inverse mappings are buffers since we don't need them for now
-  const size_type m =
-      !hdl_zero_diags ? m0
-                      : internal::defer_zero_diags<false>(
-                            A, A_crs, m0, s, t, level, p, q, p.inv(), q.inv());
+  auto &          p_buf = p.inv(), &q_buf = q.inv();
+  const size_type m = !hdl_zero_diags ? m0
+                                      : internal::defer_tiny_diags<false>(
+                                            A, A_crs, m0, p, q, p_buf, q_buf);
   return_type BB;
   if (compute_perm && m) {
     p.build_inv();
     // to see if we need to build A^T+A pattern
     const bool build_apat = !IsSymm && opts.reorder == REORDER_RCM;
     if (build_apat) q.build_inv();
-    BB = internal::compute_perm_leading_block(A, A_crs, m, p, q, build_apat);
+    BB = internal::compute_leading_block(A, A_crs, m, p, q, build_apat);
   }
   return std::make_pair(BB, m);
 }

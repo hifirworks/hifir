@@ -65,6 +65,15 @@ enum {
 };
 
 /*!
+ * \brief pivoting flag
+ */
+enum {
+  HILUCSI_PIVOTING_OFF  = 0, /*!< perform deferring-only factorization */
+  HILUCSI_PIVOTING_ON   = 1, /*!< perform deferred Crout factor with pivoting */
+  HILUCSI_PIVOTING_AUTO = 2, /*!< auto kernel (hybridizing between 0 and 1) */
+};
+
+/*!
  * \struct hilucsi_Options
  * \brief POD parameter controls
  * \note Values in parentheses are default settings
@@ -92,6 +101,8 @@ struct hilucsi_Options {
   int    mumps_blr;     /*!< MUMPS BLR options (default 2) */
   int    fat_schur_1st; /*!< double alpha for dropping L_E and U_F on 1st lvl */
   double qrcp_cond;     /*!< condition number threshold for TQRCP (default 0) */
+  int    pivot;         /*!< pivoting flag (default is OFF (0)) */
+  double gamma;         /*!< threshold for thresholded pivoting (1.0) */
 };
 
 /*!
@@ -125,7 +136,9 @@ static hilucsi_Options hilucsi_get_default_options(void) {
                            .threads       = 0,
                            .mumps_blr     = 1,
                            .fat_schur_1st = 0,
-                           .qrcp_cond     = 0.0};
+                           .qrcp_cond     = 0.0,
+                           .pivot         = HILUCSI_PIVOTING_OFF,
+                           .gamma         = 1.0};
 }
 
 /*!
@@ -189,7 +202,7 @@ namespace hilucsi {
 
 /*!
  * \brief enum wrapper
- * \note The prefix of \a HILUCSI will be dropped
+ * \note The prefix \a HILUCSI is dropped
  */
 enum : int {
   VERBOSE_NONE     = ::HILUCSI_VERBOSE_NONE,     /*!< mute */
@@ -202,7 +215,7 @@ enum : int {
 
 /*!
  * \brief enum wrapper for reordering methods
- * \note The prefix of \a HILUCSI will be dropped
+ * \note The prefix \a HILUCSI is dropped
  */
 enum : int {
   REORDER_OFF  = ::HILUCSI_REORDER_OFF, /*!< turn reordering off */
@@ -211,6 +224,16 @@ enum : int {
   REORDER_AMD  = ::HILUCSI_REORDER_AMD,  /*!< use AMD ordering */
   REORDER_RCM  = ::HILUCSI_REORDER_RCM,  /*!< use RCM ordering (require BGL) */
   REORDER_NULL = ::HILUCSI_REORDER_NULL, /*!< ordering Null flag */
+};
+
+/*!
+ * \brief enum wrapper for pivoting
+ * \note The prefix \a HILUCSI is dropped
+ */
+enum : int {
+  PIVOTING_OFF  = ::HILUCSI_PIVOTING_OFF,
+  PIVOTING_ON   = ::HILUCSI_PIVOTING_ON,
+  PIVOTING_AUTO = ::HILUCSI_PIVOTING_AUTO,
 };
 
 /*!
@@ -283,12 +306,19 @@ inline std::string opt_repr(const Options &opt) {
          pack_int("threads", opt.threads) +
          pack_int("mumps_blr", opt.mumps_blr) +
          pack_int("fat_schur_1st", opt.fat_schur_1st) +
-         pack_double("qrcp_cond", opt.qrcp_cond);
+         pack_double("qrcp_cond", opt.qrcp_cond) +
+         pack_name("pivot",
+                   [](const Options &opt_) {
+                     return opt_.pivot == PIVOTING_OFF
+                                ? "off"
+                                : (opt_.pivot == PIVOTING_ON ? "on" : "auto");
+                   }) +
+         pack_double("gamma", opt.gamma);
 }
 
 #  ifndef DOXYGEN_SHOULD_SKIP_THIS
 namespace internal {
-#    define _HILUCSI_TOTAL_OPTIONS 21
+#    define _HILUCSI_TOTAL_OPTIONS 23
 /*
  * build a byte map, i.e. the value is the leading byte position of the attrs
  * in Options
@@ -314,12 +344,15 @@ const static std::size_t option_attr_pos[_HILUCSI_TOTAL_OPTIONS] = {
     option_attr_pos[16] + sizeof(int),
     option_attr_pos[17] + sizeof(int),
     option_attr_pos[18] + sizeof(int),
-    option_attr_pos[19] + sizeof(double)};
+    option_attr_pos[19] + sizeof(double),
+    option_attr_pos[20] + sizeof(int),
+    option_attr_pos[21] + sizeof(double)};
 
 /* data type tags, true for double, false for int */
 const static bool option_dtypes[_HILUCSI_TOTAL_OPTIONS] = {
-    true,  true,  true,  true,  true,  true,  true,  true,  true,  false, false,
-    false, false, false, false, false, false, false, false, false, true};
+    true,  true,  true,  true,  true,  true,  true,  true,
+    true,  false, false, false, false, false, false, false,
+    false, false, false, false, true,  false, true};
 
 /* using unordered map to store the string to index map */
 const static std::unordered_map<std::string, int> option_tag2pos = {
@@ -343,7 +376,9 @@ const static std::unordered_map<std::string, int> option_tag2pos = {
     {"threads", 17},
     {"mumps_blr", 18},
     {"fat_schur_1st", 19},
-    {"qrcp_cond", 20}};
+    {"qrcp_cond", 20},
+    {"pivot", 21},
+    {"gamma", 22}};
 
 } /* namespace internal */
 #  endif /* DOXYGEN_SHOULD_SKIP_THIS */

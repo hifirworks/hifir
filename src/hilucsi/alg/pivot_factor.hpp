@@ -3,8 +3,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /*!
- * \file hilucsi/alg/factor.hpp
- * \brief Kernels for deferred factorization
+ * \file hilucsi/alg/pivot_factor.hpp
+ * \brief Kernels for deferred factorization with thresholding pivoting
  * \author Qiao Chen
 
 \verbatim
@@ -26,490 +26,22 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
  */
 
-#ifndef _HILUCSI_ALG_FACTOR_HPP
-#define _HILUCSI_ALG_FACTOR_HPP
+#ifndef _HILUCSI_ALG_PIVOTFACTOR_HPP
+#define _HILUCSI_ALG_PIVOTFACTOR_HPP
 
 #include <algorithm>
 #include <cmath>
 #include <type_traits>
 #include <utility>
 
-#ifdef HILUCSI_SAVE_FIRST_LEVEL_PERM_A
-#  include <ctime>
-#  include <random>
-#endif  // HILUCSI_SAVE_FIRST_LEVEL_PERM_A
+#include "hilucsi/ds/AugmentedStorage.hpp"
 
-#include "hilucsi/ds/Array.hpp"
-#include "hilucsi/ds/CompressedStorage.hpp"
-#include "hilucsi/ds/DenseMatrix.hpp"
-#include "hilucsi/ds/PermMatrix.hpp"
-#include "hilucsi/ds/SparseVec.hpp"
-#include "hilucsi/pre/driver.hpp"
-#include "hilucsi/utils/Timer.hpp"
-#include "hilucsi/utils/common.hpp"
-
-#include "hilucsi/alg/Crout.hpp"
-#include "hilucsi/alg/Schur.hpp"
-#include "hilucsi/alg/thresholds.hpp"
-
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-
-#  ifndef HILUCSI_RESERVE_FAC
-#    define HILUCSI_RESERVE_FAC 5
-#  endif  // HILUCSI_RESERVE_FAC
-
-#  ifndef HILUCSI_LASTLEVEL_DENSE_SIZE
-#    define HILUCSI_LASTLEVEL_DENSE_SIZE 1500
-#  endif  // HILUCSI_RESERVE_FAC
-
-#  ifndef HILUCSI_LASTLEVEL_SPARSE_SIZE
-#    define HILUCSI_LASTLEVEL_SPARSE_SIZE 15000
-#  endif  // HILUCSI_LASTLEVEL_SPARSE_SIZE
-
-#  ifndef HILUCSI_MIN_LOCAL_SIZE_PERCTG
-#    define HILUCSI_MIN_LOCAL_SIZE_PERCTG 85
-#  endif  // HILUCSI_RESERVE_FAC
-
-#endif  // DOXYGEN_SHOULD_SKIP_THIS
+#include "hilucsi/alg/PivotCrout.hpp"
+#include "hilucsi/alg/factor.hpp"
 
 namespace hilucsi {
-namespace internal {
 
-/*!
- * \addtogroup fac
- * @{
- */
-
-/// \brief adjust parameters based on levels
-/// \param[in] opts control parameters, i.e. Options
-/// \param[in] lvl levels
-/// \return refined parameters
-inline std::tuple<double, double, double, double, double, double>
-determine_fac_pars(const Options &opts, const int lvl) {
-  double tau_d, tau_kappa, tau_U, tau_L, alpha_L, alpha_U;
-  if (opts.rf_par) {
-    const int    fac  = std::min(lvl, 2);
-    const double fac2 = 1. / std::min(10.0, std::pow(10.0, lvl - 1));
-    tau_d             = std::max(2.0, std::pow(opts.tau_d, 1. / fac));
-    tau_kappa         = std::max(2.0, std::pow(opts.tau_kappa, 1. / fac));
-    tau_U             = opts.tau_U * fac2;
-    tau_L             = opts.tau_L * fac2;
-    if (lvl > 2) {
-      alpha_L = opts.alpha_L;
-      alpha_U = opts.alpha_U;
-    } else {
-      alpha_L = opts.alpha_L * fac;
-      alpha_U = opts.alpha_U * fac;
-    }
-  } else {
-    tau_d     = opts.tau_d;
-    tau_kappa = opts.tau_kappa;
-    tau_U     = opts.tau_U;
-    tau_L     = opts.tau_L;
-    alpha_L   = opts.alpha_L;
-    alpha_U   = opts.alpha_U;
-  }
-  return std::make_tuple(tau_d, tau_kappa, tau_U, tau_L, alpha_L, alpha_U);
-}
-
-/// \brief extract permutated diagonal
-/// \tparam CcsType input ccs matrix, see \ref CCS
-/// \tparam ScalingType scaling vector type, see \ref Array
-/// \tparam PermType permutation matrix type, see \ref BiPermMatrix
-/// \param[in] s row scaling vector
-/// \param[in] A input matrix in CCS format
-/// \param[in] t column scaling vector
-/// \param[in] m leading block size
-/// \param[in] p row permutation vector
-/// \param[in] q column permutation vector
-/// \param[in] m0 actual extrated size, default is \a m
-/// \return permutated diagonal of \a A
-///
-/// This routine, essentially, is to compute:
-///
-/// \f[
-///   \mathbf{D}=\left(\mathbf{SAT}\right)_{\mathbf{p}_{1:m},
-///     \mathbf{q}_{1:m}}
-/// \f]
-///
-/// This routine is used before \ref Crout update to extract the initial
-/// diagonal entries.
-template <class CcsType, class ScalingType, class PermType>
-inline Array<typename CcsType::value_type> extract_perm_diag(
-    const ScalingType &s, const CcsType A, const ScalingType &t,
-    const typename CcsType::size_type m, const PermType &p, const PermType &q,
-    const typename CcsType::size_type m0 = 0) {
-  using value_type = typename CcsType::value_type;
-  using size_type  = typename CcsType::size_type;
-  using array_type = Array<value_type>;
-
-  hilucsi_error_if(m > A.nrows() || m > A.ncols(),
-                   "invalid leading block size %zd", m);
-
-  array_type diag(m);
-  hilucsi_error_if(diag.status() == DATA_UNDEF, "memory allocation failed");
-
-  auto            v_begin = A.vals().cbegin();
-  auto            i_begin = A.row_ind().cbegin();
-  const size_type M       = m0 ? m0 : m;
-  for (size_type i = 0u; i < M; ++i) {
-    hilucsi_assert((size_type)q[i] < A.ncols(),
-                   "permutated index %zd exceeds the col bound",
-                   (size_type)q[i]);
-    hilucsi_assert((size_type)p[i] < A.nrows(),
-                   "permutated index %zd exceeds the row bound",
-                   (size_type)p[i]);
-    // using binary search
-    auto info = find_sorted(A.row_ind_cbegin(q[i]), A.row_ind_cend(q[i]), p[i]);
-    if (info.first)
-      diag[i] = s[p[i]] * *(v_begin + (info.second - i_begin)) * t[q[i]];
-    else {
-      // hilucsi_warning("zero diagonal entry %zd detected!", i);
-      diag[i] = 0;
-    }
-  }
-  return diag;
-}
-
-/// \brief extract the \a E part
-/// \tparam CrsType input crs matrix, see \ref CRS
-/// \tparam ScalingType scaling vector type, see \ref Array
-/// \tparam PermType permutation matrix type, see \ref BiPermMatrix
-/// \param[in] s row scaling vector
-/// \param[in] A input matrix in crs format
-/// \param[in] t column scaling vector
-/// \param[in] m leading block size (final)
-/// \param[in] p row permutation vector
-/// \param[in] q column permutation vector
-/// \return The \a E part in \ref CCS format
-/// \sa extract_F
-///
-/// This routine is to extract the \a E part \b after \ref Crout update.
-/// Essentially, this routine is to perform:
-///
-/// \f[
-///   \mathbf{E}=\left(\mathbf{SAT}\right)_{\mathbf{p}_{m+1:n},
-///     \mathbf{q}_{1:m}}
-/// \f]
-template <class CrsType, class ScalingType, class PermType>
-inline typename CrsType::other_type extract_E(
-    const ScalingType &s, const CrsType &A, const ScalingType &t,
-    const typename CrsType::size_type m, const PermType &p, const PermType &q) {
-  // it's efficient to extract E from CRS
-  static_assert(CrsType::ROW_MAJOR, "input A must be CRS!");
-  using ccs_type   = typename CrsType::other_type;
-  using size_type  = typename CrsType::size_type;
-  using index_type = typename CrsType::index_type;
-
-  const size_type n = A.nrows();
-
-  hilucsi_error_if(m > n || m > A.ncols(),
-                   "leading block size %zd should not exceed matrix size", m);
-  const size_type N = n - m;
-  ccs_type        E(N, m);
-  if (!N) {
-    // hilucsi_warning("empty E matrix detected!");
-    return E;
-  }
-
-  auto &col_start = E.col_start();
-  col_start.resize(m + 1);
-  hilucsi_error_if(col_start.status() == DATA_UNDEF,
-                   "memory allocation failed");
-  std::fill(col_start.begin(), col_start.end(), 0);
-
-  for (size_type i = m; i < n; ++i) {
-    for (auto itr = A.col_ind_cbegin(p[i]), last = A.col_ind_cend(p[i]);
-         itr != last; ++itr) {
-      const size_type qi = q.inv(*itr);
-      if (qi < m) ++col_start[qi + 1];
-    }
-  }
-
-  // accumulate for nnz
-  for (size_type i = 0u; i < m; ++i) col_start[i + 1] += col_start[i];
-
-  if (!col_start[m]) {
-    // hilucsi_warning(
-    //     "exactly zero E, this most likely is a bug! Continue anyway...");
-    return E;
-  }
-
-  E.reserve(col_start[m]);
-  auto &row_ind = E.row_ind();
-  auto &vals    = E.vals();
-
-  hilucsi_error_if(
-      row_ind.status() == DATA_UNDEF || vals.status() == DATA_UNDEF,
-      "memory allocation failed");
-
-  row_ind.resize(col_start[m]);
-  vals.resize(col_start[m]);
-
-  for (size_type i = m; i < n; ++i) {
-    const size_type pi  = p[i];
-    auto            itr = A.col_ind_cbegin(pi), last = A.col_ind_cend(pi);
-    auto            v_itr = A.val_cbegin(pi);
-    const auto      si    = s[pi];
-    for (; itr != last; ++itr, ++v_itr) {
-      const size_type j  = *itr;
-      const size_type qi = q.inv(j);
-      if (qi < m) {
-        row_ind[col_start[qi]] = i - m;
-        vals[col_start[qi]]    = si * *v_itr * t[j];
-        ++col_start[qi];
-      }
-    }
-  }
-
-  // revert
-  index_type tmp(0);
-  for (size_type i = 0u; i < m; ++i) std::swap(col_start[i], tmp);
-
-  return E;
-}
-
-/// \brief extract the \a F part
-/// \tparam CcsType input ccs matrix, see \ref CCS
-/// \tparam ScalingType scaling vector type, see \ref Array
-/// \tparam PermType permutation matrix type, see \ref BiPermMatrix
-/// \tparam BufferType work space array, can be \ref Array or \a std::vector
-/// \param[in] s row scaling vector
-/// \param[in] A input matrix in CCS format
-/// \param[in] t column scaling vector
-/// \param[in] m leading block size
-/// \param[in] p row permutation vector
-/// \param[in] q column permutation vector
-/// \param buf work space
-/// \return The \a F part in ccs storage
-/// \sa extract_E
-///
-/// Note that unlike extracting the \a E part, this routine takes \ref CCS as
-/// input, and with the permutation vectors, we need a value buffer space as
-/// an intermidiate storage to store the values so that is will make sorting
-/// much easier. The buffer space is a dense array, and can be passed in from
-/// that of \a l or \a ut (if squared systems).
-///
-/// This routine, essentially, is to compute:
-///
-/// \f[
-///   \mathbf{F}=\left(\mathbf{SAT}\right)_{\mathbf{p}_{1:m},
-///     \mathbf{q}_{m+1:n}}
-/// \f]
-template <class CcsType, class ScalingType, class PermType, class BufferType>
-inline CcsType extract_F(const ScalingType &s, const CcsType &A,
-                         const ScalingType &               t,
-                         const typename CcsType::size_type m, const PermType &p,
-                         const PermType &q, BufferType &buf) {
-  static_assert(!CcsType::ROW_MAJOR, "input A must be CCS!");
-  using size_type  = typename CcsType::size_type;
-  using index_type = typename CcsType::index_type;
-
-  const size_type n = A.ncols();
-
-  hilucsi_error_if(m > n || m > A.nrows(),
-                   "leading block size %zd should not exceed matrix size", m);
-
-  const size_type N = n - m;
-  CcsType         F(m, N);
-  if (!N) {
-    // hilucsi_warning("empty F matrix detected!");
-    return F;
-  }
-
-  auto &col_start = F.col_start();
-  col_start.resize(N + 1);
-  hilucsi_error_if(col_start.status() == DATA_UNDEF,
-                   "memory allocation failed");
-  col_start.front() = 0;
-
-  for (size_type i = 0u; i < N; ++i) {
-    const size_type qi = q[i + m];
-    size_type       nnz(0);
-    std::for_each(A.row_ind_cbegin(qi), A.row_ind_cend(qi),
-                  [&](const index_type i) {
-                    if (static_cast<size_type>(p.inv(i)) < m) ++nnz;
-                  });
-    col_start[i + 1] = col_start[i] + nnz;
-  }
-
-  if (!(col_start[N])) {
-    // hilucsi_warning(
-    //     "exactly zero F, this most likely is a bug! Continue anyway...");
-    return F;
-  }
-
-  F.reserve(col_start[N]);
-  auto &row_ind = F.row_ind();
-  auto &vals    = F.vals();
-  hilucsi_error_if(
-      row_ind.status() == DATA_UNDEF || vals.status() == DATA_UNDEF,
-      "memory allocation failed");
-
-  row_ind.resize(col_start[N]);
-  vals.resize(col_start[N]);
-
-  auto v_itr = vals.begin();
-
-  for (size_type i = 0u; i < N; ++i) {
-    const size_type qi      = q[i + m];
-    auto            itr     = F.row_ind_begin(i);
-    auto            A_itr   = A.row_ind_cbegin(qi);
-    auto            A_v_itr = A.val_cbegin(qi);
-    const auto      ti      = t[qi];
-    for (auto A_last = A.row_ind_cend(qi); A_itr != A_last;
-         ++A_itr, ++A_v_itr) {
-      const size_type j  = *A_itr;
-      const size_type pi = p.inv(j);
-      if (pi < m) {
-        *itr = pi;
-        ++itr;
-        buf[pi] = s[j] * *A_v_itr * ti;
-      }
-    }
-    std::sort(F.row_ind_begin(i), itr);
-    for (auto itr = F.row_ind_cbegin(i), last = F.row_ind_cend(i); itr != last;
-         ++itr, ++v_itr)
-      *v_itr = buf[*itr];
-  }
-  return F;
-}
-
-/// \class CompressedTypeTrait
-/// \brief Core component to filter CCS and CRS types
-/// \tparam CsType1 compressed type I
-/// \tparam CsType2 compressed type II
-///
-/// Since we allow user to arbitrarily use either \ref CCS or \ref CRS as input,
-/// we need to build the counterpart and, most importantly, determine the
-/// \ref CCS and \ref CRS from the input and its counterpart. This helper trait
-/// is to accomplish this task.
-template <class CsType1, class CsType2>
-class CompressedTypeTrait {
-  static_assert(CsType1::ROW_MAJOR ^ CsType2::ROW_MAJOR,
-                "cannot have same type");
-  constexpr static bool _1_IS_CRS = CsType1::ROW_MAJOR;
-  ///< flag of type I is \ref CRS
-
- public:
-  typedef typename std::conditional<_1_IS_CRS, CsType1, CsType2>::type crs_type;
-  ///< \ref CRS type
-  typedef typename crs_type::other_type ccs_type;  ///< \ref CCS type
-
-  /// \brief choose crs type from two inputs
-  /// \param[in] A crs type
-  /// \return reference to \a A
-  /// \sa crs_type, select_ccs
-  template <class T = void>
-  inline static const crs_type &select_crs(
-      const CsType1 &A, const CsType2 & /* B */,
-      const typename std::enable_if<_1_IS_CRS, T>::type * = nullptr) {
-    return A;
-  }
-
-  // dual version
-  template <class T = void>
-  inline static const crs_type &select_crs(
-      const CsType1 & /* A */, const CsType2 &B,
-      const typename std::enable_if<!_1_IS_CRS, T>::type * = nullptr) {
-    return B;
-  }
-
-  /// \brief choose ccs type from two inputs
-  /// \param[in] B ccs type
-  /// \return reference to \a B
-  /// \sa ccs_type, select_crs
-  template <class T = void>
-  inline static const ccs_type &select_ccs(
-      const CsType1 & /* A */, const CsType2 &B,
-      const typename std::enable_if<_1_IS_CRS, T>::type * = nullptr) {
-    return B;
-  }
-
-  // dual version
-  template <class T = void>
-  inline static const ccs_type &select_ccs(
-      const CsType1 &A, const CsType2 & /* B */,
-      const typename std::enable_if<!_1_IS_CRS, T>::type * = nullptr) {
-    return A;
-  }
-};
-
-/// \brief compress offsets to have a compact L and U
-/// \tparam L_Type storage for \a L, see \ref CCS
-/// \tparam U_Type storage for \a U, see \ref CRS
-/// \tparam PosArray array for storing starting positions, see \ref Array
-/// \param[in,out] U uncompressed \a U part
-/// \param[in,out] L uncompressed \a L part
-/// \param[in] U_start starting positions of the offset of \a U
-/// \param[in] L_start starting positions of the offset of \a L
-/// \param[in] m leading block size
-/// \param[in] dfrs total number of deferrals
-template <class L_Type, class U_Type, class PosArray>
-inline void compress_tails(U_Type &U, L_Type &L, const PosArray &U_start,
-                           const PosArray &                   L_start,
-                           const typename PosArray::size_type m,
-                           const typename PosArray::size_type dfrs) {
-  using size_type  = typename PosArray::size_type;
-  using index_type = typename L_Type::index_type;
-
-  if (dfrs) {
-    const auto comp_index = [=](index_type &j) { j -= dfrs; };
-    auto       U_first = U.col_ind().begin(), L_first = L.row_ind().begin();
-    for (size_type i(0); i < m; ++i) {
-      std::for_each(U_first + U_start[i], U.col_ind_end(i), comp_index);
-      std::for_each(L_first + L_start[i], L.row_ind_end(i), comp_index);
-    }
-  }
-
-  // reshape the secondary axis of the matrices
-  L.resize_nrows(L.nrows() / 2);
-  U.resize_ncols(U.ncols() / 2);
-
-#ifndef NDEBUG
-  L.check_validity();
-  U.check_validity();
-#endif
-}
-
-/// \brief print out information regarding handling Schur complement
-inline void print_post_flag(const int flag) {
-  hilucsi_info("\t=================================");
-  switch (flag) {
-    case 0:
-      hilucsi_info("\tthe Schur compl. has good size");
-      break;
-    case 1:
-      hilucsi_info(
-          "\tresort to complete factorization\n"
-          "\ton the input due to too many\n"
-          "\tstatic deferrals");
-      break;
-    case 2:
-      hilucsi_info(
-          "\tresort to complete factorization\n"
-          "\ton the input due to too many\n"
-          "\tstatic+dynamic deferrals");
-      break;
-    default:
-      hilucsi_info(
-          "\tuse complete factorization on\n"
-          "\tthe Schur compl. due to its size\n"
-          "\tis relatively large compared to\n"
-          "\tthe input");
-      break;
-  }
-  hilucsi_info("\t=================================");
-}
-
-/*!
- * @}
- */ // fac group
-
-}  // namespace internal
-
-/// \brief perform partial incomplete LU for a level
-/// \tparam IsSymm if \a true, then assume a symmetric leading block
+/// \brief perform partial incomplete LU for a level with thresholding pivoting
 /// \tparam CsType input compressed storage, either \ref CRS or \ref CCS
 /// \tparam CroutStreamer information streamer for \ref Crout update
 /// \tparam PrecsType multilevel preconditioner type, \ref Precs and \ref Prec
@@ -527,22 +59,22 @@ inline void print_post_flag(const int flag) {
 /// \param[in] schur_threads threads usedin Schur-related computations
 /// \return Schur complement for next level (if needed), in the same type as
 ///         that of the input, i.e. \a CsType
+/// \sa level_factorize
 /// \ingroup fac
-template <bool IsSymm, class CsType, class CroutStreamer, class PrecsType,
-          class IntArray>
-inline CsType level_factorize(const CsType &                   A,
-                              const typename CsType::size_type m0,
-                              const typename CsType::size_type N,
-                              const Options &                  opts,
-                              const CroutStreamer &Crout_info, PrecsType &precs,
-                              IntArray &row_sizes, IntArray &col_sizes,
-                              typename CsType::size_type *stats,
-                              const int                   schur_threads = 1) {
+template <class CsType, class CroutStreamer, class PrecsType, class IntArray>
+inline CsType pivot_level_factorize(
+    const CsType &A, const typename CsType::size_type m0,
+    const typename CsType::size_type N, const Options &opts,
+    const CroutStreamer &Crout_info, PrecsType &precs, IntArray &row_sizes,
+    IntArray &col_sizes, typename CsType::size_type *stats,
+    const int schur_threads = 1) {
   typedef CsType                      input_type;
   typedef typename CsType::other_type other_type;
   using cs_trait = internal::CompressedTypeTrait<input_type, other_type>;
   typedef typename cs_trait::crs_type    crs_type;
   typedef typename cs_trait::ccs_type    ccs_type;
+  typedef AugCRS<crs_type>               aug_crs_type;
+  typedef AugCCS<ccs_type>               aug_ccs_type;
   typedef typename CsType::index_type    index_type;
   typedef typename CsType::size_type     size_type;
   typedef typename CsType::value_type    value_type;
@@ -557,8 +89,7 @@ inline CsType level_factorize(const CsType &                   A,
   const size_type cur_level = precs.size() + 1;
 
   if (hilucsi_verbose(INFO, opts))
-    hilucsi_info("\nenter level %zd (%s).\n", cur_level,
-                 (IsSymm ? "symmetric" : "asymmetric"));
+    hilucsi_info("\nenter level %zd with pivoting.\n", cur_level);
 
   DefaultTimer timer;
 
@@ -599,7 +130,7 @@ inline CsType level_factorize(const CsType &                   A,
   Array<value_type>        s, t;
   BiPermMatrix<index_type> p, q;
   size_type                m;
-  if (!IsSymm && cur_level > must_symm_pre_lvls) {
+  if (cur_level > must_symm_pre_lvls) {
     if (hilucsi_verbose(INFO, opts))
       hilucsi_info(
           "performing asymm preprocessing with leading block size %zd...", m0);
@@ -650,11 +181,14 @@ inline CsType level_factorize(const CsType &                   A,
 
   timer.start();
 
-  // extract diagonal
-  auto d = internal::extract_perm_diag(s, A_ccs, t, m, p, q);
+  // create array for diagonal entries
+  // auto d = internal::extract_perm_diag(s, A_ccs, t, m, p, q);
+  Array<value_type> d(m);
+  hilucsi_error_if(d.status() == DATA_UNDEF,
+                   "memory allocation failed for d at level %zd.", cur_level);
 
   // create U storage with deferred
-  crs_type U(m, A.ncols() * 2);
+  aug_crs_type U(m, A.ncols() * 2);
   hilucsi_error_if(U.row_start().status() == DATA_UNDEF,
                    "memory allocation failed for U:row_start at level %zd.",
                    cur_level);
@@ -668,7 +202,7 @@ inline CsType level_factorize(const CsType &                   A,
   } while (false);
 
   // create L storage with deferred
-  ccs_type L(A.nrows() * 2, m);
+  aug_ccs_type L(A.nrows() * 2, m);
   hilucsi_error_if(L.col_start().status() == DATA_UNDEF,
                    "memory allocation failed for L:col_start at level %zd.",
                    cur_level);
@@ -691,27 +225,6 @@ inline CsType level_factorize(const CsType &                   A,
       "memory allocation failed for L_start and/or U_start at level %zd.",
       cur_level);
 
-  Array<index_type> L_offsets;
-  if (IsSymm) {
-    L_offsets.resize(m);
-    hilucsi_error_if(L_offsets.status() == DATA_UNDEF,
-                     "memory allocation failed for L_offsets at level %zd.",
-                     cur_level);
-  }
-
-  const Array<index_type> &Crout_L_start = !IsSymm ? L_start : L_offsets;
-
-  // create buffer for L and U lists
-  Array<index_type> L_list(A.nrows() * 2), U_list(A.ncols() * 2);
-  hilucsi_error_if(
-      L_list.status() == DATA_UNDEF || U_list.status() == DATA_UNDEF,
-      "memory allocation failed for L_list and/or U_list at level %zd.",
-      cur_level);
-
-  // set default value
-  std::fill(L_list.begin(), L_list.end(), static_cast<index_type>(-1));
-  std::fill(U_list.begin(), U_list.end(), static_cast<index_type>(-1));
-
   // create storage for kappa's
   Array<value_type> kappa_l(m), kappa_ut(m);
   hilucsi_error_if(
@@ -726,6 +239,9 @@ inline CsType level_factorize(const CsType &                   A,
   double tau_d, tau_kappa, tau_L, tau_U, alpha_L, alpha_U;
   std::tie(tau_d, tau_kappa, tau_L, tau_U, alpha_L, alpha_U) =
       internal::determine_fac_pars(opts, cur_level);
+  // for pivoting, we double alpha's
+  alpha_L *= 4;
+  alpha_U *= 4;
 
   // Removing bounding the large diagonal values
   const auto is_bad_diag = [=](const value_type a) -> bool {
@@ -744,44 +260,74 @@ inline CsType level_factorize(const CsType &                   A,
   auto &P_inv = p.inv(), &Q_inv = q.inv();
 
   // 0 for defer due to diagonal, 1 for defer due to bad inverse conditioning
-  index_type info_counter[] = {0, 0, 0, 0, 0, 0, 0};
+  index_type info_counter[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
   if (hilucsi_verbose(INFO, opts)) hilucsi_info("start Crout update...");
-  Crout step;
+  PivotCrout step;
+  // define pivot unary predictors that ensure every pivot is within the leading
+  // block range, and their corresponding incremental inverse norm estimations
+  // for L and U are bounded bay tau_kappa.
+  auto pvt_l_op = [&](const index_type i) {
+    if (i >= m2) return false;  // pivots must be in the leading block
+    value_type kv;
+    step.update_kappa(L, kappa_l, i);
+    return std::abs(kappa_l[step]) <= tau_kappa;
+  };
+  auto pvt_u_op = [&](const index_type i) {
+    if (i >= m2) return false;  // pivots must be in the leading block
+    value_type kv;
+    step.update_kappa(U, kappa_ut, i);
+    return std::abs(kappa_ut[step]) <= tau_kappa;
+  };
   for (; step < m; ++step) {
-    // first check diagonal
-    bool            pvt         = is_bad_diag(d[step.deferred_step()]);
     const size_type m_prev      = m;
     const size_type defers_prev = step.defers();
-    info_counter[0] += pvt;
 
     Crout_info(" Crout step %zd, leading block size %zd", step, m);
 
-    // compute kappa for u wrp deferred index
-    step.update_kappa(U, U_list, U_start, kappa_ut);
+    //----------------------
+    // thresholded pivoting
+    //----------------------
+
+    const auto n_pivots = step.apply_thres_pivot(
+        s, t, A_ccs, A_crs, m2, opts.gamma, 4, Crout_info, L_start, U_start,
+        pvt_l_op, pvt_u_op, p, P_inv, q, Q_inv, L, d, U, l, ut);
+    const bool do_pivot = n_pivots.first || n_pivots.second;
+    info_counter[9] += do_pivot;
+    info_counter[7] += n_pivots.first;   // # of L pivoting
+    info_counter[8] += n_pivots.second;  // # of U pivoting
+
+    // first check diagonal
+    bool do_defer = is_bad_diag(d[step.deferred_step()]);
+    info_counter[10] += do_pivot && do_defer;
+    info_counter[0] += do_defer;
+
+    // compute kappa for u wrt deferred index
+    step.update_kappa(U, kappa_ut);
     // then compute kappa for l
-    if (!IsSymm)
-      step.update_kappa(L, L_list, L_start, kappa_l);
-    else
-      kappa_l[step] = kappa_ut[step];
+    step.update_kappa(L, kappa_l);
 
     // check condition number if diagonal doesn't satisfy
-    if (!pvt) {
-      pvt = std::abs(kappa_ut[step]) > tau_kappa ||
-            std::abs(kappa_l[step]) > tau_kappa;
-      info_counter[1] += pvt;
+    if (!do_defer) {
+      do_defer = std::abs(kappa_ut[step]) > tau_kappa ||
+                 std::abs(kappa_l[step]) > tau_kappa;
+      if (do_defer) {
+        info_counter[11] += do_pivot && std::abs(kappa_l[step]) > tau_kappa;
+        info_counter[12] += do_pivot && std::abs(kappa_ut[step]) > tau_kappa;
+      }
+      info_counter[1] += do_defer;
     }
 
+    Crout_info("  perform pivoting=%s, perform deferring=%s",
+               (do_pivot ? "yes" : "no"), (do_defer ? "yes" : "no"));
+
     // handle defer
-    if (pvt) {
+    if (do_defer) {
       while (m > step) {
         --m;
         const auto tail_pos = n + step.defers();
-        step.defer_entry(tail_pos, U_start, U, U_list);
-        if (!IsSymm)
-          step.defer_entry(tail_pos, L_start, L, L_list);
-        else
-          step.symm_defer_l(tail_pos, L_start, L, L_list, L_offsets);
+        step.defer_entry(tail_pos, U);
+        step.defer_entry(tail_pos, L);
         P[tail_pos]        = p[step.deferred_step()];
         Q[tail_pos]        = q[step.deferred_step()];
         P_inv[P[tail_pos]] = tail_pos;
@@ -795,22 +341,21 @@ inline CsType level_factorize(const CsType &                   A,
           m = step;
           break;
         }
-        pvt = is_bad_diag(d[step.deferred_step()]);
-        if (pvt) {
-          ++info_counter[0];
+        // compute kappa for u wrp deferred index
+        step.update_kappa(U, kappa_ut);
+        // then compute kappa for l
+        step.update_kappa(L, kappa_l);
+        do_defer = std::abs(kappa_ut[step]) > tau_kappa ||
+                   std::abs(kappa_l[step]) > tau_kappa;
+        if (do_defer) {
+          ++info_counter[1];
           continue;
         }
-        // compute kappa for u wrp deferred index
-        step.update_kappa(U, U_list, U_start, kappa_ut);
-        // then compute kappa for l
-        if (!IsSymm)
-          step.update_kappa(L, L_list, L_start, kappa_l);
-        else
-          kappa_l[step] = kappa_ut[step];
-        pvt = std::abs(kappa_ut[step]) > tau_kappa ||
-              std::abs(kappa_l[step]) > tau_kappa;
-        if (pvt) {
-          ++info_counter[1];
+        // compute diagonal
+        d[step.deferred_step()] = step.compute_dk(
+            s, A_ccs, t, P_inv, q[step.deferred_step()], L, L_start, d, U);
+        if (is_bad_diag(d[step.deferred_step()])) {
+          ++info_counter[0];
           continue;
         }
         break;
@@ -823,10 +368,6 @@ inline CsType level_factorize(const CsType &                   A,
     //----------------
 
     const auto k_ut = kappa_ut[step], k_l = kappa_l[step];
-
-    // check pivoting
-    hilucsi_assert(!(std::abs(k_ut) > tau_kappa || std::abs(k_l) > tau_kappa),
-                   "should not happen!");
 
     Crout_info("  kappa_ut=%g, kappa_l=%g", (double)std::abs(k_ut),
                (double)std::abs(k_l));
@@ -842,19 +383,21 @@ inline CsType level_factorize(const CsType &                   A,
 
     Crout_info("  updating L_start/U_start and performing Crout update");
 
+    // recompute l
+    l.restore_cur_state();
+    step.compute_l(s, A_ccs, t, P_inv, q[step.deferred_step()], L, L_start, d,
+                   U, l);
+    // recompute ut
+    ut.restore_cur_state();  // must restore to initial state as used in pvt
+    step.compute_ut(s, A_crs, t, p[step.deferred_step()], Q_inv, L, d, U,
+                    U_start, ut);
+
     // compress diagonal
     step.compress_array(d);
 
     // compress permutation vectors
     step.compress_array(p);
     step.compress_array(q);
-
-    // compute ut
-    step.compute_ut(s, A_crs, t, p[step], Q_inv, L, L_start, L_list, d, U,
-                    U_start, ut);
-    // compute l
-    step.compute_l<IsSymm>(s, A_ccs, t, P_inv, q[step], m2, L, Crout_L_start, d,
-                           U, U_start, U_list, l);
 
     // update diagonal entries for u first
 #ifndef NDEBUG
@@ -866,8 +409,8 @@ inline CsType level_factorize(const CsType &                   A,
     hilucsi_assert(!u_is_nonsingular, "u is singular at level %zd step %zd",
                    cur_level, step);
 
-    // update diagonals b4 dropping
-    step.update_diag<IsSymm>(l, ut, m2, d);
+    // Diagonal is maintained in JIT fashion due to pivoting
+    // step.update_diag<false>(l, ut, m2, d);
 
 #ifndef NDEBUG
     const bool l_is_nonsingular =
@@ -903,52 +446,21 @@ inline CsType level_factorize(const CsType &                   A,
 
     // apply numerical dropping on L
     apply_num_dropping(tau_L, std::abs(k_l) * tau_d, l);
-
-    if (IsSymm) {
 #ifndef HILUCSI_DISABLE_SPACE_DROP
-      // for symmetric cases, we need first find the leading block size
-      auto info =
-          find_sorted(ut.inds().cbegin(), ut.inds().cbegin() + ut.size(), m2);
-      apply_space_dropping(col_sizes[q[step]], alpha_L, l,
-                           info.second - ut.inds().cbegin());
-
-      auto u_last = info.second;
-#else   // !HILUCSI_DISABLE_SPACE_DROP
-      auto u_last = ut.inds().cbegin() + ut.size();
+    const size_type n_l = l.size();
+    apply_space_dropping(col_sizes[q[step]], alpha_L, l);
+    info_counter[4] += n_l - l.size();
 #endif  // HILUCSI_DISABLE_SPACE_DROP
-
-      l.sort_indices();
-      Crout_info(
-          "  l sizes (asymm parts) before/after dropping %zd/%zd, drops=%zd",
-          ori_l_size, l.size(), ori_l_size - l.size());
-
-      // push back symmetric entries and offsets
-      L.push_back_col(step, ut.inds().cbegin(), u_last, ut.vals(),
-                      l.inds().cbegin(), l.inds().cbegin() + l.size(),
-                      l.vals());
-    } else {
-#ifndef HILUCSI_DISABLE_SPACE_DROP
-      const size_type n_l = l.size();
-      apply_space_dropping(col_sizes[q[step]], alpha_L, l);
-      info_counter[4] += n_l - l.size();
-#endif  // HILUCSI_DISABLE_SPACE_DROP
-      info_counter[6] += ori_l_size - l.size();
-      l.sort_indices();
-      Crout_info("  l sizes before/after dropping %zd/%zd, drops=%zd",
-                 ori_l_size, l.size(), ori_l_size - l.size());
-      L.push_back_col(step, l.inds().cbegin(), l.inds().cbegin() + l.size(),
-                      l.vals());
-    }
+    info_counter[6] += ori_l_size - l.size();
+    l.sort_indices();
+    Crout_info("  l sizes before/after dropping %zd/%zd, drops=%zd", ori_l_size,
+               l.size(), ori_l_size - l.size());
+    L.push_back_col(step, l.inds().cbegin(), l.inds().cbegin() + l.size(),
+                    l.vals());
 
     // update position
-    step.update_compress(U, U_list, U_start);
-    step.update_compress(L, L_list, L_start);
-    if (IsSymm) {
-      if (!step.defers() && m2 == n)
-        L_offsets[step] = L.nnz_in_col(step);
-      else
-        step.symm_update_lstart(L, m2, L_offsets);
-    }
+    step.update_compress(U, U_start);
+    step.update_compress(L, L_start);
     Crout_info(" Crout step %zd done!", step);
   }  // for
 
@@ -1010,6 +522,12 @@ inline CsType level_factorize(const CsType &                   A,
         "\tspace drop ut=%zd\n"
         "\tdrop l=%zd\n"
         "\tspace drop l=%zd\n"
+        "\tpivoting in L=%zd\n"
+        "\tpivoting in U=%zd\n"
+        "\tsteps with pivoting=%zd\n"
+        "\tsteps with both pivoting & inv(D) deferring=%zd\n"
+        "\tsteps with both pivoting & inv(L) deferring=%zd\n"
+        "\tsteps with both pivoting & inv(U) deferring=%zd\n"
         "\tmin |kappa_u|=%g\n"
         "\tmax |kappa_u|=%g\n"
         "\tmin |kappa_l|=%g\n"
@@ -1018,7 +536,10 @@ inline CsType level_factorize(const CsType &                   A,
         step.defers(), m0, m, m0 - m, (size_type)info_counter[0],
         (size_type)info_counter[1], (size_type)info_counter[5],
         (size_type)info_counter[3], (size_type)info_counter[6],
-        (size_type)info_counter[4],
+        (size_type)info_counter[4], (size_type)info_counter[7],
+        (size_type)info_counter[8], (size_type)info_counter[9],
+        (size_type)info_counter[10], (size_type)info_counter[11],
+        (size_type)info_counter[12],
         (double)std::abs(
             *std::min_element(kappa_ut.cbegin(), kappa_ut.cbegin() + m,
                               [](const value_type l, const value_type r) {
@@ -1086,7 +607,7 @@ inline CsType level_factorize(const CsType &                   A,
         timer2.start();
         const size_type nnz1 = L_E.nnz(), nnz2 = U_F2.nnz();
 #ifndef HILUCSI_NO_DROP_LE_UF
-        double a_L = opts.alpha_L, a_U = opts.alpha_U;
+        double a_L = 4 * opts.alpha_L, a_U = 4 * opts.alpha_U;
         if (cur_level == 1u && opts.fat_schur_1st) {
           a_L *= 2;
           a_U *= 2;
@@ -1272,4 +793,4 @@ inline CsType level_factorize(const CsType &                   A,
 
 }  // namespace hilucsi
 
-#endif  // _HILUCSI_ALG_FACTOR_HPP
+#endif  // _HILUCSI_ALG_PIVOTFACTOR_HPP

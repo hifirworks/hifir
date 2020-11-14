@@ -270,8 +270,11 @@ inline void compute_Schur_simple(const ScaleArray &s, const CrsType &A,
     for (auto L_itr = L_E.col_ind_cbegin(i); L_itr != L_last; ++L_itr) {
       // get the U iter
       auto U_last = U_F.col_ind_cend(*L_itr);
-      for (auto U_itr = U_F.col_ind_cbegin(*L_itr); U_itr != U_last; ++U_itr)
+      for (auto U_itr = U_F.col_ind_cbegin(*L_itr); U_itr != U_last; ++U_itr) {
+        hilucsi_assert(size_type(*U_itr) < N, "%zd exceed Schur dimension %zd",
+                       size_type(*U_itr), N);
         buf.push_back(*U_itr, tag);
+      }
     }
     // now add the C contribution
     const size_type pi = p[m + i];
@@ -279,7 +282,12 @@ inline void compute_Schur_simple(const ScaleArray &s, const CrsType &A,
     for (auto itr = A.col_ind_cbegin(pi), last = A.col_ind_cend(pi);
          itr != last; ++itr) {
       const size_type inv_q = q.inv(*itr);
-      if (inv_q >= m) buf.push_back(inv_q - m, tag);
+      if (inv_q >= m) {
+        hilucsi_assert(inv_q - m < N,
+                       "%zd exceed Schur dimension %zd, bad index %zd in A",
+                       inv_q - m, N, inv_q);
+        buf.push_back(inv_q - m, tag);
+      }
     }
     // we need the ensure that the indices are sorted, because it will be the
     // input for next level
@@ -308,8 +316,8 @@ inline void compute_Schur_simple(const ScaleArray &s, const CrsType &A,
     auto sc_ind_first = SC.col_ind_cbegin(i);
     for (auto itr = sc_ind_first, ind_last = SC.col_ind_cend(i);
          itr != ind_last; ++itr) {
-      hilucsi_assert(size_type(*itr) < N, "%zd exceed value size",
-                     size_type(*itr));
+      hilucsi_assert(size_type(*itr) < N, "%zd exceed Schur dimension %zd",
+                     size_type(*itr), N);
       buf_vals[*itr] = 0.0;
     }
 

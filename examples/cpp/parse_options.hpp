@@ -50,6 +50,8 @@ const static char *help =
     "\tdrop tolerance (1e-4)\n"
     " -k|--kappa kappa\n"
     "\tinverse norm threshold (3)\n"
+    " -d|--diag kappa\n"
+    "\tinverse norm threshold (3) for diagonal factors\n"
     " -a|--alpha alpha\n"
     "\tlocal space control parameter (10)\n"
     " -v|--verbose level\n"
@@ -65,7 +67,14 @@ const static char *help =
     "\t\t0: off (default)\n"
     "\t\t1: local extreme scale\n"
     "\t\t2: iterative scaling based on inf-norm (experimental)\n"
-    " -P|--ksp\n"
+    " -p|--pivoting method\n"
+    "\tpivoting strategy:\n"
+    "\t\t0: off (default)\n"
+    "\t\t1: on\n"
+    "\t\t2: auto\n"
+    " -g|--gamma gamma\n"
+    "\tpivoting threshold (1.0)\n"
+    " -P|--ksp method\n"
     "\tKSP methods:\n"
     "\t\t0: FGMRES (default)\n"
     "\t\t1: FQMRCGSTAB\n"
@@ -98,6 +107,8 @@ const static char *help =
     "\ttreat as symmetric problems\n"
     " -\n"
     "\tindicator for reading Options from stdin\n"
+    " -1|--one\n"
+    "\tset rhs as A*1 to ensure the system is consistent\n"
     "\n"
     "examples:\n"
     "\n"
@@ -109,14 +120,15 @@ const static char *help =
     " solve with rtol=1e-12 and drop-tol=1e-4\n"
     "\n";
 
-static std::tuple<hilucsi::Options, int, double, bool, int, int> parse_args(
-    int argc, char *argv[]) {
+static std::tuple<hilucsi::Options, int, double, bool, int, int, bool>
+parse_args(int argc, char *argv[]) {
   hilucsi::Options opts    = hilucsi::get_default_options();
   int              restart = 30;
   double           tol     = 1e-6;
   bool             symm    = false;
   int              kernel  = hilucsi::ksp::TRADITION;
   int              ksp     = 0;
+  bool             rhs_a1  = false;
   opts.verbose             = hilucsi::VERBOSE_NONE;
   if (argc < 2) {
     std::cerr << "Missing input directory!\n" << help;
@@ -159,7 +171,12 @@ static std::tuple<hilucsi::Options, int, double, bool, int, int> parse_args(
     } else if (arg == string("-k") || arg == string("--kappa")) {
       ++i;
       if (i >= argc) fatal_exit("missing inverse norm thres (kappa) value!");
-      opts.tau_d = opts.tau_kappa = std::atof(argv[i]);
+      opts.tau_kappa = std::atof(argv[i]);
+    } else if (arg == string("-d") || arg == string("--diag")) {
+      ++i;
+      if (i >= argc)
+        fatal_exit("missing diagonal inverse norm thres (kappa) value!");
+      opts.tau_d = std::atof(argv[i]);
     } else if (arg == string("-a") || arg == string("--alpha")) {
       ++i;
       if (i >= argc) fatal_exit("missing space control (alpha) value!");
@@ -190,6 +207,8 @@ static std::tuple<hilucsi::Options, int, double, bool, int, int> parse_args(
       std::cin >> opts;
     } else if (arg == string("-s") || arg == string("--symm")) {
       symm = true;
+    } else if (arg == string("-1") || arg == string("--one")) {
+      rhs_a1 = true;
     } else if (arg == string("-P") || arg == string("--ksp")) {
       ++i;
       if (i >= argc) fatal_exit("missing KSP solver choice!");
@@ -206,8 +225,16 @@ static std::tuple<hilucsi::Options, int, double, bool, int, int> parse_args(
       ++i;
       if (i >= argc) fatal_exit("missing KSP kernel choice!");
       kernel = std::atoi(argv[i]);
+    } else if (arg == string("-p") || arg == string("--pivoting")) {
+      ++i;
+      if (i >= argc) fatal_exit("missing pivoting strategy!");
+      opts.pivot = std::atoi(argv[i]);
+    } else if (arg == string("-g") || arg == string("--gamma")) {
+      ++i;
+      if (i >= argc) fatal_exit("missing pivoting threshold!");
+      opts.gamma = std::atof(argv[i]);
     }
     ++i;
   }
-  return std::make_tuple(opts, restart, tol, symm, kernel, ksp);
+  return std::make_tuple(opts, restart, tol, symm, kernel, ksp, rhs_a1);
 }

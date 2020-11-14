@@ -98,9 +98,9 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
     for (size_type i = N; i != 0u; --i)
       if (std::abs(_mat(i - 1, i - 1)) < diag_eps) {
         hilucsi_warning(
-            "System ill-conditioned (diagonal %zd is smaller than tolerance "
-            "%g), switch to condition number estimator to "
-            "determine the final rank",
+            "\n  System is ill-conditioned (diagonal %zd is smaller\n"
+            "  than tolerance %g), will switch to condition number\n"
+            "  estimator to determine the final numerical rank.",
             i, (double)diag_eps);
         do_cond_test = true;
         break;
@@ -109,15 +109,18 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
     _rank = _mat.ncols();
     if (do_cond_test) {
 #ifdef HILUCSI_TQRCP_USE_1NORM
+      static const char *nrm_sig = "1";
       _est_rank(cond_thres <= 0.0 ? cond_tol : scalar_type(cond_thres));
 #else
+      static const char *nrm_sig = "2";
       _est_rank_2norm(cond_thres <= 0.0 ? cond_tol : scalar_type(cond_thres));
 #endif
       hilucsi_warning_if(
           _rank != _mat.ncols(),
-          "The system is rank deficient with rank=%zd, the tolerance used "
-          "for thresholding reciprocal of 1-norm based condition number was %g",
-          _rank, cond_thres <= 0.0 ? (double)cond_tol : cond_thres);
+          "\n  The system is rank deficient with rank=%zd,\n"
+          "  the tolerance used was %g, comparing wrt\n"
+          "  %s-norm-based condition number estimation.",
+          _rank, cond_thres <= 0.0 ? (double)cond_tol : cond_thres, nrm_sig);
     }
   }
 

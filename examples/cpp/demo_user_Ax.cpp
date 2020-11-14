@@ -26,6 +26,7 @@
 #  include <mkl.h>
 #endif
 
+#include "get_inputs.hpp"
 #include "parse_options.hpp"
 
 using namespace hilucsi;
@@ -37,9 +38,6 @@ using array_t     = prec_t::array_type;
 using ksp_factory = ksp::KSPFactory<prec_t>;
 using solver_t    = ksp_factory::abc_solver;
 using func_t      = solver_t::func_type;
-
-// get the input data, (A, b, m)
-static std::tuple<crs_t, array_t, array_t::size_type> get_inputs(string dir);
 
 // create solver
 static std::shared_ptr<solver_t> create_ksp(const int               choice,
@@ -66,14 +64,16 @@ int main(int argc, char *argv[]) {
   bool    symm;
   int     kernel;
   int     ksp;
+  bool    rhs_a1;
   // parse arguments
-  std::tie(opts, restart, rtol, symm, kernel, ksp) = parse_args(argc, argv);
+  std::tie(opts, restart, rtol, symm, kernel, ksp, rhs_a1) =
+      parse_args(argc, argv);
   if (opts.verbose == VERBOSE_NONE) warn_flag(0);
   crs_t              A;
   array_t            b;
   array_t::size_type m;
   // read input data
-  std::tie(A, b, m) = get_inputs(std::string(argv[1]));
+  std::tie(A, b, m) = get_inputs<crs_t, array_t>(std::string(argv[1]), rhs_a1);
   if (symm && m == 0u) {
     std::cerr << "Warning! Input file doesn\'t contain the leading size\n"
               << "for symmetric system, use the overall size instead\n";
@@ -164,21 +164,4 @@ int main(int argc, char *argv[]) {
       solver->repr(), rtol, ksp::flag_repr(solver->repr(), flag).c_str(), iters,
       rs, act_rs, timer.time());
   return flag;
-}
-
-static std::tuple<crs_t, array_t, array_t::size_type> get_inputs(string dir) {
-  if (dir.back() != '/') dir += "/";
-  std::string A_file = dir + "A.psmilu", b_file = dir + "b.txt";
-  if (!std::ifstream(A_file).good()) A_file = dir + "A.hilucsi";
-  array_t::size_type m(0);
-  crs_t              A = crs_t::from_bin(A_file.c_str(), &m);
-  array_t            b(A.nrows());
-  std::ifstream      f(b_file.c_str());
-  if (!f.is_open()) {
-    std::cerr << "cannot open file " << b_file << std::endl;
-    std::exit(1);
-  }
-  for (auto &v : b) f >> v;
-  f.close();
-  return std::make_tuple(A, b, m);
 }

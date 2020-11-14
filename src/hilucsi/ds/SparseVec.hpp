@@ -30,6 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define _HILUCSI_DS_SPARSEVEC_HPP
 
 #include <algorithm>
+#include <numeric>
 #include <vector>
 
 #include "hilucsi/utils/common.hpp"
@@ -107,6 +108,13 @@ class IndexValueArray {
     std::sort(_inds.begin(), _inds.begin() + _counts);
   }
 
+  /// \brief sort the indices given a unary operator
+  /// \tparam UnaryOp unary operator type
+  template <class UnaryOp>
+  inline void sort_indices(const UnaryOp &op) {
+    std::sort(_inds.begin(), _inds.begin() + _counts, op);
+  }
+
   /// \brief push back an index
   /// \param[in] i index
   inline void push_back(const size_type i) {
@@ -143,6 +151,59 @@ class IndexValueArray {
 
   /// \brief get the 2 norm of the vector
   inline value_type norm2() const { return std::sqrt(norm2_sq()); }
+
+  /// \brief get the maximum magnitude value, only works wit real number
+  inline typename ValueTypeTrait<value_type>::value_type max_mag() const {
+    using v_t = typename ValueTypeTrait<value_type>::value_type;
+    v_t v(0);
+    for (size_type i(0); i < _counts; ++i) v = std::max(v, std::abs(val(i)));
+    return v;
+  }
+
+  /// \brief get the index corresponding maximum magnitude
+  inline size_type imax_mag() const {
+    if (!_counts) return std::numeric_limits<size_type>::max();
+    return *std::max_element(_inds.cbegin(), _inds.cbegin() + _counts,
+                             [&](const index_type i, const index_type j) {
+                               return std::abs(_vals[i]) < std::abs(_vals[j]);
+                             });
+  }
+
+  /// \brief get the index corresponding maximum magnitude with index bound
+  template <class UnaryOp>
+  inline size_type imax_mag(const UnaryOp &op) const {
+    // if empty, return max value of size_t
+    if (!_counts) return std::numeric_limits<size_type>::max();
+    // find a starting position, where it is within the bound, i.e., typically
+    // the size of leading block
+    auto pos = std::find_if(_inds.cbegin(), _inds.cbegin() + _counts, op);
+    // if all tail region, return max value of size_t
+    if (pos == _inds.cbegin() + _counts)
+      return std::numeric_limits<size_type>::max();
+    size_type j(*pos);
+    for (size_type i(0); i < _counts; ++i) {
+      if (!op(_inds[i])) continue;
+      if (std::abs(_vals[j]) < std::abs(_vals[_inds[i]])) j = _inds[i];
+    }
+    return j;
+  }
+
+  /// \brief find the first entry given a unary operator
+  template <class UnaryOp>
+  inline size_type find_if(const UnaryOp &op) const {
+    if (!_counts) return std::numeric_limits<size_type>::max();
+    auto pos = std::find_if(_inds.cbegin(), _inds.cbegin() + _counts, op);
+    // if all tail region, return max value of size_t
+    if (pos == _inds.cbegin() + _counts)
+      return std::numeric_limits<size_type>::max();
+    return *pos;
+  }
+
+  /// \brief inplace scaling
+  /// \param[in] alpha scaling factor, i.e., v=alpha*v
+  inline void scale(const value_type alpha) {
+    for (size_type i(0); i < _counts; ++i) _vals[_inds[i]] *= alpha;
+  }
 
   /// \brief operator access
   /// \param[in] i index in range of dense size, one-based aware
