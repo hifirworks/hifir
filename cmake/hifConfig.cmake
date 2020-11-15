@@ -1,5 +1,5 @@
 ###############################################################################
-#                 This file is part of HILUCSI project                        #
+#                 This file is part of HIF project                        #
 ###############################################################################
 
 # Copyright (C) 2019 NumGeom Group at Stony Brook University
@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# hilucsi::hilucsi IMPORTED target
+# hif::hif IMPORTED target
 
-include(${CMAKE_CURRENT_LIST_DIR}/hilucsiTargets.cmake)
-message(STATUS "Found hilucsi")
+include(${CMAKE_CURRENT_LIST_DIR}/hifTargets.cmake)
+message(STATUS "Found hif")
