@@ -1,11 +1,11 @@
 ///////////////////////////////////////////////////////////////////////////////
-//                This file is part of HILUCSI project                       //
+//                  This file is part of HIF project                         //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "common.hpp"
 // line break to avoid sorting
-#include "hilucsi/ds/Array.hpp"
-#include "hilucsi/ds/CompressedStorage.hpp"
+#include "hif/ds/Array.hpp"
+#include "hif/ds/CompressedStorage.hpp"
 
 #include <gtest/gtest.h>
 
@@ -17,7 +17,7 @@
 static const RandIntGen  i_rand(0, 300);
 static const RandRealGen r_rand(1.0, 2.0);
 
-using namespace hilucsi;
+using namespace hif;
 
 TEST(CRS2CCS, test_convert) {
   typedef CRS<double, int>  crs_t;

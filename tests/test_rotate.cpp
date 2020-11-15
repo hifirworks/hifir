@@ -1,18 +1,18 @@
 ///////////////////////////////////////////////////////////////////////////////
-//                This file is part of HILUCSI project                       //
+//                  This file is part of HIF project                         //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "common.hpp"
 // line break to avoid sorting
-#include "hilucsi/ds/Array.hpp"
-#include "hilucsi/utils/common.hpp"
+#include "hif/ds/Array.hpp"
+#include "hif/utils/common.hpp"
 
 #include <gtest/gtest.h>
 
 #include <cstdlib>
 #include <ctime>
 
-using namespace hilucsi;
+using namespace hif;
 
 TEST(ROTATE, left) {
   std::srand(std::time(0));

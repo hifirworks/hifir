@@ -1,14 +1,14 @@
 ///////////////////////////////////////////////////////////////////////////////
-//                This file is part of HILUCSI project                       //
+//                  This file is part of HIF project                         //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "common.hpp"
 // line break to avoid sorting
-#include "hilucsi/ds/IntervalCompressedStorage.hpp"
+#include "hif/ds/IntervalCompressedStorage.hpp"
 
 #include <gtest/gtest.h>
 
-using namespace hilucsi;
+using namespace hif;
 
 // NOTE: This test is actually for compilation test
 

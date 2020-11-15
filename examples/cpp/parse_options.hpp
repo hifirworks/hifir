@@ -1,5 +1,5 @@
 //===========================================================================//
-//                This file is part of HILUCSI project                       //
+//                  This file is part of HIF project                         //
 //===========================================================================//
 
 // common interface for parsing user options for demo programs
@@ -27,7 +27,7 @@
 #include <string>
 #include <tuple>
 
-#include "HILUCSI.hpp"
+#include "HIF.hpp"
 
 using std::string;
 
@@ -37,8 +37,8 @@ const static char *help =
     "\n"
     " ./demo_mixed case [options] [flags]\n"
     "\n"
-    "where the \"case\" is an HILUCSI benchmark input directory that contains\n"
-    "a matrix file and an ASCII rhs file. The matrix file is in HILUCSI\n"
+    "where the \"case\" is an HIF benchmark input directory that contains\n"
+    "a matrix file and an ASCII rhs file. The matrix file is in HIF\n"
     "binary format and has name of \"A.psmilu\", while the rhs file is a "
     "list\n"
     "of rhs entries that are separated by native C++ separator, i.e. space or\n"
@@ -112,24 +112,24 @@ const static char *help =
     "\n"
     "examples:\n"
     "\n"
-    "\t./hilucsi_demo my_test\n"
+    "\t./hif_demo my_test\n"
     " use default setting solve the problem in \"my_test\" directory.\n"
-    "\t./hilucsi_demo my_test - < ./parameters.cfg\n"
+    "\t./hif_demo my_test - < ./parameters.cfg\n"
     " solve with user-defined parameters and read in from stdin\n"
-    "\t./hilucsi_demo my_test -R 1e-12 -t 1e-4\n"
+    "\t./hif_demo my_test -R 1e-12 -t 1e-4\n"
     " solve with rtol=1e-12 and drop-tol=1e-4\n"
     "\n";
 
-static std::tuple<hilucsi::Options, int, double, bool, int, int, bool>
-parse_args(int argc, char *argv[]) {
-  hilucsi::Options opts    = hilucsi::get_default_options();
-  int              restart = 30;
-  double           tol     = 1e-6;
-  bool             symm    = false;
-  int              kernel  = hilucsi::ksp::TRADITION;
-  int              ksp     = 0;
-  bool             rhs_a1  = false;
-  opts.verbose             = hilucsi::VERBOSE_NONE;
+static std::tuple<hif::Options, int, double, bool, int, int, bool> parse_args(
+    int argc, char *argv[]) {
+  hif::Options opts    = hif::get_default_options();
+  int          restart = 30;
+  double       tol     = 1e-6;
+  bool         symm    = false;
+  int          kernel  = hif::ksp::TRADITION;
+  int          ksp     = 0;
+  bool         rhs_a1  = false;
+  opts.verbose         = hif::VERBOSE_NONE;
   if (argc < 2) {
     std::cerr << "Missing input directory!\n" << help;
     std::exit(1);
@@ -141,7 +141,7 @@ parse_args(int argc, char *argv[]) {
     std::exit(0);
   }
   if (arg == string("-V") || arg == string("--version")) {
-    std::cout << "HILUCSI version: " << hilucsi::version() << std::endl;
+    std::cout << "HIF version: " << hif::version() << std::endl;
     std::exit(0);
   }
   if (arg == string("") || arg[0] == '-') {
@@ -161,7 +161,7 @@ parse_args(int argc, char *argv[]) {
       std::exit(0);
     }
     if (arg == string("-V") || arg == string("--version")) {
-      std::cout << "HILUCSI version: " << hilucsi::version() << std::endl;
+      std::cout << "HIF version: " << hif::version() << std::endl;
       std::exit(0);
     }
     if (arg == string("-t") || arg == string("--tau")) {

@@ -1,16 +1,16 @@
 ///////////////////////////////////////////////////////////////////////////////
-//                This file is part of HILUCSI project                       //
+//                  This file is part of HIF project                         //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "common.hpp"
 // line break to avoid sorting
-#include "hilucsi/utils/Timer.hpp"
+#include "hif/utils/Timer.hpp"
 
 #include <gtest/gtest.h>
 #include <cmath>
 #include <thread>
 
-using namespace hilucsi;
+using namespace hif;
 
 // takes about 300ms
 TEST(Timer, serial) {

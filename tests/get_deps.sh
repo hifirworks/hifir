@@ -1,6 +1,6 @@
 #!/bin/bash
 ###############################################################################
-#                   This file is part of HILUCSI project                      #
+#                   This file is part of HIF project                      #
 ###############################################################################
 
 # script to parse a test script's first 50 lines into space/nl separated
@@ -20,13 +20,13 @@ for l in $lines; do
         if [[ $l =~ ^[\<\"]* ]]; then
              # remove first and last characters
              dep=`echo $l | sed 's/.//;s/.$//'`
-             [[ $dep == hilucsi* ]] && deps="$deps $dep"
+             [[ $dep == hif* ]] && deps="$deps $dep"
         fi
         flag=0
     elif [[ $l =~ ^#include[\<\"]* ]]; then
         # case where there is not space between include and < or "
         dep=`echo $l | sed 's/[<">]//g' | sed 's/#include//g'`
-        [[ $dep == hilucsi* ]] && deps="$deps $dep"
+        [[ $dep == hif* ]] && deps="$deps $dep"
     fi
 done
 echo $deps

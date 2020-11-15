@@ -1,16 +1,16 @@
 ///////////////////////////////////////////////////////////////////////////////
-//                This file is part of HILUCSI project                       //
+//                  This file is part of HIF project                         //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "common.hpp"
 // line break to avoid sorting
-#include "hilucsi/ds/Array.hpp"
-#include "hilucsi/ds/CompressedStorage.hpp"
+#include "hif/ds/Array.hpp"
+#include "hif/ds/CompressedStorage.hpp"
 
 #include <gtest/gtest.h>
 #include <numeric>
 
-using namespace hilucsi;
+using namespace hif;
 
 static const RandIntGen  i_rand(0, 100);
 static const RandRealGen r_rand;

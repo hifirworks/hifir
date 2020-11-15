@@ -1,16 +1,16 @@
 ///////////////////////////////////////////////////////////////////////////////
-//                This file is part of HILUCSI project                       //
+//                  This file is part of HIF project                         //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "common.hpp"
 // line break to avoid sorting
-#include "hilucsi/ds/Array.hpp"
-#include "hilucsi/ds/CompressedStorage.hpp"
-#include "hilucsi/pre/matching_scaling.hpp"
+#include "hif/ds/Array.hpp"
+#include "hif/ds/CompressedStorage.hpp"
+#include "hif/pre/matching_scaling.hpp"
 
 #include <gtest/gtest.h>
 
-using namespace hilucsi;
+using namespace hif;
 
 constexpr static int N = 100;
 
@@ -29,8 +29,7 @@ TEST(NZ_PT_APAT, core) {
     inline constexpr int inv(const int i) const { return i; }
   } dummy_p;
 
-  auto B =
-      internal::compute_perm_leading_block(A2, A1, m, dummy_p, dummy_p, true);
+  auto B = internal::compute_leading_block(A2, A1, m, dummy_p, dummy_p, true);
 
   for (int i = 0; i < m; ++i) {
     std::vector<bool> mask(m, false);

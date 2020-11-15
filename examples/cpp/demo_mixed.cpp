@@ -1,5 +1,5 @@
 //===========================================================================//
-//                This file is part of HILUCSI project                       //
+//                  This file is part of HIF project                         //
 //===========================================================================//
 
 // mixed-precision demo
@@ -22,17 +22,17 @@
 
 #include <fstream>
 
-#ifdef HILUCSI_DEMO_USE_MKL
+#ifdef HIF_DEMO_USE_MKL
 #  include <mkl.h>
 #endif
 
 #include "get_inputs.hpp"
 #include "parse_options.hpp"
 
-using namespace hilucsi;
+using namespace hif;
 using std::string;
 
-using prec_t      = HILUCSI<float, int>;
+using prec_t      = HIF<float, int>;
 using crs_t       = CRS<double, int>;
 using array_t     = crs_t::array_type;
 using ksp_factory = ksp::KSPFactory<prec_t, double>;
@@ -51,7 +51,7 @@ static std::shared_ptr<solver_t> create_ksp(const int               choice,
     case 3:
       return std::make_shared<ksp_factory::fbicgstab>(M);
     default:
-      hilucsi_error("unknown ksp solver choice %d", choice);
+      hif_error("unknown ksp solver choice %d", choice);
   }
   return nullptr;
 }
@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
   auto &                  M = *_M;
   M.factorize(A2, m, opts);
   timer.finish();
-  hilucsi_info(
+  hif_info(
       "\nMLILU done!\n"
       "\tfill-in: %.2f%%\n"
       "\tfill-in (E and F): %.2f%%\n"
@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
   timer.start();
   M.optimize();
   timer.finish();
-  hilucsi_info(
+  hif_info(
       "\nOptimization preconditioner done!\n"
       "\ttime: %.4gs\n",
       timer.time());
@@ -139,7 +139,7 @@ int main(int argc, char *argv[]) {
     act_rs = norm2(r) / normb;
   } while (false);
 
-  hilucsi_info(
+  hif_info(
       "\n%s(%.1e) done!\n"
       "\tflag: %s\n"
       "\titers: %zd\n"

@@ -1,17 +1,17 @@
 ///////////////////////////////////////////////////////////////////////////////
-//                This file is part of HILUCSI project                       //
+//                  This file is part of HIF project                         //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "common.hpp"
 // line break to avoid sorting
-#include "hilucsi/ds/Array.hpp"
+#include "hif/ds/Array.hpp"
 
 #include <gtest/gtest.h>
 #include <list>
 #include <utility>
 #include <vector>
 
-using namespace hilucsi;
+using namespace hif;
 
 TEST(Array_api, test_core) {
   Array<double> v;

@@ -1,15 +1,15 @@
 ///////////////////////////////////////////////////////////////////////////////
-//                This file is part of HILUCSI project                       //
+//                  This file is part of HIF project                         //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "common.hpp"
 // line break to avoid sorting
-#include "hilucsi/ds/Array.hpp"
-#include "hilucsi/utils/math.hpp"
+#include "hif/ds/Array.hpp"
+#include "hif/utils/math.hpp"
 
 #include <gtest/gtest.h>
 
-using namespace hilucsi;
+using namespace hif;
 using array_t = Array<double>;
 #define N 10
 

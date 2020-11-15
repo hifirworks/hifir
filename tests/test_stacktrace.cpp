@@ -1,18 +1,18 @@
 ///////////////////////////////////////////////////////////////////////////////
-//                This file is part of HILUCSI project                       //
+//                  This file is part of HIF project                         //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "common.hpp"
 // line break to avoid sorting
-#include "hilucsi/ds/Array.hpp"
-#include "hilucsi/utils/log.hpp"
-#include "hilucsi/utils/stacktrace.hpp"
+#include "hif/ds/Array.hpp"
+#include "hif/utils/log.hpp"
+#include "hif/utils/stacktrace.hpp"
 
 #include <gtest/gtest.h>
 
 #define TAG "stack trace:"
 
-using namespace hilucsi;
+using namespace hif;
 
 template <typename T>
 void bad_func(const Array<T> &v) {

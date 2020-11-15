@@ -1,18 +1,18 @@
 ///////////////////////////////////////////////////////////////////////////////
-//                This file is part of HILUCSI project                       //
+//                  This file is part of HIF project                         //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "common.hpp"
 // line break to avoid sorting
-#include "hilucsi/ds/Array.hpp"
-#include "hilucsi/ds/CompressedStorage.hpp"
+#include "hif/ds/Array.hpp"
+#include "hif/ds/CompressedStorage.hpp"
 
 #include <gtest/gtest.h>
 
 static const RandIntGen  i_rand(0, 100);
 static const RandRealGen r_rand;
 
-using namespace hilucsi;
+using namespace hif;
 
 TEST(CCS_api, test_core) {
   typedef CCS<double, int> ccs_t;

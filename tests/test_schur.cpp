@@ -1,18 +1,18 @@
 ///////////////////////////////////////////////////////////////////////////////
-//                This file is part of HILUCSI project                       //
+//                  This file is part of HIF project                         //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "common.hpp"
 // line break to avoid sorting
-#include "hilucsi/alg/Schur.hpp"
-#include "hilucsi/ds/Array.hpp"
-#include "hilucsi/ds/CompressedStorage.hpp"
-#include "hilucsi/ds/PermMatrix.hpp"
-#include "hilucsi/ds/SparseVec.hpp"
+#include "hif/alg/Schur.hpp"
+#include "hif/ds/Array.hpp"
+#include "hif/ds/CompressedStorage.hpp"
+#include "hif/ds/PermMatrix.hpp"
+#include "hif/ds/SparseVec.hpp"
 
 #include <gtest/gtest.h>
 
-using namespace hilucsi;
+using namespace hif;
 
 TEST(compute_Schur, core) {
   using mat_t   = CRS<double, int>;
