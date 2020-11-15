@@ -3,7 +3,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /*!
- * \file hilucsi/small_scale/trsv.hpp
+ * \file hilucsi/small_scale/trsv_lapack.hpp
  * \brief Interface wrappers for solving triangular systems
  * \author Qiao Chen
  * \todo add interfaces for complex types

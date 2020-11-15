@@ -218,6 +218,7 @@ class MUMPS {
   /// \brief solve with rhs inplace
   /// \tparam ArrayType array type, see \ref Array
   /// \param[in,out] x rhs on input and solution on output
+  /// \param[in] tran (optional) tranpose flag, default is false
   template <class ArrayType>
   inline void solve(ArrayType &x, const bool tran = false) const {
     static constexpr bool SAME_TYPE =

@@ -171,12 +171,12 @@ parse_args(int argc, char *argv[]) {
     } else if (arg == string("-k") || arg == string("--kappa")) {
       ++i;
       if (i >= argc) fatal_exit("missing inverse norm thres (kappa) value!");
-      opts.tau_kappa = std::atof(argv[i]);
+      opts.kappa = std::atof(argv[i]);
     } else if (arg == string("-d") || arg == string("--diag")) {
       ++i;
       if (i >= argc)
         fatal_exit("missing diagonal inverse norm thres (kappa) value!");
-      opts.tau_d = std::atof(argv[i]);
+      opts.kappa_d = std::atof(argv[i]);
     } else if (arg == string("-a") || arg == string("--alpha")) {
       ++i;
       if (i >= argc) fatal_exit("missing space control (alpha) value!");

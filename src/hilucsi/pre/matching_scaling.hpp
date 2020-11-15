@@ -336,15 +336,12 @@ inline CcsType compute_leading_block(const CcsType &A, const CrsType &A_crs,
 /// \param[in] A input matrix in \ref CCS order
 /// \param[in] A_crs the \ref CRS version of \a A
 /// \param[in] m0 leading block size
-/// \param[in] verbose message verbose flag from \ref Options
+/// \param[in] level current factorization level
+/// \param[in] opts control parameters, see \ref Options
 /// \param[out] s row scaling vector
 /// \param[out] t column scaling vector
 /// \param[out] p row permutation vector
 /// \param[out] q column permutation vector
-/// \param[in] opts control parameters
-/// \param[in] level current factorization level
-/// \param[in] hdl_zero_diags if \a false (default), the routine won't handle
-///            zero diagonal entries.
 /// \return A \a pair of \ref CCS matrix in \b C-index and the actual leading
 ///         block size, which is no larger than \a m0.
 /// \ingroup pre
@@ -354,10 +351,9 @@ inline std::pair<
     CCS<typename CcsType::value_type, typename CcsType::index_type>,
     typename CcsType::size_type>
 do_maching(const CcsType &A, const CrsType &A_crs,
-           const typename CcsType::size_type m0, const int verbose,
-           ScalingArray &s, ScalingArray &t, PermType &p, PermType &q,
-           const Options &opts, const typename CcsType::size_type level,
-           const bool hdl_zero_diags = false) {
+           const typename CcsType::size_type m0,
+           const typename CcsType::size_type level, const Options &opts,
+           ScalingArray &s, ScalingArray &t, PermType &p, PermType &q) {
   static_assert(!CcsType::ROW_MAJOR, "input must be CCS type");
   static_assert(CrsType::ROW_MAJOR, "input A_crs must be CRS type");
   using value_type                = typename CcsType::value_type;
@@ -378,8 +374,9 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   t.resize(N);
   hilucsi_error_if(s.status() == DATA_UNDEF, "memory allocation failed for t");
 
-  const bool timing       = hilucsi_verbose(PRE_TIME, opts);
-  const bool compute_perm = opts.reorder != REORDER_OFF;
+  const bool timing         = hilucsi_verbose(PRE_TIME, opts);
+  const bool compute_perm   = opts.reorder != REORDER_OFF;
+  const bool hdl_zero_diags = opts.saddle;
 
   CrsType B;
   if (m0 == M) {
@@ -403,7 +400,7 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   do {
     DefaultTimer timer;
     timer.start();
-    mc64_kernel::template do_matching<IsSymm>(verbose, B, p(), q(), s, t,
+    mc64_kernel::template do_matching<IsSymm>(opts.verbose, B, p(), q(), s, t,
                                               opts.pre_scale);
     timer.finish();
     if (timing) hilucsi_info("Equilibrator took %gs.", (double)timer.time());
@@ -425,7 +422,7 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   }
 
   // fix potentially poorly scaled row and column weights
-  internal::fix_poor_scaling(m0, level, p, q, s, t);
+  internal::fix_poor_scaling(m0, level, p, q, s, t, opts.beta);
 
   // then determine tiny diags
   // using the inverse mappings are buffers since we don't need them for now

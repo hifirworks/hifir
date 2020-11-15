@@ -31,6 +31,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <algorithm>
 
+#include "hilucsi/Options.h"
 #include "hilucsi/ds/Array.hpp"
 #include "hilucsi/small_scale/SmallScaleBase.hpp"
 #include "hilucsi/small_scale/lapack.hpp"
@@ -57,9 +58,13 @@ class LUP : public internal::SmallScaleBase<ValueType> {
   LUP() = default;
 
   /// \brief perform LU with partial pivoting
-  inline void factorize(const double = 0.0) {
+  /// \param[in] opts control parameters, see \ref Options
+  inline void factorize(const Options &opts) {
     hilucsi_error_if(_mat.empty(), "matrix is still empty!");
     hilucsi_error_if(!_base::is_squared(), "the matrix must be squared!");
+    if (hilucsi_verbose(INFO, opts))
+      hilucsi_info("factorizing dense level by LU...");
+
     _ipiv.resize(_mat.nrows());
     const auto info = lapack_kernel::getrf(_mat, _ipiv);
     if (info < 0)

@@ -31,6 +31,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <algorithm>
 
+#include "hilucsi/Options.h"
 #include "hilucsi/ds/Array.hpp"
 #include "hilucsi/small_scale/SmallScaleBase.hpp"
 #include "hilucsi/small_scale/lapack.hpp"
@@ -61,8 +62,8 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
   QRCP() = default;
 
   /// \brief compute decomposition and determine the rank
-  /// \param[in] cond_thres (optional) condition number threshold
-  inline void factorize(const double cond_thres = 0.0) {
+  /// \param[in] opts control parameters, see \ref Options
+  inline void factorize(const Options &opts) {
     // get tolerance
     constexpr static scalar_type diag_tol = std::sqrt(Const<scalar_type>::EPS);
     constexpr static scalar_type cond_tol =
@@ -71,6 +72,13 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
     hilucsi_error_if(_mat.empty(), "matrix is still empty!");
     hilucsi_error_if(_mat.nrows() < _mat.ncols(),
                      "matrix must have no smaller row size");
+
+    const scalar_type cond_thres =
+        opts.rrqr_cond <= 0.0 ? cond_tol : scalar_type(opts.rrqr_cond);
+
+    if (hilucsi_verbose(INFO, opts))
+      hilucsi_info("factorizing dense level by RRQR with cond-thres %g...",
+                   (double)cond_thres);
 
     _jpvt.resize(_mat.ncols());
     // NOTE we need to initialize jpvt to zero
@@ -113,20 +121,20 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
       _est_rank(cond_thres <= 0.0 ? cond_tol : scalar_type(cond_thres));
 #else
       static const char *nrm_sig = "2";
-      _est_rank_2norm(cond_thres <= 0.0 ? cond_tol : scalar_type(cond_thres));
+      _est_rank_2norm(cond_thres);
 #endif
-      hilucsi_warning_if(
-          _rank != _mat.ncols(),
-          "\n  The system is rank deficient with rank=%zd,\n"
-          "  the tolerance used was %g, comparing wrt\n"
-          "  %s-norm-based condition number estimation.",
-          _rank, cond_thres <= 0.0 ? (double)cond_tol : cond_thres, nrm_sig);
+      hilucsi_warning_if(_rank != _mat.ncols(),
+                         "\n  The system is rank deficient with rank=%zd,\n"
+                         "  the tolerance used was %g, comparing wrt\n"
+                         "  %s-norm-based condition number estimation.",
+                         _rank, (double)cond_thres, nrm_sig);
     }
   }
 
   /// \brief solve system
   /// \param[in,out] x input rhs, output solution
   /// \param[in] rank (optional) rank for back solve, default is \a _rank
+  /// \param[in] tran (optional) transpose flag, default is false
   ///
   /// First, QRCP returns \f$\mathbf{AP}=\mathbf{QR}\f$, thus when we
   /// have \f$\mathbf{Ax}=\mathbf{b}\f$, the derivation is:

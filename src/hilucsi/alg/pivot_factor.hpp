@@ -134,14 +134,12 @@ inline CsType pivot_level_factorize(
     if (hilucsi_verbose(INFO, opts))
       hilucsi_info(
           "performing asymm preprocessing with leading block size %zd...", m0);
-    m = do_preprocessing<false>(A_ccs, A_crs, m0, opts, cur_level, s, t, p, q,
-                                opts.saddle);
+    m = do_preprocessing<false>(A_ccs, A_crs, m0, cur_level, opts, s, t, p, q);
   } else {
     if (hilucsi_verbose(INFO, opts))
       hilucsi_info(
           "performing symm preprocessing with leading block size %zd...", m0);
-    m = do_preprocessing<true>(A_ccs, A_crs, m0, opts, cur_level, s, t, p, q,
-                               opts.saddle);
+    m = do_preprocessing<true>(A_ccs, A_crs, m0, cur_level, opts, s, t, p, q);
   }
 
   timer.finish();  // prefile pre-processing
@@ -236,8 +234,8 @@ inline CsType pivot_level_factorize(
   L.begin_assemble_cols();
 
   // localize parameters
-  double tau_d, tau_kappa, tau_L, tau_U, alpha_L, alpha_U;
-  std::tie(tau_d, tau_kappa, tau_L, tau_U, alpha_L, alpha_U) =
+  double kappa_d, kappa, tau_L, tau_U, alpha_L, alpha_U;
+  std::tie(kappa_d, kappa, tau_L, tau_U, alpha_L, alpha_U) =
       internal::determine_fac_pars(opts, cur_level);
   // for pivoting, we double alpha's
   alpha_L *= 4;
@@ -245,7 +243,7 @@ inline CsType pivot_level_factorize(
 
   // Removing bounding the large diagonal values
   const auto is_bad_diag = [=](const value_type a) -> bool {
-    return std::abs(1. / a) > tau_d;  // || std::abs(a) > tau_d;
+    return std::abs(1. / a) > kappa_d;  // || std::abs(a) > tau_d;
   };
 
   const size_type m2(m), n(A.nrows());
@@ -266,18 +264,18 @@ inline CsType pivot_level_factorize(
   PivotCrout step;
   // define pivot unary predictors that ensure every pivot is within the leading
   // block range, and their corresponding incremental inverse norm estimations
-  // for L and U are bounded bay tau_kappa.
+  // for L and U are bounded bay kappa.
   auto pvt_l_op = [&](const index_type i) {
     if (i >= m2) return false;  // pivots must be in the leading block
     value_type kv;
     step.update_kappa(L, kappa_l, i);
-    return std::abs(kappa_l[step]) <= tau_kappa;
+    return std::abs(kappa_l[step]) <= kappa;
   };
   auto pvt_u_op = [&](const index_type i) {
     if (i >= m2) return false;  // pivots must be in the leading block
     value_type kv;
     step.update_kappa(U, kappa_ut, i);
-    return std::abs(kappa_ut[step]) <= tau_kappa;
+    return std::abs(kappa_ut[step]) <= kappa;
   };
   for (; step < m; ++step) {
     const size_type m_prev      = m;
@@ -309,11 +307,11 @@ inline CsType pivot_level_factorize(
 
     // check condition number if diagonal doesn't satisfy
     if (!do_defer) {
-      do_defer = std::abs(kappa_ut[step]) > tau_kappa ||
-                 std::abs(kappa_l[step]) > tau_kappa;
+      do_defer =
+          std::abs(kappa_ut[step]) > kappa || std::abs(kappa_l[step]) > kappa;
       if (do_defer) {
-        info_counter[11] += do_pivot && std::abs(kappa_l[step]) > tau_kappa;
-        info_counter[12] += do_pivot && std::abs(kappa_ut[step]) > tau_kappa;
+        info_counter[11] += do_pivot && std::abs(kappa_l[step]) > kappa;
+        info_counter[12] += do_pivot && std::abs(kappa_ut[step]) > kappa;
       }
       info_counter[1] += do_defer;
     }
@@ -345,8 +343,8 @@ inline CsType pivot_level_factorize(
         step.update_kappa(U, kappa_ut);
         // then compute kappa for l
         step.update_kappa(L, kappa_l);
-        do_defer = std::abs(kappa_ut[step]) > tau_kappa ||
-                   std::abs(kappa_l[step]) > tau_kappa;
+        do_defer =
+            std::abs(kappa_ut[step]) > kappa || std::abs(kappa_l[step]) > kappa;
         if (do_defer) {
           ++info_counter[1];
           continue;
@@ -428,7 +426,7 @@ inline CsType pivot_level_factorize(
     const size_type ori_ut_size = ut.size(), ori_l_size = l.size();
 
     // apply drop for U
-    apply_num_dropping(tau_U, std::abs(k_ut) * tau_d, ut);
+    apply_num_dropping(tau_U, std::abs(k_ut) * kappa_d, ut);
 #ifndef HILUCSI_DISABLE_SPACE_DROP
     const size_type n_ut = ut.size();
     apply_space_dropping(row_sizes[p[step]], alpha_U, ut);
@@ -445,7 +443,7 @@ inline CsType pivot_level_factorize(
                ori_ut_size, ut.size(), ori_ut_size - ut.size());
 
     // apply numerical dropping on L
-    apply_num_dropping(tau_L, std::abs(k_l) * tau_d, l);
+    apply_num_dropping(tau_L, std::abs(k_l) * kappa_d, l);
 #ifndef HILUCSI_DISABLE_SPACE_DROP
     const size_type n_l = l.size();
     apply_space_dropping(col_sizes[q[step]], alpha_L, l);
@@ -738,19 +736,9 @@ inline CsType pivot_level_factorize(
 
   // if dense is not empty, then push it back
   if (!S_D.empty()) {
-    if (hilucsi_verbose(INFO, opts)) {
-      if (prec_type::USE_TQRCP) {
-        // for user-specified threshold, we format and log it
-        char value_buf[20];
-        if (opts.qrcp_cond > 0.0) std::sprintf(value_buf, "%g", opts.qrcp_cond);
-        hilucsi_info("factorizing dense level by TQRCP with cond-thres %s...",
-                     (opts.qrcp_cond <= 0.0 ? "(default)" : value_buf));
-      } else
-        hilucsi_info("factorizing dense level by LU...");
-    }
     auto &last_level = precs.back().dense_solver;
     last_level.set_matrix(std::move(S_D));
-    last_level.factorize(opts.qrcp_cond);
+    last_level.factorize(opts);
     if (hilucsi_verbose(INFO, opts))
       hilucsi_info("successfully factorized the dense component...");
   }

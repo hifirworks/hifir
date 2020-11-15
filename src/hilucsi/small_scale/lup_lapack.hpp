@@ -3,7 +3,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /*!
- * \file hilucsi/small_scale/lup.hpp
+ * \file hilucsi/small_scale/lup_lapack.hpp
  * \brief Interface wrappers for LU with partial pivoting routines in LAPACK
  * \author Qiao Chen
  * \todo add interfaces for complex types
