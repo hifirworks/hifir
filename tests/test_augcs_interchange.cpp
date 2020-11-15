@@ -1,16 +1,16 @@
 ///////////////////////////////////////////////////////////////////////////////
-//                This file is part of HILUCSI project                       //
+//                  This file is part of HIF project                         //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "common.hpp"
 // line break to avoid sorting
-#include "hilucsi/ds/Array.hpp"
-#include "hilucsi/ds/AugmentedStorage.hpp"
-#include "hilucsi/ds/CompressedStorage.hpp"
+#include "hif/ds/Array.hpp"
+#include "hif/ds/AugmentedStorage.hpp"
+#include "hif/ds/CompressedStorage.hpp"
 
 #include <gtest/gtest.h>
 
-using namespace hilucsi;
+using namespace hif;
 
 typedef AugCCS<CCS<double, int>> aug_ccs_t;
 typedef AugCRS<CRS<double, int>> aug_crs_t;

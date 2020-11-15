@@ -1,15 +1,15 @@
 ///////////////////////////////////////////////////////////////////////////////
-//                This file is part of HILUCSI project                       //
+//                  This file is part of HIF project                         //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "common.hpp"
 // line break to avoid sorting
-#include "hilucsi/ds/Array.hpp"
-#include "hilucsi/ds/CompressedStorage.hpp"
+#include "hif/ds/Array.hpp"
+#include "hif/ds/CompressedStorage.hpp"
 
 #include <gtest/gtest.h>
 
-using namespace hilucsi;
+using namespace hif;
 
 constexpr static int N = 100;
 
@@ -45,14 +45,14 @@ TEST(MV, crs) {
     const crs_t A   = gen_rand_sparse<crs_t>(m, n);
     const auto  A_d = convert2dense(A);
     if (1) {
-      const auto   x = gen_ran_vec<Array<double>>(n);
+      const auto    x = gen_ran_vec<Array<double>>(n);
       Array<double> y1(m);
       A.mv(x, y1);
       const auto y2 = dense_mv(A_d, x);
       for (int i = 0; i < m; ++i) EXPECT_NEAR(y1[i], y2[i], 1e-5);
     }
     if (1) {
-      const auto   x = gen_ran_vec<Array<double>>(m);
+      const auto    x = gen_ran_vec<Array<double>>(m);
       Array<double> y1(n);
       A.mv(x, y1, true);
       const auto y2 = dense_mv(A_d, x, true);
@@ -90,14 +90,14 @@ TEST(MV, ccs) {
     const crs_t A   = gen_rand_sparse<crs_t>(m, n);
     const auto  A_d = convert2dense(A);
     if (1) {
-      const auto   x = gen_ran_vec<Array<double>>(n);
+      const auto    x = gen_ran_vec<Array<double>>(n);
       Array<double> y1(m);
       A.mv(x, y1);
       const auto y2 = dense_mv(A_d, x);
       for (int i = 0; i < m; ++i) EXPECT_NEAR(y1[i], y2[i], 1e-5);
     }
     if (1) {
-      const auto   x = gen_ran_vec<Array<double>>(m);
+      const auto    x = gen_ran_vec<Array<double>>(m);
       Array<double> y1(n);
       A.mv(x, y1, true);
       const auto y2 = dense_mv(A_d, x, true);

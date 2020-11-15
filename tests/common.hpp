@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-//                This file is part of HILUCSI project                       //
+//                  This file is part of HIF project                         //
 ///////////////////////////////////////////////////////////////////////////////
 
 // Unit testing utilities
@@ -15,19 +15,19 @@
 #include <type_traits>
 #include <vector>
 
-#ifndef HILUCSI_THROW
-#  define HILUCSI_THROW
+#ifndef HIF_THROW
+#  define HIF_THROW
 #endif
 
 #ifdef NDEBUG
 #  undef NDEBUG
 #endif
 
-#ifndef HILUCSI_UNIT_TESTING
-#  define HILUCSI_UNIT_TESTING
+#ifndef HIF_UNIT_TESTING
+#  define HIF_UNIT_TESTING
 #endif
 
-#include "hilucsi/utils/log.hpp"
+#include "hif/utils/log.hpp"
 
 //----------------------
 // dense section

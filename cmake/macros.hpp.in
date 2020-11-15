@@ -1,9 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-//                This file is part of HILUCSI project                       //
+//                  This file is part of HIF project                         //
 ///////////////////////////////////////////////////////////////////////////////
 
 /*!
- * \file hilucsi/macros.hpp
+ * \file hif/macros.hpp
  * \brief Useful preprocessing macros
  * \author Qiao Chen
 
@@ -26,76 +26,76 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
  */
 
-#ifndef _HILUCSI_MACROS_HPP
-#define _HILUCSI_MACROS_HPP
+#ifndef _HIF_MACROS_HPP
+#define _HIF_MACROS_HPP
 
 /*!
  * \addtogroup macros
  * @{
  */
 
-/// \def HILUCSI_THROW
-/// \brief let HILUCSI use C++ exceptions intead of \a abort
+/// \def HIF_THROW
+/// \brief let HIF use C++ exceptions intead of \a abort
 /// \note default value is off
-#ifndef HILUCSI_THROW
-    @HILUCSI_THROW_CODE@
+#ifndef HIF_THROW
+    @HIF_THROW_CODE@
 #endif
 
-/// \def HILUCSI_LOG_PLAIN_PREFIX
-/// \brief indicate HILUCSI to drop the ASCII color code in the logging
+/// \def HIF_LOG_PLAIN_PREFIX
+/// \brief indicate HIF to drop the ASCII color code in the logging
 /// \note default value is off
-#ifndef HILUCSI_LOG_PLAIN_PREFIX
-    @HILUCSI_LOG_PLAIN_PREFIX_CODE@
+#ifndef HIF_LOG_PLAIN_PREFIX
+    @HIF_LOG_PLAIN_PREFIX_CODE@
 #endif
 
-/// \def HILUCSI_NO_DROP_LE_UF
+/// \def HIF_NO_DROP_LE_UF
 /// \brief disable applying dropping on L_E and U_F parts for computing Schur
 /// \note default is off
-#ifndef HILUCSI_NO_DROP_LE_UF
-    @HILUCSI_NO_DROP_LE_UF_CODE@
+#ifndef HIF_NO_DROP_LE_UF
+    @HIF_NO_DROP_LE_UF_CODE@
 #endif
 
-/// \def HILUCSI_DISABLE_SPACE_DROP
+/// \def HIF_DISABLE_SPACE_DROP
 /// \brief completely disable local space control
 /// \note default is off
 /// \warning Do not turn this on unless you intend to deal with relatively
-///          small systems. \a HILUCSI does not have other complexity control
+///          small systems. \a HIF does not have other complexity control
 ///          mechanism except this one.
-#ifndef HILUCSI_DISABLE_SPACE_DROP
-    @HILUCSI_DISABLE_SPACE_DROP_CODE@
+#ifndef HIF_DISABLE_SPACE_DROP
+    @HIF_DISABLE_SPACE_DROP_CODE@
 #endif
 
-/// \def HILUCSI_RESERVE_FAC
+/// \def HIF_RESERVE_FAC
 /// \brief reserve memory factor for factorization
 /// \note default is 5
 ///
-/// We reserve \a HILUCSI_RESERVE_FAC times \a nnz(A) for the \a L and \a U
+/// We reserve \a HIF_RESERVE_FAC times \a nnz(A) for the \a L and \a U
 /// factors for factorization. We found that this is good enough for most
 /// problems without the need of a reallocation.
-#ifndef HILUCSI_RESERVE_FAC
-#  define HILUCSI_RESERVE_FAC @HILUCSI_RESERVE_FAC@
-#endif  // HILUCSI_RESERVE_FAC
+#ifndef HIF_RESERVE_FAC
+#  define HIF_RESERVE_FAC @HIF_RESERVE_FAC@
+#endif  // HIF_RESERVE_FAC
 
-/// \def HILUCSI_LASTLEVEL_DENSE_SIZE
+/// \def HIF_LASTLEVEL_DENSE_SIZE
 /// \brief dense size for last level
 /// \note default is 1500
 ///
 /// This is the threshold that if the current system is less than
-/// \a HILUCSI_LASTLEVEL_DENSE_SIZE, then regardless the sparsity of the
-/// Schur complements, HILUCSI will enforce to use dense direct factorization
+/// \a HIF_LASTLEVEL_DENSE_SIZE, then regardless the sparsity of the
+/// Schur complements, HIF will enforce to use dense direct factorization
 /// for the sake of actual runtime performance.
-#ifndef HILUCSI_LASTLEVEL_DENSE_SIZE
-#  define HILUCSI_LASTLEVEL_DENSE_SIZE @HILUCSI_LASTLEVEL_DENSE_SIZE@
+#ifndef HIF_LASTLEVEL_DENSE_SIZE
+#  define HIF_LASTLEVEL_DENSE_SIZE @HIF_LASTLEVEL_DENSE_SIZE@
 #endif
 
-/// \def HILUCSI_LASTLEVEL_SPARSE_SIZE
-/// \brief sparse version of \ref HILUCSI_LASTLEVEL_DENSE_SIZE
+/// \def HIF_LASTLEVEL_SPARSE_SIZE
+/// \brief sparse version of \ref HIF_LASTLEVEL_DENSE_SIZE
 /// \note default is 15000
-#ifndef HILUCSI_LASTLEVEL_SPARSE_SIZE
-#  define HILUCSI_LASTLEVEL_SPARSE_SIZE @HILUCSI_LASTLEVEL_SPARSE_SIZE@
-#endif  // HILUCSI_LASTLEVEL_SPARSE_SIZE
+#ifndef HIF_LASTLEVEL_SPARSE_SIZE
+#  define HIF_LASTLEVEL_SPARSE_SIZE @HIF_LASTLEVEL_SPARSE_SIZE@
+#endif  // HIF_LASTLEVEL_SPARSE_SIZE
 
-/// \def HILUCSI_FALLBACK_SPARSE_DIRECT_RATIO
+/// \def HIF_FALLBACK_SPARSE_DIRECT_RATIO
 /// \brief fallback to use complete factorization for a certain level
 /// \note default ratio is 85%
 ///
@@ -103,29 +103,29 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 /// this case, if we have sparse direct solver enabled, we can redo the
 /// factorization with a complete version as a fallback plan. This is probably
 /// the best we can do, but there is not control over the sizes of systems...
-#ifndef HILUCSI_FALLBACK_SPARSE_DIRECT_RATIO
-#  define HILUCSI_FALLBACK_SPARSE_DIRECT_RATIO 85
-#endif  // HILUCSI_FALLBACK_SPARSE_DIRECT_RATIO
+#ifndef HIF_FALLBACK_SPARSE_DIRECT_RATIO
+#  define HIF_FALLBACK_SPARSE_DIRECT_RATIO 85
+#endif  // HIF_FALLBACK_SPARSE_DIRECT_RATIO
 
-/// \def HILUCSI_MIN_LOCAL_SIZE_PERCTG
+/// \def HIF_MIN_LOCAL_SIZE_PERCTG
 /// \brief minimum percentation of the local row and column sizes wrt the
 ///        the averaged nnz per row/column for row and column, resp.
 ///
 /// The default value is 85, i.e. 85% of averaged nnz is assigned as the
 /// the minimum value to the user input nnz per row and column
-#ifndef HILUCSI_MIN_LOCAL_SIZE_PERCTG
-#  define HILUCSI_MIN_LOCAL_SIZE_PERCTG @HILUCSI_MIN_LOCAL_SIZE_PERCTG@
-#endif  // HILUCSI_MIN_LOCAL_SIZE_PERCTG
+#ifndef HIF_MIN_LOCAL_SIZE_PERCTG
+#  define HIF_MIN_LOCAL_SIZE_PERCTG @HIF_MIN_LOCAL_SIZE_PERCTG@
+#endif  // HIF_MIN_LOCAL_SIZE_PERCTG
 
-/// \def HILUCSI_DENSE_MODE
+/// \def HIF_DENSE_MODE
 /// \brief backend dense kernels, if it's 1 (default), then using LU, 2 for
 ///        QRCP, other values will rollback to LU.
-#ifndef HILUCSI_DENSE_MODE
-#  define HILUCSI_DENSE_MODE @HILUCSI_DENSE_MODE@
-#endif  // HILUCSI_DENSE_MODE
+#ifndef HIF_DENSE_MODE
+#  define HIF_DENSE_MODE @HIF_DENSE_MODE@
+#endif  // HIF_DENSE_MODE
 
 /*!
  * @}
  */
 
-#endif  // _HILUCSI_MACROS_HPP
+#endif  // _HIF_MACROS_HPP

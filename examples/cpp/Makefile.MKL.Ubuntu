@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-#                Copyright (C) 2019 The HILUCSI AUTHORS
+#                Copyright (C) 2019 The HIF AUTHORS
 # ----------------------------------------------------------------------------
 
 # This is a makefile for Ubuntu, assuming MKL is installed
@@ -16,8 +16,8 @@ MKL_LIBS = -lmkl_intel_lp64 -lmkl_sequential -lmkl_core
 LDFLAGS =
 LDMKL = -Wl,-rpath,${MKL_LIB_ROOT}
 LIBS =
-HILUCSI_ROOT = ../../src
-VPATH = ${HILUCSI_ROOT}
+HIF_ROOT = ../../src
+VPATH = ${HIF_ROOT}
 DEMO_CASES = $(shell \ls *.cpp)
 DEMOS = $(DEMO_CASES:%.cpp=%.exe)
 
@@ -26,8 +26,8 @@ DEMOS = $(DEMO_CASES:%.cpp=%.exe)
 
 all: $(DEMOS)
 
-%.exe: %.cpp HILUCSI.hpp
-	$(CXX) $(DEMO_FLAGS) $(CXXFLAGS) -I$(HILUCSI_ROOT) $< -o $@ \
+%.exe: %.cpp HIF.hpp
+	$(CXX) $(DEMO_FLAGS) $(CXXFLAGS) -I$(HIF_ROOT) $< -o $@ \
 		$(LIBS) -L${MKL_LIB_ROOT} -Wl,--no-as-needed ${MKL_LIBS} \
 		-fopenmp -pthread -lgfortran -lm $(LDMKL) $(LDFLAGS)
 

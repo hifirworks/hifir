@@ -1,12 +1,12 @@
-# Welcome to *HILUCSI* Project #
+# Welcome to *HIF* Project #
 
 ## Introduction ##
 
-Welcome to the `HILUCSI` package! `HILUCSI` stands for `H`ierarchical `I`ncomplete `LU-C`rount with `S`calability-oriented and `I`nverse-based dropping, which is a new *multilevel ILU* software framework based on (near) linear time complexity and robust dropping strategy. Yup, you read it right, we have both!
+Welcome to the `HIF` package! `HIF` stands for `H`ybrid (`H`ierarchical) `I`ncomplete `F`actorizations, which is a new *multilevel ILU-like* software framework based on (near) linear time complexity and robust dropping strategy. Yup, you read it right, we have both!
 
 ## Installation ##
 
-Since `HILUCSI` is a header-only package, one can simply just
+Since `HIF` is a header-only package, one can simply just
 
 ```console
 sudo cp src/* /usr/local/include
@@ -19,7 +19,7 @@ mkdir -p $HOME/.local/include
 cp src/* $HOME/.local/include
 ```
 
-One can also install `HILUCSI` via `cmake`
+One can also install `HIF` via `cmake`
 
 ```console
 mkdir build && cd build
@@ -35,7 +35,7 @@ cmake -LA | awk '{if(f)print} /-- Cache values/{f=1}'
 
 ## License ##
 
-`HILUCSI` is released under GPL version 3. For more details, please refer to the [`LICENSE`](./LICENSE) file.
+`HIF` is released under GPL version 3. For more details, please refer to the [`LICENSE`](./LICENSE) file.
 
 ## Contact ##
 

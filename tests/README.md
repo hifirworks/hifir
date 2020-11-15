@@ -1,4 +1,4 @@
-# HILUCSI Unit Testing #
+# HIF Unit Testing #
 
 To add a new test, create a file with `test_*.cpp`; the dependencies are
 specified as `include`s.
@@ -6,10 +6,10 @@ specified as `include`s.
 For instance, let's make a new unit testing `test_foo.cpp`.
 
 ```cpp
-#include "common.hpp" // must include this before any other hilucsi*.hpp
+#include "common.hpp" // must include this before any other hif*.hpp
 
-#include "hilucsi/ds/Array.hpp"
-#include "hilucsi/utils/log.hpp"
+#include "hif/ds/Array.hpp"
+#include "hif/utils/log.hpp"
 
 #include <gtest/gtest.h>
 
@@ -17,7 +17,7 @@ TEST(...) {...}
 ```
 
 Our unit testing framework can automatically extract the dependencies, i.e.
-`hilucsi/ds/Array.hpp` and `hilucsi/utils/log.hpp` in this case, on-the-fly. In
+`hif/ds/Array.hpp` and `hif/utils/log.hpp` in this case, on-the-fly. In
 addition, both quotation marks and angle brackets work as well with or without
 space(s) between `include` and the files.
 
@@ -31,7 +31,7 @@ make test_foo
 below will cause problem!
 
 ```cpp
-#include "hilucsi/ds/Array.hpp"// blah blah
+#include "hif/ds/Array.hpp"// blah blah
 ```
 
 ## Hint ##

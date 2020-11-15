@@ -1,5 +1,5 @@
 ###############################################################################
-#                   This file is part of HILUCSI project                      #
+#                   This file is part of HIF project                      #
 ###############################################################################
 
 # automatic makefile for unit testing
@@ -40,4 +40,4 @@ endef
 $(foreach test,$(TESTS),$(eval $(call MAKE_EXE_RULE, $(test))))
 
 clean:
-	@rm -f $(EXECS) *.dSYM foo.bin foo?.hilucsi
+	@rm -f $(EXECS) *.dSYM foo.bin foo?.hif

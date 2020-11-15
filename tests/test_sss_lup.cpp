@@ -1,16 +1,17 @@
 ///////////////////////////////////////////////////////////////////////////////
-//                This file is part of HILUCSI project                       //
+//                  This file is part of HIF project                         //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "common.hpp"
 // line break to avoid sorting
-#include "hilucsi/ds/CompressedStorage.hpp"
-#include "hilucsi/ds/DenseMatrix.hpp"
-#include "hilucsi/small_scale/solver.hpp"
+#include "hif/Options.h"
+#include "hif/ds/CompressedStorage.hpp"
+#include "hif/ds/DenseMatrix.hpp"
+#include "hif/small_scale/solver.hpp"
 
 #include <gtest/gtest.h>
 
-using namespace hilucsi;
+using namespace hif;
 
 constexpr static double tol(1e-12);
 
@@ -187,7 +188,7 @@ TEST(LU, d) {
 
   SmallScaleSolverTrait<SMALLSCALE_LUP>::solver_type<double> lup;
   lup.set_matrix(crs);
-  lup.factorize();
+  lup.factorize(get_default_options());
   ASSERT_TRUE(lup.full_rank()) << "should be full rank!\n";
   lup.solve(x);
   for (int i = 0; i < 20; ++i)
