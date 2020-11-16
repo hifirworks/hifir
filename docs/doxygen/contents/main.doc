@@ -10,13 +10,9 @@
 Introduction
 ------------
 
-\c HIF is a C++ package for efficient implementation of multilevel ILU with
-(nearly) linear time complexity and robust dropping strategy.
-
-\c HIF also has interface hooks for C, Fortran, Python3, and MATLAB.
-
-\li list 1
-\li list 2
+\c HIF is a C++ package for efficient implementation of hybrid incomplete
+factorizations with nearly linear time complexity in both its factorization and
+triangular solves.
 
 How to Read The Documentation
 -----------------------------
