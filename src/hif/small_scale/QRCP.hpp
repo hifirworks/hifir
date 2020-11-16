@@ -45,8 +45,8 @@ namespace hif {
 /// \tparam ValueType value type, e.g. \a double
 /// \ingroup sss
 template <class ValueType>
-class QRCP : public internal::SmallScaleBase<ValueType> {
-  using _base = internal::SmallScaleBase<ValueType>;
+class QRCP : public SmallScaleBase<ValueType> {
+  using _base = SmallScaleBase<ValueType>;
 
  public:
   typedef ValueType                 value_type;     ///< value type
@@ -131,6 +131,16 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
     }
   }
 
+  /// \brief refactorize the dense block
+  /// \param[in] opts control parameters, see \ref Options
+  inline void refactorize(const Options &opts) {
+    // copy backup
+    _mat.resize(_mat_backup.nrows(), _mat_backup.ncols());
+    std::copy(_mat_backup.array().cbegin(), _mat_backup.array().cend(),
+              _mat.array().begin());
+    factorize(opts);
+  }
+
   /// \brief solve system
   /// \param[in,out] x input rhs, output solution
   /// \param[in] rank (optional) rank for back solve, default is \a _rank
@@ -195,10 +205,10 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
   template <class ArrayType>
   inline void solve(ArrayType &x, const size_type rank = 0u,
                     const bool tran = false) const {
-    _x.resize(x.size());
-    std::copy(x.cbegin(), x.cend(), _x.begin());
-    solve(_x, rank, tran);
-    std::copy(_x.cbegin(), _x.cend(), x.begin());
+    _base::_x.resize(x.size());
+    std::copy(x.cbegin(), x.cend(), _base::_x.begin());
+    solve(_base::_x, rank, tran);
+    std::copy(_base::_x.cbegin(), _base::_x.cend(), x.begin());
   }
 
  protected:
@@ -284,12 +294,12 @@ class QRCP : public internal::SmallScaleBase<ValueType> {
 
  protected:
   using _base::_mat;                     ///< matrix
+  using _base::_mat_backup;              ///< matrix backup
   using _base::_rank;                    ///< rank
   Array<hif_lapack_int>         _jpvt;   ///< column pivoting array
   Array<value_type>             _tau;    ///< tau array
   mutable Array<value_type>     _work;   ///< work buffer
   mutable Array<hif_lapack_int> _iwork;  ///< integer work buffer
-  mutable Array<value_type>     _x;      ///< buffer for different type
 };
 
 }  // namespace hif

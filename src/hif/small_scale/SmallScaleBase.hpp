@@ -32,7 +32,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "hif/ds/DenseMatrix.hpp"
 
 namespace hif {
-namespace internal {
 
 /// \class SmallScaleBase
 /// \tparam ValueType value type used, e.g. \a double
@@ -64,6 +63,9 @@ class SmallScaleBase {
   template <class CsType>
   inline void set_matrix(const CsType &cs) {
     _mat = dense_type::from_sparse(cs);
+    _mat_backup.resize(_mat.nrows(), _mat.ncols());
+    std::copy(_mat.array().cbegin(), _mat.array().cend(),
+              _mat_backup.array().begin());
   }
 
   /// \brief set a dense operator, this is needed for H version
@@ -86,12 +88,12 @@ class SmallScaleBase {
   }
 
  protected:
-  dense_type _mat;         ///< matrix
-  dense_type _mat_backup;  ///< backup matrix
-  size_type  _rank;        ///< rank
+  dense_type        _mat;         ///< matrix
+  dense_type        _mat_backup;  ///< backup matrix
+  size_type         _rank;        ///< rank
+  Array<value_type> _x;           ///< buffer for handling solve in derived
 };
 
-}  // namespace internal
 }  // namespace hif
 
 #endif  // _HIF_SMALLSCALE_SMALLSCALEBASE_HPP

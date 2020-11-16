@@ -155,8 +155,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #endif  // HIF_MIN_LOCAL_SIZE_PERCTG
 
 /// \def HIF_DENSE_MODE
-/// \brief backend dense kernels, if it's 1 (default), then using LU, 2 for
-///        QRCP, other values will rollback to LU.
+/// \brief backend dense kernels, if it's 1 (default), then using QRCP; other
+///        values indicate using LU
 #ifndef HIF_DENSE_MODE
 #  define HIF_DENSE_MODE 1
 #endif  // HIF_DENSE_MODE

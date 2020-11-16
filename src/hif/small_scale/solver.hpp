@@ -34,28 +34,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 namespace hif {
 
-/// \enum SmallScaleType
-/// \brief type enumerators for small scaled solvers
-/// \ingroup itr
-enum SmallScaleType {
-  SMALLSCALE_LUP = 0,  ///< LU with partial pivoting
-  SMALLSCALE_QRCP,     ///< QR with column pivoting
-  SMALLSCALE_NONE      ///< invalid flag, for debugging purpose
-};
-
 /// \class SmallScaleSolverTrait
 /// \brief Trait for selecting backend solver types
-/// \tparam SolverType must be the integer values in range
-///         [\ref SMALLSCALE_LUP, \ref SMALLSCALE_NONE).
+/// \tparam UseQRCP Boolean flag indicating using QRCP.
 /// \ingroup sss
-template <SmallScaleType SolverType>
+template <bool UseQRCP>
 class SmallScaleSolverTrait;  // trigger complition error
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 // LUP
 template <>
-class SmallScaleSolverTrait<SMALLSCALE_LUP> {
+class SmallScaleSolverTrait<false> {
  public:
   template <class ValueType>
   using solver_type = LUP<ValueType>;
@@ -63,7 +53,7 @@ class SmallScaleSolverTrait<SMALLSCALE_LUP> {
 
 // QRCP
 template <>
-class SmallScaleSolverTrait<SMALLSCALE_QRCP> {
+class SmallScaleSolverTrait<true> {
  public:
   template <class ValueType>
   using solver_type = QRCP<ValueType>;
