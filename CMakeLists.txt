@@ -105,7 +105,7 @@ set(HIF_RESERVE_FAC 5 CACHE STRING "Space ratio (wrt input) reserved for L and U
 set(HIF_LASTLEVEL_DENSE_SIZE 1500 CACHE STRING "Static size for switching to dense level")
 set(HIF_LASTLEVEL_SPARSE_SIZE 15000 CACHE STRING "Static size for switching to complete sparse level")
 set(HIF_MIN_LOCAL_SIZE_PERCTG 85 CACHE STRING "Average percentage for local row/column sizes used in space dropping")
-set(HIF_DENSE_MODE 1 CACHE STRING "Dense solve mode LU (1, default) or QRCP (2)")
+set(HIF_DENSE_MODE 1 CACHE STRING "Dense solve mode QRCP (1, default) or LU (!=1)")
 
 configure_file(${HIF_MOD_PATH}/macros.hpp.in ${HIF_BUILD_DIR}/hif/macros.hpp)
 
