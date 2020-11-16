@@ -30,6 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define _HIF_ALG_PREC_HPP
 
 #include <list>
+#include <type_traits>
 #include <utility>
 
 #include "hif/ds/CompressedStorage.hpp"
@@ -46,6 +47,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 namespace hif {
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
+
+// use QRCP by default
+#  ifndef HIF_DENSE_MODE
+#    define HIF_DENSE_MODE 1
+#  endif  // HIF_DENSE_MODE
 
 namespace internal {
 struct DummySparseSolver {
@@ -64,9 +70,16 @@ struct DummySparseSolver {
 /// \brief A single level preconditioner
 /// \tparam ValueType value data type, e.g. \a double
 /// \tparam IndexType index data type, e.g. \a int
-/// \tparam IntervalBased default is true, using interval based
+/// \tparam UserDenseFactor Potential user customized dense factor for the final
+///                         Schur complement, if it is \a void (default), then
+///                         the code uses the built-in dense factors, i.e.,
+///                         either \ref LUP or \ref QRCP. If it is provided,
+///                         then we will assume it has the same interface as
+///                         \ref SmallScaleBase does with additional member
+///                         methods: \a factorize, \a refactorize, and \a solve.
+///                         For more details, please refer to, e.g., \ref QRCP.
 /// \ingroup slv
-template <class ValueType, class IndexType, bool IntervalBased = true>
+template <class ValueType, class IndexType, class UserDenseFactor = void>
 struct Prec {
   typedef ValueType                     value_type;  ///< value type
   typedef IndexType                     index_type;  ///< index type
@@ -85,20 +98,20 @@ struct Prec {
   using sparse_direct_type = MUMPS<last_level_type>;
 #else
   using sparse_direct_type = internal::DummySparseSolver;
-#endif                                                   // HIF_ENABLE_MUMPS
-  static constexpr char EMPTY_PREC     = '\0';           ///< empty prec
-  static constexpr bool INTERVAL_BASED = IntervalBased;  ///< interval
-  static constexpr bool USE_TQRCP      = true;  ///< use TQRCP for dense level
+#endif                                           // HIF_ENABLE_MUMPS
+  static constexpr char EMPTY_PREC     = '\0';   ///< empty prec
+  static constexpr bool INTERVAL_BASED = false;  ///< interval
   using data_mat_type                  = typename std::conditional<
       INTERVAL_BASED, typename using_interval_from_classical<mat_type>::type,
       mat_type>::type;  ///< data matrix type
 
  private:
-  typedef SmallScaleSolverTrait<(USE_TQRCP ? SMALLSCALE_QRCP : SMALLSCALE_LUP)>
-      _sss_trait;
+  typedef SmallScaleSolverTrait<HIF_DENSE_MODE> _sss_trait;
   ///< small scale trait
  public:
-  typedef typename _sss_trait::template solver_type<last_level_type>
+  typedef typename std::conditional<
+      std::is_void<UserDenseFactor>::value,
+      _sss_trait::template solver_type<last_level_type>, UserDenseFactor>::type
       sss_solver_type;
   ///< small scaled solver type
 
@@ -430,7 +443,7 @@ struct Prec {
 /// \brief multilevel preconditioners
 /// \tparam ValueType value data type, e.g. \a double
 /// \tparam IndexType index data type, e.g. \a int
-/// \tparam IntervalBased default is true, using interval based
+/// \tparam UserDenseFactor Potential user customized dense factor
 /// \ingroup slv
 ///
 /// We choose to use STL list because adding new node is constant time without
@@ -444,8 +457,8 @@ struct Prec {
 /// precs_t precs;
 /// precs.emplace_back(m, n, /* rvalue references */);
 /// \endcode
-template <class ValueType, class IndexType, bool IntervalBased = true>
-using Precs = std::list<Prec<ValueType, IndexType, IntervalBased>>;
+template <class ValueType, class IndexType, class UserDenseFactor = void>
+using Precs = std::list<Prec<ValueType, IndexType, UserDenseFactor>>;
 
 }  // namespace hif
 

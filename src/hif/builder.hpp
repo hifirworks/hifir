@@ -78,7 +78,7 @@ static bool introduced = false;
 /// \class HIF
 /// \tparam ValueType numerical value type, e.g. \a double
 /// \tparam IndexType index type, e.g. \a int
-/// \tparam IntervalBased default is \a false, disabling interval based
+/// \tparam UserDenseFactor Potential user customized dense factor
 ///
 /// This is top user interface (C++); it is designed as a preconditioner that
 /// can be easily plugin other codes. There are two core member functions, 1)
@@ -102,7 +102,7 @@ static bool introduced = false;
 ///     builder.solve(...);
 ///   }
 /// \endcode
-template <class ValueType, class IndexType, bool IntervalBased = false>
+template <class ValueType, class IndexType, class UserDenseFactor = void>
 class HIF {
  public:
   typedef ValueType                     value_type;   ///< value type
@@ -112,7 +112,7 @@ class HIF {
   typedef CRS<value_type, index_type>   crs_type;     ///< crs type
   typedef typename crs_type::other_type ccs_type;     ///< ccs type
   // constexpr static SmallScaleType sss_type = SSSType;  ///< small scale type
-  typedef Precs<value_type, index_type, IntervalBased> precs_type;
+  typedef Precs<value_type, index_type, UserDenseFactor> precs_type;
   ///< multilevel preconditioner type
   typedef typename precs_type::value_type prec_type;  ///< single level prec
   typedef typename prec_type::size_type   size_type;  ///< size type
@@ -128,13 +128,11 @@ class HIF {
   ///< we need this in float+long double mixed for null space solver
 
   /// \brief check if or not we can export data
-  /// \note Sparse last level or IntervalBased compressed formats are not
-  ///       allowed to export their data attributes.
   constexpr bool can_export() const {
 #ifdef HIF_ENABLE_MUMPS
     return false;
 #else
-    return !IntervalBased;
+    return true;
 #endif  // HIF_ENABLE_MUMPS
   }
 

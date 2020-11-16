@@ -43,8 +43,8 @@ namespace hif {
 /// \tparam ValueType value type, e.g. \a double
 /// \ingroup sss
 template <class ValueType>
-class LUP : public internal::SmallScaleBase<ValueType> {
-  using _base = internal::SmallScaleBase<ValueType>;
+class LUP : public SmallScaleBase<ValueType> {
+  using _base = SmallScaleBase<ValueType>;
 
  public:
   typedef ValueType                 value_type;     ///< value type
@@ -78,6 +78,16 @@ class LUP : public internal::SmallScaleBase<ValueType> {
       _rank = _mat.ncols();
   }
 
+  /// \brief refactorize the dense block
+  /// \param[in] opts control parameters, see \ref Options
+  inline void refactorize(const Options &opts) {
+    // copy backup
+    _mat.resize(_mat_backup.nrows(), _mat_backup.ncols());
+    std::copy(_mat_backup.array().cbegin(), _mat_backup.array().cend(),
+              _mat.array().begin());
+    factorize(opts);
+  }
+
   /// \brief solve \f$\mathbf{LUx}=\mathbf{Px}\f$
   /// \param[in,out] x input rhs, output solution
   /// \param[in] tran (optional) tranpose flag
@@ -95,17 +105,17 @@ class LUP : public internal::SmallScaleBase<ValueType> {
   /// \brief wrapper if \a value_type is different from input's
   template <class ArrayType>
   inline void solve(ArrayType &x, const bool tran = false) const {
-    _x.resize(x.size());
-    std::copy(x.cbegin(), x.cend(), _x.begin());
-    solve(_x, tran);
-    std::copy(_x.cbegin(), _x.cend(), x.begin());
+    _base::_x.resize(x.size());
+    std::copy(x.cbegin(), x.cend(), _base::_x.begin());
+    solve(_base::_x, tran);
+    std::copy(_base::_x.cbegin(), _base::_x.cend(), x.begin());
   }
 
  protected:
-  using _base::_mat;                ///< matrix
-  using _base::_rank;               ///< rank
-  Array<hif_lapack_int>     _ipiv;  ///< row pivoting array
-  mutable Array<value_type> _x;     ///< buffer if type is different
+  using _base::_mat;            ///< matrix
+  using _base::_mat_backup;     ///< matrix backup
+  using _base::_rank;           ///< rank
+  Array<hif_lapack_int> _ipiv;  ///< row pivoting array
 };
 
 }  // namespace hif
