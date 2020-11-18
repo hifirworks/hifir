@@ -76,14 +76,23 @@ struct DefaultDenseSolver {
 /// \brief A single level preconditioner
 /// \tparam ValueType value data type, e.g. \a double
 /// \tparam IndexType index data type, e.g. \a int
-/// \tparam UserDenseFactor Potential user customized dense factor for the final
-///                         Schur complement, if it is \a void (default), then
-///                         the code uses the built-in dense factors, i.e.,
-///                         either \ref LUP or \ref QRCP. If it is provided,
-///                         then we will assume it has the same interface as
-///                         \ref SmallScaleBase does with additional member
-///                         methods: \a factorize, \a refactorize, and \a solve.
-///                         For more details, please refer to, e.g., \ref QRCP.
+/// \tparam UserDenseFactor Potential user customized dense factory for the
+///                         final Schur complement, if it is
+///                         \a DefaultDenseSolver (default), the code then uses
+///                         the built-in dense factors.
+///
+/// The following demonstrates how to customize a user-defined dense factory
+///
+/// \code{.cpp}
+///   #include <HIF.hpp>
+///   template <class T>
+///   using MyQRCP = hif::QRCP<T>; // simply wrap built-in QRCP solver
+///   template <class T>
+///   struct MyDenseSolver : public hif::DefaultDenseSolver<T> {
+///     using unsymm_solver_type = MyQRCP<T>;
+///   };
+///   hif::HIF<double, int, MyDenseSolver> my_fac;
+/// \endcode
 /// \ingroup slv
 template <class ValueType, class IndexType,
           template <class> class UserDenseFactor = DefaultDenseSolver>
