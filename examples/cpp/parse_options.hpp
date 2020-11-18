@@ -197,8 +197,10 @@ static std::tuple<hif::Options, int, double, bool, int, int, bool> parse_args(
       ++i;
       if (i >= argc) fatal_exit("missing number of symmetric pre levels!");
       opts.symm_pre_lvls = std::atoi(argv[i]);
-    } else if (arg == string("-n") || arg == string("--no-saddle")) {
-      opts.saddle = 0;
+    } else if (arg == string("-n") || arg == string("--spd")) {
+      ++i;
+      if (i >= argc) fatal_exit("missing number of spd-ness!");
+      opts.spd = std::atoi(argv[i]);
     } else if (arg == string("-N") || arg == string("--no-par-refine")) {
       opts.rf_par = 0;
     } else if (arg == string("-")) {

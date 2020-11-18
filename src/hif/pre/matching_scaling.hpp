@@ -371,9 +371,8 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   t.resize(N);
   hif_error_if(s.status() == DATA_UNDEF, "memory allocation failed for t");
 
-  const bool timing         = hif_verbose(PRE_TIME, opts);
-  const bool compute_perm   = opts.reorder != REORDER_OFF;
-  const bool hdl_zero_diags = opts.saddle;
+  const bool timing       = hif_verbose(PRE_TIME, opts);
+  const bool compute_perm = opts.reorder != REORDER_OFF;
 
   CrsType B;
   if (m0 == M) {
@@ -423,9 +422,8 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   // then determine tiny diags
   // using the inverse mappings are buffers since we don't need them for now
   auto &          p_buf = p.inv(), &q_buf = q.inv();
-  const size_type m = !hdl_zero_diags ? m0
-                                      : internal::defer_tiny_diags<false>(
-                                            A, A_crs, m0, p, q, p_buf, q_buf);
+  const size_type m =
+      internal::defer_tiny_diags<false>(A, A_crs, m0, p, q, p_buf, q_buf);
   return_type BB;
   if (compute_perm && m) {
     p.build_inv();

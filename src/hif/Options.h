@@ -92,7 +92,7 @@ struct hif_Options {
   int    verbose;   /*!< message output level (1, i.e. info) */
   int    rf_par;    /*!< parameter refinement (default 1) */
   int    reorder;   /*!< reordering method */
-  int    saddle;    /*!< enable saddle point static deferring (default 1) */
+  int    spd;       /*!< SPD-ness: 0 (ID), >0 (PD), <0 (ND), (default 0) */
   int    check;     /*!< check user input (default is true (!=0)) */
   int    pre_scale; /*!< prescale (default 0 (off)) */
   int    symm_pre_lvls;
@@ -130,7 +130,7 @@ static hif_Options hif_get_default_options(void) {
                        .verbose       = HIF_VERBOSE_INFO,
                        .rf_par        = 1,
                        .reorder       = HIF_REORDER_AUTO,
-                       .saddle        = 1,
+                       .spd           = 0,
                        .check         = 1,
                        .pre_scale     = 0,
                        .symm_pre_lvls = 1,
@@ -297,8 +297,7 @@ inline std::string opt_repr(const Options &opt) {
          pack_double("c_d", opt.c_d) + pack_double("c_h", opt.c_h) +
          pack_int("N", opt.N) + pack_name("verbose", get_verbose) +
          pack_int("rf_par", opt.rf_par) +
-         pack_name("reorder", get_reorder_name) +
-         pack_int("saddle", opt.saddle) +
+         pack_name("reorder", get_reorder_name) + pack_int("spd", opt.spd) +
          pack_name(
              "check",
              [](const Options &opt_) { return opt_.check ? "yes" : "no"; }) +
@@ -371,7 +370,7 @@ const static std::unordered_map<std::string, int> option_tag2pos = {
     {"verbose", 10},
     {"rf_par", 11},
     {"reorder", 12},
-    {"saddle", 13},
+    {"spd", 13},
     {"check", 14},
     {"pre_scale", 15},
     {"symm_pre_lvls", 16},
@@ -433,7 +432,7 @@ template <class InStream>
 inline InStream &operator>>(InStream &in_str, hif::Options &opt) {
   in_str >> opt.tau_L >> opt.tau_U >> opt.kappa_d >> opt.kappa >> opt.alpha_L >>
       opt.alpha_U >> opt.rho >> opt.c_d >> opt.c_h >> opt.N >> opt.verbose >>
-      opt.rf_par >> opt.reorder >> opt.saddle >> opt.check >> opt.pre_scale >>
+      opt.rf_par >> opt.reorder >> opt.spd >> opt.check >> opt.pre_scale >>
       opt.symm_pre_lvls >> opt.threads >> opt.mumps_blr >> opt.fat_schur_1st >>
       opt.rrqr_cond >> opt.gamma >> opt.beta;
   return in_str;
