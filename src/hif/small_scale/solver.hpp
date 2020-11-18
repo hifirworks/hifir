@@ -31,6 +31,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "hif/small_scale/LUP.hpp"
 #include "hif/small_scale/QRCP.hpp"
+#include "hif/small_scale/SYEIG.hpp"
 
 namespace hif {
 
