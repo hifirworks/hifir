@@ -64,6 +64,12 @@ struct DummySparseSolver {
 };
 }  // namespace internal
 
+template <class T>
+struct DefaultDenseSolver {
+  using unsymm_solver_type = void;
+  using symm_solver_type   = void;
+};
+
 #endif  // DOXYGEN_SHOULD_SKIP_THIS
 
 /// \class Prec
@@ -79,7 +85,8 @@ struct DummySparseSolver {
 ///                         methods: \a factorize, \a refactorize, and \a solve.
 ///                         For more details, please refer to, e.g., \ref QRCP.
 /// \ingroup slv
-template <class ValueType, class IndexType, class UserDenseFactor = void>
+template <class ValueType, class IndexType,
+          template <class> class UserDenseFactor = DefaultDenseSolver>
 struct Prec {
   typedef ValueType                     value_type;  ///< value type
   typedef IndexType                     index_type;  ///< index type
@@ -108,12 +115,29 @@ struct Prec {
  private:
   typedef SmallScaleSolverTrait<HIF_DENSE_MODE> _sss_trait;
   ///< small scale trait
+  static constexpr bool _SAME_DENSE =
+      std::is_same<UserDenseFactor<value_type>,
+                   DefaultDenseSolver<value_type>>::value;
+
  public:
   typedef typename std::conditional<
-      std::is_void<UserDenseFactor>::value,
-      _sss_trait::template solver_type<last_level_type>, UserDenseFactor>::type
+      _SAME_DENSE, _sss_trait::template solver_type<last_level_type>,
+      typename std::conditional<
+          std::is_void<
+              typename UserDenseFactor<value_type>::unsymm_solver_type>::value,
+          _sss_trait::template solver_type<last_level_type>,
+          typename UserDenseFactor<value_type>::unsymm_solver_type>::type>::type
       sss_solver_type;
   ///< small scaled solver type
+  typedef typename std::conditional<
+      _SAME_DENSE, SYEIG<last_level_type>,
+      typename std::conditional<
+          std::is_void<
+              typename UserDenseFactor<value_type>::symm_solver_type>::value,
+          SYEIG<last_level_type>,
+          typename UserDenseFactor<value_type>::symm_solver_type>::type>::type
+      sss_symm_solver_type;
+  ///< small scaled solver for symmetric systems
 
   /// \brief default constructor
   Prec() = default;
@@ -158,7 +182,8 @@ struct Prec {
   inline size_type nnz() const {
     size_type nz = m ? L_B.nnz() + U_B.nnz() + m : 0;
     if (n - m) nz += E.nnz() + F.nnz();
-    if (!dense_solver.empty()) return nz + (n - m) * (n - m);
+    if (!dense_solver.empty() || !symm_dense_solver.empty())
+      return nz + (n - m) * (n - m);
     if (!sparse_solver.empty()) return nz + sparse_solver.nnz();
     return nz;
   }
@@ -295,7 +320,8 @@ struct Prec {
   ///
   /// \note Currently, we test m == n, which is fine for squared systems.
   inline bool is_last_level() const {
-    return !sparse_solver.empty() || !dense_solver.empty() || m == n;
+    return !sparse_solver.empty() || !dense_solver.empty() ||
+           !symm_dense_solver.empty() || m == n;
   }
 
   /// \brief check the (numerical) rank for last level (if applicable)
@@ -303,7 +329,8 @@ struct Prec {
     if (!is_last_level() || m == n) return 0u;
     // NOTE: For sparse last level, we currently don't have QR, thus full rank
     if (!sparse_solver.empty()) return n - m;
-    return dense_solver.rank();
+    if (!dense_solver.empty()) return dense_solver.rank();
+    return symm_dense_solver.rank();
   }
 
   /// \brief query size information
@@ -391,34 +418,51 @@ struct Prec {
 #ifdef HIF_ENABLE_MUMPS
     hif_error("cannot export data for direct sparse last level!");
 #endif
+    if (!dense_solver.empty()) {
+      if (!mat) {
+        nrows = dense_solver.mat_backup().nrows();
+        ncols = dense_solver.mat_backup().ncols();
+        return;
+      }
+      // assume mat is properly allocated
+      std::copy(dense_solver.mat_backup().array().cbegin(),
+                dense_solver.mat_backup().array().cend(), mat);
+      if (destroy) {
+        array_type().swap(dense_solver.mat_backup().array());
+        array_type().swap(dense_solver.mat().array());
+      }
+      return;
+    }
+    hif_assert(!symm_dense_solver.empty(), "fatal");
     if (!mat) {
-      nrows = dense_solver.mat_backup().nrows();
-      ncols = dense_solver.mat_backup().ncols();
+      nrows = symm_dense_solver.mat_backup().nrows();
+      ncols = symm_dense_solver.mat_backup().ncols();
       return;
     }
     // assume mat is properly allocated
-    std::copy(dense_solver.mat_backup().array().cbegin(),
-              dense_solver.mat_backup().array().cend(), mat);
+    std::copy(symm_dense_solver.mat_backup().array().cbegin(),
+              symm_dense_solver.mat_backup().array().cend(), mat);
     if (destroy) {
-      array_type().swap(dense_solver.mat_backup().array());
-      array_type().swap(dense_solver.mat().array());
+      array_type().swap(symm_dense_solver.mat_backup().array());
+      array_type().swap(symm_dense_solver.mat().array());
     }
   }
 
-  size_type                  m;      ///< leading block size
-  size_type                  n;      ///< system size
-  mat_type                   L_B;    ///< lower part of leading block
-  array_type                 d_B;    ///< diagonal block of leading block
-  mat_type                   U_B;    ///< upper part of leading block
-  data_mat_type              E;      ///< scaled and permutated E part
-  data_mat_type              F;      ///< scaled and permutated F part
-  array_type                 s;      ///< row scaling vector
-  array_type                 t;      ///< column scaling vector
-  perm_type                  p;      ///< row permutation matrix
-  perm_type                  p_inv;  ///< row inverse permutation matrix
-  perm_type                  q;      ///< column permutation matrix
-  perm_type                  q_inv;  ///< column inverse permutation matrix
-  sss_solver_type            dense_solver;   ///< dense decomposition
+  size_type            m;             ///< leading block size
+  size_type            n;             ///< system size
+  mat_type             L_B;           ///< lower part of leading block
+  array_type           d_B;           ///< diagonal block of leading block
+  mat_type             U_B;           ///< upper part of leading block
+  data_mat_type        E;             ///< scaled and permutated E part
+  data_mat_type        F;             ///< scaled and permutated F part
+  array_type           s;             ///< row scaling vector
+  array_type           t;             ///< column scaling vector
+  perm_type            p;             ///< row permutation matrix
+  perm_type            p_inv;         ///< row inverse permutation matrix
+  perm_type            q;             ///< column permutation matrix
+  perm_type            q_inv;         ///< column inverse permutation matrix
+  sss_solver_type      dense_solver;  ///< dense decomposition
+  sss_symm_solver_type symm_dense_solver;    ///< symmetric dense decomposition
   mutable sparse_direct_type sparse_solver;  ///< sparse solver
 
  protected:
@@ -457,7 +501,8 @@ struct Prec {
 /// precs_t precs;
 /// precs.emplace_back(m, n, /* rvalue references */);
 /// \endcode
-template <class ValueType, class IndexType, class UserDenseFactor = void>
+template <class ValueType, class IndexType,
+          template <class> class UserDenseFactor = DefaultDenseSolver>
 using Precs = std::list<Prec<ValueType, IndexType, UserDenseFactor>>;
 
 }  // namespace hif

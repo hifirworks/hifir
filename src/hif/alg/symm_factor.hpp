@@ -621,7 +621,7 @@ inline CsType symm_level_factorize(
 
   // if dense is not empty, then push it back
   if (!S_D.empty()) {
-    auto &last_level = precs.back().dense_solver;
+    auto &last_level = precs.back().symm_dense_solver;
     last_level.set_matrix(std::move(S_D));
     last_level.factorize(opts);
     if (hif_verbose(INFO, opts))

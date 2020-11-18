@@ -41,6 +41,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "hif/alg/factor.hpp"
 #include "hif/alg/pivot_factor.hpp"
 #include "hif/alg/prec_solve.hpp"
+#include "hif/alg/symm_factor.hpp"
 #include "hif/utils/common.hpp"
 #include "hif/utils/mt.hpp"
 
@@ -102,7 +103,8 @@ static bool introduced = false;
 ///     builder.solve(...);
 ///   }
 /// \endcode
-template <class ValueType, class IndexType, class UserDenseFactor = void>
+template <class ValueType, class IndexType,
+          template <class> class UserDenseFactor = DefaultDenseSolver>
 class HIF {
  public:
   typedef ValueType                     value_type;   ///< value type
@@ -145,6 +147,7 @@ class HIF {
     const size_type lvls = _precs.size();
     if (lvls)
       return lvls + !_precs.back().dense_solver.empty() +
+             !_precs.back().symm_dense_solver.empty() +
              !_precs.back().sparse_solver.empty();
     return 0;
   }
