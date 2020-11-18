@@ -252,10 +252,13 @@ inline CsType symm_level_factorize(
   double kappa_d, kappa, tau_L, tau_U, alpha_L, alpha_U;
   std::tie(kappa_d, kappa, tau_L, tau_U, alpha_L, alpha_U) =
       internal::determine_fac_pars(opts, cur_level);
+  // get spd flag, notice that 0 for indefinite, >0 for pd, and <0 for ng
+  const int spd_flag = opts.spd;
 
   // Removing bounding the large diagonal values
   const auto is_bad_diag = [=](const value_type a) -> bool {
-    return std::abs(1. / a) > kappa_d;  // || std::abs(a) > tau_d;
+    return std::abs(1. / a) > kappa_d || (spd_flag > 0 && a <= 0.0) ||
+           (spd_flag < 0 && a >= 0.0);
   };
 
   const size_type m2(m), n(A.nrows());
