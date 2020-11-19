@@ -30,6 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define _HIF_SMALLSCALE_SYEIG_HPP
 
 #include <algorithm>
+#include <numeric>
 
 #include "hif/Options.h"
 #include "hif/ds/Array.hpp"
@@ -67,20 +68,67 @@ class SYEIG : public SmallScaleBase<ValueType> {
     hif_error_if(_mat.empty(), "matrix is still empty!");
     hif_error_if(!_base::is_squared(), "the matrix must be squared!");
     if (hif_verbose(INFO, opts))
-      hif_info("factorizing dense level by symmetric eigendecomp...");
+      hif_info("factorizing dense level by symmetric (%s) eigendecomp...",
+               opts.spd > 0 ? "PD" : (opts.spd < 0 ? "ND" : "ID"));
+
+    constexpr static scalar_type EPS =
+        std::pow(Const<scalar_type>::EPS, 2. / 3);
 
     // esimate the workspace
     value_type sz;
     lapack_kernel::syev('L', _mat, _w, &sz, -1);
-    _work.resize(sz);
+    const auto n = _mat.nrows();
+    _work.resize(std::max(size_type(sz), n));
 
     // factorize
-    _w.resize(_mat.nrows());
+    _w.resize(n);
     auto info = lapack_kernel::syev('L', _mat, _w, _work.data(), _work.size());
     if (info > 0)
       hif_error("?syev failed to converge with info=%d.", (int)info);
     else if (info < 0)
       hif_error("?syev's %d-th arg is illegal.", (int)-info);
+
+    // handle truncation
+    _trunc_order.resize(n);
+    std::iota(_trunc_order.begin(), _trunc_order.end(), 0);
+    const value_type thres =
+        EPS * *std::max_element(_w.cbegin(), _w.cend(),
+                                [](const value_type a, const value_type b) {
+                                  return std::abs(a) < std::abs(b);
+                                });
+    _rank = n;
+    if (opts.spd > 0) {
+      // ensure pd-ness
+      for (int i(n - 1); i > -1; --i)
+        if (_w[i] <= 0.0 || std::abs(_w[i]) <= thres)
+          --_rank;
+        else
+          break;
+    } else if (opts.spd < 0) {
+      // ensure nd-ness
+      // reverse the order for truncations
+      std::reverse(_trunc_order.begin(), _trunc_order.end());
+      for (int i(0); i < n; ++i)
+        if (_w[i] >= 0.0 || std::abs(_w[i]) <= thres)
+          --_rank;
+        else
+          break;
+    } else {
+      // indefinite
+      // sort based on magnitude of the eigenvalues
+      std::sort(_trunc_order.begin(), _trunc_order.end(),
+                [&](const int a, const int b) {
+                  return std::abs(_w[a]) > std::abs(_w[b]);
+                });
+      for (int i(n - 1); i > -1; --i)
+        if (std::abs(_w[_trunc_order[i]]) <= thres)
+          --_rank;
+        else
+          break;
+    }
+    if (_rank != n)
+      hif_warning("\n  System is ill-conditioned with rank=%d, dim=%d.",
+                  (int)_rank, (int)n);
   }
 
   /// \brief refactorize the dense block
@@ -95,22 +143,23 @@ class SYEIG : public SmallScaleBase<ValueType> {
 
   /// \brief solve \f$\mathbf{Q\Lambda Q}^T\mathbf{x}=\mathbf{x}\f$
   /// \param[in,out] x input rhs, output solution
-  inline void solve(Array<value_type> &x,
-                    const size_type /* rank */ = 0) const {
+  inline void solve(Array<value_type> &x, const size_type rank = 0) const {
     hif_error_if(
         _mat.empty() || _w.empty(),
         "either the matrix is not set or the factorization has not yet done!");
     hif_error_if(x.size() != _mat.nrows(),
                  "unmatched sizes between system and rhs");
-    const auto n = x.size();
-    _y.resize(n);
+    const auto      n  = x.size();
+    const size_type rk = rank == 0u ? _rank : (rank > n ? n : rank);
     // std::copy(x.cbegin(), x.cend(), _y.begin());
     // step 1, compute y=Q^T*x
-    lapack_kernel::gemv('T', value_type(1), _mat, x, value_type(0), _y);
-    // step 2, solve inv(lambda)*y
-    for (size_type i(0); i < n; ++i) _y[i] /= _w[i];
+    lapack_kernel::gemv('T', value_type(1), _mat, x, value_type(0), _work);
+    // step 2, solve inv(lambda)*y with truncation
+    for (size_type i(0); i < rk; ++i)
+      _work[_trunc_order[i]] /= _w[_trunc_order[i]];
+    for (size_type i(rk); i < n; ++i) _work[_trunc_order[i]] = 0;
     // step 3, compute x=Q*y
-    lapack_kernel::gemv('N', value_type(1), _mat, _y, value_type(0), x);
+    lapack_kernel::gemv('N', value_type(1), _mat, _work, value_type(0), x);
   }
 
   /// \brief wrapper if \a value_type is different from input's
@@ -123,12 +172,13 @@ class SYEIG : public SmallScaleBase<ValueType> {
   }
 
  protected:
-  using _base::_mat;                ///< matrix
-  using _base::_mat_backup;         ///< matrix backup
-  using _base::_rank;               ///< rank
-  Array<value_type>         _w;     ///< Eigenvalues
-  mutable Array<value_type> _y;     ///< workspace used in solve
-  mutable Array<value_type> _work;  ///< work buffer
+ protected:
+  using _base::_mat;                       ///< matrix
+  using _base::_mat_backup;                ///< matrix backup
+  using _base::_rank;                      ///< rank
+  Array<value_type>         _w;            ///< Eigenvalues
+  mutable Array<value_type> _work;         ///< work buffer
+  Array<int>                _trunc_order;  ///< truncated dimensions
 };
 
 }  // namespace hif
