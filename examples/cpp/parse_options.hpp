@@ -208,7 +208,8 @@ static std::tuple<hif::Options, int, double, bool, int, int, bool> parse_args(
       std::cout << "read options from stdin" << std::endl;
       std::cin >> opts;
     } else if (arg == string("-s") || arg == string("--symm")) {
-      symm = true;
+      symm         = true;
+      opts.is_symm = 1;
     } else if (arg == string("-1") || arg == string("--one")) {
       rhs_a1 = true;
     } else if (arg == string("-P") || arg == string("--ksp")) {
