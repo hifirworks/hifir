@@ -282,7 +282,10 @@ class HIF {
       hif_info(opt_repr(opts).c_str());
     }
     const bool revert_warn = warn_flag();
-    if (hif_verbose(NONE, opts)) (void)warn_flag(0);
+    if (hif_verbose(NONE, opts))
+      (void)warn_flag(0);
+    else
+      warn_flag(1);
 
     // check validity of the input system
     if (opts.check) {
@@ -462,31 +465,36 @@ class HIF {
     if (!sym) m = A.nrows();  // IMPORTANT! If asymmetric, set m = n
 
     CsType S;
-    if (sym || opts.pivot == PIVOTING_OFF ||
-        (opts.pivot == PIVOTING_AUTO && cur_level == 1u))
-      // instantiate IsSymm here
-      S = sym ? level_factorize<true>(A, m, N, opts, Crout_info, _precs,
-                                      row_sizes, col_sizes, _stats,
-                                      schur_threads)
-              : level_factorize<false>(A, m, N, opts, Crout_info, _precs,
-                                       row_sizes, col_sizes, _stats,
-                                       schur_threads);
-    else if (opts.pivot == PIVOTING_ON)
-      S = pivot_level_factorize(A, m, N, opts, Crout_info, _precs, row_sizes,
-                                col_sizes, _stats, schur_threads);
-    else {
-      hif_assert(cur_level > 1u, "should not happen");
-      // auto
-      const size_type must_symm_pre_lvls =
-          opts.symm_pre_lvls <= 0 ? 0 : opts.symm_pre_lvls;
-      // apply deferring-only factorization for symmetric preprocessing
-      S = cur_level > must_symm_pre_lvls
-              ? pivot_level_factorize(A, m, N, opts, Crout_info, _precs,
-                                      row_sizes, col_sizes, _stats,
-                                      schur_threads)
-              : level_factorize<false>(A, m, N, opts, Crout_info, _precs,
-                                       row_sizes, col_sizes, _stats,
-                                       schur_threads);
+    if (opts.is_symm) {
+      S = symm_level_factorize(A, m, N, opts, Crout_info, _precs, row_sizes,
+                               _stats, schur_threads);
+    } else {
+      if (sym || opts.pivot == PIVOTING_OFF ||
+          (opts.pivot == PIVOTING_AUTO && cur_level == 1u))
+        // instantiate IsSymm here
+        S = sym ? level_factorize<true>(A, m, N, opts, Crout_info, _precs,
+                                        row_sizes, col_sizes, _stats,
+                                        schur_threads)
+                : level_factorize<false>(A, m, N, opts, Crout_info, _precs,
+                                         row_sizes, col_sizes, _stats,
+                                         schur_threads);
+      else if (opts.pivot == PIVOTING_ON)
+        S = pivot_level_factorize(A, m, N, opts, Crout_info, _precs, row_sizes,
+                                  col_sizes, _stats, schur_threads);
+      else {
+        hif_assert(cur_level > 1u, "should not happen");
+        // auto
+        const size_type must_symm_pre_lvls =
+            opts.symm_pre_lvls <= 0 ? 0 : opts.symm_pre_lvls;
+        // apply deferring-only factorization for symmetric preprocessing
+        S = cur_level > must_symm_pre_lvls
+                ? pivot_level_factorize(A, m, N, opts, Crout_info, _precs,
+                                        row_sizes, col_sizes, _stats,
+                                        schur_threads)
+                : level_factorize<false>(A, m, N, opts, Crout_info, _precs,
+                                         row_sizes, col_sizes, _stats,
+                                         schur_threads);
+      }
     }
 
     // check last level
