@@ -322,6 +322,89 @@ class Crout {
     }
   }
 
+  /// \brief compute the column vector of L of current step for \f$LDL^{T}\f$
+  /// \tparam ScaleArray row/column scaling diagonal matrix type, see \ref Array
+  /// \tparam CcsType ccs format, see \ref CCS
+  /// \tparam PermType permutation matrix type, see \ref Array
+  /// \tparam PosArray position array type, see \ref Array
+  /// \tparam DiagType array used for storing diagonal array, see \ref Array
+  /// \tparam SpVecType sparse vector for storing l, see \ref SparseVector
+  /// \param[in] s row scaling matrix from preprocessing
+  /// \param[in] ccs_A input matrix in ccs scheme
+  /// \param[in] t column scaling matrix from preprocessing, should be \a s
+  /// \param[in] p row inverse permutation matrix (deferred)
+  /// \param[in] qk permutated column index
+  /// \param[in] m leading block size
+  /// \param[in] L lower part of decomposition
+  /// \param[in] L_start position array storing the starting locations of \a L
+  /// \param[in] L_list linked list of row indices of current step in \a L
+  /// \param[in] d diagonal entries
+  /// \param[out] l column vector of L at current \ref _step
+  /// \sa compute_ut
+  ///
+  /// This routine computes the current column vector of \f$\mathbf{L}\f$
+  /// (w/o diagonal scaling). Mathematically, this routine is to compute:
+  ///
+  /// \f[
+  ///   \mathbf{\ell}_{k}=
+  ///     \hat{\mathbf{A}}[\mathbf{p}_{k+1:n},q_{k}]-
+  ///     \mathbf{L}_{k+1:n,1:k-1}\mathbf{D}_{k-1}
+  ///       \mathbf{L}_{k,1:k-1}^{T}
+  /// \f]
+  template <class ScaleArray, class CcsType, class PermType, class PosArray,
+            class DiagType, class SpVecType>
+  void compute_symm(const ScaleArray &s, const CcsType &ccs_A,
+                    const ScaleArray &t, const PermType &p, const size_type qk,
+                    const size_type m, const CcsType &L,
+                    const PosArray &L_start, const PosArray &L_list,
+                    const DiagType &d, SpVecType &l) const {
+    // compilation checking
+    static_assert(!CcsType::ROW_MAJOR, "input A must be CCS for loading l");
+    using index_type                = typename PosArray::value_type;
+    constexpr static index_type nil = static_cast<index_type>(-1);
+
+    // clear sparse counter
+    l.reset_counter();
+
+    // load A column
+    _load_acol<false>(s, ccs_A, t, p, qk, m, l);
+
+    // if not first step
+    if (_step) {
+      index_type L_col = L_list[deferred_step()];
+      while (L_col != nil) {
+        hif_assert((size_type)L_col < _step,
+                   "compute_ut row index %zd should not exceed step %zd for U",
+                   (size_type)L_col, _step);
+        // compute d*L^T
+        auto       L_v_itr = L.val_cbegin(L_col) + L_start[L_col];
+        const auto dlt     = d[L_col] * *L_v_itr;
+        auto       L_i_itr = L.row_ind_cbegin(L_col) + L_start[L_col],
+             L_last        = L.row_ind_cend(L_col);
+        if (L_i_itr != L_last) {
+          ++L_i_itr;
+          ++L_v_itr;
+        }
+        for (; L_i_itr != L_last; ++L_i_itr, ++L_v_itr) {
+          // convert to c index
+          const auto idx = *L_i_itr;
+          hif_assert(idx > deferred_step(),
+                     "L index %zd in computing l should greater than step "
+                     "%zd(defers:%zd)",
+                     idx, _step, _defers);
+          // compute this entry, if index does not exist, assign new value to
+          // -L*d*L^T, else, -= L*d*L^T
+          if (l.push_back(idx, _step))
+            l.vals()[idx] = -dlt * *L_v_itr;
+          else
+            l.vals()[idx] -= *L_v_itr * dlt;
+        }
+        // update L linked list
+        L_col = L_list[L_col];
+      }  // while
+    }
+  }
+
   /// \brief compress L and U and update their corresponding starting positions
   ///        and linked lists
   /// \tparam CsType either \ref CRS or \ref CCS

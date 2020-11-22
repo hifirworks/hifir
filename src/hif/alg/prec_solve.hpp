@@ -343,9 +343,12 @@ inline void prec_solve(PrecItr prec_itr, const RhsType &b,
       // create an array wrapper with size of n-m, of y(m+1:n)
       auto y_mn = work_array_type(nm, &work[0], WRAP);
       std::copy_n(y.data() + m, nm, y_mn.begin());
-      if (prec.sparse_solver.empty())
-        prec.dense_solver.solve(y_mn, last_dim);
-      else {
+      if (prec.sparse_solver.empty()) {
+        if (!prec.dense_solver.empty())
+          prec.dense_solver.solve(y_mn, last_dim);
+        else
+          prec.symm_dense_solver.solve(y_mn, last_dim);
+      } else {
         prec.sparse_solver.solve(y_mn);
         hif_error_if(prec.sparse_solver.info(), "%s returned error %d",
                      prec.sparse_solver.backend(), prec.sparse_solver.info());
@@ -443,9 +446,12 @@ inline void prec_solve_tran(PrecItr prec_itr, const RhsType &b,
       // create an array wrapper with size of n-m, of y(m+1:n)
       auto y_mn = work_array_type(nm, &work[0], WRAP);
       std::copy_n(y.data() + m, nm, y_mn.begin());
-      if (prec.sparse_solver.empty())
-        prec.dense_solver.solve(y_mn, last_dim, true);
-      else {
+      if (prec.sparse_solver.empty()) {
+        if (!prec.dense_solver.empty())
+          prec.dense_solver.solve(y_mn, last_dim, true);
+        else
+          prec.symm_dense_solver.solve(y_mn, last_dim);
+      } else {
         prec.sparse_solver.solve(y_mn, true);
         hif_error_if(prec.sparse_solver.info(), "%s returned error %d",
                      prec.sparse_solver.backend(), prec.sparse_solver.info());

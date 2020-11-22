@@ -92,7 +92,7 @@ struct hif_Options {
   int    verbose;   /*!< message output level (1, i.e. info) */
   int    rf_par;    /*!< parameter refinement (default 1) */
   int    reorder;   /*!< reordering method */
-  int    saddle;    /*!< enable saddle point static deferring (default 1) */
+  int    spd;       /*!< SPD-ness: 0 (ID), >0 (PD), <0 (ND), (default 0) */
   int    check;     /*!< check user input (default is true (!=0)) */
   int    pre_scale; /*!< prescale (default 0 (off)) */
   int    symm_pre_lvls;
@@ -104,6 +104,7 @@ struct hif_Options {
   int    pivot;         /*!< pivoting flag (default is OFF (0)) */
   double gamma;         /*!< threshold for thresholded pivoting (1.0) */
   double beta;          /*!< safeguard factor for equlibrition scaling (1e3) */
+  int    is_symm;       /*!< is symmetric (Hermitian) system? (default 0) */
 };
 
 /*!
@@ -130,7 +131,7 @@ static hif_Options hif_get_default_options(void) {
                        .verbose       = HIF_VERBOSE_INFO,
                        .rf_par        = 1,
                        .reorder       = HIF_REORDER_AUTO,
-                       .saddle        = 1,
+                       .spd           = 0,
                        .check         = 1,
                        .pre_scale     = 0,
                        .symm_pre_lvls = 1,
@@ -140,7 +141,8 @@ static hif_Options hif_get_default_options(void) {
                        .rrqr_cond     = 0.0,
                        .pivot         = HIF_PIVOTING_OFF,
                        .gamma         = 1.0,
-                       .beta          = 1e3};
+                       .beta          = 1e3,
+                       .is_symm       = 0};
 }
 
 /*!
@@ -297,8 +299,7 @@ inline std::string opt_repr(const Options &opt) {
          pack_double("c_d", opt.c_d) + pack_double("c_h", opt.c_h) +
          pack_int("N", opt.N) + pack_name("verbose", get_verbose) +
          pack_int("rf_par", opt.rf_par) +
-         pack_name("reorder", get_reorder_name) +
-         pack_int("saddle", opt.saddle) +
+         pack_name("reorder", get_reorder_name) + pack_int("spd", opt.spd) +
          pack_name(
              "check",
              [](const Options &opt_) { return opt_.check ? "yes" : "no"; }) +
@@ -314,12 +315,13 @@ inline std::string opt_repr(const Options &opt) {
                                 ? "off"
                                 : (opt_.pivot == PIVOTING_ON ? "on" : "auto");
                    }) +
-         pack_double("gamma", opt.gamma) + pack_double("beta", opt.beta);
+         pack_double("gamma", opt.gamma) + pack_double("beta", opt.beta) +
+         pack_int("is_symm", opt.is_symm);
 }
 
 #  ifndef DOXYGEN_SHOULD_SKIP_THIS
 namespace internal {
-#    define _HIF_TOTAL_OPTIONS 24
+#    define _HIF_TOTAL_OPTIONS 25
 /*
  * build a byte map, i.e. the value is the leading byte position of the attrs
  * in Options
@@ -345,16 +347,40 @@ const static std::size_t option_attr_pos[_HIF_TOTAL_OPTIONS] = {
     option_attr_pos[16] + sizeof(int),
     option_attr_pos[17] + sizeof(int),
     option_attr_pos[18] + sizeof(int),
-    option_attr_pos[19] + sizeof(double),
-    option_attr_pos[20] + sizeof(int),
-    option_attr_pos[21] + sizeof(double),
-    option_attr_pos[22] + sizeof(double)};
+    option_attr_pos[19] + sizeof(int),
+    option_attr_pos[20] + sizeof(double),
+    option_attr_pos[21] + sizeof(int),
+    option_attr_pos[22] + sizeof(double),
+    option_attr_pos[23] + sizeof(double)};
 
 /* data type tags, true for double, false for int */
 const static bool option_dtypes[_HIF_TOTAL_OPTIONS] = {
-    true,  true,  true,  true,  true,  true,  true,  true,
-    true,  false, false, false, false, false, false, false,
-    false, false, false, false, true,  false, true,  true};
+    true,   // 0
+    true,   // 1
+    true,   // 2
+    true,   // 3
+    true,   // 4
+    true,   // 5
+    true,   // 6
+    true,   // 7
+    true,   // 8
+    false,  // 9
+    false,  // 10
+    false,  // 11
+    false,  // 12
+    false,  // 13
+    false,  // 14
+    false,  // 15
+    false,  // 16
+    false,  // 17
+    false,  // 18
+    false,  // 19
+    true,   // 20
+    false,  // 21
+    true,   // 22
+    true,   // 23
+    false,  // 24
+};
 
 /* using unordered map to store the string to index map */
 const static std::unordered_map<std::string, int> option_tag2pos = {
@@ -371,7 +397,7 @@ const static std::unordered_map<std::string, int> option_tag2pos = {
     {"verbose", 10},
     {"rf_par", 11},
     {"reorder", 12},
-    {"saddle", 13},
+    {"spd", 13},
     {"check", 14},
     {"pre_scale", 15},
     {"symm_pre_lvls", 16},
@@ -381,7 +407,8 @@ const static std::unordered_map<std::string, int> option_tag2pos = {
     {"rrqr_cond", 20},
     {"pivot", 21},
     {"gamma", 22},
-    {"beta", 23}};
+    {"beta", 23},
+    {"is_symm", 24}};
 
 } /* namespace internal */
 #  endif /* DOXYGEN_SHOULD_SKIP_THIS */
@@ -433,9 +460,9 @@ template <class InStream>
 inline InStream &operator>>(InStream &in_str, hif::Options &opt) {
   in_str >> opt.tau_L >> opt.tau_U >> opt.kappa_d >> opt.kappa >> opt.alpha_L >>
       opt.alpha_U >> opt.rho >> opt.c_d >> opt.c_h >> opt.N >> opt.verbose >>
-      opt.rf_par >> opt.reorder >> opt.saddle >> opt.check >> opt.pre_scale >>
+      opt.rf_par >> opt.reorder >> opt.spd >> opt.check >> opt.pre_scale >>
       opt.symm_pre_lvls >> opt.threads >> opt.mumps_blr >> opt.fat_schur_1st >>
-      opt.rrqr_cond >> opt.gamma >> opt.beta;
+      opt.rrqr_cond >> opt.gamma >> opt.beta >> opt.is_symm;
   return in_str;
 }
 

@@ -28,14 +28,15 @@
 #include <tuple>
 
 template <class MatrixType, class ArrayType>
-inline std::tuple<MatrixType, ArrayType, typename ArrayType::size_type>
-get_inputs(std::string dir, const bool rhs_a1) {
+inline std::tuple<MatrixType, ArrayType> get_inputs(std::string dir,
+                                                    const bool  rhs_a1) {
   if (dir.back() != '/') dir += "/";
   std::string A_file = dir + "A.psmilu", b_file = dir + "b.txt";
   if (!std::ifstream(A_file).good()) A_file = dir + "A.hif";
   typename ArrayType::size_type m(0);
   MatrixType                    A = MatrixType::from_bin(A_file.c_str(), &m);
-  ArrayType                     b(A.nrows());
+  (void)m;  // not used
+  ArrayType b(A.nrows());
   if (!rhs_a1) {
     std::ifstream f(b_file.c_str());
     if (!f.is_open()) {
@@ -46,5 +47,5 @@ get_inputs(std::string dir, const bool rhs_a1) {
     f.close();
   } else
     A.mv_nt(ArrayType(b.size(), 1.0), b);
-  return std::make_tuple(A, b, m);
+  return std::make_tuple(A, b);
 }

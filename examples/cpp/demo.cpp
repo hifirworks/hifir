@@ -68,21 +68,14 @@ int main(int argc, char *argv[]) {
   std::tie(opts, restart, rtol, symm, kernel, ksp, rhs_a1) =
       parse_args(argc, argv);
   if (opts.verbose == VERBOSE_NONE) warn_flag(0);
-  crs_t              A;
-  array_t            b;
-  array_t::size_type m;
+  crs_t   A;
+  array_t b;
   // read input data
-  std::tie(A, b, m) = get_inputs<crs_t, array_t>(std::string(argv[1]), rhs_a1);
-  if (symm && m == 0u) {
-    std::cerr << "Warning! Input file doesn\'t contain the leading size\n"
-              << "for symmetric system, use the overall size instead\n";
-    m = A.nrows();
-  } else if (!symm)
-    m = 0;
+  std::tie(A, b) = get_inputs<crs_t, array_t>(std::string(argv[1]), rhs_a1);
   std::cout << "rtol=" << rtol << ", restart=" << restart
             << "\nNumberOfUnknowns=" << A.nrows() << ", nnz(A)=" << A.nnz()
             << "\n"
-            << "symmetric=" << symm << ", leading-block=" << m << "\n\n"
+            << "symmetric=" << symm << "\n\n"
             << opt_repr(opts) << std::endl;
 
   array_t x(b.size());  // solution
@@ -95,7 +88,7 @@ int main(int argc, char *argv[]) {
   timer.start();
   std::shared_ptr<prec_t> _M(new prec_t());
   auto &                  M = *_M;
-  M.factorize(A2, m, opts);
+  M.factorize(A2, 0u, opts);
   timer.finish();
   hif_info(
       "\nMLILU done!\n"

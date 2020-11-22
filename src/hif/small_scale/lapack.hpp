@@ -39,6 +39,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "hif/small_scale/lup_lapack.hpp"
 #include "hif/small_scale/qrcp_lapack.hpp"
+#include "hif/small_scale/syeig_lapack.hpp"
 #include "hif/small_scale/trsv_lapack.hpp"
 
 namespace hif {
@@ -219,6 +220,37 @@ class Lapack {
 
   ///@}
 
+  /// \name SYEIG
+  ///@{
+
+  template <class T = int_type>
+  inline static
+      typename std::enable_if<std::is_floating_point<value_type>::value,
+                              T>::type
+      syev(const char uplo, const hif_lapack_int n, value_type *a,
+           const hif_lapack_int lda, value_type *w, value_type *work,
+           const hif_lapack_int lwork) {
+    return internal::syev(uplo, n, a, lda, w, work, lwork);
+  }
+
+  template <class T = int_type>
+  inline static
+      typename std::enable_if<!std::is_floating_point<value_type>::value,
+                              T>::type
+      syev(const char, const hif_lapack_int, value_type *, const hif_lapack_int,
+           value_type *, value_type *, const hif_lapack_int) {
+    hif_error("?syev only works for *real* symmetric systems!");
+    return 1;
+  }
+
+  inline static int_type syev(const char uplo, DenseMatrix<value_type> &a,
+                              Array<value_type> &w, value_type *work,
+                              const hif_lapack_int lwork) {
+    return syev(uplo, a.nrows(), a.data(), a.nrows(), w.data(), work, lwork);
+  }
+
+  ///@}
+
   /// \name common
   ///@{
 
@@ -234,6 +266,28 @@ class Lapack {
                           Array<value_type> &            x) {
     hif_assert(a.is_squared(), "input must be squared matrix");
     trsv(uplo, trans, diag, a.nrows(), a.data(), a.nrows(), x.data(), 1);
+  }
+
+  inline static void gemv(const char trans, const hif_lapack_int m,
+                          const hif_lapack_int n, const value_type alpha,
+                          const value_type *a, const hif_lapack_int lda,
+                          const double *x, const double beta, double *y) {
+    internal::gemv(trans, m, n, alpha, a, lda, x, beta, y);
+  }
+
+  inline static void gemv(const char trans, const double alpha,
+                          const DenseMatrix<value_type> &a,
+                          const Array<value_type> &x, const value_type beta,
+                          Array<value_type> &y) {
+    if (trans == 'N') {
+      hif_assert(a.ncols() == x.size(), "unmatched sizes");
+      hif_assert(a.nrows() == y.size(), "unmatched sizes");
+    } else {
+      hif_assert(a.ncols() == y.size(), "unmatched sizes");
+      hif_assert(a.nrows() == x.size(), "unmatched sizes");
+    }
+    gemv(trans, a.nrows(), a.ncols(), alpha, a.data(), a.nrows(), x.data(),
+         beta, y.data());
   }
 
   ///@}
