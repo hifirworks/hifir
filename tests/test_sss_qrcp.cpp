@@ -186,7 +186,7 @@ TEST(LU, d) {
   }
   crs.end_assemble_rows();
 
-  SmallScaleSolverTrait<SMALLSCALE_QRCP>::solver_type<double> qrcp;
+  SmallScaleSolverTrait<true>::solver_type<double> qrcp;
   qrcp.set_matrix(crs);
   qrcp.factorize(get_default_options());
   ASSERT_TRUE(qrcp.full_rank()) << "should be full rank!\n";
