@@ -108,7 +108,7 @@ class SYEIG : public SmallScaleBase<ValueType> {
       // ensure nd-ness
       // reverse the order for truncations
       std::reverse(_trunc_order.begin(), _trunc_order.end());
-      for (int i(0); i < n; ++i)
+      for (size_type i(0); i < n; ++i)
         if (_w[i] >= 0.0 || std::abs(_w[i]) <= thres)
           --_rank;
         else
@@ -153,7 +153,7 @@ class SYEIG : public SmallScaleBase<ValueType> {
     const size_type rk = rank == 0u ? _rank : (rank > n ? n : rank);
     // std::copy(x.cbegin(), x.cend(), _y.begin());
     // step 1, compute y=Q^T*x
-    lapack_kernel::gemv('T', value_type(1), _mat, x, value_type(0), _work);
+    lapack_kernel::gemv('C', value_type(1), _mat, x, value_type(0), _work);
     // step 2, solve inv(lambda)*y with truncation
     for (size_type i(0); i < rk; ++i)
       _work[_trunc_order[i]] /= _w[_trunc_order[i]];

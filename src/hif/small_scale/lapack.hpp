@@ -288,13 +288,6 @@ class Lapack {
                           const DenseMatrix<value_type> &a,
                           const Array<value_type> &x, const value_type beta,
                           Array<value_type> &y) {
-    if (trans == 'N') {
-      hif_assert(a.ncols() == x.size(), "unmatched sizes");
-      hif_assert(a.nrows() == y.size(), "unmatched sizes");
-    } else {
-      hif_assert(a.ncols() == y.size(), "unmatched sizes");
-      hif_assert(a.nrows() == x.size(), "unmatched sizes");
-    }
     gemv(trans, a.nrows(), a.ncols(), alpha, a.data(), a.nrows(), x.data(),
          beta, y.data());
   }
