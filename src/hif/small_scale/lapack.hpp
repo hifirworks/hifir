@@ -232,30 +232,19 @@ class Lapack {
   /// \name SYEIG
   ///@{
 
-  template <class T = int_type>
-  inline static
-      typename std::enable_if<std::is_floating_point<value_type>::value,
-                              T>::type
-      syev(const char uplo, const hif_lapack_int n, value_type *a,
-           const hif_lapack_int lda, value_type *w, value_type *work,
-           const hif_lapack_int lwork) {
-    return internal::syev(uplo, n, a, lda, w, work, lwork);
-  }
-
-  template <class T = int_type>
-  inline static
-      typename std::enable_if<!std::is_floating_point<value_type>::value,
-                              T>::type
-      syev(const char, const hif_lapack_int, value_type *, const hif_lapack_int,
-           value_type *, value_type *, const hif_lapack_int) {
-    hif_error("?syev only works for *real* symmetric systems!");
-    return 1;
+  inline static int_type syev(const char uplo, const hif_lapack_int n,
+                              pointer a, const hif_lapack_int lda,
+                              scalar_type *w, pointer work,
+                              const hif_lapack_int lwork, scalar_type *rwork) {
+    return internal::syev(uplo, n, a, lda, w, work, lwork, rwork);
   }
 
   inline static int_type syev(const char uplo, DenseMatrix<value_type> &a,
-                              Array<value_type> &w, value_type *work,
-                              const hif_lapack_int lwork) {
-    return syev(uplo, a.nrows(), a.data(), a.nrows(), w.data(), work, lwork);
+                              Array<scalar_type> &w, value_type *work,
+                              const hif_lapack_int lwork,
+                              Array<scalar_type> & rwork) {
+    return syev(uplo, a.nrows(), a.data(), a.nrows(), w.data(), work, lwork,
+                rwork.data());
   }
 
   ///@}
@@ -280,11 +269,12 @@ class Lapack {
   inline static void gemv(const char trans, const hif_lapack_int m,
                           const hif_lapack_int n, const value_type alpha,
                           const value_type *a, const hif_lapack_int lda,
-                          const double *x, const double beta, double *y) {
+                          const value_type *x, const value_type beta,
+                          value_type *y) {
     internal::gemv(trans, m, n, alpha, a, lda, x, beta, y);
   }
 
-  inline static void gemv(const char trans, const double alpha,
+  inline static void gemv(const char trans, const value_type alpha,
                           const DenseMatrix<value_type> &a,
                           const Array<value_type> &x, const value_type beta,
                           Array<value_type> &y) {
