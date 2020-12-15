@@ -385,7 +385,7 @@ class AMD {
     } else {
       dense = alpha * sqrt((double)n);
     }
-    dense = std::max(16, dense);
+    dense = std::max((Int)16, dense);
     dense = std::min(n, dense);
     for (i = 0; i < n; i++) {
       Last[i]   = EMPTY;
@@ -1075,7 +1075,7 @@ class AMD {
       Rp = AMD_malloc(n + 1, sizeof(Int));
       Ri = AMD_malloc(nz, sizeof(Int));
       mem += (n + 1);
-      mem += std::max(nz, 1);
+      mem += std::max(nz, (Int)1);
       if (!Rp || !Ri) {
         AMD_free(Rp);
         AMD_free(Ri);
