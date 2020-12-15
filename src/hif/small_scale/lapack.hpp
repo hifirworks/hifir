@@ -36,6 +36,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "hif/ds/Array.hpp"
 #include "hif/ds/DenseMatrix.hpp"
 #include "hif/utils/log.hpp"
+#include "hif/utils/math.hpp"
 
 #include "hif/small_scale/lup_lapack.hpp"
 #include "hif/small_scale/qrcp_lapack.hpp"
@@ -56,6 +57,10 @@ class Lapack {
   typedef IntType     int_type;    ///< integer type
   typedef ValueType   value_type;  ///< value type
   typedef value_type *pointer;     ///< pointer type
+  typedef typename ValueTypeTrait<value_type>::value_type scalar_type;
+  ///< scalar type
+  constexpr static bool IS_REAL = std::is_same<scalar_type, value_type>::value;
+  ///< flag indicating whether or not complex arithmetic is used
 
  private:
   constexpr static bool _INT_TYPE_CONSIS =
@@ -135,20 +140,22 @@ class Lapack {
   template <typename T = hif_lapack_int>
   inline static typename std::enable_if<_INT_TYPE_CONSIS, T>::type geqp3(
       const int_type m, const int_type n, pointer a, const int_type lda,
-      int_type *jpvt, pointer tau, pointer work, const int_type lwork) {
-    return internal::geqp3(m, n, a, lda, jpvt, tau, work, lwork);
+      int_type *jpvt, pointer tau, pointer work, const int_type lwork,
+      scalar_type *rwork) {
+    return internal::geqp3(m, n, a, lda, jpvt, tau, work, lwork, rwork);
   }
 
   template <typename T = hif_lapack_int>
   inline static typename std::enable_if<!_INT_TYPE_CONSIS, T>::type geqp3(
       const int_type m, const int_type n, pointer a, const int_type lda,
-      int_type *jpvt, pointer tau, pointer work, const int_type lwork) {
+      int_type *jpvt, pointer tau, pointer work, const int_type lwork,
+      scalar_type *rwork) {
     if (lwork == (int_type)-1)
-      return internal::geqp3(m, n, a, lda, nullptr, tau, work, -1);
+      return internal::geqp3(m, n, a, lda, nullptr, tau, work, -1, rwork);
     // NOTE jpvt can be input as well
     std::vector<hif_lapack_int> buf(jpvt, jpvt + n);
     const auto                  info =
-        internal::geqp3(m, n, a, lda, buf.data(), tau, work, lwork);
+        internal::geqp3(m, n, a, lda, buf.data(), tau, work, lwork, rwork);
     std::copy(buf.cbegin(), buf.cend(), jpvt);
     return info;
   }
@@ -162,10 +169,12 @@ class Lapack {
                "tau should have size of min(m,n)");
     value_type lwork;
     geqp3(a.nrows(), a.ncols(), a.data(), a.nrows(), jpvt.data(), tau.data(),
-          &lwork, -1);
-    std::vector<value_type> work((int_type)lwork);
+          &lwork, -1, nullptr);
+    std::vector<value_type> work((int_type)abs(lwork));
+    Array<scalar_type>      rwork;
+    if (!IS_REAL) rwork.resize(2 * a.ncols());
     return geqp3(a.nrows(), a.ncols(), a.data(), a.nrows(), jpvt.data(),
-                 tau.data(), work.data(), (int_type)lwork);
+                 tau.data(), work.data(), (int_type)abs(lwork), rwork.data());
   }
 
   inline static int_type ormqr(const char side, const char trans,
@@ -211,9 +220,9 @@ class Lapack {
   }
 
   inline static int_type laic1(const int_type job, const int_type j,
-                               const value_type *x, const value_type sest,
+                               const value_type *x, const scalar_type sest,
                                const value_type *w, const value_type gamma,
-                               value_type &sestpr, value_type &s,
+                               scalar_type &sestpr, value_type &s,
                                value_type &c) {
     return internal::laic1(job, j, x, sest, w, gamma, sestpr, s, c);
   }
@@ -223,30 +232,19 @@ class Lapack {
   /// \name SYEIG
   ///@{
 
-  template <class T = int_type>
-  inline static
-      typename std::enable_if<std::is_floating_point<value_type>::value,
-                              T>::type
-      syev(const char uplo, const hif_lapack_int n, value_type *a,
-           const hif_lapack_int lda, value_type *w, value_type *work,
-           const hif_lapack_int lwork) {
-    return internal::syev(uplo, n, a, lda, w, work, lwork);
-  }
-
-  template <class T = int_type>
-  inline static
-      typename std::enable_if<!std::is_floating_point<value_type>::value,
-                              T>::type
-      syev(const char, const hif_lapack_int, value_type *, const hif_lapack_int,
-           value_type *, value_type *, const hif_lapack_int) {
-    hif_error("?syev only works for *real* symmetric systems!");
-    return 1;
+  inline static int_type syev(const char uplo, const hif_lapack_int n,
+                              pointer a, const hif_lapack_int lda,
+                              scalar_type *w, pointer work,
+                              const hif_lapack_int lwork, scalar_type *rwork) {
+    return internal::syev(uplo, n, a, lda, w, work, lwork, rwork);
   }
 
   inline static int_type syev(const char uplo, DenseMatrix<value_type> &a,
-                              Array<value_type> &w, value_type *work,
-                              const hif_lapack_int lwork) {
-    return syev(uplo, a.nrows(), a.data(), a.nrows(), w.data(), work, lwork);
+                              Array<scalar_type> &w, value_type *work,
+                              const hif_lapack_int lwork,
+                              Array<scalar_type> & rwork) {
+    return syev(uplo, a.nrows(), a.data(), a.nrows(), w.data(), work, lwork,
+                rwork.data());
   }
 
   ///@}
@@ -271,21 +269,15 @@ class Lapack {
   inline static void gemv(const char trans, const hif_lapack_int m,
                           const hif_lapack_int n, const value_type alpha,
                           const value_type *a, const hif_lapack_int lda,
-                          const double *x, const double beta, double *y) {
+                          const value_type *x, const value_type beta,
+                          value_type *y) {
     internal::gemv(trans, m, n, alpha, a, lda, x, beta, y);
   }
 
-  inline static void gemv(const char trans, const double alpha,
+  inline static void gemv(const char trans, const value_type alpha,
                           const DenseMatrix<value_type> &a,
                           const Array<value_type> &x, const value_type beta,
                           Array<value_type> &y) {
-    if (trans == 'N') {
-      hif_assert(a.ncols() == x.size(), "unmatched sizes");
-      hif_assert(a.nrows() == y.size(), "unmatched sizes");
-    } else {
-      hif_assert(a.ncols() == y.size(), "unmatched sizes");
-      hif_assert(a.nrows() == x.size(), "unmatched sizes");
-    }
     gemv(trans, a.nrows(), a.ncols(), alpha, a.data(), a.nrows(), x.data(),
          beta, y.data());
   }

@@ -75,14 +75,17 @@ class SYEIG : public SmallScaleBase<ValueType> {
         std::pow(Const<scalar_type>::EPS, 2. / 3);
 
     // esimate the workspace
+    if (!lapack_kernel::IS_REAL)
+      _rwork.resize(std::max(1, int(3 * _mat.nrows() - 2)));
     value_type sz;
-    lapack_kernel::syev('L', _mat, _w, &sz, -1);
+    lapack_kernel::syev('L', _mat, _w, &sz, -1, _rwork);
     const auto n = _mat.nrows();
-    _work.resize(std::max(size_type(sz), n));
+    _work.resize(std::max((size_type)abs(sz), n));
 
     // factorize
     _w.resize(n);
-    auto info = lapack_kernel::syev('L', _mat, _w, _work.data(), _work.size());
+    auto info =
+        lapack_kernel::syev('L', _mat, _w, _work.data(), _work.size(), _rwork);
     if (info > 0)
       hif_error("?syev failed to converge with info=%d.", (int)info);
     else if (info < 0)
@@ -91,7 +94,7 @@ class SYEIG : public SmallScaleBase<ValueType> {
     // handle truncation
     _trunc_order.resize(n);
     std::iota(_trunc_order.begin(), _trunc_order.end(), 0);
-    const value_type thres =
+    const scalar_type thres =
         EPS * *std::max_element(_w.cbegin(), _w.cend(),
                                 [](const value_type a, const value_type b) {
                                   return std::abs(a) < std::abs(b);
@@ -108,7 +111,7 @@ class SYEIG : public SmallScaleBase<ValueType> {
       // ensure nd-ness
       // reverse the order for truncations
       std::reverse(_trunc_order.begin(), _trunc_order.end());
-      for (int i(0); i < n; ++i)
+      for (size_type i(0); i < n; ++i)
         if (_w[i] >= 0.0 || std::abs(_w[i]) <= thres)
           --_rank;
         else
@@ -153,7 +156,7 @@ class SYEIG : public SmallScaleBase<ValueType> {
     const size_type rk = rank == 0u ? _rank : (rank > n ? n : rank);
     // std::copy(x.cbegin(), x.cend(), _y.begin());
     // step 1, compute y=Q^T*x
-    lapack_kernel::gemv('T', value_type(1), _mat, x, value_type(0), _work);
+    lapack_kernel::gemv('C', value_type(1), _mat, x, value_type(0), _work);
     // step 2, solve inv(lambda)*y with truncation
     for (size_type i(0); i < rk; ++i)
       _work[_trunc_order[i]] /= _w[_trunc_order[i]];
@@ -172,13 +175,13 @@ class SYEIG : public SmallScaleBase<ValueType> {
   }
 
  protected:
- protected:
-  using _base::_mat;                       ///< matrix
-  using _base::_mat_backup;                ///< matrix backup
-  using _base::_rank;                      ///< rank
-  Array<value_type>         _w;            ///< Eigenvalues
-  mutable Array<value_type> _work;         ///< work buffer
-  Array<int>                _trunc_order;  ///< truncated dimensions
+  using _base::_mat;                        ///< matrix
+  using _base::_mat_backup;                 ///< matrix backup
+  using _base::_rank;                       ///< rank
+  Array<scalar_type>         _w;            ///< Eigenvalues
+  mutable Array<value_type>  _work;         ///< work buffer
+  mutable Array<scalar_type> _rwork;        ///< rwork buffer
+  Array<int>                 _trunc_order;  ///< truncated dimensions
 };
 
 }  // namespace hif

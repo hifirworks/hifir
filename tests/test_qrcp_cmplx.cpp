@@ -169,15 +169,16 @@ TEST(LU, d) {
           0.1765450918559331,   0.5963465784583344,   -0.2143943324393459,
           -1.051376033855315,   -0.1687234412167575};
 
-  Array<double> x(20);
+  using value_t = std::complex<double>;
+  Array<value_t> x(20);
   std::copy(b, b + 20, x.begin());
 
-  using crs_t = CRS<double, int>;
-  crs_t               crs(20, 20);
-  std::vector<double> buf(20);
-  const static int    inds[20] = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,
+  using crs_t = CRS<value_t, int>;
+  crs_t                crs(20, 20);
+  std::vector<value_t> buf(20);
+  const static int     inds[20] = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,
                                10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
-  const double*       v_ptr    = a;
+  const double*        v_ptr    = a;
   crs.begin_assemble_rows();
   for (int i = 0; i < 20; ++i) {
     std::copy(v_ptr, v_ptr + 20, buf.begin());
@@ -186,12 +187,12 @@ TEST(LU, d) {
   }
   crs.end_assemble_rows();
 
-  SmallScaleSolverTrait<true>::solver_type<double> qrcp;
+  SmallScaleSolverTrait<true>::solver_type<value_t> qrcp;
   qrcp.set_matrix(crs);
   qrcp.factorize(get_default_options());
   ASSERT_TRUE(qrcp.full_rank()) << "should be full rank!\n";
   qrcp.solve(x);
   for (int i = 0; i < 20; ++i)
-    EXPECT_NEAR(x[i], x_ref[i], tol)
+    EXPECT_NEAR(x[i].real(), x_ref[i], tol)
         << i << " entry doesn\'t agree with reference solution\n";
 }

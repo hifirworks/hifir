@@ -30,6 +30,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _HIF_SMALLSCALE_LAPACK_SYEIG_HPP
 #define _HIF_SMALLSCALE_LAPACK_SYEIG_HPP
 
+#include <complex>
+
 #include "hif/small_scale/config.hpp"
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -46,6 +48,14 @@ void HIF_FC(dsyev, DSYEV)(char *, char *, hif_lapack_int *, double *,
 void HIF_FC(ssyev, SSYEV)(char *, char *, hif_lapack_int *, float *,
                           hif_lapack_int *, float *, float *, hif_lapack_int *,
                           hif_lapack_int *);
+// complex double
+void HIF_FC(zheev, ZHEEV)(char *, char *, hif_lapack_int *, void *,
+                          hif_lapack_int *, double *, void *, hif_lapack_int *,
+                          double *, hif_lapack_int *);
+// complex single
+void HIF_FC(cheev, CHEEV)(char *, char *, hif_lapack_int *, void *,
+                          hif_lapack_int *, float *, void *, hif_lapack_int *,
+                          float *, hif_lapack_int *);
 
 // matrix-vector, used in solve
 
@@ -59,6 +69,16 @@ void HIF_FC(dgemv, DGEMV)(char *, hif_lapack_int *, hif_lapack_int *, double *,
 void HIF_FC(sgemv, SGEMV)(char *, hif_lapack_int *, hif_lapack_int *, float *,
                           float *, hif_lapack_int *, float *, hif_lapack_int *,
                           float *, float *, hif_lapack_int *);
+
+// complex double
+void HIF_FC(zgemv, ZGEMV)(char *, hif_lapack_int *, hif_lapack_int *, void *,
+                          void *, hif_lapack_int *, void *, hif_lapack_int *,
+                          void *, void *, hif_lapack_int *);
+
+// complex single
+void HIF_FC(cgemv, CGEMV)(char *, hif_lapack_int *, hif_lapack_int *, void *,
+                          void *, hif_lapack_int *, void *, hif_lapack_int *,
+                          void *, void *, hif_lapack_int *);
 }
 #  endif
 #endif  // DOXYGEN_SHOULD_SKIP_THIS
@@ -75,7 +95,8 @@ namespace internal {
 /// \brief double version of handling symmetric eigendecomposition
 inline hif_lapack_int syev(const char uplo, const hif_lapack_int n, double *a,
                            const hif_lapack_int lda, double *w, double *work,
-                           const hif_lapack_int lwork) {
+                           const hif_lapack_int lwork,
+                           double * /* rwork */ = nullptr) {
   static char    jobz('V');
   hif_lapack_int info;
   HIF_FC(dsyev, DSYEV)
@@ -87,12 +108,41 @@ inline hif_lapack_int syev(const char uplo, const hif_lapack_int n, double *a,
 /// \brief single version of handling symmetric eigendecomposition
 inline hif_lapack_int syev(const char uplo, const hif_lapack_int n, float *a,
                            const hif_lapack_int lda, float *w, float *work,
-                           const hif_lapack_int lwork) {
+                           const hif_lapack_int lwork,
+                           float * /* rwork */ = nullptr) {
   static char    jobz('V');
   hif_lapack_int info;
   HIF_FC(ssyev, SSYEV)
   (&jobz, (char *)&uplo, (hif_lapack_int *)&n, a, (hif_lapack_int *)&lda, w,
    work, (hif_lapack_int *)&lwork, &info);
+  return info;
+}
+
+/// \brief complex double version of handling symmetric eigendecomposition
+inline hif_lapack_int syev(const char uplo, const hif_lapack_int n,
+                           std::complex<double> *a, const hif_lapack_int lda,
+                           double *w, std::complex<double> *work,
+                           const hif_lapack_int lwork, double *rwork) {
+  static char    jobz('V');
+  hif_lapack_int info;
+  HIF_FC(zheev, ZHEEV)
+  (&jobz, (char *)&uplo, (hif_lapack_int *)&n, (void *)a,
+   (hif_lapack_int *)&lda, w, (void *)work, (hif_lapack_int *)&lwork, rwork,
+   &info);
+  return info;
+}
+
+/// \brief complex single version of handling symmetric eigendecomposition
+inline hif_lapack_int syev(const char uplo, const hif_lapack_int n,
+                           std::complex<float> *a, const hif_lapack_int lda,
+                           float *w, std::complex<float> *work,
+                           const hif_lapack_int lwork, float *rwork) {
+  static char    jobz('V');
+  hif_lapack_int info;
+  HIF_FC(cheev, CHEEV)
+  (&jobz, (char *)&uplo, (hif_lapack_int *)&n, (void *)a,
+   (hif_lapack_int *)&lda, w, (void *)work, (hif_lapack_int *)&lwork, rwork,
+   &info);
   return info;
 }
 
@@ -117,6 +167,32 @@ inline void gemv(const char trans, const hif_lapack_int m,
   HIF_FC(sgemv, SGEMV)
   ((char *)&trans, (hif_lapack_int *)&m, (hif_lapack_int *)&n, (float *)&alpha,
    (float *)a, (hif_lapack_int *)&lda, (float *)x, &inc, (float *)&beta, y,
+   &inc);
+}
+
+/// \brief complex double version of matrix-vector product
+inline void gemv(const char trans, const hif_lapack_int m,
+                 const hif_lapack_int n, const std::complex<double> alpha,
+                 const std::complex<double> *a, const hif_lapack_int lda,
+                 const std::complex<double> *x, const std::complex<double> beta,
+                 std::complex<double> *y) {
+  static hif_lapack_int inc(1);
+  HIF_FC(zgemv, ZGEMV)
+  ((char *)&trans, (hif_lapack_int *)&m, (hif_lapack_int *)&n, (void *)&alpha,
+   (void *)a, (hif_lapack_int *)&lda, (void *)x, &inc, (void *)&beta, (void *)y,
+   &inc);
+}
+
+/// \brief complex single version of matrix-vector product
+inline void gemv(const char trans, const hif_lapack_int m,
+                 const hif_lapack_int n, const std::complex<float> alpha,
+                 const std::complex<float> *a, const hif_lapack_int lda,
+                 const std::complex<float> *x, const std::complex<float> beta,
+                 std::complex<float> *y) {
+  static hif_lapack_int inc(1);
+  HIF_FC(cgemv, CGEMV)
+  ((char *)&trans, (hif_lapack_int *)&m, (hif_lapack_int *)&n, (void *)&alpha,
+   (void *)a, (hif_lapack_int *)&lda, (void *)x, &inc, (void *)&beta, (void *)y,
    &inc);
 }
 

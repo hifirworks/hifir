@@ -43,6 +43,13 @@ namespace hif {
  * @{
  */
 
+/// \brief real helper function
+/// \tparam T abstract value type
+/// \param[in] v value input
+/// \return conceputally, the return is the "real" of \a v
+template <class T>
+inline T real(const T &v);
+
 /// \brief conjugate helper function
 /// \tparam T abstract value type
 /// \param[in] v value input
@@ -58,7 +65,9 @@ inline T conj(const T &v);
 /// \param[in] v value input
 /// \return conceputally, the return is the "conjugate" of \a v
 template <class T>
-inline typename ValueTypeTrait<T>::value_type abs(const T &v);
+inline typename ValueTypeTrait<T>::value_type abs(const T &v) {
+  return std::abs(v);
+}
 
 /// \brief compute the dot product
 /// \tparam ArrayType array type, see, for instance, \ref Array
@@ -159,6 +168,29 @@ inline void normalize2(const ArrayType &v, Iter &w) {
 
 // long double
 template <>
+inline long double real(const long double &v) {
+  return v;
+}
+
+// double
+template <>
+inline double real(const double &v) {
+  return v;
+}
+
+// float
+template <>
+inline float real(const float &v) {
+  return v;
+}
+
+template <class T>
+inline std::complex<T> real(const std::complex<T> &v) {
+  return std::real(v);
+}
+
+// long double
+template <>
 inline long double conj(const long double &v) {
   return v;
 }
@@ -178,30 +210,6 @@ inline float conj(const float &v) {
 template <class T>
 inline std::complex<T> conj(const std::complex<T> &v) {
   return std::conj(v);
-}
-
-// long double
-template <>
-inline long double abs(const long double &v) {
-  return std::abs(v);
-}
-
-// double
-template <>
-inline double abs(const double &v) {
-  return std::abs(v);
-}
-
-// float
-template <>
-inline float abs(const float &v) {
-  return std::abs(v);
-}
-
-// complex
-template <class T>
-inline T abs(const std::complex<T> &v) {
-  return std::abs(v);
 }
 
 #endif  // DOXYGEN_SHOULD_SKIP_THIS

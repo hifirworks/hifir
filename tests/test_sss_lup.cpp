@@ -186,7 +186,7 @@ TEST(LU, d) {
   }
   crs.end_assemble_rows();
 
-  SmallScaleSolverTrait<SMALLSCALE_LUP>::solver_type<double> lup;
+  SmallScaleSolverTrait<false>::solver_type<double> lup;
   lup.set_matrix(crs);
   lup.factorize(get_default_options());
   ASSERT_TRUE(lup.full_rank()) << "should be full rank!\n";

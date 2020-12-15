@@ -30,6 +30,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _HIF_SMALLSCALE_LAPACK_TRSV_HPP
 #define _HIF_SMALLSCALE_LAPACK_TRSV_HPP
 
+#include <complex>
+
 #include "hif/small_scale/config.hpp"
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -43,6 +45,14 @@ void HIF_FC(dtrsv, DTRSV)(char *, char *, char *, hif_lapack_int *, double *,
 // single
 void HIF_FC(strsv, STRSV)(char *, char *, char *, hif_lapack_int *, float *,
                           hif_lapack_int *, float *, hif_lapack_int *);
+
+// complex double
+void HIF_FC(ztrsv, ZTRSV)(char *, char *, char *, hif_lapack_int *, void *,
+                          hif_lapack_int *, void *, hif_lapack_int *);
+
+// complex single
+void HIF_FC(ctrsv, CTRSV)(char *, char *, char *, hif_lapack_int *, void *,
+                          hif_lapack_int *, void *, hif_lapack_int *);
 }
 #  endif
 #endif  // DOXYGEN_SHOULD_SKIP_THIS
@@ -73,6 +83,26 @@ inline void trsv(const char uplo, const char trans, const char diag,
   HIF_FC(strsv, STRSV)
   ((char *)&uplo, (char *)&trans, (char *)&diag, (hif_lapack_int *)&n,
    (float *)a, (hif_lapack_int *)&lda, x, (hif_lapack_int *)&incx);
+}
+
+/// \brief complex double version of triangular solve
+inline void trsv(const char uplo, const char trans, const char diag,
+                 const hif_lapack_int n, const std::complex<double> *a,
+                 const hif_lapack_int lda, std::complex<double> *x,
+                 const hif_lapack_int incx) {
+  HIF_FC(ztrsv, ZTRSV)
+  ((char *)&uplo, (char *)&trans, (char *)&diag, (hif_lapack_int *)&n,
+   (void *)a, (hif_lapack_int *)&lda, (void *)x, (hif_lapack_int *)&incx);
+}
+
+/// \brief complex single version of triangular solve
+inline void trsv(const char uplo, const char trans, const char diag,
+                 const hif_lapack_int n, const std::complex<float> *a,
+                 const hif_lapack_int lda, std::complex<float> *x,
+                 const hif_lapack_int incx) {
+  HIF_FC(ctrsv, CTRSV)
+  ((char *)&uplo, (char *)&trans, (char *)&diag, (hif_lapack_int *)&n,
+   (void *)a, (hif_lapack_int *)&lda, (void *)x, (hif_lapack_int *)&incx);
 }
 
 /*!

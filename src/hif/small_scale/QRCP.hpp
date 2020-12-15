@@ -30,6 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define _HIF_SMALLSCALE_QRCP_HPP
 
 #include <algorithm>
+#include <type_traits>
 
 #include "hif/Options.h"
 #include "hif/ds/Array.hpp"
@@ -88,12 +89,15 @@ class QRCP : public SmallScaleBase<ValueType> {
     // query the buffer size
     value_type lwork;
     lapack_kernel::geqp3(_mat.nrows(), _mat.ncols(), _mat.data(), _mat.nrows(),
-                         _jpvt.data(), _tau.data(), &lwork, -1);
-    _work.resize((size_type)lwork);
+                         _jpvt.data(), _tau.data(), &lwork, -1, nullptr);
+    _work.resize((size_type)abs(lwork));
+
+    // allocate space for complex arith
+    if (!lapack_kernel::IS_REAL) _rwork.resize(2 * _mat.ncols());
 
     const auto info = lapack_kernel::geqp3(
         _mat.nrows(), _mat.ncols(), _mat.data(), _mat.nrows(), _jpvt.data(),
-        _tau.data(), _work.data(), (size_type)lwork);
+        _tau.data(), _work.data(), (size_type)abs(lwork), _rwork.data());
     hif_error_if(info < 0, "GEQP3 returned negative info");
 
     // fast filtering to test diagonal entries
@@ -161,8 +165,6 @@ class QRCP : public SmallScaleBase<ValueType> {
   /// pseudo-inverse of \f$\mathbf{AP}\f$.
   inline void solve(Array<value_type> &x, const size_type rank = 0u,
                     const bool tran = false) const {
-    using v_t = scalar_type;
-
     hif_error_if(tran, "QRCP does not support transpose solve!");
     hif_error_if(
         _mat.empty() || _jpvt.empty(),
@@ -173,15 +175,15 @@ class QRCP : public SmallScaleBase<ValueType> {
     const size_type rk =
         rank == 0u ? _rank : (rank > _mat.nrows() ? _mat.nrows() : rank);
     // query the optimal work space
-    v_t lwork;
+    value_type lwork;
     lapack_kernel::ormqr('L', 'T', x.size(), 1, rk, _mat.data(), _mat.nrows(),
                          _tau.data(), x.data(), x.size(), &lwork, -1);
-    _work.resize((size_type)lwork);
+    _work.resize((size_type)abs(lwork));
 
     // compute x=Q(:,1:_rank)'*x
     const auto info = lapack_kernel::ormqr(
         'L', 'T', x.size(), 1, rk, _mat.data(), _mat.nrows(), _tau.data(),
-        x.data(), x.size(), _work.data(), (size_type)lwork);
+        x.data(), x.size(), _work.data(), (size_type)abs(lwork));
     hif_error_if(info < 0, "ORMQR returned negative info (Q'*x)");
 
     // compute x(1:_rank)=inv(R(1:_rank,1:_rank))*x(1:_rank)
@@ -267,8 +269,9 @@ class QRCP : public SmallScaleBase<ValueType> {
     _work.resize(2 * n);                 // allocate buffer
     auto *x = _work.data(), *y = x + n;  // used in ?laic1
     x[0] = y[0] = value_type(1);
-    value_type smax(abs(_mat(0, 0))), smin(smax);  // initial singular values
-    value_type s1, c1, s2, c2, sminpr, smaxpr;     // needed in ?laic1
+    scalar_type smax(abs(_mat(0, 0))), smin(smax);  // initial singular values
+    value_type  s1, c1, s2, c2;                     // needed in ?laic1
+    scalar_type sminpr, smaxpr;
     for (_rank = 0u; _rank < n; ++_rank) {
       // esimate smaller
       lapack_kernel::laic1(JOB_MIN, _rank, x, smin, &_mat(0, _rank),
@@ -300,6 +303,7 @@ class QRCP : public SmallScaleBase<ValueType> {
   Array<value_type>             _tau;    ///< tau array
   mutable Array<value_type>     _work;   ///< work buffer
   mutable Array<hif_lapack_int> _iwork;  ///< integer work buffer
+  mutable Array<scalar_type>    _rwork;  ///< work space used in complex arith
 };
 
 }  // namespace hif
