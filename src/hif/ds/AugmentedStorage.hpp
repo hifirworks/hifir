@@ -84,7 +84,7 @@ class AugmentedCore {
         _node_next(),
         _node_end(nlist, _NIL),
         _val_pos(),
-        _node_counts(nlist, 0) {
+        _node_counts(nlist, static_cast<index_type>(0)) {
     if (nnz) {
       if (reserve) {
         _node_inds.reserve(nnz);
