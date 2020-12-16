@@ -273,14 +273,15 @@ class GMRES_Null
         auto J1 = _J.begin(), J2 = J1 + restart;
         for (size_type colJ = 0u; colJ + 1u <= j; ++colJ) {
           const auto tmp = _w[colJ];
-          _w[colJ]       = conj(J1[colJ]) * tmp + conj(J2[colJ]) * _w[colJ + 1];
-          _w[colJ + 1]   = -J2[colJ] * tmp + J1[colJ] * _w[colJ + 1];
+          _w[colJ] =
+              conjugate(J1[colJ]) * tmp + conjugate(J2[colJ]) * _w[colJ + 1];
+          _w[colJ + 1] = -J2[colJ] * tmp + J1[colJ] * _w[colJ + 1];
         }
         const auto rho = std::sqrt(_w[j] * _w[j] + v_norm2);
         J1[j]          = _w[j] / rho;
         J2[j]          = v_norm / rho;
         _y[j + 1]      = -J2[j] * _y[j];
-        _y[j]          = conj(J1[j]) * _y[j];
+        _y[j]          = conjugate(J1[j]) * _y[j];
         _w[j]          = rho;
         R_itr          = std::copy_n(_w.cbegin(), j + 1, R_itr);
         // estimate abs conditioning of R in Arnoldi
@@ -593,14 +594,15 @@ class GMRES_NullHi
         auto J1 = _J.begin(), J2 = J1 + restart;
         for (size_type colJ = 0u; colJ + 1u <= j; ++colJ) {
           const auto tmp = _w[colJ];
-          _w[colJ]       = conj(J1[colJ]) * tmp + conj(J2[colJ]) * _w[colJ + 1];
-          _w[colJ + 1]   = -J2[colJ] * tmp + J1[colJ] * _w[colJ + 1];
+          _w[colJ] =
+              conjugate(J1[colJ]) * tmp + conjugate(J2[colJ]) * _w[colJ + 1];
+          _w[colJ + 1] = -J2[colJ] * tmp + J1[colJ] * _w[colJ + 1];
         }
         const auto rho = std::sqrt(_w[j] * _w[j] + v_norm2);
         J1[j]          = _w[j] / rho;
         J2[j]          = v_norm / rho;
         _y[j + 1]      = -J2[j] * _y[j];
-        _y[j]          = conj(J1[j]) * _y[j];
+        _y[j]          = conjugate(J1[j]) * _y[j];
         _w[j]          = rho;
         R_itr          = std::copy_n(_w.cbegin(), j + 1, R_itr);
         // estimate abs conditioning of R in Arnoldi

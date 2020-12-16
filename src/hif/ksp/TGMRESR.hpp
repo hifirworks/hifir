@@ -236,14 +236,14 @@ class TGMRESR
       auto J1 = _J.begin(), J2 = J1 + maxit;
       for (size_type colJ = start; colJ < iter; ++colJ) {
         const auto tmp = _w[colJ];
-        _w[colJ]       = conj(J1[colJ]) * tmp + conj(J2[colJ]) * _w[colJ + 1];
+        _w[colJ]       = conjugate(J1[colJ]) * tmp + conjugate(J2[colJ]) * _w[colJ + 1];
         _w[colJ + 1]   = -J2[colJ] * tmp + J1[colJ] * _w[colJ + 1];
       }
       const auto rho = std::sqrt(_w[iter] * _w[iter] + v_norm2);
       J1[iter]       = _w[iter] / rho;
       J2[iter]       = v_norm / rho;
       _y[iter + 1]   = -J2[iter] * _y[iter];
-      _y[iter]       = conj(J1[iter]) * _y[iter];
+      _y[iter]       = conjugate(J1[iter]) * _y[iter];
       _w[iter]       = rho;
 
       // update P, or Z in our case

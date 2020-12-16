@@ -113,7 +113,7 @@ inline void scale_extreme_values(CrsType &B, ScalingType &rs, ScalingType &cs,
     std::copy_n(rs.cbegin(), n, cs.begin());
   else {
     // set all values to be 0
-    std::fill_n(cs.begin(), n, value_type(0));
+    std::fill_n(cs.begin(), n, scalar_type(0));
     const size_type nnz     = B.nnz();
     const auto &    indices = B.col_ind();
     const auto &    vals    = B.vals();
@@ -208,9 +208,9 @@ inline void iterative_scale_p(const PermType &p, CrsType &A, ScalingType &rs,
         cs[i] *= tmp;
       }
     }
-    if (!IsSymm) std::fill(res_cs.begin(), res_cs.end(), 0);
+    if (!IsSymm) std::fill(res_cs.begin(), res_cs.end(), scalar_type(0));
     for (size_type row(0); row < m; ++row) {
-      value_type       tmp(0);
+      scalar_type      tmp(0);
       auto             last  = A.col_ind_cend(p[row]);
       auto             v_itr = A.val_begin(p[row]);
       const value_type r     = local_rs[p[row]];
@@ -226,7 +226,7 @@ inline void iterative_scale_p(const PermType &p, CrsType &A, ScalingType &rs,
       // no need to permute residual array
       res_rs[row] = tmp;
     }
-    value_type tmp(0);
+    scalar_type tmp(0);
     for (size_type i(0); i < m; ++i)
       tmp = std::max(std::abs(1 - res_rs[i]), tmp);
     res_r = tmp;

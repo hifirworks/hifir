@@ -37,6 +37,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "hif/ds/Array.hpp"
 #include "hif/utils/common.hpp"
 #include "hif/utils/io.hpp"
+#include "hif/utils/math.hpp"
 #include "hif/utils/mt_mv.hpp"
 
 namespace hif {
@@ -62,6 +63,8 @@ class CompressedStorage {
   typedef typename array_type::const_iterator  const_v_iterator;  ///< constant
   typedef typename iarray_type::iterator       i_iterator;  ///< index iterator
   typedef typename iarray_type::const_iterator const_i_iterator;  ///< constant
+  typedef typename ValueTypeTrait<value_type>::value_type scalar_type;
+  ///< scalar (real) type
 
  public:
   /// \brief default constructor
@@ -215,7 +218,7 @@ class CompressedStorage {
   ///
   /// All \a mag(values) that are <= eps * max(abs(local value)) will be
   /// eliminated, and the resulting matrix will be compressed.
-  inline size_type eliminate(value_type eps = 0, const bool shrink = false) {
+  inline size_type eliminate(scalar_type eps = 0, const bool shrink = false) {
     if (_psize) {
       const size_type psize = _psize;
       eps                   = eps < 0.0 ? 0.0 : eps;
@@ -230,8 +233,8 @@ class CompressedStorage {
         auto            i_itr = i_itr_first + pos;
         const auto      lnnz  = _ind_start[i + 1] - pos;
         if (lnnz) {
-          auto             last = v_itr + lnnz;
-          const value_type thres =
+          auto              last = v_itr + lnnz;
+          const scalar_type thres =
               eps *
               std::abs(*std::max_element(
                   v_itr, last, [](const value_type l, const value_type r) {

@@ -221,6 +221,8 @@ inline void compute_Schur_simple(const ScaleArray &s, const CrsType &A,
   using boost_value_type = typename ValueTypeMixedTrait<value_type>::boost_type;
   constexpr static bool BOOST_PRECISION =
       !std::is_same<boost_value_type, value_type>::value;
+  using boost_scalar_type =
+      typename ValueTypeTrait<boost_value_type>::value_type;
   static_assert(CrsType::ROW_MAJOR, "must be CRS");
 
   const size_type n = A.nrows();
@@ -322,9 +324,9 @@ inline void compute_Schur_simple(const ScaleArray &s, const CrsType &A,
     }
 
     // second, fetch C into the buffer
-    const size_type        pi        = p[m + i];
-    auto                   a_val_itr = A.val_cbegin(pi);
-    const boost_value_type s_pi      = s[pi];  // row scaling
+    const size_type         pi        = p[m + i];
+    auto                    a_val_itr = A.val_cbegin(pi);
+    const boost_scalar_type s_pi      = s[pi];  // row scaling
     for (auto itr = A.col_ind_cbegin(pi), last = A.col_ind_cend(pi);
          itr != last; ++itr, ++a_val_itr) {
       const size_type A_idx = *itr;
@@ -594,6 +596,8 @@ inline CrsType compute_Schur_simple(const ScaleArray &s, const CrsType &A,
   using boost_value_type = typename ValueTypeMixedTrait<value_type>::boost_type;
   using boost_sparse_vec_type =
       SparseVector<boost_value_type, typename CrsType::index_type>;
+  using boost_scalar_type =
+      typename ValueTypeTrait<boost_value_type>::value_type;
 
   const size_type n = A.nrows();
   if (m == n) return CrsType();
@@ -694,9 +698,9 @@ inline CrsType compute_Schur_simple(const ScaleArray &s, const CrsType &A,
         buf_vals[*itr] = 0.0;
 
       // second, fetch C into the buffer
-      const size_type        pi        = p[m + i];
-      auto                   a_val_itr = A.val_cbegin(pi);
-      const boost_value_type s_pi      = s[pi];  // row scaling
+      const size_type         pi        = p[m + i];
+      auto                    a_val_itr = A.val_cbegin(pi);
+      const boost_scalar_type s_pi      = s[pi];  // row scaling
       for (auto itr = A.col_ind_cbegin(pi), last = A.col_ind_cend(pi);
            itr != last; ++itr, ++a_val_itr) {
         const size_type A_idx = *itr;

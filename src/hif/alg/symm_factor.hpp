@@ -69,8 +69,10 @@ inline void compress_tail(L_Type &L, const PosArray &L_start,
 /// \tparam ToType CS type of which we store the resulting transpose
 /// \param[in] A input coefficient matrix A that will be transposed
 /// \param[out] AT stores the transpose of A
+/// \param[in] do_conj (optional) do conjugate for complex, default is false
 template <class FromType, class ToType>
-inline void make_transpose(const FromType &A, ToType &AT) {
+inline void make_transpose(const FromType &A, ToType &AT,
+                           const bool do_conj = false) {
   AT.resize(A.ncols(), A.nrows());
   // NOTE: Array assignment is shallow copy
   if (!std::is_same<FromType, ToType>::value) {
@@ -78,7 +80,14 @@ inline void make_transpose(const FromType &A, ToType &AT) {
     // the three arrays in A
     AT.inds()      = A.inds();
     AT.ind_start() = A.ind_start();
-    AT.vals()      = A.vals();
+    if (std::is_floating_point<typename FromType::value_type>::value ||
+        !do_conj)
+      AT.vals() = A.vals();
+    else if (do_conj) {
+      const auto n = A.vals().size();
+      AT.vals().resize(n);
+      for (auto i(0ul); i < n; ++i) AT.vals()[i] = conjugate(A.vals()[i]);
+    }
   } else {
     // for homogeneous class type, we need to create an intermidate storage
     // for the dual storage scheme format of A
@@ -86,6 +95,11 @@ inline void make_transpose(const FromType &A, ToType &AT) {
     AT.inds()      = A_dual.inds();
     AT.ind_start() = A_dual.ind_start();
     AT.vals()      = A_dual.vals();
+    if (!std::is_floating_point<typename FromType::value_type>::value &&
+        do_conj) {
+      const auto n = AT.vals().size();
+      for (auto i(0ul); i < n; ++i) AT.vals()[i] = conjugate(AT.vals()[i]);
+    }
   }
 }
 }  // namespace internal
@@ -124,6 +138,7 @@ inline CsType symm_level_factorize(
   typedef typename CsType::value_type    value_type;
   typedef DenseMatrix<value_type>        dense_type;
   typedef typename PrecsType::value_type prec_type;  // precs is std::list
+  typedef typename ValueTypeTrait<value_type>::value_type scalar_type;
 
   hif_error_if(A.nrows() != A.ncols(), "only squared systems are supported");
 
@@ -162,7 +177,7 @@ inline CsType symm_level_factorize(
 
   // preprocessing
   timer.start();
-  Array<value_type>        s, t;
+  Array<scalar_type>       s, t;
   BiPermMatrix<index_type> p, q;
   size_type                m;
   // only use symmetric preprocessing
@@ -257,8 +272,8 @@ inline CsType symm_level_factorize(
 
   // Removing bounding the large diagonal values
   const auto is_bad_diag = [=](const value_type a) -> bool {
-    return std::abs(1. / a) > kappa_d || (spd_flag > 0 && a <= 0.0) ||
-           (spd_flag < 0 && a >= 0.0);
+    return std::abs(1. / real(a)) > kappa_d ||
+           (spd_flag > 0 && real(a) <= 0.0) || (spd_flag < 0 && real(a) >= 0.0);
   };
 
   const size_type m2(m), n(A.nrows());
@@ -490,7 +505,7 @@ inline CsType symm_level_factorize(
       auto L_E = L.template split_crs<true>(m, L_start);
       L_B      = L.template split<false>(m, L_start);
       L.destroy();
-      internal::make_transpose(L_B, U_B);
+      internal::make_transpose(L_B, U_B, true);
       timer2.finish();
       if (hif_verbose(INFO, opts))
         hif_info("splitting LB, copying to UB, and freeing L took %gs.",
@@ -519,7 +534,7 @@ inline CsType symm_level_factorize(
 
       // NOTE: for symmetric real systems, we need to construct U_F differently
       crs_type U_F;
-      internal::make_transpose(L_E, U_F);
+      internal::make_transpose(L_E, U_F, true);
 
       timer2.start();
 // compute S version of Schur complement

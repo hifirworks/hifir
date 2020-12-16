@@ -66,7 +66,7 @@ class EqlDriver {
   template <bool IsSymm>
   inline static void do_matching(const int /* verbose */, crs_type &B,
                                  Array<index_type> &p, Array<index_type> &q,
-                                 Array<value_type> &s, Array<value_type> &t,
+                                 Array<scalar_type> &s, Array<scalar_type> &t,
                                  const int pre_scale = 0) {
     const size_type n = B.nrows(), nnz = B.nnz();
     hif_error_if(B.nrows() != n, "must be squared systems");

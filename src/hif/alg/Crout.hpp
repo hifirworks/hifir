@@ -641,21 +641,22 @@ class Crout {
   /// \f$\mathcal{O}(\textrm{nnz}(\mathbf{v}))\f$
   template <class DiagType, class SpVecType>
   inline bool scale_inv_diag(const DiagType &d, SpVecType &v) const {
-    using value_t                     = typename DiagType::value_type;
-    constexpr static value_t zero     = Const<value_t>::ZERO;
-    constexpr static value_t safe_min = Const<value_t>::MIN;
-    constexpr static bool    okay     = false;
+    using value_type  = typename DiagType::value_type;
+    using scalar_type = typename ValueTypeTrait<value_type>::value_type;
+    constexpr static scalar_type zero     = Const<scalar_type>::ZERO;
+    constexpr static scalar_type safe_min = Const<scalar_type>::MIN;
+    constexpr static bool        okay     = false;
 
-    const value_t dk = d[_step];
+    const value_type dk = d[_step];
     // first, if exactly zero, return fail
-    if (dk == zero) return !okay;
+    if (std::abs(dk) == zero) return !okay;
 
     const size_type n    = v.size();
     auto &          vals = v.vals();
 
     if (std::abs(dk) > safe_min) {
       // take the inverse, do multiply
-      const value_t dk_inv = Const<value_t>::ONE / dk;
+      const value_type dk_inv = value_type(1) / dk;
       for (size_type i = 0u; i < n; ++i) vals[v.idx(i)] *= dk_inv;
     } else
       for (size_type i = 0u; i < n; ++i) vals[v.idx(i)] /= dk;
