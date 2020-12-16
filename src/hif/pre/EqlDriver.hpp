@@ -57,7 +57,10 @@ class EqlDriver {
   using ccs_type    = CCS<value_type, index_type>;    ///< ccs type
   using crs_type    = typename ccs_type::other_type;  ///< crs type
   using size_type   = typename ccs_type::size_type;   ///< size type
-  using kernel_type = eql::Equilibrator<index_type, value_type, Array>;
+  using scalar_type = typename ValueTypeTrait<value_type>::value_type;
+  ///< scalar type
+  using kernel_type =
+      eql::Equilibrator<index_type, value_type, scalar_type, Array>;
   ///< kernel type
 
   template <bool IsSymm>

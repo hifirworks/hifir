@@ -36,6 +36,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "hif/ds/CompressedStorage.hpp"
 #include "hif/ds/IntervalCompressedStorage.hpp"
 #include "hif/small_scale/solver.hpp"
+#include "hif/utils/common.hpp"
 #ifdef HIF_ENABLE_MUMPS
 #  include "hif/sparse_direct/mumps.hpp"
 #endif  // HIF_ENABLE_MUMPS
@@ -109,7 +110,10 @@ struct Prec {
       std::is_same<typename ValueTypeTrait<value_type>::value_type,
                    long double>::value,
       typename ValueTypeMixedTrait<value_type>::reduce_type, value_type>::type
-      last_level_type;
+                                                          last_level_type;
+  typedef typename ValueTypeTrait<value_type>::value_type scalar_type;
+  ///< scalar type
+  typedef Array<scalar_type> sarray_type;  ///< scalar array type
 #ifdef HIF_ENABLE_MUMPS
   using sparse_direct_type = MUMPS<last_level_type>;
 #else
@@ -170,8 +174,8 @@ struct Prec {
   /// \param[in] Q_inv inverse column permutation
   /// \note This allows us to use emplace back in STL efficiently
   Prec(size_type mm, size_type nn, mat_type &&L_b, array_type &&d_b,
-       mat_type &&U_b, mat_type &&e, mat_type &&f, array_type &&S,
-       array_type &&T, perm_type &&P, perm_type &&P_inv, perm_type &&Q,
+       mat_type &&U_b, mat_type &&e, mat_type &&f, sarray_type &&S,
+       sarray_type &&T, perm_type &&P, perm_type &&P_inv, perm_type &&Q,
        perm_type &&Q_inv)
       : m(mm),
         n(nn),
@@ -368,8 +372,12 @@ struct Prec {
       typename ExportType::pointer  E_vals,
       typename ExportType::ipointer F_indptr,
       typename ExportType::ipointer F_indices,
-      typename ExportType::pointer F_vals, typename ExportType::pointer s_vals,
-      typename ExportType::pointer t_vals, typename ExportType::ipointer p_vals,
+      typename ExportType::pointer  F_vals,
+      typename ValueTypeTrait<typename ExportType::value_type>::value_type
+          *s_vals,
+      typename ValueTypeTrait<typename ExportType::value_type>::value_type
+          *                         t_vals,
+      typename ExportType::ipointer p_vals,
       typename ExportType::ipointer pinv_vals,
       typename ExportType::ipointer q_vals,
       typename ExportType::ipointer qinv_vals, const bool jit_destroy = false) {
@@ -413,10 +421,12 @@ struct Prec {
       typename ExportType::pointer, typename ExportType::ipointer,
       typename ExportType::ipointer, typename ExportType::pointer,
       typename ExportType::ipointer, typename ExportType::ipointer,
-      typename ExportType::pointer, typename ExportType::pointer,
-      typename ExportType::pointer, typename ExportType::ipointer,
+      typename ExportType::pointer,
+      typename ValueTypeTrait<typename ExportType::value_type>::value_type *,
+      typename ValueTypeTrait<typename ExportType::value_type>::value_type *,
       typename ExportType::ipointer, typename ExportType::ipointer,
-      typename ExportType::ipointer, const bool = false) const {
+      typename ExportType::ipointer, typename ExportType::ipointer,
+      const bool = false) const {
     hif_error("cannot export data for interval-based compressed formats!");
   }
 
@@ -464,8 +474,8 @@ struct Prec {
   mat_type             U_B;           ///< upper part of leading block
   data_mat_type        E;             ///< scaled and permutated E part
   data_mat_type        F;             ///< scaled and permutated F part
-  array_type           s;             ///< row scaling vector
-  array_type           t;             ///< column scaling vector
+  sarray_type          s;             ///< row scaling vector
+  sarray_type          t;             ///< column scaling vector
   perm_type            p;             ///< row permutation matrix
   perm_type            p_inv;         ///< row inverse permutation matrix
   perm_type            q;             ///< column permutation matrix
