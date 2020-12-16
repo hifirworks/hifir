@@ -44,11 +44,13 @@ namespace hif {
  */
 
 /// \brief real helper function
-/// \tparam T abstract value type
-/// \param[in] v value input
-/// \return conceputally, the return is the "real" of \a v
-template <class T>
-inline T real(const T &v);
+using std::real;
+
+/// \brief imaginary helper function
+using std::imag;
+
+/// \brief get the abs value
+using std::abs;
 
 /// \brief conjugate helper function
 /// \tparam T abstract value type
@@ -58,16 +60,7 @@ inline T real(const T &v);
 /// We instantiate this function for common data types, in general, the user
 /// should supply his/her own rule for how to conjugate a value type
 template <class T>
-inline T conj(const T &v);
-
-/// \brief get the abs value
-/// \tparam T abstract value type
-/// \param[in] v value input
-/// \return conceputally, the return is the "conjugate" of \a v
-template <class T>
-inline typename ValueTypeTrait<T>::value_type abs(const T &v) {
-  return std::abs(v);
-}
+inline T conjugate(const T &v);
 
 /// \brief compute the dot product
 /// \tparam ArrayType array type, see, for instance, \ref Array
@@ -81,7 +74,7 @@ inline typename ArrayType::value_type inner(const ArrayType & v1,
   using value_type = typename ArrayType::value_type;
   value_type tmp(0);
   const auto n = v1.size();
-  for (auto i = 0ul; i < n; ++i) tmp += conj(v1[i]) * v2[i];
+  for (auto i = 0ul; i < n; ++i) tmp += conjugate(v1[i]) * v2[i];
   return tmp;
 }
 
@@ -96,7 +89,7 @@ norm2_sq(const ArrayType &v) {
       typename ValueTypeTrait<typename ArrayType::value_type>::value_type;
   scalar_type tmp(0);
   const auto  n = v.size();
-  for (auto i = 0ul; i < n; ++i) tmp += conj(v[i]) * v[i];
+  for (auto i = 0ul; i < n; ++i) tmp += conjugate(v[i]) * v[i];
   return tmp;
 }
 
@@ -126,7 +119,7 @@ norm2(const ArrayType &v) {
     value_type a;
     for (auto i = 0ul; i < n; ++i) {
       a = v[i] * alpha;
-      tmp += conj(a) * a;
+      tmp += conjugate(a) * a;
     }
     tmp = max_mag * std::sqrt(tmp);
   }
@@ -168,48 +161,95 @@ inline void normalize2(const ArrayType &v, Iter &w) {
 
 // long double
 template <>
-inline long double real(const long double &v) {
+inline long double conjugate(const long double &v) {
   return v;
 }
 
 // double
 template <>
-inline double real(const double &v) {
+inline double conjugate(const double &v) {
   return v;
 }
 
 // float
 template <>
-inline float real(const float &v) {
+inline float conjugate(const float &v) {
   return v;
 }
 
 template <class T>
-inline std::complex<T> real(const std::complex<T> &v) {
-  return std::real(v);
-}
-
-// long double
-template <>
-inline long double conj(const long double &v) {
-  return v;
-}
-
-// double
-template <>
-inline double conj(const double &v) {
-  return v;
-}
-
-// float
-template <>
-inline float conj(const float &v) {
-  return v;
-}
-
-template <class T>
-inline std::complex<T> conj(const std::complex<T> &v) {
+inline std::complex<T> conjugate(const std::complex<T> &v) {
   return std::conj(v);
+}
+
+// The standard does not support binary complex arithmetic operations with
+// lhs and rhs that have different types. We provide a series of overloaded
+// binary operators based on
+// https://en.cppreference.com/w/cpp/numeric/complex/operator_arith3
+// NOTE: The return type is always the LHS
+
+template <class T, class V>
+inline std::complex<T> operator+(const std::complex<T> &lhs,
+                                 const std::complex<V> &rhs) {
+  return lhs + std::complex<T>(rhs);
+}
+
+template <class T, class V>
+inline std::complex<T> operator+(const std::complex<T> &lhs, const V rhs) {
+  return lhs + static_cast<T>(rhs);
+}
+
+template <class T, class V>
+inline std::complex<T> operator+(const T lhs, const std::complex<V> &rhs) {
+  return std::complex<T>(lhs) + static_cast<T>(rhs);
+}
+
+template <class T, class V>
+inline std::complex<T> operator-(const std::complex<T> &lhs,
+                                 const std::complex<V> &rhs) {
+  return lhs - std::complex<T>(rhs);
+}
+
+template <class T, class V>
+inline std::complex<T> operator-(const std::complex<T> &lhs, const V rhs) {
+  return lhs - static_cast<T>(rhs);
+}
+
+template <class T, class V>
+inline std::complex<T> operator-(const T lhs, const std::complex<V> &rhs) {
+  return std::complex<T>(lhs) - std::complex<T>(rhs);
+}
+
+template <class T, class V>
+inline std::complex<T> operator*(const std::complex<T> &lhs,
+                                 const std::complex<V> &rhs) {
+  return lhs * std::complex<T>(rhs);
+}
+
+template <class T, class V>
+inline std::complex<T> operator*(const std::complex<T> &lhs, const V rhs) {
+  return lhs * static_cast<T>(rhs);
+}
+
+template <class T, class V>
+inline std::complex<T> operator*(const T lhs, const std::complex<V> &rhs) {
+  return std::complex<T>(lhs) * std::complex<T>(rhs);
+}
+
+template <class T, class V>
+inline std::complex<T> operator/(const std::complex<T> &lhs,
+                                 const std::complex<V> &rhs) {
+  return lhs / std::complex<T>(rhs);
+}
+
+template <class T, class V>
+inline std::complex<T> operator/(const std::complex<T> &lhs, const V rhs) {
+  return lhs / static_cast<T>(rhs);
+}
+
+template <class T, class V>
+inline std::complex<T> operator/(const T lhs, const std::complex<V> &rhs) {
+  return std::complex<T>(lhs) / std::complex<T>(rhs);
 }
 
 #endif  // DOXYGEN_SHOULD_SKIP_THIS
