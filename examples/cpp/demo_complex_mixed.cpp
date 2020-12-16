@@ -33,10 +33,10 @@ using namespace hif;
 using std::string;
 
 using prec_t =
-    HIF<std::complex<double>, int>;  // use default C CRS with double and int
-using crs_t       = prec_t::crs_type;
-using array_t     = prec_t::array_type;
-using ksp_factory = ksp::KSPFactory<prec_t>;
+    HIF<std::complex<float>, int>;  // use default C CRS with double and int
+using crs_t       = CRS<std::complex<double>, int>;
+using array_t     = Array<std::complex<double>>;
+using ksp_factory = ksp::KSPFactory<prec_t, std::complex<double>>;
 using solver_t    = ksp_factory::abc_solver;
 
 // create solver
