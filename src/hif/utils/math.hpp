@@ -32,6 +32,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <algorithm>
 #include <cmath>
 #include <complex>
+#include <type_traits>
 
 #include "hif/utils/common.hpp"
 #include "hif/utils/log.hpp"
@@ -53,14 +54,24 @@ using std::imag;
 using std::abs;
 
 /// \brief conjugate helper function
-/// \tparam T abstract value type
+/// \tparam T abstract value type, real type
 /// \param[in] v value input
 /// \return conceputally, the return is the "conjugate" of \a v
-///
-/// We instantiate this function for common data types, in general, the user
-/// should supply his/her own rule for how to conjugate a value type
 template <class T>
-inline T conjugate(const T &v);
+inline typename std::enable_if<std::is_floating_point<T>::value, T>::type
+conjugate(const T &v) {
+  return v;
+}
+
+/// \brief conjugate helper function
+/// \tparam T abstract value type, complex type
+/// \param[in] v value input
+/// \return conceputally, the return is the "conjugate" of \a v
+template <class T>
+inline typename std::enable_if<!std::is_floating_point<T>::value, T>::type
+conjugate(const T &v) {
+  return std::conj(v);
+}
 
 /// \brief compute the dot product
 /// \tparam ArrayType array type, see, for instance, \ref Array
@@ -89,7 +100,7 @@ norm2_sq(const ArrayType &v) {
       typename ValueTypeTrait<typename ArrayType::value_type>::value_type;
   scalar_type tmp(0);
   const auto  n = v.size();
-  for (auto i = 0ul; i < n; ++i) tmp += conjugate(v[i]) * v[i];
+  for (auto i = 0ul; i < n; ++i) tmp += real(conjugate(v[i]) * v[i]);
   return tmp;
 }
 
@@ -119,7 +130,7 @@ norm2(const ArrayType &v) {
     value_type a;
     for (auto i = 0ul; i < n; ++i) {
       a = v[i] * alpha;
-      tmp += conjugate(a) * a;
+      tmp += real(conjugate(a) * a);
     }
     tmp = max_mag * std::sqrt(tmp);
   }
@@ -159,28 +170,39 @@ inline void normalize2(const ArrayType &v, Iter &w) {
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-// long double
-template <>
-inline long double conjugate(const long double &v) {
-  return v;
-}
+// // long double
+// template <>
+// inline long double conjugate(const long double &v) {
+//   return v;
+// }
 
-// double
-template <>
-inline double conjugate(const double &v) {
-  return v;
-}
+// // double
+// template <>
+// inline double conjugate(const double &v) {
+//   return v;
+// }
 
-// float
-template <>
-inline float conjugate(const float &v) {
-  return v;
-}
+// // float
+// template <>
+// inline float conjugate(const float &v) {
+//   return v;
+// }
 
-template <class T>
-inline std::complex<T> conjugate(const std::complex<T> &v) {
-  return std::conj(v);
-}
+// template <>
+// inline std::complex<long double> conjugate(const std::complex<long double>
+// &v) {
+//   return std::conj(v);
+// }
+
+// template <>
+// inline std::complex<double> conjugate(const std::complex<double> &v) {
+//   return std::conj(v);
+// }
+
+// template <>
+// inline std::complex<float> conjugate(const std::complex<float> &v) {
+//   return std::conj(v);
+// }
 
 // The standard does not support binary complex arithmetic operations with
 // lhs and rhs that have different types. We provide a series of overloaded
@@ -201,7 +223,7 @@ inline std::complex<T> operator+(const std::complex<T> &lhs, const V rhs) {
 
 template <class T, class V>
 inline std::complex<T> operator+(const T lhs, const std::complex<V> &rhs) {
-  return std::complex<T>(lhs) + static_cast<T>(rhs);
+  return std::complex<T>(lhs) + std::complex<T>(rhs);
 }
 
 template <class T, class V>

@@ -336,7 +336,7 @@ class TGMRESR
     int             flag  = SUCCESS;
     int             stag_guard(0);
     // initialize residual
-    value_type beta = beta0;
+    scalar_type beta = beta0;
     if (!zero_start) {
       mt::mv_nt(A, x, _r);
       // A.mv(x, _r);

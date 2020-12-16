@@ -167,7 +167,7 @@ class FBICGSTAB
     // main loop
     for (; iter <= maxit; ++iter) {
       const auto rho = inner(r_tld, _r);  // direction
-      if (rho == 0) {
+      if (rho == value_type(0)) {
         Cerr(__HIF_FILE__, __HIF_FUNC__, __LINE__,
              "Stagnated detected at iteration %zd.", iter);
         flag = STAGNATED;
@@ -240,7 +240,7 @@ class FBICGSTAB
         flag = DIVERGED;
         break;
       }
-      if (omega == 0) {
+      if (omega == value_type(0)) {
         Cerr(__HIF_FILE__, __HIF_FUNC__, __LINE__,
              "Solver break-down detected at iteration %zd.", iter);
         flag = BREAK_DOWN;

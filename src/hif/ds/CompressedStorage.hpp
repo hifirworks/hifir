@@ -1213,10 +1213,18 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in,out] y Input rhs, output solution
   template <class RhsType>
   inline void solve_as_strict_lower_tran(RhsType &y) const {
-    // "cast" to other type, i.e., CCS, and invoke upper solve
-    other_type(_ncols, (ipointer)row_start().data(), (ipointer)col_ind().data(),
-               (pointer)vals().data(), true)
-        .solve_as_strict_upper(y);
+    using rev_iterator   = std::reverse_iterator<const_i_iterator>;
+    using rev_v_iterator = std::reverse_iterator<const_v_iterator>;
+
+    for (size_type j(_ncols - 1); j != 0u; --j) {
+      const auto j1    = j - 1;
+      const auto y_j   = y[j1];
+      auto       itr   = rev_iterator(col_ind_cend(j1));
+      auto       v_itr = rev_v_iterator(_base::val_cend(j1));
+      for (auto last = rev_iterator(col_ind_cbegin(j1)); itr != last;
+           ++itr, ++v_itr)
+        y[*itr] -= conjugate(*v_itr) * y_j;
+    }
   }
 
   /// \brief Assume as a strict upper matrix and solve with backward sub
@@ -1248,10 +1256,13 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] y Input rhs, output solution
   template <class RhsType>
   inline void solve_as_strict_upper_tran(RhsType &y) const {
-    // "cast" to other type, i.e., CCS, and invoke upper solve
-    other_type(_ncols, (ipointer)row_start().data(), (ipointer)col_ind().data(),
-               (pointer)vals().data(), true)
-        .solve_as_strict_lower(y);
+    for (size_type j(0); j < _ncols; ++j) {
+      const auto y_j   = y[j];
+      auto       itr   = col_ind_cbegin(j);
+      auto       v_itr = _base::val_cbegin(j);
+      for (auto last = col_ind_cend(j); itr != last; ++itr, ++v_itr)
+        y[*itr] -= conjugate(*v_itr) * y_j;
+    }
   }
 
   /// \brief read a native binary file
@@ -1925,10 +1936,20 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in,out] y Input rhs, output solution
   template <class RhsType>
   inline void solve_as_strict_lower_tran(RhsType &y) const {
-    // "cast" CRS and solve with upper
-    other_type(_nrows, (ipointer)col_start().data(), (ipointer)row_ind().data(),
-               (pointer)vals().data(), true)
-        .solve_as_strict_upper(y);
+    using value_type_ = typename std::remove_reference<decltype(y[0])>::type;
+    using v_t =
+        typename std::conditional<(sizeof(value_type_) < sizeof(value_type)),
+                                  value_type, value_type_>::type;
+
+    for (size_type j = _nrows - 1; j != 0u; --j) {
+      const size_type j1    = j - 1;
+      auto            itr   = row_ind_cbegin(j1);
+      auto            v_itr = _base::val_cbegin(j1);
+      v_t             tmp(0);
+      for (auto last = row_ind_cbegin(j1); itr != last; ++itr, ++v_itr)
+        tmp += conjugate(static_cast<v_t>(*v_itr)) * y[*itr];
+      y[j1] -= tmp;
+    }
   }
 
   /// \brief Assume as a strict upper matrix and solve with backward sub
@@ -1956,9 +1977,19 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in,out] y Input rhs, output solution
   template <class RhsType>
   inline void solve_as_strict_upper_tran(RhsType &y) const {
-    other_type(_nrows, (ipointer)col_start().data(), (ipointer)row_ind().data(),
-               (pointer)vals().data(), true)
-        .solve_as_strict_lower(y);
+    // retrieve value type from rhs
+    using value_type_ = typename std::remove_reference<decltype(y[0])>::type;
+    using v_t =
+        typename std::conditional<(sizeof(value_type_) < sizeof(value_type)),
+                                  value_type, value_type_>::type;
+    for (size_type j(1); j < _nrows; ++j) {
+      auto itr   = row_ind_cbegin(j);
+      auto v_itr = _base::val_cbegin(j);
+      v_t  tmp(0);
+      for (auto last = row_ind_cend(j); itr != last; ++itr, ++v_itr)
+        tmp += conjugate(static_cast<v_t>(*v_itr)) * y[*itr];
+      y[j] -= tmp;
+    }
   }
 
   /// \brief read a native HIF binary file

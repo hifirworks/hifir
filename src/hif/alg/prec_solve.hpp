@@ -38,6 +38,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "hif/ds/Array.hpp"
 #include "hif/utils/common.hpp"
+#include "hif/utils/math.hpp"
 
 namespace hif {
 namespace internal {
@@ -256,7 +257,7 @@ inline void prec_solve_utdlt(const UType &U, const DiagType &d, const LType &L,
   U.solve_as_strict_lower_tran(y);
 
   // y=inv(D)*y
-  for (size_type i = 0u; i < m; ++i) y[i] /= d[i];
+  for (size_type i = 0u; i < m; ++i) y[i] /= conjugate(d[i]);
 
   // y = inv(L)'*y
   L.solve_as_strict_upper_tran(y);
