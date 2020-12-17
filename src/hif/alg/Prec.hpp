@@ -403,8 +403,8 @@ struct Prec {
     if (jit_destroy) {
       // destroy all 1D arrays
       array_type().swap(d_B);
-      array_type().swap(s);
-      array_type().swap(t);
+      sarray_type().swap(s);
+      sarray_type().swap(t);
       perm_type().swap(p);
       perm_type().swap(p_inv);
       perm_type().swap(q);

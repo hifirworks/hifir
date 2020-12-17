@@ -309,7 +309,7 @@ class GMRES_Null
         if (j + 1 >= (size_type)restart) break;
         ++j;
       }  // inf loop
-      value_type null_res = 0.0, norm_x = 0.0;
+      scalar_type null_res = 0.0, norm_x = 0.0;
       if (iter) {
         // backsolve
         for (int k = j; k > -1; --k) {
@@ -476,7 +476,7 @@ class GMRES_NullHi
       hi_value_type s(0);
       int           i(0);
       for (; i < len - 1; ++i) s += kappa[i] * rt_row[i];
-      const value_type k1 = hi_value_type(1) - s, k2 = -hi_value_type(1) - s;
+      const hi_value_type k1 = hi_value_type(1) - s, k2 = -hi_value_type(1) - s;
       if (std::abs(k1) < std::abs(k2))
         kappa[i] = k2 / rt_row[i];
       else
