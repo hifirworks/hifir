@@ -100,13 +100,14 @@ inline typename CcsType::size_type defer_tiny_diags(
     const CcsType &A, const CrsType &A_crs,
     const typename CcsType::size_type m0, PermType &p, PermType &q,
     BufType &work_p, BufType &work_q) {
-  using value_type                = typename CcsType::value_type;
-  using size_type                 = typename CcsType::size_type;
-  constexpr static value_type EPS = Const<value_type>::EPS;
+  using value_type  = typename CcsType::value_type;
+  using size_type   = typename CcsType::size_type;
+  using scalar_type = typename ValueTypeTrait<value_type>::value_type;
+  constexpr static scalar_type EPS = Const<scalar_type>::EPS;
 
   // lambda for computing local maximum magnitude for a given row *and* column
-  const auto compute_max_mag = [&](const size_type i) -> value_type {
-    value_type v(0);
+  const auto compute_max_mag = [&](const size_type i) -> scalar_type {
+    scalar_type v(0);
     if (A_crs.nnz_in_primary(p[i]))
       v = std::max(v, std::abs(*std::max_element(
                           A_crs.val_cbegin(p[i]), A_crs.val_cend(p[i]),
@@ -119,7 +120,7 @@ inline typename CcsType::size_type defer_tiny_diags(
                           [](const value_type a, const value_type b) -> bool {
                             return std::abs(a) < std::abs(b);
                           })));
-    if (v == Const<value_type>::ZERO) v = value_type(1);
+    if (v == Const<scalar_type>::ZERO) v = scalar_type(1);
     return v;
   };
 
@@ -353,11 +354,10 @@ do_maching(const CcsType &A, const CrsType &A_crs,
            ScalingArray &s, ScalingArray &t, PermType &p, PermType &q) {
   static_assert(!CcsType::ROW_MAJOR, "input must be CCS type");
   static_assert(CrsType::ROW_MAJOR, "input A_crs must be CRS type");
-  using value_type                = typename CcsType::value_type;
-  using index_type                = typename CcsType::index_type;
-  using return_type               = CcsType;
-  using size_type                 = typename CcsType::size_type;
-  constexpr static value_type ONE = Const<value_type>::ONE;
+  using value_type  = typename CcsType::value_type;
+  using index_type  = typename CcsType::index_type;
+  using return_type = CcsType;
+  using size_type   = typename CcsType::size_type;
 
   const size_type M = A.nrows(), N = A.ncols();
   p.resize(M);
@@ -403,11 +403,11 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   // fill identity mapping and add one to scaling vectors for offsets, if any
   for (size_type i = m0; i < M; ++i) {
     p[i] = i;
-    s[i] = ONE;
+    s[i] = 1;
   }
   for (size_type i = m0; i < N; ++i) {
     q[i] = i;
-    t[i] = ONE;
+    t[i] = 1;
   }
 
   // revert indices

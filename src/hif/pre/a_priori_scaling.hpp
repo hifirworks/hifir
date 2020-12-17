@@ -45,6 +45,7 @@ namespace hif {
 
 /// \brief do not perform a priori scaling
 /// \tparam CrsType crs matrix type, see \ref CRS
+/// \tparam ScalingType scaling array type, see \ref Array
 /// \param[in,out] B input and output matrix
 /// \param[out] rs row scaling
 /// \param[out] cs column scaling
@@ -52,9 +53,8 @@ namespace hif {
 ///            in \a B will be advanced by 1
 ///
 /// Notice that \a rs and \a cs will be set to be 1.
-template <class CrsType>
-inline void scale_eye(CrsType &B, typename CrsType::array_type &rs,
-                      typename CrsType::array_type &cs,
+template <class CrsType, class ScalingType>
+inline void scale_eye(CrsType &B, ScalingType &rs, ScalingType &cs,
                       const bool ensure_fortran_index = true) {
   using size_type  = typename CrsType::size_type;
   using index_type = typename CrsType::index_type;
@@ -72,6 +72,7 @@ inline void scale_eye(CrsType &B, typename CrsType::array_type &rs,
 /// \brief scale based on extreme values, do it asynchronously
 /// \tparam IsSymm if \a true, then assume the input type is symmetric
 /// \tparam CrsType crs matrix type, see \ref CRS
+/// \tparam ScalingType scaling array type, see \ref Array
 /// \param[in,out] B input and output matrix
 /// \param[out] rs row scaling
 /// \param[out] cs column scaling
@@ -81,26 +82,26 @@ inline void scale_eye(CrsType &B, typename CrsType::array_type &rs,
 /// This function performs a single step of asynchronous scaling (Gauss-Seidel)
 /// scaling, thus the row will be scaled before column scaling computes the
 /// local extreme values.
-template <bool IsSymm, class CrsType>
-inline void scale_extreme_values(CrsType &B, typename CrsType::array_type &rs,
-                                 typename CrsType::array_type &cs,
+template <bool IsSymm, class CrsType, class ScalingType>
+inline void scale_extreme_values(CrsType &B, ScalingType &rs, ScalingType &cs,
                                  const bool ensure_fortran_index = true) {
   static_assert(CrsType::ROW_MAJOR, "must be CRS");
-  using value_type                 = typename CrsType::value_type;
-  using size_type                  = typename CrsType::size_type;
-  constexpr static value_type ZERO = Const<value_type>::ZERO;
+  using value_type                  = typename CrsType::value_type;
+  using size_type                   = typename CrsType::size_type;
+  using scalar_type                 = typename ScalingType::value_type;
+  constexpr static scalar_type ZERO = Const<scalar_type>::ZERO;
 
   const size_type n = B.nrows();
 
   // we scale row first
   for (size_type row(0); row < n; ++row) {
-    value_type tmp = B.nnz_in_row(row)
-                         ? std::abs(*std::max_element(
-                               B.val_cbegin(row), B.val_cend(row),
-                               [](const value_type l, const value_type r) {
-                                 return std::abs(l) < std::abs(r);
-                               }))
-                         : ZERO;
+    scalar_type tmp = B.nnz_in_row(row)
+                          ? std::abs(*std::max_element(
+                                B.val_cbegin(row), B.val_cend(row),
+                                [](const value_type l, const value_type r) {
+                                  return std::abs(l) < std::abs(r);
+                                }))
+                          : ZERO;
     if (tmp == ZERO) tmp = 1;
     tmp     = 1. / tmp;
     rs[row] = tmp;
@@ -112,7 +113,7 @@ inline void scale_extreme_values(CrsType &B, typename CrsType::array_type &rs,
     std::copy_n(rs.cbegin(), n, cs.begin());
   else {
     // set all values to be 0
-    std::fill_n(cs.begin(), n, value_type(0));
+    std::fill_n(cs.begin(), n, scalar_type(0));
     const size_type nnz     = B.nnz();
     const auto &    indices = B.col_ind();
     const auto &    vals    = B.vals();
@@ -143,6 +144,7 @@ inline void scale_extreme_values(CrsType &B, typename CrsType::array_type &rs,
 /// \tparam IsSymm if \a true, then assume the input type is symmetric
 /// \tparam PermType user-defined row permutation (or symmetric if \a IsSymm
 ///         is \a true.)
+/// \tparam ScalingType scaling array type, see \ref Array
 /// \tparam CrsType crs matrix type, see \ref CRS
 /// \param[in] p user permutation with \a operator[] returns permutation
 /// \param[in,out] A input and output operator
@@ -155,40 +157,39 @@ inline void scale_extreme_values(CrsType &B, typename CrsType::array_type &rs,
 ///
 /// References : D. Ruiz and B. Ucar, A Symmetry Preserving Algorithm for
 ///              Matrix Scaling, SIAM J. MATRIX ANAL. APPL. 2014
-template <bool IsSymm, class PermType, class CrsType>
-inline void iterative_scale_p(const PermType &p, CrsType &A,
-                              typename CrsType::array_type &    rs,
-                              typename CrsType::array_type &    cs,
-                              const double                      tol = 1e-10,
+template <bool IsSymm, class PermType, class CrsType, class ScalingType>
+inline void iterative_scale_p(const PermType &p, CrsType &A, ScalingType &rs,
+                              ScalingType &cs, const double tol = 1e-10,
                               const typename CrsType::size_type max_iters = 5,
                               const bool ensure_fortran_index = true) {
   // This implementation is based on Scaling.h in Eigen under unsupported
 
-  using value_type = typename CrsType::value_type;
-  using array_type = typename CrsType::array_type;
-  using size_type  = typename CrsType::size_type;
+  using value_type  = typename CrsType::value_type;
+  using array_type  = typename CrsType::array_type;
+  using size_type   = typename CrsType::size_type;
+  using scalar_type = typename ScalingType::value_type;
 
   const size_type m(A.nrows()), n(A.ncols());
-  array_type      res_rs(m), res_cs, local_rs(m), local_cs;
+  ScalingType     res_rs(m), res_cs, local_rs(m), local_cs;
   if (!IsSymm) {
     res_cs.resize(n);
     local_cs.resize(n);
   }
 
   // set all ones
-  std::fill_n(rs.begin(), m, 1);
-  if (!IsSymm) std::fill_n(cs.begin(), n, 1);
-  double    res_r(1.0), res_c(1.0);
-  size_type iters(0);
+  std::fill_n(rs.begin(), m, scalar_type(1));
+  if (!IsSymm) std::fill_n(cs.begin(), n, scalar_type(1));
+  scalar_type res_r(1.0), res_c(1.0);
+  size_type   iters(0);
   do {
     // reset all local scaling
     // std::fill(local_rs.begin(), local_rs.end(), 0);
-    if (!IsSymm) std::fill(local_cs.begin(), local_cs.end(), 0);
+    if (!IsSymm) std::fill(local_cs.begin(), local_cs.end(), scalar_type(0));
     // loop through all entries
     for (size_type row(0); row < m; ++row) {
-      value_type tmp(0);
-      auto       last  = A.col_ind_cend(p[row]);
-      auto       v_itr = A.val_cbegin(p[row]);
+      scalar_type tmp(0);
+      auto        last  = A.col_ind_cend(p[row]);
+      auto        v_itr = A.val_cbegin(p[row]);
       for (auto itr = A.col_ind_cbegin(p[row]); itr != last; ++itr, ++v_itr) {
         tmp = std::max(std::abs(*v_itr), tmp);
         if (!IsSymm) {
@@ -207,9 +208,9 @@ inline void iterative_scale_p(const PermType &p, CrsType &A,
         cs[i] *= tmp;
       }
     }
-    if (!IsSymm) std::fill(res_cs.begin(), res_cs.end(), 0);
+    if (!IsSymm) std::fill(res_cs.begin(), res_cs.end(), scalar_type(0));
     for (size_type row(0); row < m; ++row) {
-      value_type       tmp(0);
+      scalar_type      tmp(0);
       auto             last  = A.col_ind_cend(p[row]);
       auto             v_itr = A.val_begin(p[row]);
       const value_type r     = local_rs[p[row]];
@@ -225,7 +226,7 @@ inline void iterative_scale_p(const PermType &p, CrsType &A,
       // no need to permute residual array
       res_rs[row] = tmp;
     }
-    value_type tmp(0);
+    scalar_type tmp(0);
     for (size_type i(0); i < m; ++i)
       tmp = std::max(std::abs(1 - res_rs[i]), tmp);
     res_r = tmp;
@@ -255,6 +256,7 @@ inline void iterative_scale_p(const PermType &p, CrsType &A,
 /// \brief iterative scaling based on Jacobi operation
 /// \tparam IsSymm if \a true, then assume the input type is symmetric
 /// \tparam CrsType crs matrix type, see \ref CRS
+/// \tparam ScalingType scaling array type, see \ref Array
 /// \param[in,out] A input and output operator
 /// \param[out] rs row scaling
 /// \param[out] cs column scaling
@@ -265,9 +267,8 @@ inline void iterative_scale_p(const PermType &p, CrsType &A,
 ///
 /// References : D. Ruiz and B. Ucar, A Symmetry Preserving Algorithm for
 ///              Matrix Scaling, SIAM J. MATRIX ANAL. APPL. 2014
-template <bool IsSymm, class CrsType>
-inline void iterative_scale(CrsType &A, typename CrsType::array_type &rs,
-                            typename CrsType::array_type &    cs,
+template <bool IsSymm, class CrsType, class ScalingType>
+inline void iterative_scale(CrsType &A, ScalingType &rs, ScalingType &cs,
                             const double                      tol       = 1e-10,
                             const typename CrsType::size_type max_iters = 5,
                             const bool ensure_fortran_index = true) {

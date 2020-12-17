@@ -35,6 +35,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "hif/utils/common.hpp"
 #include "hif/utils/log.hpp"
+#include "hif/utils/math.hpp"
 
 namespace hif {
 
@@ -67,6 +68,8 @@ class IndexValueArray {
   typedef std::vector<index_type>        iarray_type;  ///< index array
   typedef typename array_type::size_type size_type;    ///< size
   typedef IndexValueArray                this_type;    ///< handy type wrapper
+  typedef typename ValueTypeTrait<value_type>::value_type scalar_type;
+  ///< scalar (real) type
 
   /// \brief default constructor
   IndexValueArray() : _vals(), _inds(), _counts(0u) {}
@@ -135,16 +138,17 @@ class IndexValueArray {
   inline value_type val(const size_type i) const { return _vals[idx(i)]; }
 
   /// \brief get the 1 norm of the vector
-  inline value_type norm1() const {
-    value_type tmp(0);
+  inline scalar_type norm1() const {
+    scalar_type tmp(0);
     for (size_type i(0); i < _counts; ++i) tmp += std::abs(val(i));
     return tmp;
   }
 
   /// \brief get the 2 norm squared of the vector
-  inline value_type norm2_sq() const {
-    value_type tmp(0);
-    for (size_type i(0); i < _counts; ++i) tmp += val(i) * val(i);
+  inline scalar_type norm2_sq() const {
+    scalar_type tmp(0);
+    for (size_type i(0); i < _counts; ++i)
+      tmp += real(val(i) * conjugate(val(i)));
     return tmp;
   }
 

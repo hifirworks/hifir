@@ -71,14 +71,15 @@ inline CsType pivot_level_factorize(
   typedef CsType                      input_type;
   typedef typename CsType::other_type other_type;
   using cs_trait = internal::CompressedTypeTrait<input_type, other_type>;
-  typedef typename cs_trait::crs_type    crs_type;
-  typedef typename cs_trait::ccs_type    ccs_type;
-  typedef AugCRS<crs_type>               aug_crs_type;
-  typedef AugCCS<ccs_type>               aug_ccs_type;
-  typedef typename CsType::index_type    index_type;
-  typedef typename CsType::size_type     size_type;
-  typedef typename CsType::value_type    value_type;
-  typedef DenseMatrix<value_type>        dense_type;
+  typedef typename cs_trait::crs_type                     crs_type;
+  typedef typename cs_trait::ccs_type                     ccs_type;
+  typedef AugCRS<crs_type>                                aug_crs_type;
+  typedef AugCCS<ccs_type>                                aug_ccs_type;
+  typedef typename CsType::index_type                     index_type;
+  typedef typename CsType::size_type                      size_type;
+  typedef typename CsType::value_type                     value_type;
+  typedef typename ValueTypeTrait<value_type>::value_type scalar_type;
+  typedef DenseMatrix<value_type>                         dense_type;
   typedef typename PrecsType::value_type prec_type;  // precs is std::list
 
   hif_error_if(A.nrows() != A.ncols(), "only squared systems are supported");
@@ -126,7 +127,7 @@ inline CsType pivot_level_factorize(
 
   // preprocessing
   timer.start();
-  Array<value_type>        s, t;
+  Array<scalar_type>       s, t;
   BiPermMatrix<index_type> p, q;
   size_type                m;
   if (cur_level > must_symm_pre_lvls) {

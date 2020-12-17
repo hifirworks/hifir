@@ -170,8 +170,8 @@ class FQMRCGSTAB
       for (size_type i(0); i < n; ++i) _r0[i] = b[i] - _Ax[i];
     }
     const auto &r0  = _r0;
-    auto        tau = norm2(r0);
-    _resids[0]      = tau;  // starting with size 1
+    value_type  tau = norm2(r0);
+    _resids[0]      = real(tau);  // starting with size 1
     if (_resids[0] <= rtol * normb) return std::make_pair(flag, size_type(0));
     std::copy(r0.cbegin(), r0.cend(), _p.begin());
     std::copy(r0.cbegin(), r0.cend(), _r.begin());
@@ -193,13 +193,13 @@ class FQMRCGSTAB
       mt::mv_nt(A, _ph, _v);
       // A.mv(_ph, _v);
       auto rho2 = inner(r0, _v);
-      if (rho2 == 0) {
+      if (rho2 == value_type(0)) {
         Cerr(__HIF_FILE__, __HIF_FUNC__, __LINE__,
              "Solver break-down detected at iteration %zd.", iter);
         flag = BREAK_DOWN;
         break;
       }
-      if (rho1 == 0) {
+      if (rho1 == value_type(0)) {
         Cerr(__HIF_FILE__, __HIF_FUNC__, __LINE__,
              "Stagnated detected at iteration %zd.", iter);
         flag = STAGNATED;
@@ -207,10 +207,10 @@ class FQMRCGSTAB
       }
       const auto alpha = rho1 / rho2;
       for (size_type i(0); i < n; ++i) _s[i] = _r[i] - alpha * _v[i];
-      const auto theta2 = norm2(_s) / tau;
-      auto       c      = 1. / std::sqrt(1.0 + theta2 * theta2);
-      const auto tau2   = tau * theta2 * c;
-      const auto eta2   = c * c * alpha;
+      const value_type theta2 = norm2(_s) / tau;
+      value_type       c    = value_type(1) / std::sqrt(1.0 + theta2 * theta2);
+      const value_type tau2 = tau * theta2 * c;
+      const value_type eta2 = c * c * alpha;
       if (iter == 1u)
         std::copy(_ph.cbegin(), _ph.cend(), _d2.begin());
       else {
@@ -231,7 +231,7 @@ class FQMRCGSTAB
 
       const auto uu = inner(_s, _t), vv = norm2_sq(_t);
       const auto omega = uu / vv;
-      if (omega == 0) {
+      if (omega == value_type(0)) {
         Cerr(__HIF_FILE__, __HIF_FUNC__, __LINE__,
              "Stagnated detected at iteration %zd.", iter);
         flag = STAGNATED;
@@ -275,7 +275,7 @@ class FQMRCGSTAB
         break;
       }
       rho2 = inner(_r, r0);
-      if (rho2 == 0) {
+      if (rho2 == value_type(0)) {
         Cerr(__HIF_FILE__, __HIF_FUNC__, __LINE__,
              "Stagnated detected at iteration %zd.", iter);
         flag = STAGNATED;

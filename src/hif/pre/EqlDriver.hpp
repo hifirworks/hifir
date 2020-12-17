@@ -57,13 +57,16 @@ class EqlDriver {
   using ccs_type    = CCS<value_type, index_type>;    ///< ccs type
   using crs_type    = typename ccs_type::other_type;  ///< crs type
   using size_type   = typename ccs_type::size_type;   ///< size type
-  using kernel_type = eql::Equilibrator<index_type, value_type, Array>;
+  using scalar_type = typename ValueTypeTrait<value_type>::value_type;
+  ///< scalar type
+  using kernel_type =
+      eql::Equilibrator<index_type, value_type, scalar_type, Array>;
   ///< kernel type
 
   template <bool IsSymm>
   inline static void do_matching(const int /* verbose */, crs_type &B,
                                  Array<index_type> &p, Array<index_type> &q,
-                                 Array<value_type> &s, Array<value_type> &t,
+                                 Array<scalar_type> &s, Array<scalar_type> &t,
                                  const int pre_scale = 0) {
     const size_type n = B.nrows(), nnz = B.nnz();
     hif_error_if(B.nrows() != n, "must be squared systems");

@@ -94,7 +94,7 @@ class KSPSolver {
     hif_warning("this solver does not support restart or truncated cycle!");
     return 0;
   }
-  virtual const array_type &get_resids() const = 0;
+  virtual const Array<scalar_type> &get_resids() const = 0;
   /// @}
 
   // handy utilities
@@ -207,7 +207,7 @@ class KSPAdaptor
     if (name.find("GMRES") != std::string::npos) return _base::restart;
     return _abc_base::get_restart_or_cycle();
   }
-  virtual const array_type &get_resids() const override final {
+  virtual const Array<scalar_type> &get_resids() const override final {
     return _base::resids();
   }
   /// @}

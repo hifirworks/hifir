@@ -57,9 +57,9 @@ inline void kernel(_Integer, const _Integer *, const _Integer *, const _Real *,
                    _Integer *, _Integer *, _Integer *, _Integer *, _Integer *,
                    _Integer *, _Integer *, _Real *, _Real *);
 
-template <typename _Integer, typename _Real>
+template <typename _Integer, typename _ValReal, typename _Real>
 inline void compute(const _Integer n, const _Integer ne, const _Integer *indptr,
-                    const _Integer *indices, const _Real *vals, _Integer *no,
+                    const _Integer *indices, const _ValReal *vals, _Integer *no,
                     _Integer *cperm, _Integer liwork, _Integer *iwork,
                     _Integer lwork, _Real *work, const _Integer *pars,
                     _Integer *info) {
@@ -685,6 +685,7 @@ using std_vector = std::vector<V>;
 
 /// \class Equilibrator
 /// \tparam _Integer integer type
+/// \tparam _Value value type
 /// \tparam _Real real value type
 /// \tparam _Container container metatype, default is \a std::vector
 /// \brief object for equilibrating a CRS/CCS matrix
@@ -699,14 +700,16 @@ using std_vector = std::vector<V>;
 /// - \a size, query the length of the container
 /// - \a swap, used for \ref destroy memory space
 /// - \a operator[], only constant version is needed for accessing entries
-template <typename _Integer, typename _Real,
+template <typename _Integer, typename _Value, typename _Real = _Value,
           template <class> class _Container = internal::std_vector>
 class Equilibrator {
  public:
   using index_type  = _Integer;                ///< index type
+  using value_type  = _Value;                  ///< scalar type
   using real_type   = _Real;                   ///< real type
   using iarray_type = _Container<index_type>;  ///< index array
   using array_type  = _Container<real_type>;   ///< real array
+  using varray_type = _Container<value_type>;  ///< value array
 
   /// \brief equilibrate a CRS/CCS matrix
   /// \param[in] n number of nodes
@@ -718,7 +721,7 @@ class Equilibrator {
   /// \return information
   inline index_type compute(index_type n, index_type nnz,
                             const index_type *indptr, const index_type *indices,
-                            const real_type *vals, index_type *perm) const {
+                            const value_type *vals, index_type *perm) const {
     index_type pars[_PAR_NUM];
     detail::set_default_pars(pars);
 #ifdef NDEBUG
@@ -728,7 +731,7 @@ class Equilibrator {
     index_type info[_PAR_NUM], num, liwork = _iwork.size(),
                                     lwork = _work.size();
     detail::compute(n, nnz, (index_type *)indptr, (index_type *)indices,
-                    (real_type *)vals, &num, perm, liwork,
+                    (value_type *)vals, &num, perm, liwork,
                     (index_type *)_iwork.data(), lwork,
                     (real_type *)_work.data(), pars, info);
     return info[0];
@@ -741,7 +744,7 @@ class Equilibrator {
   /// \param[out] perm permutation result
   /// \return information
   inline index_type compute(const iarray_type &indptr,
-                            const iarray_type &indices, const array_type &vals,
+                            const iarray_type &indices, const varray_type &vals,
                             iarray_type &perm) const {
     if (indptr.size() > 1u) {
       if (indices.size() != vals.size()) return -100;

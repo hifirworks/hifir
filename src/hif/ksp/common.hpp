@@ -401,9 +401,9 @@ class KSP {
   ///< max numer of iterations
   size_type inner_steps = DefaultSettings<value_type>::inner_steps;
   ///< inner flexible iterations
-  value_type lamb1   = 0.9;  ///< est of largest eigenvalue (not used)
-  value_type lamb2   = 0.0;  ///< est of smallest eigenvalue (not used)
-  int        restart = 0;    ///< restart
+  value_type lamb1 = value_type(0.9);  ///< est of largest eigenvalue (not used)
+  value_type lamb2 = value_type(0.0);  ///< est of smallest eigenvalue
+  int        restart = 0;              ///< restart
 
   KSP() = default;
 
@@ -432,7 +432,7 @@ class KSP {
   inline std::shared_ptr<M_type> get_M() const { return _M; }
 
   /// \brief get residual array
-  inline const array_type &resids() const { return _resids; }
+  inline const Array<scalar_type> &resids() const { return _resids; }
 
   /// \brief solve with \ref _M as traditional preconditioner
   /// \tparam Matrix user input type, see \ref CRS and \ref CCS
@@ -558,8 +558,8 @@ class KSP {
   }
 
  protected:
-  std::shared_ptr<M_type> _M;       ///< preconditioner operator
-  mutable array_type      _resids;  ///< residual history
+  std::shared_ptr<M_type>    _M;       ///< preconditioner operator
+  mutable Array<scalar_type> _resids;  ///< residual history
 
  protected:
   /// \brief check and assign any illegal parameters to default setting
