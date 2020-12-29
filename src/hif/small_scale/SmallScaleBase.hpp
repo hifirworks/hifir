@@ -88,10 +88,11 @@ class SmallScaleBase {
   }
 
  protected:
-  dense_type        _mat;         ///< matrix
-  dense_type        _mat_backup;  ///< backup matrix
-  size_type         _rank;        ///< rank
-  Array<value_type> _x;           ///< buffer for handling solve in derived
+  dense_type                _mat;         ///< matrix
+  dense_type                _mat_backup;  ///< backup matrix
+  size_type                 _rank;        ///< rank
+  mutable Array<value_type> _x;     ///< buffer for handling solve in derived
+  mutable dense_type        _mrhs;  ///< multiple RHS buffer
 };
 
 }  // namespace hif

@@ -30,6 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define _HIF_SMALLSCALE_SYEIG_HPP
 
 #include <algorithm>
+#include <array>
 #include <numeric>
 
 #include "hif/Options.h"
@@ -172,6 +173,41 @@ class SYEIG : public SmallScaleBase<ValueType> {
     std::copy(x.cbegin(), x.cend(), _base::_x.begin());
     solve(_base::_x, rank);
     std::copy(_base::_x.cbegin(), _base::_x.cend(), x.begin());
+  }
+
+  /// \brief solve with multiple RHS
+  /// \sa solve
+  template <class V, int Nrhs>
+  inline void solve(Array<std::array<V, Nrhs>> &x,
+                    const size_type             rank = 0) const {
+    hif_error_if(
+        _mat.empty() || _w.empty(),
+        "either the matrix is not set or the factorization has not yet done!");
+    hif_error_if(x.size() != _mat.nrows(),
+                 "unmatched sizes between system and rhs");
+    const auto      n  = x.size();
+    const size_type rk = rank == 0u ? _rank : (rank > n ? n : rank);
+    // copy to internal column-major buffer
+    _base::_mrhs.resize(x.size(), Nrhs);
+    for (int j = 0; j < Nrhs; ++j)
+      for (size_type i(0); i < x.size(); ++i) _mrhs(i, j) = x[i][j];
+    for (int i = 0; i < Nrhs; ++i) {
+      // step 1, compute y=Q^T*x
+      lapack_kernel::gemv('C', _mat.nrows(), _mat.ncols(), value_type(1),
+                          _mat.data(), _mat.nrows(), &_base::_mrhs(0, i * Nrhs),
+                          value_type(0), _work.data());
+      // step 2, solve inv(lambda)*y with truncation
+      for (size_type i(0); i < rk; ++i)
+        _work[_trunc_order[i]] /= _w[_trunc_order[i]];
+      for (size_type i(rk); i < n; ++i) _work[_trunc_order[i]] = 0;
+      // step 3, compute x=Q*y
+      lapack_kernel::gemv('N', _mat.nrows(), _mat.ncols(), value_type(1),
+                          _mat.data(), _mat.nrows(), _work.data(),
+                          value_type(0), &_base::_mrhs(0, i * Nrhs));
+    }
+    // copy back to the application
+    for (int j = 0; j < Nrhs; ++j)
+      for (size_type i(0); i < x.size(); ++i) x[i][j] = _mrhs(i, j);
   }
 
  protected:
