@@ -183,19 +183,19 @@ class QRCP : public SmallScaleBase<ValueType> {
   }
 
   /// \brief wrapper for solving multiple RHS with \a row-major storage
-  template <class V, int Nrhs>
+  template <class V, size_type Nrhs>
   inline void solve_mrhs(Array<std::array<V, Nrhs>> &x,
                          const size_type             rank = 0u,
                          const bool                  tran = false) const {
-    if (Nrhs == 1) return solve(reinterpret_cast<Array<V> &>(x), rank, tran);
+    if (Nrhs == 1u) return solve(reinterpret_cast<Array<V> &>(x), rank, tran);
     hif_error_if(tran, "QRCP does not support transpose solve!");
     hif_error_if(x.size() != _mat.nrows(),
                  "unmatched sizes between system and rhs");
     _base::_mrhs.resize(x.size(), Nrhs);
-    for (int j = 0; j < Nrhs; ++j)
+    for (size_type j = 0; j < Nrhs; ++j)
       for (size_type i(0); i < x.size(); ++i) _mrhs(i, j) = x[i][j];
     _solve_nt<Nrhs>(_base::_mrhs.data(), rank);
-    for (int j = 0; j < Nrhs; ++j)
+    for (size_type j = 0; j < Nrhs; ++j)
       for (size_type i(0); i < x.size(); ++i) x[i][j] = _mrhs(i, j);
   }
 
@@ -285,7 +285,7 @@ class QRCP : public SmallScaleBase<ValueType> {
   /// \tparam Nrhs Number of RHS
   /// \param[in,out] x input rhs, output solution
   /// \param[in] rank (optional) rank for back solve, default is \a _rank
-  template <int Nrhs>
+  template <size_type Nrhs>
   inline void _solve_nt(value_type *x, const size_type rank = 0u) const {
     hif_error_if(
         _mat.empty() || _jpvt.empty(),
@@ -307,7 +307,7 @@ class QRCP : public SmallScaleBase<ValueType> {
     hif_error_if(info < 0, "ORMQR returned negative info (Q'*x)");
 
     // compute x(1:_rank)=inv(R(1:_rank,1:_rank))*x(1:_rank)
-    for (int i = 0; i < Nrhs; ++i)
+    for (size_type i = 0; i < Nrhs; ++i)
       lapack_kernel::trsv('U', 'N', 'N', rk, _mat.data(), _mat.nrows(),
                           x + i * _mat.nrows(), 1);
 

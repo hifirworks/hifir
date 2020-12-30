@@ -113,7 +113,7 @@ class LUP : public SmallScaleBase<ValueType> {
   }
 
   /// \brief solve with multiple RHS
-  template <class T, int Nrhs>
+  template <class T, size_type Nrhs>
   inline void solve_mrhs(Array<std::array<T, Nrhs>> &x, const size_type = 0,
                          const bool                  tran = false) const {
     hif_error_if(
@@ -122,11 +122,11 @@ class LUP : public SmallScaleBase<ValueType> {
     hif_error_if(x.size() != _mat.nrows(),
                  "unmatched sizes between system and rhs");
     _base::_mrhs.resize(x.size(), Nrhs);
-    for (int j = 0; j < Nrhs; ++j)
+    for (size_type j = 0; j < Nrhs; ++j)
       for (size_type i(0); i < x.size(); ++i) _mrhs(i, j) = x[i][j];
     if (lapack_kernel::getrs(_mat, _ipiv, _base::_mrhs, tran ? 'T' : 'N') < 0)
       hif_error("GETRS returned negative info!");
-    for (int j = 0; j < Nrhs; ++j)
+    for (size_type j = 0; j < Nrhs; ++j)
       for (size_type i(0); i < x.size(); ++i) x[i][j] = _mrhs(i, j);
   }
 

@@ -177,7 +177,7 @@ class SYEIG : public SmallScaleBase<ValueType> {
 
   /// \brief solve with multiple RHS
   /// \sa solve
-  template <class V, int Nrhs>
+  template <class V, size_type Nrhs>
   inline void solve(Array<std::array<V, Nrhs>> &x,
                     const size_type             rank = 0) const {
     hif_error_if(
@@ -189,9 +189,9 @@ class SYEIG : public SmallScaleBase<ValueType> {
     const size_type rk = rank == 0u ? _rank : (rank > n ? n : rank);
     // copy to internal column-major buffer
     _base::_mrhs.resize(x.size(), Nrhs);
-    for (int j = 0; j < Nrhs; ++j)
+    for (size_type j = 0; j < Nrhs; ++j)
       for (size_type i(0); i < x.size(); ++i) _mrhs(i, j) = x[i][j];
-    for (int i = 0; i < Nrhs; ++i) {
+    for (size_type i = 0; i < Nrhs; ++i) {
       // step 1, compute y=Q^T*x
       lapack_kernel::gemv('C', _mat.nrows(), _mat.ncols(), value_type(1),
                           _mat.data(), _mat.nrows(), &_base::_mrhs(0, i * Nrhs),
