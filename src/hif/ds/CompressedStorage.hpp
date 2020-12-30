@@ -30,6 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define _HIF_DS_COMPRESSEDSTORAGE_HPP
 
 #include <algorithm>
+#include <array>
 #include <iterator>
 #include <type_traits>
 #include <utility>
@@ -1101,6 +1102,50 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
     }
   }
 
+  /// \brief matrix vector for kernel MT compatibility with different type
+  /// \tparam Nrhs number of right-hand sides (RHS)
+  /// \tparam Vx other value type for \a x
+  /// \tparam Vy other value type for \a y
+  /// \param[in] x input array pointer
+  /// \param[in] istart index start
+  /// \param[in] len local length
+  /// \param[out] y output array pointer
+  template <size_type Nrhs, class Vx, class Vy>
+  inline void mv_mrhs_nt_low(const Vx *x, const size_type istart,
+                             const size_type len, Vy *y) const {
+    using v1_t =
+        typename std::conditional<(sizeof(Vx) > sizeof(Vy)), Vx, Vy>::type;
+    using v_t = typename std::conditional<(sizeof(v1_t) > sizeof(value_type)),
+                                          v1_t, value_type>::type;
+    const size_type       n = istart + len;
+    std::array<v_t, Nrhs> tmp;
+    for (size_type i = istart; i < n; ++i) {
+      tmp.fill(v_t(0));
+      auto v_itr = _base::val_cbegin(i);
+      auto i_itr = col_ind_cbegin(i);
+      for (auto last = col_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
+        hif_assert(size_type(*i_itr) < _ncols, "%zd exceeds column size",
+                   size_type(*i_itr));
+        const auto idx = *i_itr * Nrhs;
+        const v_t  av  = static_cast<v_t>(*v_itr);
+        for (size_type k = 0; k < Nrhs; ++k) tmp[k] += av * x[idx + k];
+      }
+      for (size_type j = 0; j < Nrhs; ++j) y[i * Nrhs + j] = tmp[j];
+    }
+  }
+
+  /// \brief matrix vector multiplication with different value type
+  /// \tparam Nrhs number of right-hand sides (RHS)
+  /// \tparam Vx other value type for \a x
+  /// \tparam Vy other value type for \a y
+  /// \param[in] x input array pointer
+  /// \param[out] y output array pointer
+  /// \warning User's responsibility to maintain valid pointers
+  template <size_type Nrhs, class Vx, class Vy>
+  inline void mv_mrhs_nt_low(const Vx *x, Vy *y) const {
+    mv_mrhs_nt_low<Nrhs>(x, size_type(0), _psize, y);
+  }
+
   /// \brief matrix vector multiplication
   /// \tparam IArray input array type
   /// \tparam OArray output array type
@@ -1132,6 +1177,42 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
     hif_error_if(istart + len > nrows(),
                  "out-of-bound pass-of-end range detected");
     mv_nt_low(x.data(), istart, len, y.data());
+  }
+
+  /// \brief matrix vector multiplication with multiple RHS
+  /// \tparam InType input data type
+  /// \tparam OutType output data type
+  /// \tparam Nrhs number of right-hand sides (RHS)
+  /// \param[in] x input array
+  /// \param[out] y output array
+  template <class InType, class OutType, size_type Nrhs>
+  inline void mv_mrhs_nt(const Array<std::array<InType, Nrhs>> &x,
+                         Array<std::array<OutType, Nrhs>> &     y) const {
+    hif_error_if(nrows() != y.size() || ncols() != x.size(),
+                 "matrix vector multiplication unmatched sizes!");
+    if (x.size() && y.size()) mv_mrhs_nt_low<Nrhs>(x[0].data(), y[0].data());
+  }
+
+  /// \brief matrix vector multiplication for MT (CRS only)
+  /// \tparam InType input data type
+  /// \tparam OutType output data type
+  /// \tparam Nrhs number of right-hand sides (RHS)
+  /// \param[in] x input array
+  /// \param[in] istart index start
+  /// \param[in] len local length
+  /// \param[out] y output array
+  template <class InType, class OutType, size_type Nrhs>
+  inline void mv_mrhs_nt(const Array<std::array<InType, Nrhs>> &x,
+                         const size_type istart, const size_type len,
+                         Array<std::array<OutType, Nrhs>> &y) const {
+    hif_error_if(nrows() != y.size() || ncols() != x.size(),
+                 "matrix vector multiplication unmatched sizes!");
+    hif_error_if(istart >= nrows(), "%zd exceeds the row size %zd", istart,
+                 nrows());
+    hif_error_if(istart + len > nrows(),
+                 "out-of-bound pass-of-end range detected");
+    if (x.size() && y.size())
+      mv_mrhs_nt_low<Nrhs>(x[0].data(), istart, len, y[0].data());
   }
 
   /// \brief matrix transpose vector multiplication with different type
@@ -1174,6 +1255,47 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
     mv_t_low(x.data(), y.data());
   }
 
+  /// \brief matrix transpose vector multiplication with different type
+  /// \tparam Nrhs number of right-hand sides (RHS)
+  /// \tparam Vx other value type for \a x
+  /// \tparam Vy other value type for \a y
+  /// \param[in] x input array pointer
+  /// \param[out] y output array pointer
+  template <size_type Nrhs, class Vx, class Vy>
+  inline void mv_mrhs_t_low(const Vx *x, Vy *y) const {
+    using v1_t =
+        typename std::conditional<(sizeof(Vx) > sizeof(Vy)), Vx, Vy>::type;
+    using v_t = typename std::conditional<(sizeof(v1_t) > sizeof(value_type)),
+                                          v1_t, value_type>::type;
+    if (!_psize) return;
+    std::fill_n(y, Nrhs * ncols(), Vy(0));
+    std::array<v_t, Nrhs> temp;
+    for (size_type i = 0u; i < _psize; ++i) {
+      for (size_type k(0); k < Nrhs; ++k) temp[k] = x[i * Nrhs + k];
+      auto v_itr = _base::val_cbegin(i);
+      auto i_itr = col_ind_cbegin(i);
+      for (auto last = col_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
+        const size_type j = *i_itr;
+        hif_assert(j < _ncols, "%zd exceeds column size", j);
+        for (size_type k(0); k < Nrhs; ++k) y[j * Nrhs + k] += temp[k] * *v_itr;
+      }
+    }
+  }
+
+  /// \brief matrix transpose vector multiplication
+  /// \tparam InType input data type
+  /// \tparam OutType output data type
+  /// \tparam Nrhs number of right-hand sides (RHS)
+  /// \param[in] x input array
+  /// \param[out] y output array
+  template <class InType, class OutType, size_type Nrhs>
+  inline void mv_mrhs_t(const Array<std::array<InType, Nrhs>> &x,
+                        Array<std::array<OutType, Nrhs>> &     y) const {
+    hif_error_if(nrows() != x.size() || ncols() != y.size(),
+                 "T(matrix) vector multiplication unmatched sizes!");
+    if (x.size() && y.size()) mv_mrhs_t_low<Nrhs>(x[0].data(), y[0].data());
+  }
+
   /// \brief matrix vector multiplication
   /// \tparam IArray input array type
   /// \tparam OArray output array type
@@ -1184,6 +1306,21 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   template <class IArray, class OArray>
   inline void mv(const IArray &x, OArray &y, bool tran = false) const {
     !tran ? mv_nt(x, y) : mv_t(x, y);
+  }
+
+  /// \brief matrix vector multiplication with multiple right-hand sides (RHS)
+  /// \tparam InType input data type
+  /// \tparam OutType output data type
+  /// \tparam Nrhs number of RHS
+  /// \param[in] x input array
+  /// \param[out] y output array
+  /// \param[in] tran if \a false (default), perform normal matrix vector
+  /// \sa mv_nt
+  template <class InType, class OutType, size_type Nrhs>
+  inline void mv_mrhs(const Array<std::array<InType, Nrhs>> &x,
+                      Array<std::array<OutType, Nrhs>> &     y,
+                      bool tran = false) const {
+    !tran ? mv_mrhs_nt(x, y) : mv_mrhs_t(x, y);
   }
 
   /// \brief Assume as a strict lower matrix and solve with forward sub
@@ -1861,6 +1998,48 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
     mv_nt_low(x.data(), y.data());
   }
 
+  /// \brief matrix vector multiplication with different value type
+  /// \tparam Nrhs number of right-hand sides (RHS)
+  /// \tparam Vx other value type for \a x
+  /// \tparam Vy other value type for \a y
+  /// \param[in] x input array pointer
+  /// \param[out] y output array pointer
+  template <size_type Nrhs, class Vx, class Vy>
+  inline void mv_mrhs_nt_low(const Vx *x, Vy *y) const {
+    using v1_t =
+        typename std::conditional<(sizeof(Vx) > sizeof(Vy)), Vx, Vy>::type;
+    using v_t = typename std::conditional<(sizeof(v1_t) > sizeof(value_type)),
+                                          v1_t, value_type>::type;
+    std::fill_n(y, Nrhs * nrows(), Vy(0));
+    if (!_psize) return;
+    std::array<v_t, Nrhs> temp;
+    for (size_type i = 0u; i < _psize; ++i) {
+      for (size_type k(0); k < Nrhs; ++k) temp[k] = x[i * Nrhs + k];
+      auto v_itr = _base::val_cbegin(i);
+      auto i_itr = row_ind_cbegin(i);
+      for (auto last = row_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
+        hif_assert(size_type(*i_itr) < _nrows, "%zd exceeds the size bound",
+                   size_type(*i_itr));
+        for (size_type k(0); k < Nrhs; ++k)
+          y[*i_itr * Nrhs + k] += temp[k] * *v_itr;
+      }
+    }
+  }
+
+  /// \brief matrix vector multiplication
+  /// \tparam InType input data type
+  /// \tparam OutType output data type
+  /// \tparam Nrhs number of right-hand sides (RHS)
+  /// \param[in] x input array
+  /// \param[out] y output array
+  template <class InType, class OutType, size_type Nrhs>
+  inline void mv_mrhs_nt(const Array<std::array<InType, Nrhs>> &x,
+                         Array<std::array<OutType, Nrhs>> &     y) const {
+    hif_error_if(nrows() != y.size() || ncols() != x.size(),
+                 "matrix vector unmatched sizes!");
+    if (x.size() && y.size()) mv_mrhs_nt_low<Nrhs>(x[0].data(), y[0].data());
+  }
+
   /// \brief matrix transpose vector multiplication with different type
   /// \tparam Vx other value type for \a x
   /// \tparam Vy other value type for \a y
@@ -1900,6 +2079,48 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
     mv_t_low(x.data(), y.data());
   }
 
+  /// \brief matrix transpose vector multiplication with different type
+  /// \tparam Nrhs number of right-hand sides (RHS)
+  /// \tparam Vx other value type for \a x
+  /// \tparam Vy other value type for \a y
+  /// \param[in] x input array pointer
+  /// \param[out] y output array pointer
+  template <size_type Nrhs, class Vx, class Vy>
+  inline void mv_mrhs_t_low(const Vx *x, Vy *y) const {
+    using v1_t =
+        typename std::conditional<(sizeof(Vx) > sizeof(Vy)), Vx, Vy>::type;
+    using v_t = typename std::conditional<(sizeof(v1_t) > sizeof(value_type)),
+                                          v1_t, value_type>::type;
+
+    std::array<v_t, Nrhs> tmp;
+    for (size_type i = 0u; i < _psize; ++i) {
+      auto v_itr = _base::val_cbegin(i);
+      auto i_itr = row_ind_cbegin(i);
+      tmp.fill(v_t(0));
+      for (auto last = row_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
+        hif_assert(size_type(*i_itr) < _nrows, "%zd exceeds the size bound",
+                   size_type(*i_itr));
+        const auto av = *v_itr;
+        for (size_type k(0); k < Nrhs; ++k) tmp[k] += x[*i_itr * Nrhs + k] * av;
+      }
+      for (size_type k(0); k < Nrhs; ++k) y[i * Nrhs + k] = tmp[k];
+    }
+  }
+
+  /// \brief transpose matrix vector multiplication
+  /// \tparam InType input data type
+  /// \tparam OutType output data type
+  /// \tparam Nrhs number of right-hand sides (RHS)
+  /// \param[in] x input array
+  /// \param[out] y output array
+  template <class InType, class OutType, size_type Nrhs>
+  inline void mv_mrhs_t(const Array<std::array<InType, Nrhs>> &x,
+                        Array<std::array<OutType, Nrhs>> &     y) const {
+    hif_error_if(nrows() != x.size() || ncols() != y.size(),
+                 "T(matrix) vector unmatched sizes!");
+    if (x.size() && y.size()) mv_mrhs_t_low<Nrhs>(x[0].data(), y[0].data());
+  }
+
   /// \brief matrix vector multiplication
   /// \tparam IArray input array type
   /// \tparam OArray output array type
@@ -1910,6 +2131,20 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   template <class IArray, class OArray>
   inline void mv(const IArray &x, OArray &y, bool tran = false) const {
     !tran ? mv_nt(x, y) : mv_t(x, y);
+  }
+
+  /// \brief matrix vector multiplication with multiple right-hand sides (RHS)
+  /// \tparam InType input data type
+  /// \tparam OutType output data type
+  /// \tparam Nrhs number of right-hand sides (RHS)
+  /// \param[in] tran if \a false (default), then perform normal matrix vector
+  /// \param[in] x input array
+  /// \param[out] y output array
+  template <class InType, class OutType, size_type Nrhs>
+  inline void mv_mrhs(const Array<std::array<InType, Nrhs>> &x,
+                      Array<std::array<OutType, Nrhs>> &     y,
+                      bool tran = false) const {
+    !tran ? mv_mrhs_nt(x, y) : mv_mrhs_t(x, y);
   }
 
   /// \brief Assume as a strict lower matrix and solve with forward sub
