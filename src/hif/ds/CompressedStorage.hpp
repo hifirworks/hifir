@@ -1345,6 +1345,33 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
     }
   }
 
+  /// \brief Assume as a strict lower matrix and solve with forward sub for
+  ///        multiple right-hand sides (RHS)
+  /// \tparam InOutType In- and out- put types
+  /// \tparam Nrhs Number of RHS
+  /// \param[in,out] y Input rhs, output solution
+  /// \note Advanced use for preconditioner solve.
+  /// \sa solve_as_strict_lower
+  template <class InOutType, size_type Nrhs>
+  inline void solve_as_strict_lower_mrhs(
+      Array<std::array<InOutType, Nrhs>> &y) const {
+    using v_t =
+        typename std::conditional<(sizeof(InOutType) < sizeof(value_type)),
+                                  value_type, InOutType>::type;
+
+    std::array<v_t, Nrhs> tmp;
+    for (size_type j(1); j < _psize; ++j) {
+      auto itr   = col_ind_cbegin(j);
+      auto v_itr = _base::val_cbegin(j);
+      tmp.fill(v_t(0));
+      for (auto last = col_ind_cend(j); itr != last; ++itr, ++v_itr) {
+        const v_t av = static_cast<v_t>(*v_itr);
+        for (size_type k(0); k < Nrhs; ++k) tmp[k] += av * y[*itr][k];
+      }
+      for (size_type k(0); k < Nrhs; ++k) y[j][k] -= tmp[k];
+    }
+  }
+
   /// \brief Assume as a strict lower matrix and solve with transpose backward
   /// \tparam RhsType Rhs type
   /// \param[in,out] y Input rhs, output solution
@@ -1361,6 +1388,31 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
       for (auto last = rev_iterator(col_ind_cbegin(j1)); itr != last;
            ++itr, ++v_itr)
         y[*itr] -= conjugate(*v_itr) * y_j;
+    }
+  }
+
+  /// \brief Assume as a strict lower matrix and solve with transpose backward
+  ///        for multiple right-hand sides (RHS)
+  /// \tparam InOutType In- and out- put types
+  /// \tparam Nrhs Number of RHS
+  /// \param[in,out] y Input rhs, output solution
+  template <class InOutType, size_type Nrhs>
+  inline void solve_as_strict_lower_mrhs_tran(
+      Array<std::array<InOutType, Nrhs>> &y) const {
+    using rev_iterator   = std::reverse_iterator<const_i_iterator>;
+    using rev_v_iterator = std::reverse_iterator<const_v_iterator>;
+
+    std::array<InOutType, Nrhs> tmp;
+    for (size_type j(_ncols - 1); j != 0u; --j) {
+      const auto j1 = j - 1;
+      for (size_type k(0); k < Nrhs; ++k) tmp[k] = y[j1][k];
+      auto itr   = rev_iterator(col_ind_cend(j1));
+      auto v_itr = rev_v_iterator(_base::val_cend(j1));
+      for (auto last = rev_iterator(col_ind_cbegin(j1)); itr != last;
+           ++itr, ++v_itr) {
+        const auto avc = conjugate(*v_itr);
+        for (size_type k(0); k < Nrhs; ++k) y[*itr][k] -= avc * tmp[k];
+      }
     }
   }
 
@@ -1388,9 +1440,38 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
     }
   }
 
+  /// \brief Assume as a strict upper matrix and solve with backward sub for
+  ///        multiple right-hand sides (RHS)
+  /// \tparam InOutType In- and out- put types
+  /// \tparam Nrhs Number of RHS
+  /// \param[in,out] y Input rhs, output solution
+  /// \note Advanced use for preconditioner solve.
+  /// \sa solve_as_strict_upper
+  template <class InOutType, size_type Nrhs>
+  inline void solve_as_strict_upper_mrhs(
+      Array<std::array<InOutType, Nrhs>> &y) const {
+    using v_t =
+        typename std::conditional<(sizeof(InOutType) < sizeof(value_type)),
+                                  value_type, InOutType>::type;
+
+    hif_assert(_psize, "cannot be empty");
+    std::array<v_t, Nrhs> tmp;
+    for (size_type j = _psize - 1; j != 0u; --j) {
+      const size_type j1    = j - 1;
+      auto            itr   = col_ind_cbegin(j1);
+      auto            v_itr = _base::val_cbegin(j1);
+      tmp.fill(v_t(0));
+      for (auto last = col_ind_cend(j1); itr != last; ++itr, ++v_itr) {
+        const auto av = static_cast<v_t>(*v_itr);
+        for (size_type k(0); k < Nrhs; ++k) tmp[k] += av * y[*itr][k];
+      }
+      for (size_type k(0); k < Nrhs; ++k) y[j1][k] -= tmp[k];
+    }
+  }
+
   /// \brief Assume as a strict upper matrix and solve with transpose forward
   /// \tparam RhsType Rhs type
-  /// \param[in] y Input rhs, output solution
+  /// \param[in,out] y Input rhs, output solution
   template <class RhsType>
   inline void solve_as_strict_upper_tran(RhsType &y) const {
     for (size_type j(0); j < _ncols; ++j) {
@@ -1399,6 +1480,26 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
       auto       v_itr = _base::val_cbegin(j);
       for (auto last = col_ind_cend(j); itr != last; ++itr, ++v_itr)
         y[*itr] -= conjugate(*v_itr) * y_j;
+    }
+  }
+
+  /// \brief Assume as a strict upper matrix and solve with transpose forward
+  ///        for multiple right-hand sides (RHS)
+  /// \tparam InOutType In- and out- put types
+  /// \tparam Nrhs Number of RHS
+  /// \param[in] y Input rhs, output solution
+  template <class InOutType, size_type Nrhs>
+  inline void solve_as_strict_upper_mrhs_tran(
+      Array<std::array<InOutType, Nrhs>> &y) const {
+    std::array<InOutType, Nrhs> tmp;
+    for (size_type j(0); j < _ncols; ++j) {
+      tmp        = y[j];
+      auto itr   = col_ind_cbegin(j);
+      auto v_itr = _base::val_cbegin(j);
+      for (auto last = col_ind_cend(j); itr != last; ++itr, ++v_itr) {
+        const auto avc = conjugate(*v_itr);
+        for (size_type k(0); k < Nrhs; ++k) y[*itr][k] -= avc * tmp[k];
+      }
     }
   }
 
@@ -2166,6 +2267,28 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
     }
   }
 
+  /// \brief Assume as a strict lower matrix and solve with forward sub for
+  ///        multiple right-hand sides (RHS)
+  /// \tparam InOutType In- and out- put types
+  /// \tparam Nrhs Number of RHS
+  /// \param[in,out] y Input rhs, output solution
+  template <class InOutType, size_type Nrhs>
+  inline void solve_as_strict_lower_mrhs(
+      Array<std::array<InOutType, Nrhs>> &y) const {
+    std::array<InOutType, Nrhs> tmp;
+    for (size_type j(0); j < _psize; ++j) {
+      tmp        = y[j];
+      auto itr   = row_ind_cbegin(j);
+      auto v_itr = _base::val_cbegin(j);
+      for (auto last = row_ind_cend(j); itr != last; ++itr, ++v_itr) {
+        hif_assert(size_type(*itr) < _psize, "%zd exceeds system size %zd",
+                   size_type(*itr), _psize);
+        const auto av = *v_itr;
+        for (size_type k(0); k < Nrhs; ++k) y[*itr][k] -= av * tmp[k];
+      }
+    }
+  }
+
   /// \brief Assume as a strict lower matrix and solve with transpose backward
   /// \tparam RhsType Rhs type
   /// \param[in,out] y Input rhs, output solution
@@ -2184,6 +2307,32 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
       for (auto last = row_ind_cbegin(j1); itr != last; ++itr, ++v_itr)
         tmp += conjugate(static_cast<v_t>(*v_itr)) * y[*itr];
       y[j1] -= tmp;
+    }
+  }
+
+  /// \brief Assume as a strict lower matrix and solve with transpose backward
+  ///        for multiple right-hand sides (RHS)
+  /// \tparam InOutType In- and out- put types
+  /// \tparam Nrhs Number of RHS
+  /// \param[in,out] y Input rhs, output solution
+  template <class InOutType, size_type Nrhs>
+  inline void solve_as_strict_lower_mrhs_tran(
+      Array<std::array<InOutType, Nrhs>> &y) const {
+    using v_t =
+        typename std::conditional<(sizeof(InOutType) < sizeof(value_type)),
+                                  value_type, InOutType>::type;
+
+    std::array<v_t, Nrhs> tmp;
+    for (size_type j = _nrows - 1; j != 0u; --j) {
+      const size_type j1    = j - 1;
+      auto            itr   = row_ind_cbegin(j1);
+      auto            v_itr = _base::val_cbegin(j1);
+      tmp.fill(v_t(0));
+      for (auto last = row_ind_cbegin(j1); itr != last; ++itr, ++v_itr) {
+        const auto avc = conjugate(static_cast<v_t>(*v_itr));
+        for (size_type k(0); k < Nrhs; ++k) tmp[k] += avc * y[*itr][k];
+      }
+      for (size_type k(0); k < Nrhs; ++k) y[j1][k] -= tmp[k];
     }
   }
 
@@ -2207,6 +2356,30 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
     }
   }
 
+  /// \brief Assume as a strict upper matrix and solve with backward sub
+  ///        for multiple right-hand sides (RHS)
+  /// \tparam InOutType In- and out- put types
+  /// \tparam Nrhs Number of RHS
+  /// \param[in,out] y Input rhs, output solution
+  template <class InOutType, size_type Nrhs>
+  inline void solve_as_strict_upper_mrhs(
+      Array<std::array<InOutType, Nrhs>> &y) const {
+    using rev_iterator   = std::reverse_iterator<const_i_iterator>;
+    using rev_v_iterator = std::reverse_iterator<const_v_iterator>;
+
+    std::array<InOutType, Nrhs> tmp;
+    for (size_type j(_psize - 1); j != 0u; --j) {
+      tmp        = y[j];
+      auto itr   = rev_iterator(row_ind_cend(j));
+      auto v_itr = rev_v_iterator(_base::val_cend(j));
+      for (auto last = rev_iterator(row_ind_cbegin(j)); itr != last;
+           ++itr, ++v_itr) {
+        const auto av = *v_itr;
+        for (size_type k(0); k < Nrhs; ++k) y[*itr][k] -= av * tmp[k];
+      }
+    }
+  }
+
   /// \brief Assume as a strict upper matrix and solve tranpose forward
   /// \tparam RhsType Rhs type
   /// \param[in,out] y Input rhs, output solution
@@ -2224,6 +2397,31 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
       for (auto last = row_ind_cend(j); itr != last; ++itr, ++v_itr)
         tmp += conjugate(static_cast<v_t>(*v_itr)) * y[*itr];
       y[j] -= tmp;
+    }
+  }
+
+  /// \brief Assume as a strict upper matrix and solve tranpose forward
+  ///        for multiple right-hand sides (RHS)
+  /// \tparam InOutType In- and out- put types
+  /// \tparam Nrhs Number of RHS
+  /// \param[in,out] y Input rhs, output solution
+  template <class InOutType, size_type Nrhs>
+  inline void solve_as_strict_upper_mrhs_tran(
+      Array<std::array<InOutType, Nrhs>> &y) const {
+    using v_t =
+        typename std::conditional<(sizeof(InOutType) < sizeof(value_type)),
+                                  value_type, InOutType>::type;
+
+    std::array<v_t, Nrhs> tmp;
+    for (size_type j(1); j < _nrows; ++j) {
+      auto itr   = row_ind_cbegin(j);
+      auto v_itr = _base::val_cbegin(j);
+      tmp.fill(v_t(0));
+      for (auto last = row_ind_cend(j); itr != last; ++itr, ++v_itr) {
+        const auto avc = conjugate(static_cast<v_t>(*v_itr));
+        for (size_type k(0); k < Nrhs; ++k) tmp[k] += avc * y[*itr][k];
+      }
+      for (size_type k(0); k < Nrhs; ++k) y[j][k] -= tmp[k];
     }
   }
 
