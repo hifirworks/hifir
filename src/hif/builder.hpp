@@ -125,9 +125,6 @@ class HIF {
 #endif
   ///< high-precision value type
   typedef Array<boost_value_type> work_array_type;  ///< work array type
-  typedef typename ValueTypeMixedTrait<boost_value_type>::boost_type
-      boost2_value_type;
-  ///< we need this in float+long double mixed for null space solver
 
   /// \brief check if or not we can export data
   constexpr bool can_export() const {
@@ -399,6 +396,31 @@ class HIF {
           compute_prec_work_space(_precs.cbegin(), _precs.cend()));
     prec_solve(_precs.cbegin(), b, last_dim, x, _prec_work);
     if (nsp) nsp->filter(x.data(), x.size());  // filter null space
+  }
+
+  /// \brief solve \f$\mathbf{X}=\mathbf{M}^{-1}\mathbf{B}\f$ (multiple RHS)
+  /// \tparam RhsValueType right-hand-side (RHS) value type
+  /// \tparam SolValueType solution value type
+  /// \tparam Nrhs number of RHS
+  /// \param[in] b right-hand side vector
+  /// \param[out] x solution vector
+  /// \param[in] last_dim (optional) dimension for back solve for last level
+  ///                     default is its numerical rank
+  template <class RhsValueType, class SolValueType, size_type Nrhs>
+  inline void solve_mrhs(const Array<std::array<RhsValueType, Nrhs>> &b,
+                         Array<std::array<SolValueType, Nrhs>> &      x,
+                         const size_type last_dim = 0u) const {
+    hif_error_if(empty(), "MILU-Prec is empty!");
+    hif_error_if(b.size() != x.size(), "unmatched sizes");
+    hif_error_if(!_precs.back().sparse_solver.empty(),
+                 "multiple RHS solve does not support sparse last level");
+    const auto nw = compute_prec_work_space(_precs.cbegin(), _precs.cend());
+    if (_prec_work.empty()) _prec_work.resize(nw * Nrhs);
+    Array<std::array<boost_value_type, Nrhs>> w(
+        nw, (std::array<boost_value_type, Nrhs> *)_prec_work.data(), true);
+    prec_solve_mrhs(_precs.cbegin(), b, last_dim, x, nw);
+    if (nsp)
+      hif_warning_if(nsp, "multiple RHS does not support null space filter.");
   }
 
   /// \brief solve \f$\mathbf{x}=\mathbf{M}^{-T}\mathbf{b}\f$
