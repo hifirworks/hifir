@@ -123,11 +123,11 @@ class LUP : public SmallScaleBase<ValueType> {
                  "unmatched sizes between system and rhs");
     _base::_mrhs.resize(x.size(), Nrhs);
     for (size_type j = 0; j < Nrhs; ++j)
-      for (size_type i(0); i < x.size(); ++i) _mrhs(i, j) = x[i][j];
+      for (size_type i(0); i < x.size(); ++i) _base::_mrhs(i, j) = x[i][j];
     if (lapack_kernel::getrs(_mat, _ipiv, _base::_mrhs, tran ? 'T' : 'N') < 0)
       hif_error("GETRS returned negative info!");
     for (size_type j = 0; j < Nrhs; ++j)
-      for (size_type i(0); i < x.size(); ++i) x[i][j] = _mrhs(i, j);
+      for (size_type i(0); i < x.size(); ++i) x[i][j] = _base::_mrhs(i, j);
   }
 
  protected:

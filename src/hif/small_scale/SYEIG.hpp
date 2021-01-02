@@ -178,8 +178,8 @@ class SYEIG : public SmallScaleBase<ValueType> {
   /// \brief solve with multiple RHS
   /// \sa solve
   template <class V, size_type Nrhs>
-  inline void solve(Array<std::array<V, Nrhs>> &x,
-                    const size_type             rank = 0) const {
+  inline void solve_mrhs(Array<std::array<V, Nrhs>> &x,
+                         const size_type             rank = 0) const {
     hif_error_if(
         _mat.empty() || _w.empty(),
         "either the matrix is not set or the factorization has not yet done!");
@@ -190,7 +190,7 @@ class SYEIG : public SmallScaleBase<ValueType> {
     // copy to internal column-major buffer
     _base::_mrhs.resize(x.size(), Nrhs);
     for (size_type j = 0; j < Nrhs; ++j)
-      for (size_type i(0); i < x.size(); ++i) _mrhs(i, j) = x[i][j];
+      for (size_type i(0); i < x.size(); ++i) _base::_mrhs(i, j) = x[i][j];
     for (size_type i = 0; i < Nrhs; ++i) {
       // step 1, compute y=Q^T*x
       lapack_kernel::gemv('C', _mat.nrows(), _mat.ncols(), value_type(1),
@@ -207,7 +207,7 @@ class SYEIG : public SmallScaleBase<ValueType> {
     }
     // copy back to the application
     for (int j = 0; j < Nrhs; ++j)
-      for (size_type i(0); i < x.size(); ++i) x[i][j] = _mrhs(i, j);
+      for (size_type i(0); i < x.size(); ++i) x[i][j] = _base::_mrhs(i, j);
   }
 
  protected:

@@ -187,16 +187,15 @@ class QRCP : public SmallScaleBase<ValueType> {
   inline void solve_mrhs(Array<std::array<V, Nrhs>> &x,
                          const size_type             rank = 0u,
                          const bool                  tran = false) const {
-    if (Nrhs == 1u) return solve(reinterpret_cast<Array<V> &>(x), rank, tran);
     hif_error_if(tran, "QRCP does not support transpose solve!");
     hif_error_if(x.size() != _mat.nrows(),
                  "unmatched sizes between system and rhs");
     _base::_mrhs.resize(x.size(), Nrhs);
     for (size_type j = 0; j < Nrhs; ++j)
-      for (size_type i(0); i < x.size(); ++i) _mrhs(i, j) = x[i][j];
+      for (size_type i(0); i < x.size(); ++i) _base::_mrhs(i, j) = x[i][j];
     _solve_nt<Nrhs>(_base::_mrhs.data(), rank);
     for (size_type j = 0; j < Nrhs; ++j)
-      for (size_type i(0); i < x.size(); ++i) x[i][j] = _mrhs(i, j);
+      for (size_type i(0); i < x.size(); ++i) x[i][j] = _base::_mrhs(i, j);
   }
 
  protected:
