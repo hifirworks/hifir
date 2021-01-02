@@ -511,13 +511,15 @@ inline void prec_solve_mrhs(PrecItr prec_itr,
     // advance to next buffer region
     auto work_next = work_array_type(nm, &work[n], WRAP);
     auto work_b    = work_array_type(nm, &work[0] + m, WRAP);
-    std::copy(y_mn.cbegin(), y_mn.cend(), work_b.begin());
+    for (size_type i(0); i < nm; ++i)
+      for (size_type k(0); k < Nrhs; ++k) y_mn[i][k] = work_b[i][k];
     // rec call, note that y_mn should store the solution
     prec_solve_mrhs(++prec_itr, work_b, last_dim, y_mn, work_next);
   }
 
   // copy y(m+1:n) to work(m+1:n)
-  std::copy(y.cbegin() + m, y.cend(), &work[0] + m);
+  for (size_type i(m); i < n; ++i)
+    for (size_type k(0); k < Nrhs; ++k) y[i][k] = work[i][k];
 
   // only handle the F part if it's not empty
   if (prec.F.ncols()) {

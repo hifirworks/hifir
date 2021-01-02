@@ -418,7 +418,7 @@ class HIF {
     if (_prec_work.empty()) _prec_work.resize(nw * Nrhs);
     Array<std::array<boost_value_type, Nrhs>> w(
         nw, (std::array<boost_value_type, Nrhs> *)_prec_work.data(), true);
-    prec_solve_mrhs(_precs.cbegin(), b, last_dim, x, nw);
+    prec_solve_mrhs(_precs.cbegin(), b, last_dim, x, w);
     if (nsp)
       hif_warning_if(nsp, "multiple RHS does not support null space filter.");
   }
