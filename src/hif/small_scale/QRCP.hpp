@@ -30,6 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define _HIF_SMALLSCALE_QRCP_HPP
 
 #include <algorithm>
+#include <array>
 #include <type_traits>
 
 #include "hif/Options.h"
@@ -166,41 +167,9 @@ class QRCP : public SmallScaleBase<ValueType> {
   inline void solve(Array<value_type> &x, const size_type rank = 0u,
                     const bool tran = false) const {
     hif_error_if(tran, "QRCP does not support transpose solve!");
-    hif_error_if(
-        _mat.empty() || _jpvt.empty(),
-        "either the matrix is not set or the factorization has not yet done!");
     hif_error_if(x.size() != _mat.nrows(),
                  "unmatched sizes between system and rhs");
-    // determine rank, assume row size is no smaller than column size
-    const size_type rk =
-        rank == 0u ? _rank : (rank > _mat.nrows() ? _mat.nrows() : rank);
-    // query the optimal work space
-    value_type lwork;
-    lapack_kernel::ormqr('L', 'T', x.size(), 1, rk, _mat.data(), _mat.nrows(),
-                         _tau.data(), x.data(), x.size(), &lwork, -1);
-    _work.resize((size_type)abs(lwork));
-
-    // compute x=Q(:,1:_rank)'*x
-    const auto info = lapack_kernel::ormqr(
-        'L', 'T', x.size(), 1, rk, _mat.data(), _mat.nrows(), _tau.data(),
-        x.data(), x.size(), _work.data(), (size_type)abs(lwork));
-    hif_error_if(info < 0, "ORMQR returned negative info (Q'*x)");
-
-    // compute x(1:_rank)=inv(R(1:_rank,1:_rank))*x(1:_rank)
-    lapack_kernel::trsv('U', 'N', 'N', rk, _mat.data(), _mat.nrows(), x.data(),
-                        1);
-
-    // permutation, need to loop thru all entries in jpvt. Also, note that jpvt
-    // is column pivoting, thus we actually need the inverse mapping while
-    // performing P*x. It's worth noting that, unlike ipiv in LU routine, jpvt
-    // is a real permutation vector, i.e. not in-place swapable. Therefore, we
-    // need a buffer.
-    //
-    // for normal mapping, we have x=b(p), for inverse, we need x(p)=b
-    const size_type n = _jpvt.size();
-    _work.resize(x.size());
-    for (size_type i = 0u; i < n; ++i) _work[_jpvt[i] - 1] = x[i];
-    std::copy_n(_work.cbegin(), n, x.begin());
+    _solve_nt<1>(x.data(), rank);
   }
 
   /// \brief wrapper if input is different from \a value_type
@@ -211,6 +180,22 @@ class QRCP : public SmallScaleBase<ValueType> {
     std::copy(x.cbegin(), x.cend(), _base::_x.begin());
     solve(_base::_x, rank, tran);
     std::copy(_base::_x.cbegin(), _base::_x.cend(), x.begin());
+  }
+
+  /// \brief wrapper for solving multiple RHS with \a row-major storage
+  template <class V, size_type Nrhs>
+  inline void solve_mrhs(Array<std::array<V, Nrhs>> &x,
+                         const size_type             rank = 0u,
+                         const bool                  tran = false) const {
+    hif_error_if(tran, "QRCP does not support transpose solve!");
+    hif_error_if(x.size() != _mat.nrows(),
+                 "unmatched sizes between system and rhs");
+    _base::_mrhs.resize(x.size(), Nrhs);
+    for (size_type j = 0; j < Nrhs; ++j)
+      for (size_type i(0); i < x.size(); ++i) _base::_mrhs(i, j) = x[i][j];
+    _solve_nt<Nrhs>(_base::_mrhs.data(), rank);
+    for (size_type j = 0; j < Nrhs; ++j)
+      for (size_type i(0); i < x.size(); ++i) x[i][j] = _base::_mrhs(i, j);
   }
 
  protected:
@@ -292,6 +277,53 @@ class QRCP : public SmallScaleBase<ValueType> {
         continue;
       }
       break;
+    }
+  }
+
+  /// \brief Solve with constant number of right-hand sides
+  /// \tparam Nrhs Number of RHS
+  /// \param[in,out] x input rhs, output solution
+  /// \param[in] rank (optional) rank for back solve, default is \a _rank
+  template <size_type Nrhs>
+  inline void _solve_nt(value_type *x, const size_type rank = 0u) const {
+    hif_error_if(
+        _mat.empty() || _jpvt.empty(),
+        "either the matrix is not set or the factorization has not yet done!");
+    // determine rank, assume row size is no smaller than column size
+    const size_type rk =
+        rank == 0u ? _rank : (rank > _mat.nrows() ? _mat.nrows() : rank);
+    // query the optimal work space
+    value_type lwork;
+    lapack_kernel::ormqr('L', 'T', _mat.nrows(), Nrhs, rk, _mat.data(),
+                         _mat.nrows(), _tau.data(), x, _mat.nrows(), &lwork,
+                         -1);
+    _work.resize((size_type)abs(lwork));
+
+    // compute x=Q(:,1:_rank)'*x
+    const auto info = lapack_kernel::ormqr(
+        'L', 'T', _mat.nrows(), Nrhs, rk, _mat.data(), _mat.nrows(),
+        _tau.data(), x, _mat.nrows(), _work.data(), (size_type)abs(lwork));
+    hif_error_if(info < 0, "ORMQR returned negative info (Q'*x)");
+
+    // compute x(1:_rank)=inv(R(1:_rank,1:_rank))*x(1:_rank)
+    for (size_type i = 0; i < Nrhs; ++i)
+      lapack_kernel::trsv('U', 'N', 'N', rk, _mat.data(), _mat.nrows(),
+                          x + i * _mat.nrows(), 1);
+
+    // permutation, need to loop thru all entries in jpvt. Also, note that jpvt
+    // is column pivoting, thus we actually need the inverse mapping while
+    // performing P*x. It's worth noting that, unlike ipiv in LU routine, jpvt
+    // is a real permutation vector, i.e. not in-place swapable. Therefore, we
+    // need a buffer.
+    //
+    // for normal mapping, we have x=b(p), for inverse, we need x(p)=b
+    const size_type n = _jpvt.size();
+    _work.resize(_mat.nrows());
+    for (int i = 0; i < Nrhs; ++i) {
+      value_type *xi = x + i * _mat.nrows();
+      for (size_type i = 0u; i < rk; ++i) _work[_jpvt[i] - 1] = xi[i];
+      for (size_type i = rk; i < n; ++i) _work[_jpvt[i] - 1] = value_type(0);
+      std::copy_n(_work.cbegin(), n, xi);
     }
   }
 

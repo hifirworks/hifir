@@ -30,6 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define _HIF_SMALLSCALE_LUP_HPP
 
 #include <algorithm>
+#include <array>
 
 #include "hif/Options.h"
 #include "hif/ds/Array.hpp"
@@ -109,6 +110,24 @@ class LUP : public SmallScaleBase<ValueType> {
     std::copy(x.cbegin(), x.cend(), _base::_x.begin());
     solve(_base::_x, tran);
     std::copy(_base::_x.cbegin(), _base::_x.cend(), x.begin());
+  }
+
+  /// \brief solve with multiple RHS
+  template <class T, size_type Nrhs>
+  inline void solve_mrhs(Array<std::array<T, Nrhs>> &x, const size_type = 0,
+                         const bool                  tran = false) const {
+    hif_error_if(
+        _mat.empty() || _ipiv.empty(),
+        "either the matrix is not set or the factorization has not yet done!");
+    hif_error_if(x.size() != _mat.nrows(),
+                 "unmatched sizes between system and rhs");
+    _base::_mrhs.resize(x.size(), Nrhs);
+    for (size_type j = 0; j < Nrhs; ++j)
+      for (size_type i(0); i < x.size(); ++i) _base::_mrhs(i, j) = x[i][j];
+    if (lapack_kernel::getrs(_mat, _ipiv, _base::_mrhs, tran ? 'T' : 'N') < 0)
+      hif_error("GETRS returned negative info!");
+    for (size_type j = 0; j < Nrhs; ++j)
+      for (size_type i(0); i < x.size(); ++i) x[i][j] = _base::_mrhs(i, j);
   }
 
  protected:
