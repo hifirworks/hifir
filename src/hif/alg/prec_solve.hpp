@@ -32,6 +32,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // use generic programming, implicitly assume the API in Prec
 
 #include <algorithm>
+#include <array>
 #include <iterator>
 #include <list>
 #include <type_traits>
@@ -181,7 +182,7 @@ inline typename std::enable_if<!CcsType::ROW_MAJOR, T>::type prec_solve_ldu(
 
 #else
 
-/// \brief triangular solving kernel in \a hif_solve algorithm
+/// \brief triangular solving kernel
 /// \tparam UType compressed type for U
 /// \tparam LType compressed type for L
 /// \tparam DiagType diagonal vector type, see \ref Array
@@ -222,6 +223,44 @@ inline void prec_solve_ldu(const UType &U, const DiagType &d, const LType &L,
 }
 
 #endif
+
+/// \brief triangular solving kernel with multiple right-hand sides (RHS)
+/// \tparam UType compressed type for U
+/// \tparam LType compressed type for L
+/// \tparam DiagType diagonal vector type, see \ref Array
+/// \tparam RhsValueType rhs and solution value type
+/// \tparam Nrhs number of RHS
+/// \param[in] U strictly upper part
+/// \param[in] d diagonal vector
+/// \param[in] L strictly lower part
+/// \param[in,out] y input rhs and solution upon output
+/// \ingroup slv
+/// \sa prec_solve_ldu
+template <class UType, class DiagType, class LType, class RhsValueType,
+          std::size_t Nrhs>
+inline void prec_solve_ldu_mrhs(const UType &U, const DiagType &d,
+                                const LType &                          L,
+                                Array<std::array<RhsValueType, Nrhs>> &y) {
+  using size_type = typename LType::size_type;
+
+  const size_type m = U.nrows();
+  hif_assert(U.ncols() == m, "U must be squared");
+  hif_assert(L.nrows() == L.ncols(), "L must be squared");
+  hif_assert(d.size() >= m, "diagonal must be no smaller than system size");
+  if (!m) return;
+
+  // y=inv(L)*y
+  L.solve_as_strict_lower_mrhs(y);
+
+  // y=inv(D)*y
+  for (size_type i = 0u; i < m; ++i) {
+    const auto di = d[i];
+    for (size_type k(0); k < Nrhs; ++k) y[i][k] /= di;
+  }
+
+  // y = inv(U)*y
+  U.solve_as_strict_upper_mrhs(y);
+}
 
 /// \brief triangular transpose solving kernel in \a hif_solve algorithm
 /// \tparam UType compressed type for U
@@ -342,8 +381,8 @@ inline void prec_solve(PrecItr prec_itr, const RhsType &b,
   if (prec.is_last_level()) {
     if (nm) {
       // create an array wrapper with size of n-m, of y(m+1:n)
-      auto y_mn = work_array_type(nm, &work[0], WRAP);
-      std::copy_n(y.data() + m, nm, y_mn.begin());
+      auto y_mn = interface_array_type(nm, y.data() + m, WRAP);
+      // std::copy_n(y.data() + m, nm, y_mn.begin());
       if (prec.sparse_solver.empty()) {
         if (!prec.dense_solver.empty())
           prec.dense_solver.solve(y_mn, last_dim);
@@ -354,7 +393,7 @@ inline void prec_solve(PrecItr prec_itr, const RhsType &b,
         hif_error_if(prec.sparse_solver.info(), "%s returned error %d",
                      prec.sparse_solver.backend(), prec.sparse_solver.info());
       }
-      std::copy_n(y_mn.cbegin(), nm, y.data() + m);
+      // std::copy_n(y_mn.cbegin(), nm, y.data() + m);
     }
   } else {
     auto  y_mn      = interface_array_type(nm, y.data() + m, WRAP);
@@ -393,6 +432,122 @@ inline void prec_solve(PrecItr prec_itr, const RhsType &b,
   // and permutation
 
   for (size_type i = 0u; i < n; ++i) y[i] = t[i] * work[q_inv[i]];
+}
+
+/// \brief Given multilevel preconditioner and mutiple RHS, solve the solution
+/// \tparam PrecItr this is std::list<Prec>::const_iterator
+/// \tparam RhsValueType right-hand-side value type
+/// \tparam SolValueType solution value type
+/// \tparam WorkValueType buffer value
+/// \tparam Nrhs number of RHS
+/// \param[in] prec_itr current iterator of a single level preconditioner
+/// \param[in] b right-hand side vector
+/// \param[in] last_dim dimension for last level
+/// \param[out] y solution vector
+/// \param[out] work work space
+/// \sa compute_prec_work_space, prec_solve
+template <class PrecItr, class RhsValueType, class SolValueType,
+          class WorkValueType, std::size_t Nrhs>
+inline void prec_solve_mrhs(PrecItr prec_itr,
+                            const Array<std::array<RhsValueType, Nrhs>> &b,
+                            const std::size_t                       last_dim,
+                            Array<std::array<SolValueType, Nrhs>> & y,
+                            Array<std::array<WorkValueType, Nrhs>> &work) {
+  using prec_type = typename std::remove_const<
+      typename std::iterator_traits<PrecItr>::value_type>::type;
+  using value_type           = typename prec_type::value_type;
+  using interface_value_type = SolValueType;
+  using size_type            = typename prec_type::size_type;
+  using array_type           = Array<std::array<value_type, Nrhs>>;
+  using interface_array_type = Array<std::array<interface_value_type, Nrhs>>;
+  using work_array_type      = Array<std::array<WorkValueType, Nrhs>>;
+  constexpr static bool WRAP = true;
+
+  // NOTE that we cannot assume the data types are the same, but in general,
+  // we can assume the preconditioner's data type should be consistent, and
+  // the data type passed as b and y, which we refer as "interface_value_type",
+  // are the same.
+
+  hif_assert(b.size() == y.size(), "solution and rhs sizes should match");
+
+  // preparations
+  const auto &    prec = *prec_itr;
+  const size_type m = prec.m, n = prec.n, nm = n - m;
+  const auto &    p = prec.p, &q_inv = prec.q_inv;
+  const auto &    s = prec.s, &t = prec.t;
+
+  // first compute the permutated vector (1:m), and store it to work(1:m)
+  for (size_type i = 0u; i < m; ++i) {
+    const auto spi = s[p[i]];
+    for (size_type k(0); k < Nrhs; ++k) work[i][k] = spi * b[p[i]][k];
+  }
+
+  // compute the E part only if E is not empty
+  if (nm) {
+    // solve for work(1:m)=inv(U)*inv(B)*inv(L)*work(1:m), this is done inplace
+    internal::prec_solve_ldu_mrhs(prec.U_B, prec.d_B, prec.L_B, work);
+
+    // then compute y(m+1:n) = E*work(1:m)
+    prec.E.template mv_mrhs_nt_low<Nrhs>(work[0].data(),
+                                         y[0].data() + Nrhs * m);
+    // then subtract b from the y(m+1:n)
+    for (size_type i = m; i < n; ++i) {
+      const auto spi = s[p[i]];
+      for (size_type k(0); k < Nrhs; ++k) y[i][k] = spi * b[p[i]][k] - y[i][k];
+    }
+  }
+
+  if (prec.is_last_level()) {
+    if (nm) {
+      // create an array wrapper with size of n-m, of y(m+1:n)
+      auto y_mn = interface_array_type(nm, y.data() + m, WRAP);
+      if (!prec.dense_solver.empty())
+        prec.dense_solver.solve_mrhs(y_mn, last_dim);
+      else
+        prec.symm_dense_solver.solve_mrhs(y_mn, last_dim);
+    }
+  } else {
+    auto y_mn = interface_array_type(nm, y.data() + m, WRAP);
+    // advance to next buffer region
+    auto work_next = work_array_type(nm, &work[n], WRAP);
+    auto work_b    = work_array_type(nm, &work[0] + m, WRAP);
+    std::copy(y_mn.cbegin(), y_mn.cend(), work_b.begin());
+    // rec call, note that y_mn should store the solution
+    prec_solve_mrhs(++prec_itr, work_b, last_dim, y_mn, work_next);
+  }
+
+  // copy y(m+1:n) to work(m+1:n)
+  std::copy(y.cbegin() + m, y.cend(), &work[0] + m);
+
+  // only handle the F part if it's not empty
+  if (prec.F.ncols()) {
+    // compute F*y(m+1:n) and store it to work(1:m)
+    prec.F.template mv_mrhs_nt_low<Nrhs>(y[0].data() + Nrhs * m,
+                                         work[0].data());
+    // subtract b(1:m) from work(1:m)
+    for (size_type i = 0u; i < m; ++i) {
+      const auto spi = s[p[i]];
+      for (size_type k(0); k < Nrhs; ++k)
+        work[i][k] = spi * b[p[i]][k] - work[i][k];
+    }
+  } else if (nm) {
+    // should not happen for square systems
+    for (size_type i = 0u; i < m; ++i) {
+      const auto spi = s[p[i]];
+      for (size_type k(0); k < Nrhs; ++k) work[i][k] = spi * b[p[i]][k];
+    }
+  }
+
+  // solve for work(1:m)=inv(U)*inv(B)*inv(L)*work(1:m), inplace
+  internal::prec_solve_ldu_mrhs(prec.U_B, prec.d_B, prec.L_B, work);
+
+  // Now, we have work(1:n) storing the complete solution before final scaling
+  // and permutation
+
+  for (size_type i = 0u; i < n; ++i) {
+    const auto ti = t[i];
+    for (size_type k(0); k < Nrhs; ++k) y[i][k] = ti * work[q_inv[i]][k];
+  }
 }
 
 /// \brief Given multilevel preconditioner and rhs, solve the solution transpose
