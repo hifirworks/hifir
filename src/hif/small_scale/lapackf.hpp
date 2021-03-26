@@ -3,13 +3,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /*!
- * \file hif/small_scale/qrcp_lapack.hpp
- * \brief Interface wrappers for QR with column pivoting routines in LAPACK
+ * \file hif/small_scale/lapackf.hpp
+ * \brief Low-level Fortran-based LAPACK interfaces
  * \author Qiao Chen
- * \todo add interfaces for complex types
 
 \verbatim
-Copyright (C) 2019 NumGeom Group at Stony Brook University
+Copyright (C) 2021 NumGeom Group at Stony Brook University
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -27,8 +26,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
  */
 
-#ifndef _HIF_SMALLSCALE_LAPACK_QRCP_HPP
-#define _HIF_SMALLSCALE_LAPACK_QRCP_HPP
+#ifndef _HIF_SMALLSCALE_LAPACKF_HPP
+#define _HIF_SMALLSCALE_LAPACKF_HPP
 
 #include <complex>
 
@@ -38,7 +37,53 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #  if HIF_HAS_MKL == 0
 extern "C" {
 
-// factorization
+///////////////////////
+// LU
+///////////////////////
+
+// double
+void HIF_FC(dgetrf, DGETRF)(hif_lapack_int *, hif_lapack_int *, double *,
+                            hif_lapack_int *, hif_lapack_int *,
+                            hif_lapack_int *);
+// single
+void HIF_FC(sgetrf, SGETRF)(hif_lapack_int *, hif_lapack_int *, float *,
+                            hif_lapack_int *, hif_lapack_int *,
+                            hif_lapack_int *);
+
+// complex double
+void HIF_FC(zgetrf, ZGETRF)(hif_lapack_int *, hif_lapack_int *, void *,
+                            hif_lapack_int *, hif_lapack_int *,
+                            hif_lapack_int *);
+
+// complex single
+void HIF_FC(cgetrf, CGETRF)(hif_lapack_int *, hif_lapack_int *, void *,
+                            hif_lapack_int *, hif_lapack_int *,
+                            hif_lapack_int *);
+
+// solving
+
+// double
+void HIF_FC(dgetrs, DGETRS)(char *, hif_lapack_int *, hif_lapack_int *,
+                            double *, hif_lapack_int *, hif_lapack_int *,
+                            double *, hif_lapack_int *, hif_lapack_int *);
+// single
+void HIF_FC(sgetrs, SGETRS)(char *, hif_lapack_int *, hif_lapack_int *, float *,
+                            hif_lapack_int *, hif_lapack_int *, float *,
+                            hif_lapack_int *, hif_lapack_int *);
+
+// complex double
+void HIF_FC(zgetrs, ZGETRS)(char *, hif_lapack_int *, hif_lapack_int *, void *,
+                            hif_lapack_int *, hif_lapack_int *, void *,
+                            hif_lapack_int *, hif_lapack_int *);
+
+// complex single
+void HIF_FC(cgetrs, CGETRS)(char *, hif_lapack_int *, hif_lapack_int *, void *,
+                            hif_lapack_int *, hif_lapack_int *, void *,
+                            hif_lapack_int *, hif_lapack_int *);
+
+///////////////////////
+// QRCP
+///////////////////////
 
 // double
 void HIF_FC(dgeqp3, DGEQP3)(hif_lapack_int *, hif_lapack_int *, double *,
@@ -123,6 +168,72 @@ void HIF_FC(zlaic1, ZLAIC1)(hif_lapack_int *, hif_lapack_int *, void *,
 // complex single
 void HIF_FC(claic1, CLAIC1)(hif_lapack_int *, hif_lapack_int *, void *, float *,
                             void *, void *, float *, void *, void *);
+
+///////////////////////
+// Sy/He Eigenvalue
+///////////////////////
+
+// double
+void HIF_FC(dsyev, DSYEV)(char *, char *, hif_lapack_int *, double *,
+                          hif_lapack_int *, double *, double *,
+                          hif_lapack_int *, hif_lapack_int *);
+// single
+void HIF_FC(ssyev, SSYEV)(char *, char *, hif_lapack_int *, float *,
+                          hif_lapack_int *, float *, float *, hif_lapack_int *,
+                          hif_lapack_int *);
+// complex double
+void HIF_FC(zheev, ZHEEV)(char *, char *, hif_lapack_int *, void *,
+                          hif_lapack_int *, double *, void *, hif_lapack_int *,
+                          double *, hif_lapack_int *);
+// complex single
+void HIF_FC(cheev, CHEEV)(char *, char *, hif_lapack_int *, void *,
+                          hif_lapack_int *, float *, void *, hif_lapack_int *,
+                          float *, hif_lapack_int *);
+
+///////////////////////
+// Common
+///////////////////////
+
+// matrix-vector, used in solve
+
+// double
+void HIF_FC(dgemv, DGEMV)(char *, hif_lapack_int *, hif_lapack_int *, double *,
+                          double *, hif_lapack_int *, double *,
+                          hif_lapack_int *, double *, double *,
+                          hif_lapack_int *);
+
+// single
+void HIF_FC(sgemv, SGEMV)(char *, hif_lapack_int *, hif_lapack_int *, float *,
+                          float *, hif_lapack_int *, float *, hif_lapack_int *,
+                          float *, float *, hif_lapack_int *);
+
+// complex double
+void HIF_FC(zgemv, ZGEMV)(char *, hif_lapack_int *, hif_lapack_int *, void *,
+                          void *, hif_lapack_int *, void *, hif_lapack_int *,
+                          void *, void *, hif_lapack_int *);
+
+// complex single
+void HIF_FC(cgemv, CGEMV)(char *, hif_lapack_int *, hif_lapack_int *, void *,
+                          void *, hif_lapack_int *, void *, hif_lapack_int *,
+                          void *, void *, hif_lapack_int *);
+
+// triangular solve
+
+// double
+void HIF_FC(dtrsv, DTRSV)(char *, char *, char *, hif_lapack_int *, double *,
+                          hif_lapack_int *, double *, hif_lapack_int *);
+
+// single
+void HIF_FC(strsv, STRSV)(char *, char *, char *, hif_lapack_int *, float *,
+                          hif_lapack_int *, float *, hif_lapack_int *);
+
+// complex double
+void HIF_FC(ztrsv, ZTRSV)(char *, char *, char *, hif_lapack_int *, void *,
+                          hif_lapack_int *, void *, hif_lapack_int *);
+
+// complex single
+void HIF_FC(ctrsv, CTRSV)(char *, char *, char *, hif_lapack_int *, void *,
+                          hif_lapack_int *, void *, hif_lapack_int *);
 }
 #  endif
 #endif  // DOXYGEN_SHOULD_SKIP_THIS
@@ -134,6 +245,108 @@ namespace internal {
  * \addtogroup sss
  * @{
  */
+
+/// \brief double version of LU with partial pivoting
+inline hif_lapack_int getrf(const hif_lapack_int m, const hif_lapack_int n,
+                            double *A, const hif_lapack_int lda,
+                            hif_lapack_int *ipiv) {
+  hif_lapack_int info;
+  HIF_FC(dgetrf, DGETRF)
+  ((hif_lapack_int *)&m, (hif_lapack_int *)&n, A, (hif_lapack_int *)&lda, ipiv,
+   &info);
+  return info;
+}
+
+/// \brief single version of LU with partial pivoting
+inline hif_lapack_int getrf(const hif_lapack_int m, const hif_lapack_int n,
+                            float *A, const hif_lapack_int lda,
+                            hif_lapack_int *ipiv) {
+  hif_lapack_int info;
+  HIF_FC(sgetrf, SGETRF)
+  ((hif_lapack_int *)&m, (hif_lapack_int *)&n, A, (hif_lapack_int *)&lda, ipiv,
+   &info);
+  return info;
+}
+
+/// \brief complex double version of LU with partial pivoting
+inline hif_lapack_int getrf(const hif_lapack_int m, const hif_lapack_int n,
+                            std::complex<double> *A, const hif_lapack_int lda,
+                            hif_lapack_int *ipiv) {
+  hif_lapack_int info;
+  HIF_FC(zgetrf, ZGETRF)
+  ((hif_lapack_int *)&m, (hif_lapack_int *)&n, (void *)A,
+   (hif_lapack_int *)&lda, ipiv, &info);
+  return info;
+}
+
+/// \brief complex single version of LU with partial pivoting
+inline hif_lapack_int getrf(const hif_lapack_int m, const hif_lapack_int n,
+                            std::complex<float> *A, const hif_lapack_int lda,
+                            hif_lapack_int *ipiv) {
+  hif_lapack_int info;
+  HIF_FC(cgetrf, CGETRF)
+  ((hif_lapack_int *)&m, (hif_lapack_int *)&n, (void *)A,
+   (hif_lapack_int *)&lda, ipiv, &info);
+  return info;
+}
+
+/// \brief solve with factorized matrix, double version
+inline hif_lapack_int getrs(const char tran, const hif_lapack_int n,
+                            const hif_lapack_int nrhs, const double *a,
+                            const hif_lapack_int  lda,
+                            const hif_lapack_int *ipiv, double *b,
+                            const hif_lapack_int ldb) {
+  hif_lapack_int info;
+  HIF_FC(dgetrs, DGETRS)
+  ((char *)&tran, (hif_lapack_int *)&n, (hif_lapack_int *)&nrhs, (double *)a,
+   (hif_lapack_int *)&lda, (hif_lapack_int *)ipiv, b, (hif_lapack_int *)&ldb,
+   &info);
+  return info;
+}
+
+/// \brief solve with factorized matrix, single version
+inline hif_lapack_int getrs(const char tran, const hif_lapack_int n,
+                            const hif_lapack_int nrhs, const float *a,
+                            const hif_lapack_int  lda,
+                            const hif_lapack_int *ipiv, float *b,
+                            const hif_lapack_int ldb) {
+  hif_lapack_int info;
+  HIF_FC(sgetrs, SGETRS)
+  ((char *)&tran, (hif_lapack_int *)&n, (hif_lapack_int *)&nrhs, (float *)a,
+   (hif_lapack_int *)&lda, (hif_lapack_int *)ipiv, b, (hif_lapack_int *)&ldb,
+   &info);
+  return info;
+}
+
+/// \brief solve with factorized matrix, complex double version
+inline hif_lapack_int getrs(const char tran, const hif_lapack_int n,
+                            const hif_lapack_int        nrhs,
+                            const std::complex<double> *a,
+                            const hif_lapack_int        lda,
+                            const hif_lapack_int *ipiv, std::complex<double> *b,
+                            const hif_lapack_int ldb) {
+  hif_lapack_int info;
+  HIF_FC(zgetrs, ZGETRS)
+  ((char *)&tran, (hif_lapack_int *)&n, (hif_lapack_int *)&nrhs, (void *)a,
+   (hif_lapack_int *)&lda, (hif_lapack_int *)ipiv, (void *)b,
+   (hif_lapack_int *)&ldb, &info);
+  return info;
+}
+
+/// \brief solve with factorized matrix, complex single version
+inline hif_lapack_int getrs(const char tran, const hif_lapack_int n,
+                            const hif_lapack_int       nrhs,
+                            const std::complex<float> *a,
+                            const hif_lapack_int       lda,
+                            const hif_lapack_int *ipiv, std::complex<float> *b,
+                            const hif_lapack_int ldb) {
+  hif_lapack_int info;
+  HIF_FC(cgetrs, CGETRS)
+  ((char *)&tran, (hif_lapack_int *)&n, (hif_lapack_int *)&nrhs, (void *)a,
+   (hif_lapack_int *)&lda, (hif_lapack_int *)ipiv, (void *)b,
+   (hif_lapack_int *)&ldb, &info);
+  return info;
+}
 
 /// \brief double version QR with column pivoting
 inline hif_lapack_int geqp3(const hif_lapack_int m, const hif_lapack_int n,
@@ -361,6 +574,150 @@ inline hif_lapack_int laic1(const hif_lapack_int job, const hif_lapack_int j,
   return 0;
 }
 
+/// \brief double version of handling symmetric eigendecomposition
+inline hif_lapack_int syev(const char uplo, const hif_lapack_int n, double *a,
+                           const hif_lapack_int lda, double *w, double *work,
+                           const hif_lapack_int lwork,
+                           double * /* rwork */ = nullptr) {
+  static char    jobz('V');
+  hif_lapack_int info;
+  HIF_FC(dsyev, DSYEV)
+  (&jobz, (char *)&uplo, (hif_lapack_int *)&n, a, (hif_lapack_int *)&lda, w,
+   work, (hif_lapack_int *)&lwork, &info);
+  return info;
+}
+
+/// \brief single version of handling symmetric eigendecomposition
+inline hif_lapack_int syev(const char uplo, const hif_lapack_int n, float *a,
+                           const hif_lapack_int lda, float *w, float *work,
+                           const hif_lapack_int lwork,
+                           float * /* rwork */ = nullptr) {
+  static char    jobz('V');
+  hif_lapack_int info;
+  HIF_FC(ssyev, SSYEV)
+  (&jobz, (char *)&uplo, (hif_lapack_int *)&n, a, (hif_lapack_int *)&lda, w,
+   work, (hif_lapack_int *)&lwork, &info);
+  return info;
+}
+
+/// \brief complex double version of handling symmetric eigendecomposition
+inline hif_lapack_int syev(const char uplo, const hif_lapack_int n,
+                           std::complex<double> *a, const hif_lapack_int lda,
+                           double *w, std::complex<double> *work,
+                           const hif_lapack_int lwork, double *rwork) {
+  static char    jobz('V');
+  hif_lapack_int info;
+  HIF_FC(zheev, ZHEEV)
+  (&jobz, (char *)&uplo, (hif_lapack_int *)&n, (void *)a,
+   (hif_lapack_int *)&lda, w, (void *)work, (hif_lapack_int *)&lwork, rwork,
+   &info);
+  return info;
+}
+
+/// \brief complex single version of handling symmetric eigendecomposition
+inline hif_lapack_int syev(const char uplo, const hif_lapack_int n,
+                           std::complex<float> *a, const hif_lapack_int lda,
+                           float *w, std::complex<float> *work,
+                           const hif_lapack_int lwork, float *rwork) {
+  static char    jobz('V');
+  hif_lapack_int info;
+  HIF_FC(cheev, CHEEV)
+  (&jobz, (char *)&uplo, (hif_lapack_int *)&n, (void *)a,
+   (hif_lapack_int *)&lda, w, (void *)work, (hif_lapack_int *)&lwork, rwork,
+   &info);
+  return info;
+}
+
+/// \brief double version of matrix-vector product
+inline void gemv(const char trans, const hif_lapack_int m,
+                 const hif_lapack_int n, const double alpha, const double *a,
+                 const hif_lapack_int lda, const double *x, const double beta,
+                 double *y) {
+  static hif_lapack_int inc(1);
+  HIF_FC(dgemv, DGEMV)
+  ((char *)&trans, (hif_lapack_int *)&m, (hif_lapack_int *)&n, (double *)&alpha,
+   (double *)a, (hif_lapack_int *)&lda, (double *)x, &inc, (double *)&beta, y,
+   &inc);
+}
+
+/// \brief single version of matrix-vector product
+inline void gemv(const char trans, const hif_lapack_int m,
+                 const hif_lapack_int n, const float alpha, const float *a,
+                 const hif_lapack_int lda, const float *x, const float beta,
+                 float *y) {
+  static hif_lapack_int inc(1);
+  HIF_FC(sgemv, SGEMV)
+  ((char *)&trans, (hif_lapack_int *)&m, (hif_lapack_int *)&n, (float *)&alpha,
+   (float *)a, (hif_lapack_int *)&lda, (float *)x, &inc, (float *)&beta, y,
+   &inc);
+}
+
+/// \brief complex double version of matrix-vector product
+inline void gemv(const char trans, const hif_lapack_int m,
+                 const hif_lapack_int n, const std::complex<double> alpha,
+                 const std::complex<double> *a, const hif_lapack_int lda,
+                 const std::complex<double> *x, const std::complex<double> beta,
+                 std::complex<double> *y) {
+  static hif_lapack_int inc(1);
+  HIF_FC(zgemv, ZGEMV)
+  ((char *)&trans, (hif_lapack_int *)&m, (hif_lapack_int *)&n, (void *)&alpha,
+   (void *)a, (hif_lapack_int *)&lda, (void *)x, &inc, (void *)&beta, (void *)y,
+   &inc);
+}
+
+/// \brief complex single version of matrix-vector product
+inline void gemv(const char trans, const hif_lapack_int m,
+                 const hif_lapack_int n, const std::complex<float> alpha,
+                 const std::complex<float> *a, const hif_lapack_int lda,
+                 const std::complex<float> *x, const std::complex<float> beta,
+                 std::complex<float> *y) {
+  static hif_lapack_int inc(1);
+  HIF_FC(cgemv, CGEMV)
+  ((char *)&trans, (hif_lapack_int *)&m, (hif_lapack_int *)&n, (void *)&alpha,
+   (void *)a, (hif_lapack_int *)&lda, (void *)x, &inc, (void *)&beta, (void *)y,
+   &inc);
+}
+
+/// \brief double version of triangular solve
+inline void trsv(const char uplo, const char trans, const char diag,
+                 const hif_lapack_int n, const double *a,
+                 const hif_lapack_int lda, double *x,
+                 const hif_lapack_int incx) {
+  HIF_FC(dtrsv, DTRSV)
+  ((char *)&uplo, (char *)&trans, (char *)&diag, (hif_lapack_int *)&n,
+   (double *)a, (hif_lapack_int *)&lda, x, (hif_lapack_int *)&incx);
+}
+
+/// \brief single version of triangular solve
+inline void trsv(const char uplo, const char trans, const char diag,
+                 const hif_lapack_int n, const float *a,
+                 const hif_lapack_int lda, float *x,
+                 const hif_lapack_int incx) {
+  HIF_FC(strsv, STRSV)
+  ((char *)&uplo, (char *)&trans, (char *)&diag, (hif_lapack_int *)&n,
+   (float *)a, (hif_lapack_int *)&lda, x, (hif_lapack_int *)&incx);
+}
+
+/// \brief complex double version of triangular solve
+inline void trsv(const char uplo, const char trans, const char diag,
+                 const hif_lapack_int n, const std::complex<double> *a,
+                 const hif_lapack_int lda, std::complex<double> *x,
+                 const hif_lapack_int incx) {
+  HIF_FC(ztrsv, ZTRSV)
+  ((char *)&uplo, (char *)&trans, (char *)&diag, (hif_lapack_int *)&n,
+   (void *)a, (hif_lapack_int *)&lda, (void *)x, (hif_lapack_int *)&incx);
+}
+
+/// \brief complex single version of triangular solve
+inline void trsv(const char uplo, const char trans, const char diag,
+                 const hif_lapack_int n, const std::complex<float> *a,
+                 const hif_lapack_int lda, std::complex<float> *x,
+                 const hif_lapack_int incx) {
+  HIF_FC(ctrsv, CTRSV)
+  ((char *)&uplo, (char *)&trans, (char *)&diag, (hif_lapack_int *)&n,
+   (void *)a, (hif_lapack_int *)&lda, (void *)x, (hif_lapack_int *)&incx);
+}
+
 /*!
  * @}
  */  // sss group
@@ -368,4 +725,4 @@ inline hif_lapack_int laic1(const hif_lapack_int job, const hif_lapack_int j,
 }  // namespace internal
 }  // namespace hif
 
-#endif  // _HIF_SMALLSCALE_LAPACK_QRCP_HPP
+#endif  // _HIF_SMALLSCALE_LAPACKF_HPP

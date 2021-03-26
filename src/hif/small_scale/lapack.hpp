@@ -38,11 +38,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "hif/utils/log.hpp"
 #include "hif/utils/math.hpp"
 
-#include "hif/small_scale/lup_lapack.hpp"
-#include "hif/small_scale/qrcp_lapack.hpp"
-#include "hif/small_scale/syeig_lapack.hpp"
-#include "hif/small_scale/trsv_lapack.hpp"
-
+#include "hif/small_scale/lapackf.hpp"
 namespace hif {
 
 /// \class Lapack
