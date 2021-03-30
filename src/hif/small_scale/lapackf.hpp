@@ -234,6 +234,24 @@ void HIF_FC(ztrsv, ZTRSV)(char *, char *, char *, hif_lapack_int *, void *,
 // complex single
 void HIF_FC(ctrsv, CTRSV)(char *, char *, char *, hif_lapack_int *, void *,
                           hif_lapack_int *, void *, hif_lapack_int *);
+
+// triangular matrix-vector
+
+// double
+void HIF_FC(dtrmv, DTRMV)(char *, char *, char *, hif_lapack_int *, double *,
+                          hif_lapack_int *, double *, hif_lapack_int *);
+
+// single
+void HIF_FC(strmv, STRMV)(char *, char *, char *, hif_lapack_int *, float *,
+                          hif_lapack_int *, float *, hif_lapack_int *);
+
+// double complex
+void HIF_FC(ztrmv, ZTRMV)(char *, char *, char *, hif_lapack_int *, void *,
+                          hif_lapack_int *, void *, hif_lapack_int *);
+
+// single complex
+void HIF_FC(ctrmv, CTRMV)(char *, char *, char *, hif_lapack_int *, void *,
+                          hif_lapack_int *, void *, hif_lapack_int *);
 }
 #  endif
 #endif  // DOXYGEN_SHOULD_SKIP_THIS
@@ -714,6 +732,46 @@ inline void trsv(const char uplo, const char trans, const char diag,
                  const hif_lapack_int lda, std::complex<float> *x,
                  const hif_lapack_int incx) {
   HIF_FC(ctrsv, CTRSV)
+  ((char *)&uplo, (char *)&trans, (char *)&diag, (hif_lapack_int *)&n,
+   (void *)a, (hif_lapack_int *)&lda, (void *)x, (hif_lapack_int *)&incx);
+}
+
+/// \brief double version of triangular matrix-vector
+inline void trmv(const char uplo, const char trans, const char diag,
+                 const hif_lapack_int n, const double *a,
+                 const hif_lapack_int lda, double *x,
+                 const hif_lapack_int incx) {
+  HIF_FC(dtrmv, DTRMV)
+  ((char *)&uplo, (char *)&trans, (char *)&diag, (hif_lapack_int *)&n,
+   (double *)a, (hif_lapack_int *)&lda, x, (hif_lapack_int *)&incx);
+}
+
+/// \brief single version of triangular matrix-vector
+inline void trmv(const char uplo, const char trans, const char diag,
+                 const hif_lapack_int n, const float *a,
+                 const hif_lapack_int lda, float *x,
+                 const hif_lapack_int incx) {
+  HIF_FC(strmv, STRMV)
+  ((char *)&uplo, (char *)&trans, (char *)&diag, (hif_lapack_int *)&n,
+   (float *)a, (hif_lapack_int *)&lda, x, (hif_lapack_int *)&incx);
+}
+
+/// \brief complex double version of triangular matrix-vector
+inline void trmv(const char uplo, const char trans, const char diag,
+                 const hif_lapack_int n, const std::complex<double> *a,
+                 const hif_lapack_int lda, std::complex<double> *x,
+                 const hif_lapack_int incx) {
+  HIF_FC(ztrmv, ZTRMV)
+  ((char *)&uplo, (char *)&trans, (char *)&diag, (hif_lapack_int *)&n,
+   (void *)a, (hif_lapack_int *)&lda, (void *)x, (hif_lapack_int *)&incx);
+}
+
+/// \brief complex single version of triangular matrix-vector
+inline void trmv(const char uplo, const char trans, const char diag,
+                 const hif_lapack_int n, const std::complex<float> *a,
+                 const hif_lapack_int lda, std::complex<float> *x,
+                 const hif_lapack_int incx) {
+  HIF_FC(ctrmv, CTRMV)
   ((char *)&uplo, (char *)&trans, (char *)&diag, (hif_lapack_int *)&n,
    (void *)a, (hif_lapack_int *)&lda, (void *)x, (hif_lapack_int *)&incx);
 }

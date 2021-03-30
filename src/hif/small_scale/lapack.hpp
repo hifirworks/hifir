@@ -278,6 +278,20 @@ class Lapack {
          beta, y.data());
   }
 
+  inline static void trmv(const char uplo, const char trans, const char diag,
+                          const hif_lapack_int n, const value_type *a,
+                          const hif_lapack_int lda, pointer x,
+                          const hif_lapack_int incx) {
+    internal::trmv(uplo, trans, diag, n, a, lda, x, incx);
+  }
+
+  inline static void trmv(const char uplo, const char trans, const char diag,
+                          const DenseMatrix<value_type> &a,
+                          Array<value_type> &            x) {
+    hif_assert(a.is_squared(), "input must be squared matrix");
+    trmv(uplo, trans, diag, a.nrows(), a.data(), a.nrows(), x.data(), 1);
+  }
+
   ///@}
 };
 

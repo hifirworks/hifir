@@ -198,6 +198,46 @@ class QRCP : public SmallScaleBase<ValueType> {
       for (size_type i(0); i < x.size(); ++i) x[i][j] = _base::_mrhs(i, j);
   }
 
+  /// \brief matrix-vector multiplication
+  /// \param[in,out] x input rhs, output solution
+  /// \param[in] rank (optional) rank for back solve, default is \a _rank
+  /// \param[in] tran (optional) transpose flag, default is false
+  ///
+  /// First, QRCP returns \f$\mathbf{AP}=\mathbf{QR}\f$, thus when we
+  /// have \f$\mathbf{Ax}=\mathbf{QRP}^{T}\mathbf{x}\f$.
+  inline void mv(Array<value_type> &x, const size_type rank = 0u,
+                 const bool tran = false) const {
+    hif_error_if(tran, "QRCP does not support transpose solve!");
+    hif_error_if(x.size() != _mat.nrows(),
+                 "unmatched sizes between system and rhs");
+    _mv_nt<1>(x.data(), rank);
+  }
+
+  /// \brief wrapper if input is different from \a value_type for matrix-vector
+  template <class ArrayType>
+  inline void mv(ArrayType &x, const size_type rank = 0u,
+                 const bool tran = false) const {
+    _base::_x.resize(x.size());
+    std::copy(x.cbegin(), x.cend(), _base::_x.begin());
+    mv(_base::_x, rank, tran);
+    std::copy(_base::_x.cbegin(), _base::_x.cend(), x.begin());
+  }
+
+  /// \brief wrapper for solving multiple RHS with \a row-major storage
+  template <class V, size_type Nrhs>
+  inline void mv_mrhs(Array<std::array<V, Nrhs>> &x, const size_type rank = 0u,
+                      const bool tran = false) const {
+    hif_error_if(tran, "QRCP does not support transpose solve!");
+    hif_error_if(x.size() != _mat.nrows(),
+                 "unmatched sizes between system and rhs");
+    _base::_mrhs.resize(x.size(), Nrhs);
+    for (size_type j = 0; j < Nrhs; ++j)
+      for (size_type i(0); i < x.size(); ++i) _base::_mrhs(i, j) = x[i][j];
+    _mv_nt<Nrhs>(_base::_mrhs.data(), rank);
+    for (size_type j = 0; j < Nrhs; ++j)
+      for (size_type i(0); i < x.size(); ++i) x[i][j] = _base::_mrhs(i, j);
+  }
+
  protected:
   /// \brief Incrementally estimate the condition number of R
   /// \param[in] cond_tol condition number threshold
@@ -325,6 +365,48 @@ class QRCP : public SmallScaleBase<ValueType> {
       for (size_type i = rk; i < n; ++i) _work[_jpvt[i] - 1] = value_type(0);
       std::copy_n(_work.cbegin(), n, xi);
     }
+  }
+
+  /// \brief Matrix-vector with constant number of right-hand sides
+  /// \tparam Nrhs Number of RHS
+  /// \param[in,out] x input rhs, output solution
+  /// \param[in] rank (optional) rank for back solve, default is \a _rank
+  template <size_type Nrhs>
+  inline void _mv_nt(value_type *x, const size_type rank = 0u) const {
+    hif_error_if(
+        _mat.empty() || _jpvt.empty(),
+        "either the matrix is not set or the factorization has not yet done!");
+    // determine rank, assume row size is no smaller than column size
+    const size_type rk =
+        rank == 0u ? _rank : (rank > _mat.nrows() ? _mat.nrows() : rank);
+
+    // permutation P^T
+    const size_type n = _jpvt.size();
+    _work.resize(_mat.nrows());
+    for (int i = 0; i < Nrhs; ++i) {
+      value_type *xi = x + i * _mat.nrows();
+      for (size_type i = 0u; i < rk; ++i) _work[i] = xi[_jpvt[i] - 1];
+      for (size_type i = rk; i < n; ++i) _work[i] = value_type(0);
+      std::copy_n(_work.cbegin(), n, xi);
+    }
+
+    // compute x(1:_rank)=R(1:_rank,1:_rank)*x(1:_rank)
+    for (size_type i = 0; i < Nrhs; ++i)
+      lapack_kernel::trmv('U', 'N', 'N', rk, _mat.data(), _mat.nrows(),
+                          x + i * _mat.nrows(), 1);
+
+    // query the optimal work space
+    value_type lwork;
+    lapack_kernel::ormqr('L', 'N', _mat.nrows(), Nrhs, rk, _mat.data(),
+                         _mat.nrows(), _tau.data(), x, _mat.nrows(), &lwork,
+                         -1);
+    _work.resize((size_type)abs(lwork));
+
+    // compute x=Q(:,1:_rank)*x
+    const auto info = lapack_kernel::ormqr(
+        'L', 'N', _mat.nrows(), Nrhs, rk, _mat.data(), _mat.nrows(),
+        _tau.data(), x, _mat.nrows(), _work.data(), (size_type)abs(lwork));
+    hif_error_if(info < 0, "ORMQR returned negative info (Q'*x)");
   }
 
  protected:
