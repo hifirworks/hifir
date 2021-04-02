@@ -40,6 +40,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "hif/alg/Prec.hpp"
 #include "hif/alg/factor.hpp"
 #include "hif/alg/pivot_factor.hpp"
+#include "hif/alg/prec_prod.hpp"
 #include "hif/alg/prec_solve.hpp"
 #include "hif/alg/symm_factor.hpp"
 #include "hif/utils/common.hpp"
@@ -462,6 +463,24 @@ class HIF {
 
   NspFilterPtr nsp;       ///< null space filter
   NspFilterPtr nsp_tran;  ///< transpose null space filter (left null space)
+
+  /// \brief compute \f$\mathbf{y}=\mathbf{Mx}\f$
+  /// \tparam RhsType right-hand side type
+  /// \tparam SolType solution type
+  /// \param[in] x right-hand side vector
+  /// \param[out] y solution vector
+  /// \param[in] last_dim (optional) dimension for back solve for last level
+  ///                     default is its numerical rank
+  template <class RhsType, class SolType>
+  inline void mv(const RhsType &x, SolType &y,
+                 const size_type last_dim = 0u) const {
+    hif_error_if(empty(), "MILU-Prec is empty!");
+    hif_error_if(y.size() != x.size(), "unmatched sizes");
+    if (_prec_work.empty())
+      _prec_work.resize(
+          compute_prec_work_space(_precs.cbegin(), _precs.cend()));
+    prec_prod(_precs.cbegin(), x, last_dim, y, _prec_work);
+  }
 
  protected:
   template <class CsType, class CroutStreamer>
