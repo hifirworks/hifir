@@ -196,7 +196,7 @@ inline void prec_prod_tran(PrecItr prec_itr, const RhsType &b,
     auto *work_next = &work[n];  // advance to next buffer region
     auto  work_b    = work_array_type(nm, &work[0] + m, WRAP);
     // rec call, note that y_mn should store the solution
-    prec_prod(++prec_itr, work_b, last_dim, y_mn, work_next);
+    prec_prod_tran(++prec_itr, work_b, last_dim, y_mn, work_next);
   }
 
   // compute the permuted vector (1:m), and store it to work(1:m)

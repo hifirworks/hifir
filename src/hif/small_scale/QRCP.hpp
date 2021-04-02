@@ -388,9 +388,9 @@ class QRCP : public SmallScaleBase<ValueType> {
       std::copy_n(_work.cbegin(), n, xi);
     }
 
-    // compute x(1:_rank)=inv(R(1:_rank,1:_rank))*x(1:_rank)
+    // compute x(1:_rank)=inv(R(1:_rank,1:_rank))'*x(1:_rank)
     for (size_type i = 0; i < Nrhs; ++i)
-      lapack_kernel::trsv('U', 'N', 'N', rk, _mat.data(), _mat.nrows(),
+      lapack_kernel::trsv('U', 'C', 'N', rk, _mat.data(), _mat.nrows(),
                           x + i * _mat.nrows(), 1);
 
     // query the optimal work space
@@ -474,9 +474,9 @@ class QRCP : public SmallScaleBase<ValueType> {
         _tau.data(), x, _mat.nrows(), _work.data(), (size_type)abs(lwork));
     hif_error_if(info < 0, "ORMQR returned negative info (Q'*x)");
 
-    // compute x(1:_rank)=R(1:_rank,1:_rank)*x(1:_rank)
+    // compute x(1:_rank)=R(1:_rank,1:_rank)'*x(1:_rank)
     for (size_type i = 0; i < Nrhs; ++i)
-      lapack_kernel::trmv('U', 'N', 'N', rk, _mat.data(), _mat.nrows(),
+      lapack_kernel::trmv('U', 'C', 'N', rk, _mat.data(), _mat.nrows(),
                           x + i * _mat.nrows(), 1);
 
     // permutation, need to loop thru all entries in jpvt. Also, note that jpvt

@@ -596,7 +596,8 @@ inline void prec_solve_tran(PrecItr prec_itr, const RhsType &b,
     internal::prec_solve_utdlt(prec.U_B, prec.d_B, prec.L_B, work);
     prec.F.mv_t_low(&work[0], y.data() + m);
     for (size_type i(m); i < n; ++i) y[i] = t[q[i]] * b[q[i]] - y[i];
-  }
+  } else if (nm)
+    for (size_type i(m); i < n; ++i) y[i] = t[q[i]] * b[q[i]];
 
   // check for last level dense (direct) solver
   if (prec.is_last_level()) {
@@ -633,7 +634,8 @@ inline void prec_solve_tran(PrecItr prec_itr, const RhsType &b,
   if (nm) {
     prec.E.mv_t_low(y.data() + m, &work[0]);
     for (size_type i(0); i < m; ++i) work[i] = t[q[i]] * b[q[i]] - work[i];
-  }
+  } else
+    for (size_type i(0); i < m; ++i) work[i] = t[q[i]] * b[q[i]];
   internal::prec_solve_utdlt(prec.U_B, prec.d_B, prec.L_B, work);
 
   // Now, we have work(1:n) storing the complete solution before final scaling
