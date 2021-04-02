@@ -72,6 +72,7 @@ int main(int argc, char *argv[]) {
   crs_t   A;
   array_t b;
   // read input data
+  std::tie(A, b) = get_inputs<crs_t, array_t>(std::string(argv[1]), rhs_a1);
   std::cout << "rtol=" << rtol << ", restart=" << restart
             << "\nNumberOfUnknowns=" << A.nrows() << ", nnz(A)=" << A.nnz()
             << "\n"
@@ -122,7 +123,7 @@ int main(int argc, char *argv[]) {
   // User needs to ensure data types are correct, and then cast x and y to
   // proper target types.
   const func_t AA = [&](const void *x, const std::size_t n, const char xdtype,
-                        void *y, const char ydtype) {
+                        void *y, const char ydtype, const bool) {
     hif_error_if(n != A.nrows(), "mismatched sizes");  // sizes must match
     hif_error_if(xdtype != 'd', "input array must be double");
     hif_error_if(ydtype != 'd', "output array must be double");
