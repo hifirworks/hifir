@@ -387,16 +387,21 @@ class HIF {
   /// \param[out] x solution vector
   /// \param[in] last_dim (optional) dimension for back solve for last level
   ///                     default is its numerical rank
+  /// \param[in] tran (optional) transpose/Hermitian flag (default is false)
   template <class RhsType, class SolType>
-  inline void solve(const RhsType &b, SolType &x,
-                    const size_type last_dim = 0u) const {
+  inline void solve(const RhsType &b, SolType &x, const size_type last_dim = 0u,
+                    const bool tran = false) const {
     hif_error_if(empty(), "MILU-Prec is empty!");
     hif_error_if(b.size() != x.size(), "unmatched sizes");
     if (_prec_work.empty())
       _prec_work.resize(
           compute_prec_work_space(_precs.cbegin(), _precs.cend()));
-    prec_solve(_precs.cbegin(), b, last_dim, x, _prec_work);
-    if (nsp) nsp->filter(x.data(), x.size());  // filter null space
+    !tran ? prec_solve(_precs.cbegin(), b, last_dim, x, _prec_work)
+          : prec_solve_tran(_precs.cbegin(), b, last_dim, x, _prec_work);
+    if (!tran && nsp)
+      nsp->filter(x.data(), x.size());  // filter null space
+    else if (tran && nsp_tran)
+      nsp_tran->filter(x.data(), x.size());  // filter (left) null space
   }
 
   /// \brief solve \f$\mathbf{X}=\mathbf{M}^{-1}\mathbf{B}\f$ (multiple RHS)
@@ -420,27 +425,7 @@ class HIF {
     Array<std::array<boost_value_type, Nrhs>> w(
         nw, (std::array<boost_value_type, Nrhs> *)_prec_work.data(), true);
     prec_solve_mrhs(_precs.cbegin(), b, last_dim, x, w);
-    if (nsp)
-      hif_warning_if(nsp, "multiple RHS does not support null space filter.");
-  }
-
-  /// \brief solve \f$\mathbf{x}=\mathbf{M}^{-T}\mathbf{b}\f$
-  /// \tparam RhsType right-hand side type
-  /// \tparam SolType solution type
-  /// \param[in] b right-hand side vector
-  /// \param[out] x solution vector
-  /// \param[in] last_dim (optional) dimension for back solve for last level
-  ///                     default is its numerical rank
-  template <class RhsType, class SolType>
-  inline void solve_tran(const RhsType &b, SolType &x,
-                         const size_type last_dim = 0u) const {
-    hif_error_if(empty(), "MILU-Prec is empty!");
-    hif_error_if(b.size() != x.size(), "unmatched sizes");
-    if (_prec_work.empty())
-      _prec_work.resize(
-          compute_prec_work_space(_precs.cbegin(), _precs.cend()));
-    prec_solve_tran(_precs.cbegin(), b, last_dim, x, _prec_work);
-    if (nsp_tran) nsp_tran->filter(x.data(), x.size());  // filter null space
+    hif_warning_if(nsp, "multiple RHS does not support null space filter.");
   }
 
   /// \brief solve with iterative refinement
@@ -453,12 +438,13 @@ class HIF {
   /// \param[out] x solution vector
   /// \param[in] last_dim (optional) dimension for back solve for last level
   ///                     default is its numerical rank
+  /// \param[in] tran (optional) transpose/Hermitian flag, default is false
   template <class Matrix, class RhsType, class SolType>
   void solve(const Matrix &A, const RhsType &b, const size_type N, SolType &x,
-             const size_type last_dim = 0u) const {
+             const size_type last_dim = 0u, const bool tran = false) const {
     // NOTE, do not assume A shares interface of CRS, as it can be
     // user callback
-    _ir.iter_refine(*this, A, b, N, x, last_dim);
+    _ir.iter_refine(*this, A, b, N, x, last_dim, tran);
   }
 
   NspFilterPtr nsp;       ///< null space filter
@@ -471,15 +457,17 @@ class HIF {
   /// \param[out] y solution vector
   /// \param[in] last_dim (optional) dimension for back solve for last level
   ///                     default is its numerical rank
+  /// \param[in] tran (optional) transpose/Hermitian flag (default is false)
   template <class RhsType, class SolType>
-  inline void mv(const RhsType &x, SolType &y,
-                 const size_type last_dim = 0u) const {
+  inline void mv(const RhsType &x, SolType &y, const size_type last_dim = 0u,
+                 const bool tran = false) const {
     hif_error_if(empty(), "MILU-Prec is empty!");
     hif_error_if(y.size() != x.size(), "unmatched sizes");
     if (_prec_work.empty())
       _prec_work.resize(
           compute_prec_work_space(_precs.cbegin(), _precs.cend()));
-    prec_prod(_precs.cbegin(), x, last_dim, y, _prec_work);
+    !tran ? prec_prod(_precs.cbegin(), x, last_dim, y, _prec_work)
+          : prec_prod_tran(_precs.cbegin(), x, last_dim, y, _prec_work);
   }
 
  protected:

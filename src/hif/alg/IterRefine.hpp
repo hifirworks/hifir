@@ -31,6 +31,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "hif/ds/Array.hpp"
 #include "hif/ds/CompressedStorage.hpp"
+#include "hif/utils/mv_helper.hpp"
 
 namespace hif {
 
@@ -59,6 +60,7 @@ class IterRefine {
   /// \param[out] x solution of Jacobi after \a N iterations
   /// \param[in] last_dim (optional) dimension for back solve for last level
   ///                     default is its numerical rank in \a M
+  /// \param[in] tran (optional) transpose/Herimitian flag, default is false
   ///
   /// This function implements the abstracted Jacobi processes as follows
   ///
@@ -72,10 +74,11 @@ class IterRefine {
   template <class MType, class Matrix, class IArrayType, class OArrayType>
   inline void iter_refine(const MType &M, const Matrix &A, const IArrayType &b,
                           const size_type N, OArrayType &x,
-                          const size_type last_dim = 0u) const {
+                          const size_type last_dim = 0u,
+                          const bool      tran     = false) const {
     if (N <= 1) {
       // if iteration is less than 2, then use original interface
-      M.solve(b, x);
+      M.solve(b, x, last_dim, tran);
       return;
     }
     // now, allocate space
@@ -86,11 +89,14 @@ class IterRefine {
       std::copy(x.cbegin(), x.cend(), _xk.begin());  // copy rhs to x
       if (i) {
         // starting 2nd iteration
-        mt::mv_nt(A, _xk, x);                                 // compute A*xk=x
+        if (!tran)
+          mt::mv_nt(A, _xk, x);
+        else
+          mv(A, _xk, x, true);
         for (size_type i(0); i < n; ++i) x[i] = b[i] - x[i];  // residual
       } else
         std::copy_n(b.cbegin(), n, x.begin());
-      M.solve(x, _r, last_dim);  // compute inv(M)*x=r
+      M.solve(x, _r, last_dim, tran);  // compute inv(M)*x=r
       for (size_type i(0); i < n; ++i) x[i] = _r[i] + _xk[i];  // update
     }
   }

@@ -68,7 +68,7 @@ class KSPSolver {
   typedef typename DefaultSettings<value_type>::scalar_type scalar_type;
   ///< scalar type
   typedef std::function<void(const void *, const size_type, const char, void *,
-                             const char)>
+                             const char, const bool)>
       func_type;
   ///< user callback for computing A*x
 
