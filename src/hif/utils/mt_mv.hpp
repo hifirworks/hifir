@@ -42,7 +42,7 @@ namespace hif {
 namespace mt {
 
 /*!
- * \addtogroup ds
+ * \addtogroup alg
  * @{
  */
 
@@ -208,15 +208,17 @@ inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type mv_mrhs_nt_low(
 template <class IArray, class OArray>
 inline void mv_nt(
     const std::function<void(const void *, const typename IArray::size_type,
-                             const char, void *, const char)> &Afunc,
+                             const char, void *, const char, const bool)>
+        &         Afunc,
     const IArray &x, OArray &y) {
   using i_value_type = typename IArray::value_type;
   using o_value_type = typename OArray::value_type;
   Afunc((const void *)x.data(), x.size(),
         ValueTypeTrait<i_value_type>::signature, (void *)y.data(),
-        ValueTypeTrait<o_value_type>::signature);
+        ValueTypeTrait<o_value_type>::signature, false);
 }
 
+#if 0
 /// \brief use user functor for computing "matrix"-vector product with
 ///        multiple RHS
 /// \tparam InType input data type
@@ -238,6 +240,7 @@ inline void mv_mrhs_nt(
           ValueTypeTrait<InType>::signature, (void *)y[0].data(),
           ValueTypeTrait<OutType>::signature);
 }
+#endif
 
 }  // namespace mt
 }  // namespace hif
