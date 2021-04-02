@@ -1236,7 +1236,7 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
       for (auto last = col_ind_cend(i); i_itr != last; ++i_itr, ++v_itr) {
         const size_type j = *i_itr;
         hif_assert(j < _ncols, "%zd exceeds column size", j);
-        y[j] += temp * *v_itr;
+        y[j] += temp * conjugate(*v_itr);
       }
     }
   }
@@ -2161,7 +2161,7 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
         hif_assert(size_type(*i_itr) < _nrows, "%zd exceeds the size bound",
                    size_type(*i_itr));
         v_t xi = x[*i_itr];
-        tmp += (xi *= *v_itr);
+        tmp += (xi *= conjugate(*v_itr));
       }
       y[i] = tmp;
     }
