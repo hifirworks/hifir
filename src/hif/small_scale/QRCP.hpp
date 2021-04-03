@@ -404,7 +404,7 @@ class QRCP : public SmallScaleBase<ValueType> {
     const auto info = lapack_kernel::ormqr(
         'L', 'N', _mat.nrows(), Nrhs, rk, _mat.data(), _mat.nrows(),
         _tau.data(), x, _mat.nrows(), _work.data(), (size_type)abs(lwork));
-    hif_error_if(info < 0, "ORMQR returned negative info (Q'*x)");
+    hif_error_if(info < 0, "ORMQR returned negative info (Q*x)");
   }
 
   /// \brief Matrix-vector with constant number of right-hand sides
@@ -446,7 +446,7 @@ class QRCP : public SmallScaleBase<ValueType> {
     const auto info = lapack_kernel::ormqr(
         'L', 'N', _mat.nrows(), Nrhs, rk, _mat.data(), _mat.nrows(),
         _tau.data(), x, _mat.nrows(), _work.data(), (size_type)abs(lwork));
-    hif_error_if(info < 0, "ORMQR returned negative info (Q'*x)");
+    hif_error_if(info < 0, "ORMQR returned negative info (Q*x)");
   }
 
   /// \brief Matrix-vector with constant number of right-hand sides (Hermitian)
