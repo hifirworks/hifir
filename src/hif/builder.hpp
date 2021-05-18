@@ -254,13 +254,14 @@ class HIF {
   /// \brief factorize the MILU preconditioner
   /// \tparam CsType compressed storage input, either \ref CRS or \ref CCS
   /// \param[in] A input matrix
+  /// \param[in] opts control parameters, using the default values in the paper.
   /// \param[in] m0 leading block size, if it's zero (default), then the routine
   ///               will assume an asymmetric leading block.
-  /// \param[in] opts control parameters, using the default values in the paper.
   /// \sa solve
   template <class CsType>
-  inline void factorize(const CsType &A, const size_type m0 = 0u,
-                        const Options &opts = get_default_options()) {
+  inline void factorize(const CsType &  A,
+                        const Options & opts = get_default_options(),
+                        const size_type m0   = 0u) {
     const static internal::StdoutStruct  Crout_cout;
     const static internal::DummyStreamer Crout_cout_dummy;
     using cs_type =
@@ -352,9 +353,9 @@ class HIF {
   /// \param[in] indptr index starting position array, must be length of \a n+1
   /// \param[in] indices index value array, must be length of \a indptr[n]
   /// \param[in] vals value array, same length as that of \a indices
+  /// \param[in] opts control parameters, using the default values in the paper.
   /// \param[in] m0 leading block size, if it's zero (default), then the routine
   ///               will assume an asymmetric leading block.
-  /// \param[in] opts control parameters, using the default values in the paper.
   ///
   /// This interface differs from the above one is that it takes plain-old-data
   /// types as input thus flexible. Notice that the integer and floating data
@@ -363,8 +364,8 @@ class HIF {
   template <bool IsCrs, class IndexType_, class ValueType_>
   inline void factorize(const size_type n, const IndexType_ *indptr,
                         const IndexType_ *indices, const ValueType_ *vals,
-                        const size_type m0   = 0u,
-                        const Options & opts = get_default_options()) {
+                        const Options & opts = get_default_options(),
+                        const size_type m0   = 0u) {
     using foreign_crs_type = CRS<ValueType_, IndexType_>;
     using foreign_ccs_type = typename foreign_crs_type::other_type;
     using foreign_cs_type  = typename std::conditional<IsCrs, foreign_crs_type,

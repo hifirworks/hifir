@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
   timer.start();
   std::shared_ptr<prec_t> _M(new prec_t());
   auto &                  M = *_M;
-  M.factorize(A2, 0u, opts);
+  M.factorize(A2, opts, 0u);
   timer.finish();
   hif_info(
       "\nMLILU done!\n"
