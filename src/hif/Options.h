@@ -114,6 +114,12 @@ struct hif_Options {
 typedef struct hif_Options hif_Options;
 
 /*!
+ * \typedef hif_Params
+ * \brief alias of \ref hif_Options
+ */
+typedef struct hif_Options hif_Params;
+
+/*!
  * \brief get the default controls
  * \note See the values of attributes in parentheses
  */
@@ -143,6 +149,13 @@ static hif_Options hif_get_default_options(void) {
                        .gamma         = 1.0,
                        .beta          = 1e3,
                        .is_symm       = 0};
+}
+
+/*!
+ * \brief alias of \ref hif_get_default_options
+ */
+static hif_Params hif_get_default_params(void) {
+  return hif_get_default_options();
 }
 
 /*!
@@ -247,6 +260,12 @@ enum : int {
 typedef hif_Options Options;
 
 /*!
+ * \typedef Params
+ * \brief alias of \ref Options
+ */
+typedef Options Params;
+
+/*!
  * \brief get the reordering method name
  */
 inline std::string get_reorder_name(const Options &opt) {
@@ -271,6 +290,17 @@ inline std::string get_verbose(const Options &opt);
  * \brief get the default configuration
  */
 inline Options get_default_options() { return ::hif_get_default_options(); }
+
+/*!
+ * \brief alias of \ref get_default_options
+ */
+inline Params get_default_params() { return get_default_options(); }
+
+/*!
+ * \var DEFAULT_PARAMS
+ * \brief global default parameters
+ */
+const static Params DEFAULT_PARAMS = get_default_params();
 
 /*!
  * \brief represent an option control with C++ string

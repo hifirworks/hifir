@@ -78,7 +78,7 @@ class IterRefine {
                           const bool      tran     = false) const {
     if (N <= 1) {
       // if iteration is less than 2, then use original interface
-      M.solve(b, x, last_dim, tran);
+      M.solve(b, x, tran, last_dim);
       return;
     }
     // now, allocate space
@@ -96,7 +96,7 @@ class IterRefine {
         for (size_type i(0); i < n; ++i) x[i] = b[i] - x[i];  // residual
       } else
         std::copy_n(b.cbegin(), n, x.begin());
-      M.solve(x, _r, last_dim, tran);  // compute inv(M)*x=r
+      M.solve(x, _r, tran, last_dim);  // compute inv(M)*x=r
       for (size_type i(0); i < n; ++i) x[i] = _r[i] + _xk[i];  // update
     }
   }
