@@ -210,7 +210,7 @@ class TGMRESR
                       start = iter < cycle ? 0 : iter - cycle + 1;
       std::copy(_Q.cbegin() + jn, _Q.cbegin() + jn + n, _v.begin());
       if (n < maxit) _w.resize(n);
-      if (M.solve(A, _v, innersteps, _w)) {
+      if (M.hifir(A, _v, innersteps, _w)) {
         Cerr(__HIF_FILE__, __HIF_FUNC__, __LINE__,
              "Failed to call M operator at iteration %zd.", iter);
         flag = M_SOLVE_ERROR;
@@ -356,7 +356,7 @@ class TGMRESR
       //   flag = M_SOLVE_ERROR;
       //   break;
       // }
-      UseIR ? M.solve(A, _r, innersteps, u) : M.solve(_r, u);
+      UseIR ? M.hifir(A, _r, innersteps, u) : M.solve(_r, u);
       mt::mv_nt(A, u, c);
       // A.mv(u, c);
       for (size_type k = start; k < iter; ++k) {

@@ -252,7 +252,7 @@ class GMRES_Null
           }
         }
         std::copy(_Q.cbegin() + jn, _Q.cbegin() + jn + n, _v.begin());
-        M.solve(A, _v, min_ir, _w);
+        M.hifir(A, _v, min_ir, _w);
         std::copy(_w.cbegin(), _w.cend(), _Z.begin() + jn);
         mt::mv_nt(A, _w, _v);
         // A.mv_t(_w, _v);
@@ -572,7 +572,7 @@ class GMRES_NullHi
           }
         }
         std::copy(_Q.cbegin() + jn, _Q.cbegin() + jn + n, _v.begin());
-        M.solve(A, _v, min_ir, _w);
+        M.hifir(A, _v, min_ir, _w);
         // M.solve(_v, _w);
         std::copy(_w.cbegin(), _w.cend(), _Z.begin() + jn);
         mt::mv_nt(A, _w, _v);

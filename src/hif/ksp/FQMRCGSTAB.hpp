@@ -189,7 +189,7 @@ class FQMRCGSTAB
       //   flag = M_SOLVE_ERROR;
       //   break;
       // }
-      UseIR ? M.solve(A, _p, innersteps, _ph) : M.solve(_p, _ph);
+      UseIR ? M.hifir(A, _p, innersteps, _ph) : M.solve(_p, _ph);
       mt::mv_nt(A, _ph, _v);
       // A.mv(_ph, _v);
       auto rho2 = inner(r0, _v);
@@ -225,7 +225,7 @@ class FQMRCGSTAB
       //   flag = M_SOLVE_ERROR;
       //   break;
       // }
-      UseIR ? M.solve(A, _s, innersteps, _sh) : M.solve(_s, _sh);
+      UseIR ? M.hifir(A, _s, innersteps, _sh) : M.solve(_s, _sh);
       mt::mv_nt(A, _sh, _t);
       // A.mv(_sh, _t);
 

@@ -188,7 +188,7 @@ class FBICGSTAB
       //   flag = M_SOLVE_ERROR;
       //   break;
       // }
-      UseIR ? M.solve(A, _p, innersteps, _p_hat) : M.solve(_p, _p_hat);
+      UseIR ? M.hifir(A, _p, innersteps, _p_hat) : M.solve(_p, _p_hat);
       mt::mv_nt(A, _p_hat, _v);
       // A.mv(_p_hat, _v);
       alpha = rho / inner(r_tld, _v);
@@ -214,7 +214,7 @@ class FBICGSTAB
       //   flag = M_SOLVE_ERROR;
       //   break;
       // }
-      UseIR ? M.solve(A, _s, innersteps, _p_hat) : M.solve(_s, _p_hat);
+      UseIR ? M.hifir(A, _s, innersteps, _p_hat) : M.solve(_s, _p_hat);
       mt::mv_nt(A, _p_hat, _v);
       // A.mv(_p_hat, _v);
       omega = inner(_v, _s) / norm2_sq(_v);

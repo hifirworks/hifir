@@ -214,7 +214,7 @@ class FGMRES
         //   flag = M_SOLVE_ERROR;
         //   break;
         // }
-        UseIR ? M.solve(A, _v, innersteps, _w) : M.solve(_v, _w);
+        UseIR ? M.hifir(A, _v, innersteps, _w) : M.solve(_v, _w);
         std::copy(_w.cbegin(), _w.cend(), _Z.begin() + jn);
         // A.mv(_w, _v);
         mt::mv_nt(A, _w, _v);
