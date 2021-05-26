@@ -462,6 +462,28 @@ inline void steal_array_ownership(Array<T>&                     arr,
   arr._counts->_invalid = true;
 }
 
+/// \brief wrap mutable external data
+/// \tparam ValueType data type, e.g., \a double
+/// \param[in] n length of the array
+/// \param[in] data pointer to the external data
+/// \sa wrap_const_array
+template <class ValueType>
+inline Array<ValueType> wrap_array(const typename Array<ValueType>::size_type n,
+                                   ValueType* data) {
+  return Array<ValueType>(n, data, true);
+}
+
+/// \brief wrap immutable external data
+/// \tparam ValueType data type, e.g., \a double
+/// \param[in] n length of the array
+/// \param[in] data pointer to the external data
+/// \sa wrap_array
+template <class ValueType>
+inline Array<ValueType> wrap_const_array(
+    const typename Array<ValueType>::size_type n, const ValueType* data) {
+  return Array<ValueType>(n, const_cast<ValueType*>(data), true);
+}
+
 /*!
  * @}
  */ // group ds
