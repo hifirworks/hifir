@@ -105,6 +105,7 @@ struct hif_Options {
   double gamma;         /*!< threshold for thresholded pivoting (1.0) */
   double beta;          /*!< safeguard factor for equlibrition scaling (1e3) */
   int    is_symm;       /*!< is symmetric (Hermitian) system? (default 0) */
+  int    no_pre;        /*!< no preprocessing (default 0) */
 };
 
 /*!
@@ -148,7 +149,8 @@ static hif_Options hif_get_default_options(void) {
                        .pivot         = HIF_PIVOTING_OFF,
                        .gamma         = 1.0,
                        .beta          = 1e3,
-                       .is_symm       = 0};
+                       .is_symm       = 0,
+                       .no_pre        = 0};
 }
 
 /*!
@@ -346,12 +348,12 @@ inline std::string opt_repr(const Options &opt) {
                                 : (opt_.pivot == PIVOTING_ON ? "on" : "auto");
                    }) +
          pack_double("gamma", opt.gamma) + pack_double("beta", opt.beta) +
-         pack_int("is_symm", opt.is_symm);
+         pack_int("is_symm", opt.is_symm) + pack_int("no_pre", opt.no_pre);
 }
 
 #  ifndef DOXYGEN_SHOULD_SKIP_THIS
 namespace internal {
-#    define _HIF_TOTAL_OPTIONS 25
+#    define _HIF_TOTAL_OPTIONS 26
 /*
  * build a byte map, i.e. the value is the leading byte position of the attrs
  * in Options
@@ -381,7 +383,8 @@ const static std::size_t option_attr_pos[_HIF_TOTAL_OPTIONS] = {
     option_attr_pos[20] + sizeof(double),
     option_attr_pos[21] + sizeof(int),
     option_attr_pos[22] + sizeof(double),
-    option_attr_pos[23] + sizeof(double)};
+    option_attr_pos[23] + sizeof(double),
+    option_attr_pos[24] + sizeof(int)};
 
 /* data type tags, true for double, false for int */
 const static bool option_dtypes[_HIF_TOTAL_OPTIONS] = {
@@ -410,6 +413,7 @@ const static bool option_dtypes[_HIF_TOTAL_OPTIONS] = {
     true,   // 22
     true,   // 23
     false,  // 24
+    false,  // 25
 };
 
 /* using unordered map to store the string to index map */
@@ -438,7 +442,8 @@ const static std::unordered_map<std::string, int> option_tag2pos = {
     {"pivot", 21},
     {"gamma", 22},
     {"beta", 23},
-    {"is_symm", 24}};
+    {"is_symm", 24},
+    {"no_pre", 25}};
 
 } /* namespace internal */
 #  endif /* DOXYGEN_SHOULD_SKIP_THIS */
@@ -492,7 +497,7 @@ inline InStream &operator>>(InStream &in_str, hif::Options &opt) {
       opt.alpha_U >> opt.rho >> opt.c_d >> opt.c_h >> opt.N >> opt.verbose >>
       opt.rf_par >> opt.reorder >> opt.spd >> opt.check >> opt.pre_scale >>
       opt.symm_pre_lvls >> opt.threads >> opt.mumps_blr >> opt.fat_schur_1st >>
-      opt.rrqr_cond >> opt.gamma >> opt.beta >> opt.is_symm;
+      opt.rrqr_cond >> opt.gamma >> opt.beta >> opt.is_symm >> opt.no_pre;
   return in_str;
 }
 
