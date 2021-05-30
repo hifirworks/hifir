@@ -1380,7 +1380,7 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
     using rev_iterator   = std::reverse_iterator<const_i_iterator>;
     using rev_v_iterator = std::reverse_iterator<const_v_iterator>;
 
-    for (size_type j(_ncols - 1); j != 0u; --j) {
+    for (size_type j(_ncols); j != 0u; --j) {
       const auto j1    = j - 1;
       const auto y_j   = y[j1];
       auto       itr   = rev_iterator(col_ind_cend(j1));
@@ -2287,8 +2287,9 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
       auto            itr   = row_ind_cbegin(j1);
       auto            v_itr = _base::val_cbegin(j1);
       v_t             tmp(0);
-      for (auto last = row_ind_cbegin(j1); itr != last; ++itr, ++v_itr)
+      for (auto last = row_ind_cend(j1); itr != last; ++itr, ++v_itr) {
         tmp += conjugate(static_cast<v_t>(*v_itr)) * y[*itr];
+      }
       y[j1] -= tmp;
     }
   }
