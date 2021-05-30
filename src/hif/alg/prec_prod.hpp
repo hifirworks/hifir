@@ -130,9 +130,9 @@ inline void prec_prod(PrecItr prec_itr, const RhsType &b,
     // compute E*y(1:m), and stored to work(m+1:n)
     prec.E.mv_nt_low(y.data(), &work[m]);
     // add to the solution
-    for (size_type i(m); i < n; ++i) y[i] += work[i];
+    for (size_type i(m); i < n; ++i) work[i] += y[i];
   }
-  std::copy_n(y.data() + m, nm, &work[m]);
+  // std::copy_n(y.data() + m, nm, &work[m]);
 
   // Now, work(1:n) stores the solution w/o permutation. Let's do permutation
   for (size_type i(0); i < n; ++i) y[i] = work[p_inv[i]] / s[i];
@@ -231,9 +231,9 @@ inline void prec_prod_tran(PrecItr prec_itr, const RhsType &b,
     // compute F^H*y(1:m), and stored to work(m+1:n)
     prec.F.mv_t_low(y.data(), &work[m]);
     // add to the solution
-    for (size_type i(m); i < n; ++i) y[i] += work[i];
+    for (size_type i(m); i < n; ++i) work[i] += y[i];
   }
-  std::copy_n(y.data() + m, nm, &work[m]);
+  // std::copy_n(y.data() + m, nm, &work[m]);
 
   // Now, work(1:n) stores the solution w/o permutation. Let's do permutation
   for (size_type i(0); i < n; ++i) y[i] = work[q_inv[i]] / t[i];
