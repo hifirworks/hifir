@@ -52,6 +52,8 @@ inline void apply_num_dropping(const double tau, const KappaType kappa,
 
   const KappaType coeff = tau / kappa;
 
+  if (coeff <= 0.0) return;
+
   const size_type n = v.size();
   for (size_type i = 0u; i < n; ++i)
     if (std::abs(v.val(i)) <= coeff) v.mark_delete(i);
@@ -73,6 +75,8 @@ inline void apply_space_dropping(
   using size_type  = typename SpVecType::size_type;
   using index_type = typename SpVecType::index_type;
   using extractor  = internal::SpVInternalExtractor<SpVecType>;
+
+  if (alpha <= 0.0) return;
 
   if (v.size()) {
     size_type N1 = std::ceil(alpha * nnz);
