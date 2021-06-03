@@ -212,7 +212,7 @@ class SYEIG : public SmallScaleBase<ValueType> {
 
   /// \brief matrix-vector \f$\mathbf{Q\Lambda Q}^H\mathbf{x}\f$
   /// \param[in,out] x input rhs, output solution
-  inline void mv(Array<value_type> &x, const size_type rank = 0) const {
+  inline void multiply(Array<value_type> &x, const size_type rank = 0) const {
     hif_error_if(
         _mat.empty() || _w.empty(),
         "either the matrix is not set or the factorization has not yet done!");
@@ -233,18 +233,18 @@ class SYEIG : public SmallScaleBase<ValueType> {
 
   /// \brief wrapper if \a value_type is different from input's for mv
   template <class ArrayType>
-  inline void mv(ArrayType &x, const size_type rank = 0) const {
+  inline void multiply(ArrayType &x, const size_type rank = 0) const {
     _base::_x.resize(x.size());
     std::copy(x.cbegin(), x.cend(), _base::_x.begin());
-    mv(_base::_x, rank);
+    multiply(_base::_x, rank);
     std::copy(_base::_x.cbegin(), _base::_x.cend(), x.begin());
   }
 
   /// \brief matrix-vector with multiple RHS
-  /// \sa mv
+  /// \sa multiply
   template <class V, size_type Nrhs>
-  inline void mv_mrhs(Array<std::array<V, Nrhs>> &x,
-                      const size_type             rank = 0) const {
+  inline void multiply_mrhs(Array<std::array<V, Nrhs>> &x,
+                            const size_type             rank = 0) const {
     hif_error_if(
         _mat.empty() || _w.empty(),
         "either the matrix is not set or the factorization has not yet done!");

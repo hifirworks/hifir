@@ -135,9 +135,9 @@ class LUP : public SmallScaleBase<ValueType> {
   /// \param[in] x input vector
   /// \param[out] y output vector
   /// \param[in] tran (optional) tranpose flag
-  inline void mv(const Array<value_type> &x, Array<value_type> &y,
-                 const size_type /* rank */ = 0,
-                 const bool tran            = false) const {
+  inline void multiply(const Array<value_type> &x, Array<value_type> &y,
+                       const size_type /* rank */ = 0,
+                       const bool tran            = false) const {
     hif_error_if(x.size() != _mat_backup.nrows(),
                  "unmatched sizes between system and x");
     hif_error_if(x.size() != y.size(), "unmatched sizes x and y");
@@ -147,12 +147,13 @@ class LUP : public SmallScaleBase<ValueType> {
 
   /// \brief wrapper if \a value_type is different from input's
   template <class ArrayIn, class ArrayOut>
-  inline void mv(const ArrayIn &x, ArrayOut &y, const size_type /* rank */ = 0,
-                 const bool tran = false) const {
+  inline void multiply(const ArrayIn &x, ArrayOut &y,
+                       const size_type /* rank */ = 0,
+                       const bool tran            = false) const {
     _base::_x.resize(x.size());
     _base::_y.resize(y.size());
     std::copy(x.cbegin(), x.cend(), _base::_x.begin());
-    mv(_base::_x, _base::_y, size_type(0), tran);
+    multiply(_base::_x, _base::_y, size_type(0), tran);
     std::copy(_base::_y.cbegin(), _base::_y.cend(), y.begin());
   }
 

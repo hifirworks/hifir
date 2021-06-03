@@ -204,34 +204,35 @@ class QRCP : public SmallScaleBase<ValueType> {
   ///
   /// First, QRCP returns \f$\mathbf{AP}=\mathbf{QR}\f$, thus when we
   /// have \f$\mathbf{Ax}=\mathbf{QRP}^{T}\mathbf{x}\f$.
-  inline void mv(Array<value_type> &x, const size_type rank = 0u,
-                 const bool tran = false) const {
+  inline void multiply(Array<value_type> &x, const size_type rank = 0u,
+                       const bool tran = false) const {
     hif_error_if(x.size() != _mat.nrows(),
                  "unmatched sizes between system and rhs");
-    !tran ? _mv_nt<1>(x.data(), rank) : _mv_t<1>(x.data(), rank);
+    !tran ? _multiply_nt<1>(x.data(), rank) : _multiply_t<1>(x.data(), rank);
   }
 
   /// \brief wrapper if input is different from \a value_type for matrix-vector
   template <class ArrayType>
-  inline void mv(ArrayType &x, const size_type rank = 0u,
-                 const bool tran = false) const {
+  inline void multiply(ArrayType &x, const size_type rank = 0u,
+                       const bool tran = false) const {
     _base::_x.resize(x.size());
     std::copy(x.cbegin(), x.cend(), _base::_x.begin());
-    mv(_base::_x, rank, tran);
+    multiply(_base::_x, rank, tran);
     std::copy(_base::_x.cbegin(), _base::_x.cend(), x.begin());
   }
 
   /// \brief wrapper for solving multiple RHS with \a row-major storage
   template <class V, size_type Nrhs>
-  inline void mv_mrhs(Array<std::array<V, Nrhs>> &x, const size_type rank = 0u,
-                      const bool tran = false) const {
+  inline void multiply_mrhs(Array<std::array<V, Nrhs>> &x,
+                            const size_type             rank = 0u,
+                            const bool                  tran = false) const {
     hif_error_if(x.size() != _mat.nrows(),
                  "unmatched sizes between system and rhs");
     _base::_mrhs.resize(x.size(), Nrhs);
     for (size_type j = 0; j < Nrhs; ++j)
       for (size_type i(0); i < x.size(); ++i) _base::_mrhs(i, j) = x[i][j];
-    !tran ? _mv_nt<Nrhs>(_base::_mrhs.data(), rank)
-          : _mv_t<Nrhs>(_base::_mrhs.data(), rank);
+    !tran ? _multiply_nt<Nrhs>(_base::_mrhs.data(), rank)
+          : _multiply_t<Nrhs>(_base::_mrhs.data(), rank);
     for (size_type j = 0; j < Nrhs; ++j)
       for (size_type i(0); i < x.size(); ++i) x[i][j] = _base::_mrhs(i, j);
   }
@@ -412,7 +413,7 @@ class QRCP : public SmallScaleBase<ValueType> {
   /// \param[in,out] x input rhs, output solution
   /// \param[in] rank (optional) rank for back solve, default is \a _rank
   template <size_type Nrhs>
-  inline void _mv_nt(value_type *x, const size_type rank = 0u) const {
+  inline void _multiply_nt(value_type *x, const size_type rank = 0u) const {
     hif_error_if(
         _mat.empty() || _jpvt.empty(),
         "either the matrix is not set or the factorization has not yet done!");
@@ -454,7 +455,7 @@ class QRCP : public SmallScaleBase<ValueType> {
   /// \param[in,out] x input rhs, output solution
   /// \param[in] rank (optional) rank for back solve, default is \a _rank
   template <size_type Nrhs>
-  inline void _mv_t(value_type *x, const size_type rank = 0u) const {
+  inline void _multiply_t(value_type *x, const size_type rank = 0u) const {
     hif_error_if(
         _mat.empty() || _jpvt.empty(),
         "either the matrix is not set or the factorization has not yet done!");
