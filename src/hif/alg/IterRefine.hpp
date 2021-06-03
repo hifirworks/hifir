@@ -90,9 +90,9 @@ class IterRefine {
       if (i) {
         // starting 2nd iteration
         if (!tran)
-          mt::mv_nt(A, _xk, x);
+          mt::multiply_nt(A, _xk, x);
         else
-          mv(A, _xk, x, true);
+          multiply(A, _xk, x, true);
         for (size_type i(0); i < n; ++i) x[i] = b[i] - x[i];  // residual
       } else
         std::copy_n(b.cbegin(), n, x.begin());

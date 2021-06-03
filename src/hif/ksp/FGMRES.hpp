@@ -192,8 +192,8 @@ class FGMRES
              "Couldn\'t solve with %d restarts.", restart);
       // initial residual
       if (iter || !zero_start) {
-        // A.mv(x, _v);
-        mt::mv_nt(A, x, _v);
+        // A.multiply(x, _v);
+        mt::multiply_nt(A, x, _v);
         for (size_type i = 0u; i < n; ++i) _v[i] = b[i] - _v[i];
       } else
         std::copy_n(b.cbegin(), n, _v.begin());
@@ -216,8 +216,8 @@ class FGMRES
         // }
         UseIR ? M.hifir(A, _v, innersteps, _w) : M.solve(_v, _w);
         std::copy(_w.cbegin(), _w.cend(), _Z.begin() + jn);
-        // A.mv(_w, _v);
-        mt::mv_nt(A, _w, _v);
+        // A.multiply(_w, _v);
+        mt::multiply_nt(A, _w, _v);
         if (n < (size_type)restart) _w.resize(restart);
         for (size_type k = 0u; k <= j; ++k) {
           auto itr       = _Q.cbegin() + k * n;

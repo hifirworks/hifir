@@ -460,8 +460,8 @@ class HIF {
   /// \param[in] r (optional) dimension for back solve for last level
   ///              default is its numerical rank
   template <class RhsType, class SolType>
-  inline void mmv(const RhsType &x, SolType &y, const bool trans = false,
-                  const size_type r = 0u) const {
+  inline void mmultiply(const RhsType &x, SolType &y, const bool trans = false,
+                        const size_type r = 0u) const {
     hif_error_if(empty(), "MILU-Prec is empty!");
     hif_error_if(y.size() != x.size(), "unmatched sizes");
     if (_prec_work.empty())

@@ -279,10 +279,10 @@ class IntervalCRS {
   /// \param[out] y output array pointer
   /// \warning User's responsibility to maintain valid pointers
   template <class Vx, class Vy>
-  inline void mv_nt_low(const Vx *x, const size_type istart,
-                        const size_type len, Vy *y) const {
+  inline void multiply_nt_low(const Vx *x, const size_type istart,
+                              const size_type len, Vy *y) const {
     if (_ref)
-      _ref->mv_nt_low(x, istart, len, y);
+      _ref->multiply_nt_low(x, istart, len, y);
     else {
       const auto n = istart + len;
       for (size_type i(istart); i < n; ++i) {
@@ -312,8 +312,8 @@ class IntervalCRS {
   /// \param[out] y output array pointer
   /// \warning User's responsibility to maintain valid pointers
   template <class Vx, class Vy>
-  inline void mv_nt_low(const Vx *x, Vy *y) const {
-    mv_nt_low(x, 0, _nrows, y);
+  inline void multiply_nt_low(const Vx *x, Vy *y) const {
+    multiply_nt_low(x, 0, _nrows, y);
   }
 
   /// \brief matrix vector multiplication for MT (CRS only)
@@ -325,28 +325,28 @@ class IntervalCRS {
   /// \param[out] y output array
   /// \note Sizes must match
   template <class IArray, class OArray>
-  inline void mv_nt(const IArray &x, const size_type istart,
-                    const size_type len, OArray &y) const {
+  inline void multiply_nt(const IArray &x, const size_type istart,
+                          const size_type len, OArray &y) const {
     hif_error_if(nrows() != y.size() || ncols() != x.size(),
                  "matrix vector multiplication unmatched sizes!");
     hif_error_if(istart >= nrows(), "%zd exceeds the row size %zd", istart,
                  nrows());
     hif_error_if(istart + len > nrows(),
                  "out-of-bound pass-of-end range detected");
-    mv_nt_low(x.data(), istart, len, y.data());
+    multiply_nt_low(x.data(), istart, len, y.data());
   }
 
   /// \brief matrix vector multiplication
-  /// \tparam IArray input array type
+  /// \tparam IArray input array typem
   /// \tparam OArray output array type
   /// \param[in] x input array
   /// \param[out] y output array
   /// \note Sizes must match
   template <class IArray, class OArray>
-  inline void mv_nt(const IArray &x, OArray &y) const {
+  inline void multiply_nt(const IArray &x, OArray &y) const {
     hif_error_if(nrows() != y.size() || ncols() != x.size(),
                  "matrix vector multiplication unmatched sizes!");
-    mv_nt_low(x.data(), y.data());
+    multiply_nt_low(x.data(), y.data());
   }
 
   /// \brief matrix transpose vector multiplication with different type
@@ -356,10 +356,10 @@ class IntervalCRS {
   /// \param[out] y output array pointer
   /// \warning User's responsibility to maintain valid pointers
   template <class Vx, class Vy>
-  inline void mv_t_low(const Vx *x, Vy *y) const {
+  inline void multiply_t_low(const Vx *x, Vy *y) const {
     if (!_nrows) return;
     if (_ref)
-      _ref->mv_t_low(x, y);
+      _ref->multiply_t_low(x, y);
     else {
       std::fill_n(y, _ncols, Vy(0));
       for (size_type i(0); i < _nrows; ++i) {
@@ -388,10 +388,10 @@ class IntervalCRS {
   /// \note Sizes must match
   /// \note Compute \f$y=\mathbf{A}^Tx\f$
   template <class IArray, class OArray>
-  inline void mv_t(const IArray &x, OArray &y) const {
+  inline void multiply_t(const IArray &x, OArray &y) const {
     hif_error_if(nrows() != x.size() || ncols() != y.size(),
                  "T(matrix) vector multiplication unmatched sizes!");
-    mv_t_low(x.data(), y.data());
+    multiply_t_low(x.data(), y.data());
   }
 
   /// \brief matrix vector multiplication
@@ -400,10 +400,10 @@ class IntervalCRS {
   /// \param[in] x input array
   /// \param[out] y output array
   /// \param[in] tran if \a false (default), perform normal matrix vector
-  /// \sa mv_nt, mv_t
+  /// \sa multiply_nt, multiply_t
   template <class IArray, class OArray>
-  inline void mv(const IArray &x, OArray &y, bool tran = false) const {
-    !tran ? mv_nt(x, y) : mv_t(x, y);
+  inline void multiply(const IArray &x, OArray &y, bool tran = false) const {
+    !tran ? multiply_nt(x, y) : multiply_t(x, y);
   }
 
   /// \brief Assume as a strict lower matrix and solve with forward sub
@@ -591,10 +591,10 @@ class IntervalCCS {
   /// \param[out] y output array pointer
   /// \warning User's responsibilty to ensure valid pointers
   template <class Vx, class Vy>
-  inline void mv_nt_low(const Vx *x, Vy *y) const {
+  inline void multiply_nt_low(const Vx *x, Vy *y) const {
     if (!_ncols) return;
     if (_ref)
-      _ref->mv_nt_low(x, y);
+      _ref->multiply_nt_low(x, y);
     else {
       std::fill_n(y, _nrows, Vy(0));
       for (size_type i(0); i < _ncols; ++i) {
@@ -622,10 +622,10 @@ class IntervalCCS {
   /// \param[out] y output array
   /// \note Sizes must match
   template <class IArray, class OArray>
-  inline void mv_nt(const IArray &x, OArray &y) const {
+  inline void multiply_nt(const IArray &x, OArray &y) const {
     hif_error_if(nrows() != y.size() || ncols() != x.size(),
                  "matrix vector unmatched sizes!");
-    mv_nt_low(x.data(), y.data());
+    multiply_nt_low(x.data(), y.data());
   }
 
   /// \brief matrix transpose vector multiplication with different type
@@ -635,9 +635,9 @@ class IntervalCCS {
   /// \param[out] y output array pointer
   /// \warning User's responsibilty to ensure valid pointers
   template <class Vx, class Vy>
-  inline void mv_t_low(const Vx *x, Vy *y) const {
+  inline void multiply_t_low(const Vx *x, Vy *y) const {
     if (_ref)
-      _ref->mv_t_low(x, y);
+      _ref->multiply_t_low(x, y);
     else {
       for (size_type i(0); i < _ncols; ++i) {
         typename std::conditional<(sizeof(Vy) > sizeof(value_type)), Vy,
@@ -666,10 +666,10 @@ class IntervalCCS {
   /// \param[out] y output array
   /// \note Sizes must match
   template <class IArray, class OArray>
-  inline void mv_t(const IArray &x, OArray &y) const {
+  inline void multiply_t(const IArray &x, OArray &y) const {
     hif_error_if(nrows() != x.size() || ncols() != y.size(),
                  "T(matrix) vector unmatched sizes!");
-    mv_t_low(x.data(), y.data());
+    multiply_t_low(x.data(), y.data());
   }
 
   /// \brief matrix vector multiplication
@@ -678,10 +678,10 @@ class IntervalCCS {
   /// \param[in] x input array
   /// \param[out] y output array
   /// \param[in] tran if \a false (default), then perform normal matrix vector
-  /// \sa mv_t, mv_nt
+  /// \sa multiply_t, multiply_nt
   template <class IArray, class OArray>
-  inline void mv(const IArray &x, OArray &y, bool tran = false) const {
-    !tran ? mv_nt(x, y) : mv_t(x, y);
+  inline void multiply(const IArray &x, OArray &y, bool tran = false) const {
+    !tran ? multiply_nt(x, y) : multiply_t(x, y);
   }
 
   /// \brief Assume as a strict lower matrix and solve with forward sub

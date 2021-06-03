@@ -49,9 +49,9 @@ namespace hif {
 /// \param[out] y output array
 /// \param[in] tran (optional) transpose/Hermitian flag, default is false
 template <class CsType, class IArray, class OArray, typename T = void>
-inline void mv(const CsType &A, const IArray &x, OArray &y,
-               const bool tran = false) {
-  A.mv(x, y, tran);
+inline void multiply(const CsType &A, const IArray &x, OArray &y,
+                     const bool tran = false) {
+  A.multiply(x, y, tran);
 }
 
 /// \brief matrix-vector product with \a std::function
@@ -62,10 +62,11 @@ inline void mv(const CsType &A, const IArray &x, OArray &y,
 /// \param[out] y output array
 /// \param[in] tran (optional) transpose/Hermitian flag, default is false
 template <class IArray, class OArray, typename T = void>
-inline void
-mv(const std::function<void(const void *, const typename IArray::size_type,
-                            const char, void *, const char, const bool)> &Afunc,
-   const IArray &x, OArray &y, const bool tran = false) {
+inline void multiply(
+    const std::function<void(const void *, const typename IArray::size_type,
+                             const char, void *, const char, const bool)>
+        &         Afunc,
+    const IArray &x, OArray &y, const bool tran = false) {
   using i_value_type = typename IArray::value_type;
   using o_value_type = typename OArray::value_type;
   Afunc((const void *)x.data(), x.size(),

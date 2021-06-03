@@ -55,20 +55,20 @@ namespace mt {
 /// \param[out] y output array
 /// \note Sizes must match
 template <class CsType, class IArray, class OArray, typename T = void>
-inline typename std::enable_if<CsType::ROW_MAJOR, T>::type mv_nt(
+inline typename std::enable_if<CsType::ROW_MAJOR, T>::type multiply_nt(
     const CsType &A, const IArray &x, OArray &y) {
   hif_error_if(A.nrows() != y.size() || A.ncols() != x.size(),
                "matrix vector multiplication unmatched sizes!");
   int nthreads = get_nthreads();
   if (nthreads == 0) nthreads = get_nthreads(-1);
   if (nthreads == 1 || (A.nrows() < 1000u && A.nnz() / (double)A.nrows() <= 20))
-    return A.mv_nt(x, y);
+    return A.multiply_nt(x, y);
 #ifdef _OPENMP
 #  pragma omp parallel num_threads(nthreads)
 #endif
   do {
     const auto part = uniform_partition(A.nrows(), nthreads, get_thread());
-    A.mv_nt_low(x.data(), part.first, part.second - part.first, y.data());
+    A.multiply_nt_low(x.data(), part.first, part.second - part.first, y.data());
   } while (false);  // parallel region
 }
 
@@ -81,35 +81,35 @@ inline typename std::enable_if<CsType::ROW_MAJOR, T>::type mv_nt(
 /// \param[out] y output array
 /// \note Sizes must match
 template <class CsType, class Vx, class Vy, typename T = void>
-inline typename std::enable_if<CsType::ROW_MAJOR, T>::type mv_nt_low(
+inline typename std::enable_if<CsType::ROW_MAJOR, T>::type multiply_nt_low(
     const CsType &A, const Vx *x, Vy *y) {
   int nthreads = get_nthreads();
   if (nthreads == 0) nthreads = get_nthreads(-1);
   if (nthreads == 1 || (A.nrows() < 1000u && A.nnz() / (double)A.nrows() <= 20))
-    return A.mv_nt_low(x, y);
+    return A.multiply_nt_low(x, y);
 #ifdef _OPENMP
 #  pragma omp parallel num_threads(nthreads)
 #endif
   do {
     const auto part = uniform_partition(A.nrows(), nthreads, get_thread());
-    A.mv_nt_low(x, part.first, part.second - part.first, y);
+    A.multiply_nt_low(x, part.first, part.second - part.first, y);
   } while (false);  // parallel region
 }
 
 /// \brief CCS API compatibility
 template <class CsType, class IArray, class OArray, typename T = void>
-inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type mv_nt(
+inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type multiply_nt(
     const CsType &A, const IArray &x, OArray &y) {
   hif_warning("CCS does not support threaded matrix-vector!");
-  return A.mv_nt(x, y);
+  return A.multiply_nt(x, y);
 }
 
 /// \brief CCS API compatibility
 template <class CsType, class Vx, class Vy, typename T = void>
-inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type mv_nt_low(
+inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type multiply_nt_low(
     const CsType &A, const Vx *x, Vy *y) {
   hif_warning("CCS does not support threaded matrix-vector!");
-  A.mv_nt_low(x, y);
+  A.multiply_nt_low(x, y);
 }
 
 // multiple RHS
@@ -124,7 +124,7 @@ inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type mv_nt_low(
 /// \param[out] y output array
 template <class CsType, class InType, class OutType, std::size_t Nrhs,
           typename T = void>
-inline typename std::enable_if<CsType::ROW_MAJOR, T>::type mv_mrhs_nt(
+inline typename std::enable_if<CsType::ROW_MAJOR, T>::type multiply_mrhs_nt(
     const CsType &A, const Array<std::array<InType, Nrhs>> &x,
     Array<std::array<OutType, Nrhs>> &y) {
   hif_error_if(A.nrows() != y.size() || A.ncols() != x.size(),
@@ -133,14 +133,14 @@ inline typename std::enable_if<CsType::ROW_MAJOR, T>::type mv_mrhs_nt(
   if (nthreads == 0) nthreads = get_nthreads(-1);
   if (nthreads == 1 ||
       (A.nrows() < 1000u && Nrhs * A.nnz() / (double)A.nrows() <= 20))
-    return A.mv_mrhs_nt(x, y);
+    return A.multiply_mrhs_nt(x, y);
 #ifdef _OPENMP
 #  pragma omp parallel num_threads(nthreads)
 #endif
   do {
     const auto part = uniform_partition(A.nrows(), nthreads, get_thread());
-    A.mv_mrhs_nt_low<Nrhs>(x[0].data(), part.first, part.second - part.first,
-                           y[0].data());
+    A.multiply_mrhs_nt_low<Nrhs>(x[0].data(), part.first,
+                                 part.second - part.first, y[0].data());
   } while (false);  // parallel region
 }
 
@@ -154,48 +154,48 @@ inline typename std::enable_if<CsType::ROW_MAJOR, T>::type mv_mrhs_nt(
 /// \param[out] y output array
 /// \note Sizes must match
 template <std::size_t Nrhs, class CsType, class Vx, class Vy, typename T = void>
-inline typename std::enable_if<CsType::ROW_MAJOR, T>::type mv_mrhs_nt_low(
+inline typename std::enable_if<CsType::ROW_MAJOR, T>::type multiply_mrhs_nt_low(
     const CsType &A, const Vx *x, Vy *y) {
   int nthreads = get_nthreads();
   if (nthreads == 0) nthreads = get_nthreads(-1);
   if (nthreads == 1 ||
       (A.nrows() < 1000u && Nrhs * A.nnz() / (double)A.nrows() <= 20))
-    return A.mv_mrhs_nt_low<Nrhs>(x, y);
+    return A.multiply_mrhs_nt_low<Nrhs>(x, y);
 #ifdef _OPENMP
 #  pragma omp parallel num_threads(nthreads)
 #endif
   do {
     const auto part = uniform_partition(A.nrows(), nthreads, get_thread());
-    A.mv_mrhs_nt_low<Nrhs>(x, part.first, part.second - part.first, y);
+    A.multiply_mrhs_nt_low<Nrhs>(x, part.first, part.second - part.first, y);
   } while (false);  // parallel region
 }
 
 /// \brief matrix vector in parallel with openmp for multiple RHS for \a CCS
 template <class CsType, class InType, class OutType, std::size_t Nrhs,
           typename T = void>
-inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type mv_mrhs_nt(
+inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type multiply_mrhs_nt(
     const CsType &A, const Array<std::array<InType, Nrhs>> &x,
     Array<std::array<OutType, Nrhs>> &y) {
   hif_warning("CCS does not support threaded matrix-vector!");
-  return A.mv_mrhs_nt(x, y);
+  return A.multiply_mrhs_nt(x, y);
 }
 
 /// \brief matrix vector in parallel with openmp for multiple RHS for \a CCS
 template <std::size_t Nrhs, class CsType, class Vx, class Vy, typename T = void>
-inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type mv_mrhs_nt_low(
-    const CsType &A, const Vx *x, Vy *y) {
+inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type
+multiply_mrhs_nt_low(const CsType &A, const Vx *x, Vy *y) {
   hif_warning("CCS does not support threaded matrix-vector!");
-  return A.mv_mrhs_nt_low<Nrhs>(x, y);
+  return A.multiply_mrhs_nt_low<Nrhs>(x, y);
 }
 
 /*!
  * @}
  */
 
-// enable mt::mv_nt, i.e., multi-threaded matrix-vector no transpose for
-// functor A. Notice that because mt::mv_nt is used in both KSP and iterative
-// refinement interfaces, thus, overloading this function is the easiest way
-// to enable user callback for computing matrix-vector product.
+// enable mt::multiply_nt, i.e., multi-threaded matrix-vector no transpose for
+// functor A. Notice that because mt::multiply_nt is used in both KSP and
+// iterative refinement interfaces, thus, overloading this function is the
+// easiest way to enable user callback for computing matrix-vector product.
 // NOTE: This is for interface compatibility!
 
 /// \brief use user functor for computing "matrix"-vector product
@@ -206,7 +206,7 @@ inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type mv_mrhs_nt_low(
 /// \param[out] y y=A*x
 /// \ingroup ksp
 template <class IArray, class OArray>
-inline void mv_nt(
+inline void multiply_nt(
     const std::function<void(const void *, const typename IArray::size_type,
                              const char, void *, const char, const bool)>
         &         Afunc,
@@ -229,7 +229,7 @@ inline void mv_nt(
 /// \param[out] y y=A*x
 /// \ingroup ksp
 template <class InType, class OutType, std::size_t Nrhs>
-inline void mv_mrhs_nt(
+inline void multiply_mrhs_nt(
     const std::function<void(const void *, const typename std::size_t,
                              const typename std::size_t, const char, void *,
                              const char)> &Afunc,

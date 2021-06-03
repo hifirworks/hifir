@@ -104,19 +104,19 @@ inline void prec_prod(PrecItr prec_itr, const RhsType &b,
 
   // compute L*D*U*work(1:m)
   // NOTE the matrix is unit diagonal with implicit diagonal entries
-  prec.U_B.mv_nt_low(&work[0], y.data());
+  prec.U_B.multiply_nt_low(&work[0], y.data());
   // add the unit diagonal portion and scale by D_B
   for (size_type i(0); i < m; ++i) (y[i] += work[i]) *= prec.d_B[i];
   // compute L*y(1:m)
   // NOTE work(1:m) is destroyed
-  prec.L_B.mv_nt_low(y.data(), &work[0]);
+  prec.L_B.multiply_nt_low(y.data(), &work[0]);
   // add the unit diagonal portion
   for (size_type i(0); i < m; ++i) work[i] += y[i];
 
   // compute F*work(m+1:n) and store to y(1:m)
   // NOTE work(m+1:n) is still the permuted vector
   if (prec.F.ncols()) {
-    prec.F.mv_nt_low(&work[m], y.data());
+    prec.F.multiply_nt_low(&work[m], y.data());
     for (size_type i(0); i < m; ++i) work[i] += y[i];  // sum up to work(1:m)
   }
 
@@ -128,7 +128,7 @@ inline void prec_prod(PrecItr prec_itr, const RhsType &b,
     // recompute the permutated vector (1:m) and sum up
     for (size_type i(0); i < m; ++i) y[i] += b[q[i]] / t[q[i]];
     // compute E*y(1:m), and stored to work(m+1:n)
-    prec.E.mv_nt_low(y.data(), &work[m]);
+    prec.E.multiply_nt_low(y.data(), &work[m]);
     // add to the solution
     for (size_type i(m); i < n; ++i) work[i] += y[i];
   }
@@ -204,19 +204,19 @@ inline void prec_prod_tran(PrecItr prec_itr, const RhsType &b,
 
   // compute U^H*conj(D)*L^H*work(1:m)
   // NOTE the matrix is unit diagonal with implicit diagonal entries
-  prec.L_B.mv_t_low(&work[0], y.data());
+  prec.L_B.multiply_t_low(&work[0], y.data());
   // add the unit diagonal portion and scale by conj(D_B)
   for (size_type i(0); i < m; ++i) (y[i] += work[i]) *= conjugate(prec.d_B[i]);
   // compute U^H*y(1:m)
   // NOTE work(1:m) is destroyed
-  prec.U_B.mv_t_low(y.data(), &work[0]);
+  prec.U_B.multiply_t_low(y.data(), &work[0]);
   // add the unit diagonal portion
   for (size_type i(0); i < m; ++i) work[i] += y[i];
 
   // compute E^H*work(m+1:n) and store to y(1:m)
   // NOTE work(m+1:n) is still the permuted vector
   if (nm) {
-    prec.E.mv_t_low(&work[m], y.data());
+    prec.E.multiply_t_low(&work[m], y.data());
     for (size_type i(0); i < m; ++i) work[i] += y[i];  // sum up to work(1:m)
   }
 
@@ -229,7 +229,7 @@ inline void prec_prod_tran(PrecItr prec_itr, const RhsType &b,
     // recompute the permutated vector (1:m) and sum up
     for (size_type i(0); i < m; ++i) y[i] += b[p[i]] / s[p[i]];
     // compute F^H*y(1:m), and stored to work(m+1:n)
-    prec.F.mv_t_low(y.data(), &work[m]);
+    prec.F.multiply_t_low(y.data(), &work[m]);
     // add to the solution
     for (size_type i(m); i < n; ++i) work[i] += y[i];
   }

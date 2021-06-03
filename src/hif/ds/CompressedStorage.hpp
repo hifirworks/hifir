@@ -1070,8 +1070,8 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[out] y output array pointer
   /// \warning User's responsibility to maintain valid pointers
   template <class Vx, class Vy>
-  inline void mv_nt_low(const Vx *x, Vy *y) const {
-    mv_nt_low(x, size_type(0), _psize, y);
+  inline void multiply_nt_low(const Vx *x, Vy *y) const {
+    multiply_nt_low(x, size_type(0), _psize, y);
   }
 
   /// \brief matrix vector for kernel MT compatibility with different type
@@ -1082,8 +1082,8 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] len local length
   /// \param[out] y output array pointer
   template <class Vx, class Vy>
-  inline void mv_nt_low(const Vx *x, const size_type istart,
-                        const size_type len, Vy *y) const {
+  inline void multiply_nt_low(const Vx *x, const size_type istart,
+                              const size_type len, Vy *y) const {
     using v1_t =
         typename std::conditional<(sizeof(Vx) > sizeof(Vy)), Vx, Vy>::type;
     using v_t = typename std::conditional<(sizeof(v1_t) > sizeof(value_type)),
@@ -1111,8 +1111,8 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] len local length
   /// \param[out] y output array pointer
   template <size_type Nrhs, class Vx, class Vy>
-  inline void mv_mrhs_nt_low(const Vx *x, const size_type istart,
-                             const size_type len, Vy *y) const {
+  inline void multiply_mrhs_nt_low(const Vx *x, const size_type istart,
+                                   const size_type len, Vy *y) const {
     using v1_t =
         typename std::conditional<(sizeof(Vx) > sizeof(Vy)), Vx, Vy>::type;
     using v_t = typename std::conditional<(sizeof(v1_t) > sizeof(value_type)),
@@ -1142,8 +1142,8 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[out] y output array pointer
   /// \warning User's responsibility to maintain valid pointers
   template <size_type Nrhs, class Vx, class Vy>
-  inline void mv_mrhs_nt_low(const Vx *x, Vy *y) const {
-    mv_mrhs_nt_low<Nrhs>(x, size_type(0), _psize, y);
+  inline void multiply_mrhs_nt_low(const Vx *x, Vy *y) const {
+    multiply_mrhs_nt_low<Nrhs>(x, size_type(0), _psize, y);
   }
 
   /// \brief matrix vector multiplication
@@ -1153,10 +1153,10 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[out] y output array
   /// \note Sizes must match
   template <class IArray, class OArray>
-  inline void mv_nt(const IArray &x, OArray &y) const {
+  inline void multiply_nt(const IArray &x, OArray &y) const {
     hif_error_if(nrows() != y.size() || ncols() != x.size(),
                  "matrix vector multiplication unmatched sizes!");
-    mv_nt_low(x.data(), y.data());
+    multiply_nt_low(x.data(), y.data());
   }
 
   /// \brief matrix vector multiplication for MT (CRS only)
@@ -1168,15 +1168,15 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[out] y output array
   /// \note Sizes must match
   template <class IArray, class OArray>
-  inline void mv_nt(const IArray &x, const size_type istart,
-                    const size_type len, OArray &y) const {
+  inline void multiply_nt(const IArray &x, const size_type istart,
+                          const size_type len, OArray &y) const {
     hif_error_if(nrows() != y.size() || ncols() != x.size(),
                  "matrix vector multiplication unmatched sizes!");
     hif_error_if(istart >= nrows(), "%zd exceeds the row size %zd", istart,
                  nrows());
     hif_error_if(istart + len > nrows(),
                  "out-of-bound pass-of-end range detected");
-    mv_nt_low(x.data(), istart, len, y.data());
+    multiply_nt_low(x.data(), istart, len, y.data());
   }
 
   /// \brief matrix vector multiplication with multiple RHS
@@ -1186,11 +1186,12 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] x input array
   /// \param[out] y output array
   template <class InType, class OutType, size_type Nrhs>
-  inline void mv_mrhs_nt(const Array<std::array<InType, Nrhs>> &x,
-                         Array<std::array<OutType, Nrhs>> &     y) const {
+  inline void multiply_mrhs_nt(const Array<std::array<InType, Nrhs>> &x,
+                               Array<std::array<OutType, Nrhs>> &     y) const {
     hif_error_if(nrows() != y.size() || ncols() != x.size(),
                  "matrix vector multiplication unmatched sizes!");
-    if (x.size() && y.size()) mv_mrhs_nt_low<Nrhs>(x[0].data(), y[0].data());
+    if (x.size() && y.size())
+      multiply_mrhs_nt_low<Nrhs>(x[0].data(), y[0].data());
   }
 
   /// \brief matrix vector multiplication for MT (CRS only)
@@ -1202,9 +1203,9 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] len local length
   /// \param[out] y output array
   template <class InType, class OutType, size_type Nrhs>
-  inline void mv_mrhs_nt(const Array<std::array<InType, Nrhs>> &x,
-                         const size_type istart, const size_type len,
-                         Array<std::array<OutType, Nrhs>> &y) const {
+  inline void multiply_mrhs_nt(const Array<std::array<InType, Nrhs>> &x,
+                               const size_type istart, const size_type len,
+                               Array<std::array<OutType, Nrhs>> &y) const {
     hif_error_if(nrows() != y.size() || ncols() != x.size(),
                  "matrix vector multiplication unmatched sizes!");
     hif_error_if(istart >= nrows(), "%zd exceeds the row size %zd", istart,
@@ -1212,7 +1213,7 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
     hif_error_if(istart + len > nrows(),
                  "out-of-bound pass-of-end range detected");
     if (x.size() && y.size())
-      mv_mrhs_nt_low<Nrhs>(x[0].data(), istart, len, y[0].data());
+      multiply_mrhs_nt_low<Nrhs>(x[0].data(), istart, len, y[0].data());
   }
 
   /// \brief matrix transpose vector multiplication with different type
@@ -1222,7 +1223,7 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[out] y output array pointer
   /// \warning User's responsibility to maintain valid pointers
   template <class Vx, class Vy>
-  inline void mv_t_low(const Vx *x, Vy *y) const {
+  inline void multiply_t_low(const Vx *x, Vy *y) const {
     using v1_t =
         typename std::conditional<(sizeof(Vx) > sizeof(Vy)), Vx, Vy>::type;
     using v_t = typename std::conditional<(sizeof(v1_t) > sizeof(value_type)),
@@ -1249,10 +1250,10 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \note Sizes must match
   /// \note Compute \f$y=\mathbf{A}^Tx\f$
   template <class IArray, class OArray>
-  inline void mv_t(const IArray &x, OArray &y) const {
+  inline void multiply_t(const IArray &x, OArray &y) const {
     hif_error_if(nrows() != x.size() || ncols() != y.size(),
                  "T(matrix) vector multiplication unmatched sizes!");
-    mv_t_low(x.data(), y.data());
+    multiply_t_low(x.data(), y.data());
   }
 
   /// \brief matrix transpose vector multiplication with different type
@@ -1262,7 +1263,7 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] x input array pointer
   /// \param[out] y output array pointer
   template <size_type Nrhs, class Vx, class Vy>
-  inline void mv_mrhs_t_low(const Vx *x, Vy *y) const {
+  inline void multiply_mrhs_t_low(const Vx *x, Vy *y) const {
     using v1_t =
         typename std::conditional<(sizeof(Vx) > sizeof(Vy)), Vx, Vy>::type;
     using v_t = typename std::conditional<(sizeof(v1_t) > sizeof(value_type)),
@@ -1289,11 +1290,12 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] x input array
   /// \param[out] y output array
   template <class InType, class OutType, size_type Nrhs>
-  inline void mv_mrhs_t(const Array<std::array<InType, Nrhs>> &x,
-                        Array<std::array<OutType, Nrhs>> &     y) const {
+  inline void multiply_mrhs_t(const Array<std::array<InType, Nrhs>> &x,
+                              Array<std::array<OutType, Nrhs>> &     y) const {
     hif_error_if(nrows() != x.size() || ncols() != y.size(),
                  "T(matrix) vector multiplication unmatched sizes!");
-    if (x.size() && y.size()) mv_mrhs_t_low<Nrhs>(x[0].data(), y[0].data());
+    if (x.size() && y.size())
+      multiply_mrhs_t_low<Nrhs>(x[0].data(), y[0].data());
   }
 
   /// \brief matrix vector multiplication
@@ -1302,10 +1304,10 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] x input array
   /// \param[out] y output array
   /// \param[in] tran if \a false (default), perform normal matrix vector
-  /// \sa mv_nt, mv_t
+  /// \sa multiply_nt, multiply_t
   template <class IArray, class OArray>
-  inline void mv(const IArray &x, OArray &y, bool tran = false) const {
-    !tran ? mv_nt(x, y) : mv_t(x, y);
+  inline void multiply(const IArray &x, OArray &y, bool tran = false) const {
+    !tran ? multiply_nt(x, y) : multiply_t(x, y);
   }
 
   /// \brief matrix vector multiplication with multiple right-hand sides (RHS)
@@ -1315,12 +1317,12 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] x input array
   /// \param[out] y output array
   /// \param[in] tran if \a false (default), perform normal matrix vector
-  /// \sa mv_nt
+  /// \sa multiply_nt
   template <class InType, class OutType, size_type Nrhs>
-  inline void mv_mrhs(const Array<std::array<InType, Nrhs>> &x,
-                      Array<std::array<OutType, Nrhs>> &     y,
-                      bool tran = false) const {
-    !tran ? mv_mrhs_nt(x, y) : mv_mrhs_t(x, y);
+  inline void multiply_mrhs(const Array<std::array<InType, Nrhs>> &x,
+                            Array<std::array<OutType, Nrhs>> &     y,
+                            bool tran = false) const {
+    !tran ? multiply_mrhs_nt(x, y) : multiply_mrhs_t(x, y);
   }
 
   /// \brief Assume as a strict lower matrix and solve with forward sub
@@ -2050,7 +2052,7 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[out] y output array pointer
   /// \warning User's responsibilty to ensure valid pointers
   template <class Vx, class Vy>
-  inline void mv_nt_low(const Vx *x, Vy *y) const {
+  inline void multiply_nt_low(const Vx *x, Vy *y) const {
     using v1_t =
         typename std::conditional<(sizeof(Vx) > sizeof(Vy)), Vx, Vy>::type;
     using v_t = typename std::conditional<(sizeof(v1_t) > sizeof(value_type)),
@@ -2076,10 +2078,10 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[out] y output array
   /// \note Sizes must match
   template <class IArray, class OArray>
-  inline void mv_nt(const IArray &x, OArray &y) const {
+  inline void multiply_nt(const IArray &x, OArray &y) const {
     hif_error_if(nrows() != y.size() || ncols() != x.size(),
                  "matrix vector unmatched sizes!");
-    mv_nt_low(x.data(), y.data());
+    multiply_nt_low(x.data(), y.data());
   }
 
   /// \brief matrix vector multiplication with different value type
@@ -2089,7 +2091,7 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] x input array pointer
   /// \param[out] y output array pointer
   template <size_type Nrhs, class Vx, class Vy>
-  inline void mv_mrhs_nt_low(const Vx *x, Vy *y) const {
+  inline void multiply_mrhs_nt_low(const Vx *x, Vy *y) const {
     using v1_t =
         typename std::conditional<(sizeof(Vx) > sizeof(Vy)), Vx, Vy>::type;
     using v_t = typename std::conditional<(sizeof(v1_t) > sizeof(value_type)),
@@ -2117,11 +2119,12 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] x input array
   /// \param[out] y output array
   template <class InType, class OutType, size_type Nrhs>
-  inline void mv_mrhs_nt(const Array<std::array<InType, Nrhs>> &x,
-                         Array<std::array<OutType, Nrhs>> &     y) const {
+  inline void multiply_mrhs_nt(const Array<std::array<InType, Nrhs>> &x,
+                               Array<std::array<OutType, Nrhs>> &     y) const {
     hif_error_if(nrows() != y.size() || ncols() != x.size(),
                  "matrix vector unmatched sizes!");
-    if (x.size() && y.size()) mv_mrhs_nt_low<Nrhs>(x[0].data(), y[0].data());
+    if (x.size() && y.size())
+      multiply_mrhs_nt_low<Nrhs>(x[0].data(), y[0].data());
   }
 
   /// \brief matrix transpose vector multiplication with different type
@@ -2131,7 +2134,7 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[out] y output array pointer
   /// \warning User's responsibilty to ensure valid pointers
   template <class Vx, class Vy>
-  inline void mv_t_low(const Vx *x, Vy *y) const {
+  inline void multiply_t_low(const Vx *x, Vy *y) const {
     using v1_t =
         typename std::conditional<(sizeof(Vx) > sizeof(Vy)), Vx, Vy>::type;
     using v_t = typename std::conditional<(sizeof(v1_t) > sizeof(value_type)),
@@ -2157,10 +2160,10 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[out] y output array
   /// \note Sizes must match
   template <class IArray, class OArray>
-  inline void mv_t(const IArray &x, OArray &y) const {
+  inline void multiply_t(const IArray &x, OArray &y) const {
     hif_error_if(nrows() != x.size() || ncols() != y.size(),
                  "T(matrix) vector unmatched sizes!");
-    mv_t_low(x.data(), y.data());
+    multiply_t_low(x.data(), y.data());
   }
 
   /// \brief matrix transpose vector multiplication with different type
@@ -2170,7 +2173,7 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] x input array pointer
   /// \param[out] y output array pointer
   template <size_type Nrhs, class Vx, class Vy>
-  inline void mv_mrhs_t_low(const Vx *x, Vy *y) const {
+  inline void multiply_mrhs_t_low(const Vx *x, Vy *y) const {
     using v1_t =
         typename std::conditional<(sizeof(Vx) > sizeof(Vy)), Vx, Vy>::type;
     using v_t = typename std::conditional<(sizeof(v1_t) > sizeof(value_type)),
@@ -2198,11 +2201,12 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] x input array
   /// \param[out] y output array
   template <class InType, class OutType, size_type Nrhs>
-  inline void mv_mrhs_t(const Array<std::array<InType, Nrhs>> &x,
-                        Array<std::array<OutType, Nrhs>> &     y) const {
+  inline void multiply_mrhs_t(const Array<std::array<InType, Nrhs>> &x,
+                              Array<std::array<OutType, Nrhs>> &     y) const {
     hif_error_if(nrows() != x.size() || ncols() != y.size(),
                  "T(matrix) vector unmatched sizes!");
-    if (x.size() && y.size()) mv_mrhs_t_low<Nrhs>(x[0].data(), y[0].data());
+    if (x.size() && y.size())
+      multiply_mrhs_t_low<Nrhs>(x[0].data(), y[0].data());
   }
 
   /// \brief matrix vector multiplication
@@ -2211,10 +2215,10 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] x input array
   /// \param[out] y output array
   /// \param[in] tran if \a false (default), then perform normal matrix vector
-  /// \sa mv_t, mv_nt
+  /// \sa multiply_t, multiply_nt
   template <class IArray, class OArray>
-  inline void mv(const IArray &x, OArray &y, bool tran = false) const {
-    !tran ? mv_nt(x, y) : mv_t(x, y);
+  inline void multiply(const IArray &x, OArray &y, bool tran = false) const {
+    !tran ? multiply_nt(x, y) : multiply_t(x, y);
   }
 
   /// \brief matrix vector multiplication with multiple right-hand sides (RHS)
@@ -2225,10 +2229,10 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] x input array
   /// \param[out] y output array
   template <class InType, class OutType, size_type Nrhs>
-  inline void mv_mrhs(const Array<std::array<InType, Nrhs>> &x,
-                      Array<std::array<OutType, Nrhs>> &     y,
-                      bool tran = false) const {
-    !tran ? mv_mrhs_nt(x, y) : mv_mrhs_t(x, y);
+  inline void multiply_mrhs(const Array<std::array<InType, Nrhs>> &x,
+                            Array<std::array<OutType, Nrhs>> &     y,
+                            bool tran = false) const {
+    !tran ? multiply_mrhs_nt(x, y) : multiply_mrhs_t(x, y);
   }
 
   /// \brief Assume as a strict lower matrix and solve with forward sub

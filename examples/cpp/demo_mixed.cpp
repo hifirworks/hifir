@@ -127,7 +127,7 @@ int main(int argc, char *argv[]) {
   do {
     // for mixed-precision, we compute the actual residual
     array_t r(b.size());
-    A.mv(x, r);
+    A.multiply(x, r);
     for (array_t::size_type i(0); i < b.size(); ++i) r[i] -= b[i];
     act_rs = norm2(r) / normb;
   } while (false);

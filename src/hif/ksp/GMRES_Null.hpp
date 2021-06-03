@@ -222,9 +222,9 @@ class GMRES_Null
       // initial residual
       if (!iter) {
         if (!zero_start) {
-          mt::mv_nt(A, x, _v);
-          // A.mv_t(x, _v);
-          // mt::mv_nt(A, x, _v);
+          mt::multiply_nt(A, x, _v);
+          // A.multiply_t(x, _v);
+          // mt::multiply_nt(A, x, _v);
           for (size_type i = 0u; i < n; ++i) _v[i] = b[i] - _v[i];
         } else
           std::copy_n(b.cbegin(), n, _v.begin());
@@ -243,8 +243,8 @@ class GMRES_Null
         if (n < (size_type)restart) _w.resize(n);
         // test for range-symmetric
         if (!iter) {
-          mt::mv_nt(A, _v, _w);
-          // A.mv_t_low(&_Q[0], &_w[0]);
+          mt::multiply_nt(A, _v, _w);
+          // A.multiply_t_low(&_Q[0], &_w[0]);
           if (norm2(_w) <= rtol * beta) {
             Cout("range-symmetric system detected!");
             flag = STAGNATED;
@@ -254,8 +254,8 @@ class GMRES_Null
         std::copy(_Q.cbegin() + jn, _Q.cbegin() + jn + n, _v.begin());
         M.hifir(A, _v, min_ir, _w);
         std::copy(_w.cbegin(), _w.cend(), _Z.begin() + jn);
-        mt::mv_nt(A, _w, _v);
-        // A.mv_t(_w, _v);
+        mt::multiply_nt(A, _w, _v);
+        // A.multiply_t(_w, _v);
         if (n < (size_type)restart) _w.resize(restart);
         for (size_type k = 0u; k <= j; ++k) {
           auto itr       = _Q.cbegin() + k * n;
@@ -331,8 +331,8 @@ class GMRES_Null
         norm_x = 1. / norm2(x);
         // for (size_type i(0); i < n; ++i) x[i] *= nrm_x;
         // compute null space residual
-        mt::mv_nt(A, x, _v);
-        // A.mv_t(x, _v);
+        mt::multiply_nt(A, x, _v);
+        // A.multiply_t(x, _v);
         null_res = norm2(_v) * norm_x;
       } else
         std::copy_n(_Q.cbegin(), n, x.begin());
@@ -542,9 +542,9 @@ class GMRES_NullHi
       // initial residual
       if (!iter) {
         if (!zero_start) {
-          mt::mv_nt(A, x, _v);
-          // A.mv_t(x, _v);
-          // mt::mv_nt(A, x, _v);
+          mt::multiply_nt(A, x, _v);
+          // A.multiply_t(x, _v);
+          // mt::multiply_nt(A, x, _v);
           for (size_type i = 0u; i < n; ++i) _v[i] = b[i] - _v[i];
         } else
           std::copy_n(b.cbegin(), n, _v.begin());
@@ -563,8 +563,8 @@ class GMRES_NullHi
         if (n < (size_type)restart) _w.resize(n);
         // test for range-symmetric
         if (!iter) {
-          mt::mv_nt(A, _v, _w);
-          // A.mv_t_low(&_Q[0], &_w[0]);
+          mt::multiply_nt(A, _v, _w);
+          // A.multiply_t_low(&_Q[0], &_w[0]);
           if (norm2(_w) <= hi_scalar_type(rtol) * beta) {
             Cout("range-symmetric system detected!");
             flag = STAGNATED;
@@ -575,8 +575,8 @@ class GMRES_NullHi
         M.hifir(A, _v, min_ir, _w);
         // M.solve(_v, _w);
         std::copy(_w.cbegin(), _w.cend(), _Z.begin() + jn);
-        mt::mv_nt(A, _w, _v);
-        // A.mv_t(_w, _v);
+        mt::multiply_nt(A, _w, _v);
+        // A.multiply_t(_w, _v);
         if (n < (size_type)restart) _w.resize(restart);
         for (size_type k = 0u; k <= j; ++k) {
           auto itr       = _Q.cbegin() + k * n;
@@ -653,8 +653,8 @@ class GMRES_NullHi
         norm_x = hi_scalar_type(1) / norm2(x);
         // for (size_type i(0); i < n; ++i) x[i] *= nrm_x;
         // compute null space residual
-        mt::mv_nt(A, x, _v);
-        // A.mv_t(x, _v);
+        mt::multiply_nt(A, x, _v);
+        // A.multiply_t(x, _v);
         null_res = norm2(_v) * norm_x;
       } else
         std::copy_n(_Q.cbegin(), n, x.begin());

@@ -127,7 +127,7 @@ int main(int argc, char *argv[]) {
     hif_error_if(n != A.nrows(), "mismatched sizes");  // sizes must match
     hif_error_if(xdtype != 'd', "input array must be double");
     hif_error_if(ydtype != 'd', "output array must be double");
-    A.mv_nt_low(reinterpret_cast<const double *>(x),
+    A.multiply_nt_low(reinterpret_cast<const double *>(x),
                 reinterpret_cast<double *>(y));
   };
   timer.start();
@@ -143,7 +143,7 @@ int main(int argc, char *argv[]) {
   double       act_rs;
   do {
     array_t r(b.size());
-    A.mv(x, r);
+    A.multiply(x, r);
     for (array_t::size_type i(0); i < b.size(); ++i) r[i] -= b[i];
     act_rs = norm2(r) / normb;
   } while (false);
