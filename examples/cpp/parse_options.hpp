@@ -109,6 +109,8 @@ const static char *help =
     "\tindicator for reading Options from stdin\n"
     " -1|--one\n"
     "\tset rhs as A*1 to ensure the system is consistent\n"
+    " -z|--no-pre\n"
+    "\tno preprocessing, default is 0 (false)\n"
     "\n"
     "examples:\n"
     "\n"
@@ -236,6 +238,8 @@ static std::tuple<hif::Options, int, double, bool, int, int, bool> parse_args(
       ++i;
       if (i >= argc) fatal_exit("missing pivoting threshold!");
       opts.gamma = std::atof(argv[i]);
+    } else if (arg == string("-z") || arg == string("--no-pre")) {
+      opts.no_pre = 1;
     }
     ++i;
   }

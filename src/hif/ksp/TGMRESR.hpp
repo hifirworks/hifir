@@ -196,7 +196,7 @@ class TGMRESR
     // initialize residual
     value_type beta = beta0;
     if (!zero_start) {
-      A.mv(x, _v);
+      A.multiply(x, _v);
       for (size_type i = 0u; i < n; ++i) _v[i] = b[i] - _v[i];
       beta = norm2(_v);
     } else
@@ -210,14 +210,14 @@ class TGMRESR
                       start = iter < cycle ? 0 : iter - cycle + 1;
       std::copy(_Q.cbegin() + jn, _Q.cbegin() + jn + n, _v.begin());
       if (n < maxit) _w.resize(n);
-      if (M.solve(A, _v, innersteps, _w)) {
+      if (M.hifir(A, _v, innersteps, _w)) {
         Cerr(__HIF_FILE__, __HIF_FUNC__, __LINE__,
              "Failed to call M operator at iteration %zd.", iter);
         flag = M_SOLVE_ERROR;
         break;
       }
       std::copy_n(_w.cbegin(), n, _Z.begin() + jn);
-      A.mv(_w, _v);
+      A.multiply(_w, _v);
       if (n < maxit) _w.resize(maxit);
       for (size_type k = start; k <= iter; ++k) {
         const auto perm_k = _perm[k];
@@ -267,7 +267,7 @@ class TGMRESR
       if (iter < cycle)
         _resids.push_back(abs(_y[iter + 1]) / beta0);
       else {
-        A.mv(x, _v);
+        A.multiply(x, _v);
         for (size_type i(0); i < n; ++i) _v[i] -= b[i];
         _resids.push_back(norm2(_v) / beta0);
       }
@@ -338,8 +338,8 @@ class TGMRESR
     // initialize residual
     scalar_type beta = beta0;
     if (!zero_start) {
-      mt::mv_nt(A, x, _r);
-      // A.mv(x, _r);
+      mt::multiply_nt(A, x, _r);
+      // A.multiply(x, _r);
       for (size_type i = 0u; i < n; ++i) _r[i] = b[i] - _r[i];
       beta = norm2(_r);
     } else
@@ -356,9 +356,9 @@ class TGMRESR
       //   flag = M_SOLVE_ERROR;
       //   break;
       // }
-      UseIR ? M.solve(A, _r, innersteps, u) : M.solve(_r, u);
-      mt::mv_nt(A, u, c);
-      // A.mv(u, c);
+      UseIR ? M.hifir(A, _r, innersteps, u) : M.solve(_r, u);
+      mt::multiply_nt(A, u, c);
+      // A.multiply(u, c);
       for (size_type k = start; k < iter; ++k) {
         const auto p_k   = _perm[k];
         auto       c_k   = _Q.cbegin() + p_k * n;

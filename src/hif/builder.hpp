@@ -40,6 +40,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "hif/alg/Prec.hpp"
 #include "hif/alg/factor.hpp"
 #include "hif/alg/pivot_factor.hpp"
+#include "hif/alg/prec_prod.hpp"
 #include "hif/alg/prec_solve.hpp"
 #include "hif/alg/symm_factor.hpp"
 #include "hif/utils/common.hpp"
@@ -253,13 +254,13 @@ class HIF {
   /// \brief factorize the MILU preconditioner
   /// \tparam CsType compressed storage input, either \ref CRS or \ref CCS
   /// \param[in] A input matrix
+  /// \param[in] params control parameters, using the default values
   /// \param[in] m0 leading block size, if it's zero (default), then the routine
   ///               will assume an asymmetric leading block.
-  /// \param[in] opts control parameters, using the default values in the paper.
   /// \sa solve
   template <class CsType>
-  inline void factorize(const CsType &A, const size_type m0 = 0u,
-                        const Options &opts = get_default_options()) {
+  inline void factorize(const CsType &A, const Params &params = DEFAULT_PARAMS,
+                        const size_type m0 = 0u) {
     const static internal::StdoutStruct  Crout_cout;
     const static internal::DummyStreamer Crout_cout_dummy;
     using cs_type =
@@ -269,24 +270,24 @@ class HIF {
                   "inconsistent index types");
 
     // print introduction
-    if (hif_verbose(INFO, opts)) {
+    if (hif_verbose(INFO, params)) {
       if (!internal::introduced) {
         hif_info(internal::intro, HIF_GLOBAL_VERSION, HIF_MAJOR_VERSION,
                  HIF_MINOR_VERSION, __TIME__, __DATE__);
         internal::introduced = true;
       }
-      hif_info("Options (control parameters) are:\n");
-      hif_info(opt_repr(opts).c_str());
+      hif_info("Params (control parameters) are:\n");
+      hif_info(opt_repr(params).c_str());
     }
     const bool revert_warn = warn_flag();
-    if (hif_verbose(NONE, opts))
+    if (hif_verbose(NONE, params))
       (void)warn_flag(0);
     else
       warn_flag(1);
 
     // check validity of the input system
-    if (opts.check) {
-      if (hif_verbose(INFO, opts))
+    if (params.check) {
+      if (hif_verbose(INFO, params))
         hif_info("perform input matrix validity checking");
       A.check_validity();
     }
@@ -297,13 +298,13 @@ class HIF {
     DefaultTimer t;  // record overall time
     t.start();
     if (!empty()) {
-      if (hif_verbose(INFO, opts))
+      if (hif_verbose(INFO, params))
         hif_info("multilevel precs are not empty, wipe previous results first");
       _precs.clear();
       // also clear the previous buffer
       _prec_work.resize(0);
     }
-    const int schur_threads = mt::get_nthreads(opts.threads);
+    const int schur_threads = mt::get_nthreads(params.threads);
     // initialize statistics
     for (size_type i(0); i < sizeof(_stats) / sizeof(size_type); ++i)
       _stats[i] = 0;
@@ -315,7 +316,7 @@ class HIF {
     if (std::is_same<value_type, typename CsType::value_type>::value)
       AA.vals() = array_type(A.nnz(), (value_type *)A.vals().data(), true);
     else {
-      if (hif_verbose(INFO, opts))
+      if (hif_verbose(INFO, params))
         hif_info("converting value type precision...");
       // shallow integer arrays
       AA.resize(A.nrows(), A.ncols());
@@ -326,14 +327,14 @@ class HIF {
     }
     // create size references for dropping
     iarray_type row_sizes, col_sizes;
-    if (hif_verbose(FAC, opts))
-      _factorize_kernel(AA, m0, opts, row_sizes, col_sizes, Crout_cout,
+    if (hif_verbose(FAC, params))
+      _factorize_kernel(AA, m0, params, row_sizes, col_sizes, Crout_cout,
                         schur_threads);
     else
-      _factorize_kernel(AA, m0, opts, row_sizes, col_sizes, Crout_cout_dummy,
+      _factorize_kernel(AA, m0, params, row_sizes, col_sizes, Crout_cout_dummy,
                         schur_threads);
     t.finish();
-    if (hif_verbose(INFO, opts)) {
+    if (hif_verbose(INFO, params)) {
       const size_type Nnz = nnz();
       hif_info("\ninput nnz(A)=%zd, nnz(precs)=%zd, ratio=%g", A.nnz(), Nnz,
                (double)Nnz / A.nnz());
@@ -351,9 +352,9 @@ class HIF {
   /// \param[in] indptr index starting position array, must be length of \a n+1
   /// \param[in] indices index value array, must be length of \a indptr[n]
   /// \param[in] vals value array, same length as that of \a indices
+  /// \param[in] params control parameters, using the default values.
   /// \param[in] m0 leading block size, if it's zero (default), then the routine
   ///               will assume an asymmetric leading block.
-  /// \param[in] opts control parameters, using the default values in the paper.
   ///
   /// This interface differs from the above one is that it takes plain-old-data
   /// types as input thus flexible. Notice that the integer and floating data
@@ -362,15 +363,15 @@ class HIF {
   template <bool IsCrs, class IndexType_, class ValueType_>
   inline void factorize(const size_type n, const IndexType_ *indptr,
                         const IndexType_ *indices, const ValueType_ *vals,
-                        const size_type m0   = 0u,
-                        const Options & opts = get_default_options()) {
+                        const Params &  params = DEFAULT_PARAMS,
+                        const size_type m0     = 0u) {
     using foreign_crs_type = CRS<ValueType_, IndexType_>;
     using foreign_ccs_type = typename foreign_crs_type::other_type;
     using foreign_cs_type  = typename std::conditional<IsCrs, foreign_crs_type,
                                                       foreign_ccs_type>::type;
     const foreign_cs_type A(n, (IndexType_ *)indptr, (IndexType_ *)indices,
                             (ValueType_ *)vals, true);
-    factorize(A, m0, opts);
+    factorize(A, params, m0);
   }
 
   /// \brief optimization a priori
@@ -384,18 +385,23 @@ class HIF {
   /// \tparam SolType solution type
   /// \param[in] b right-hand side vector
   /// \param[out] x solution vector
-  /// \param[in] last_dim (optional) dimension for back solve for last level
-  ///                     default is its numerical rank
+  /// \param[in] trans (optional) transpose/Hermitian flag (default is false)
+  /// \param[in] r (optional) dimension for back solve for last level
+  ///              efault is its numerical rank
   template <class RhsType, class SolType>
-  inline void solve(const RhsType &b, SolType &x,
-                    const size_type last_dim = 0u) const {
+  inline void solve(const RhsType &b, SolType &x, const bool trans = false,
+                    const size_type r = 0u) const {
     hif_error_if(empty(), "MILU-Prec is empty!");
     hif_error_if(b.size() != x.size(), "unmatched sizes");
     if (_prec_work.empty())
       _prec_work.resize(
           compute_prec_work_space(_precs.cbegin(), _precs.cend()));
-    prec_solve(_precs.cbegin(), b, last_dim, x, _prec_work);
-    if (nsp) nsp->filter(x.data(), x.size());  // filter null space
+    !trans ? prec_solve(_precs.cbegin(), b, r, x, _prec_work)
+           : prec_solve_tran(_precs.cbegin(), b, r, x, _prec_work);
+    if (!trans && nsp)
+      nsp->filter(x.data(), x.size());  // filter null space
+    else if (trans && nsp_tran)
+      nsp_tran->filter(x.data(), x.size());  // filter (left) null space
   }
 
   /// \brief solve \f$\mathbf{X}=\mathbf{M}^{-1}\mathbf{B}\f$ (multiple RHS)
@@ -404,12 +410,12 @@ class HIF {
   /// \tparam Nrhs number of RHS
   /// \param[in] b right-hand side vector
   /// \param[out] x solution vector
-  /// \param[in] last_dim (optional) dimension for back solve for last level
-  ///                     default is its numerical rank
+  /// \param[in] r (optional) dimension for back solve for last level
+  ///              default is its numerical rank
   template <class RhsValueType, class SolValueType, size_type Nrhs>
   inline void solve_mrhs(const Array<std::array<RhsValueType, Nrhs>> &b,
                          Array<std::array<SolValueType, Nrhs>> &      x,
-                         const size_type last_dim = 0u) const {
+                         const size_type r = 0u) const {
     hif_error_if(empty(), "MILU-Prec is empty!");
     hif_error_if(b.size() != x.size(), "unmatched sizes");
     hif_error_if(!_precs.back().sparse_solver.empty(),
@@ -418,28 +424,8 @@ class HIF {
     if (_prec_work.empty()) _prec_work.resize(nw * Nrhs);
     Array<std::array<boost_value_type, Nrhs>> w(
         nw, (std::array<boost_value_type, Nrhs> *)_prec_work.data(), true);
-    prec_solve_mrhs(_precs.cbegin(), b, last_dim, x, w);
-    if (nsp)
-      hif_warning_if(nsp, "multiple RHS does not support null space filter.");
-  }
-
-  /// \brief solve \f$\mathbf{x}=\mathbf{M}^{-T}\mathbf{b}\f$
-  /// \tparam RhsType right-hand side type
-  /// \tparam SolType solution type
-  /// \param[in] b right-hand side vector
-  /// \param[out] x solution vector
-  /// \param[in] last_dim (optional) dimension for back solve for last level
-  ///                     default is its numerical rank
-  template <class RhsType, class SolType>
-  inline void solve_tran(const RhsType &b, SolType &x,
-                         const size_type last_dim = 0u) const {
-    hif_error_if(empty(), "MILU-Prec is empty!");
-    hif_error_if(b.size() != x.size(), "unmatched sizes");
-    if (_prec_work.empty())
-      _prec_work.resize(
-          compute_prec_work_space(_precs.cbegin(), _precs.cend()));
-    prec_solve_tran(_precs.cbegin(), b, last_dim, x, _prec_work);
-    if (nsp_tran) nsp_tran->filter(x.data(), x.size());  // filter null space
+    prec_solve_mrhs(_precs.cbegin(), b, r, x, w);
+    hif_warning_if(nsp, "multiple RHS does not support null space filter.");
   }
 
   /// \brief solve with iterative refinement
@@ -450,23 +436,45 @@ class HIF {
   /// \param[in] b right-hand side vector
   /// \param[in] N iteration count
   /// \param[out] x solution vector
-  /// \param[in] last_dim (optional) dimension for back solve for last level
-  ///                     default is its numerical rank
+  /// \param[in] trans (optional) transpose/Hermitian flag, default is false
+  /// \param[in] r (optional) dimension for back solve for last level
+  ///            default is its numerical rank
   template <class Matrix, class RhsType, class SolType>
-  void solve(const Matrix &A, const RhsType &b, const size_type N, SolType &x,
-             const size_type last_dim = 0u) const {
+  void hifir(const Matrix &A, const RhsType &b, const size_type N, SolType &x,
+             const bool      trans = false,
+             const size_type r     = static_cast<size_type>(-1)) const {
     // NOTE, do not assume A shares interface of CRS, as it can be
     // user callback
-    _ir.iter_refine(*this, A, b, N, x, last_dim);
+    _ir.iter_refine(*this, A, b, N, x, r, trans);
   }
 
   NspFilterPtr nsp;       ///< null space filter
   NspFilterPtr nsp_tran;  ///< transpose null space filter (left null space)
 
+  /// \brief compute \f$\mathbf{y}=\mathbf{Mx}\f$
+  /// \tparam RhsType right-hand side type
+  /// \tparam SolType solution type
+  /// \param[in] x right-hand side vector
+  /// \param[out] y solution vector
+  /// \param[in] trans (optional) transpose/Hermitian flag (default is false)
+  /// \param[in] r (optional) dimension for back solve for last level
+  ///              default is its numerical rank
+  template <class RhsType, class SolType>
+  inline void mmultiply(const RhsType &x, SolType &y, const bool trans = false,
+                        const size_type r = 0u) const {
+    hif_error_if(empty(), "MILU-Prec is empty!");
+    hif_error_if(y.size() != x.size(), "unmatched sizes");
+    if (_prec_work.empty())
+      _prec_work.resize(
+          compute_prec_work_space(_precs.cbegin(), _precs.cend()));
+    !trans ? prec_prod(_precs.cbegin(), x, r, y, _prec_work)
+           : prec_prod_tran(_precs.cbegin(), x, r, y, _prec_work);
+  }
+
  protected:
   template <class CsType, class CroutStreamer>
   inline void _factorize_kernel(const CsType &A, const size_type m0,
-                                const Options &opts, iarray_type &row_sizes,
+                                const Params &opts, iarray_type &row_sizes,
                                 iarray_type &        col_sizes,
                                 const CroutStreamer &Crout_info,
                                 const int            schur_threads = 1) {

@@ -38,11 +38,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "hif/utils/log.hpp"
 #include "hif/utils/math.hpp"
 
-#include "hif/small_scale/lup_lapack.hpp"
-#include "hif/small_scale/qrcp_lapack.hpp"
-#include "hif/small_scale/syeig_lapack.hpp"
-#include "hif/small_scale/trsv_lapack.hpp"
-
+#include "hif/small_scale/lapackf.hpp"
 namespace hif {
 
 /// \class Lapack
@@ -280,6 +276,20 @@ class Lapack {
                           Array<value_type> &y) {
     gemv(trans, a.nrows(), a.ncols(), alpha, a.data(), a.nrows(), x.data(),
          beta, y.data());
+  }
+
+  inline static void trmv(const char uplo, const char trans, const char diag,
+                          const hif_lapack_int n, const value_type *a,
+                          const hif_lapack_int lda, pointer x,
+                          const hif_lapack_int incx) {
+    internal::trmv(uplo, trans, diag, n, a, lda, x, incx);
+  }
+
+  inline static void trmv(const char uplo, const char trans, const char diag,
+                          const DenseMatrix<value_type> &a,
+                          Array<value_type> &            x) {
+    hif_assert(a.is_squared(), "input must be squared matrix");
+    trmv(uplo, trans, diag, a.nrows(), a.data(), a.nrows(), x.data(), 1);
   }
 
   ///@}

@@ -165,8 +165,8 @@ class FQMRCGSTAB
     if (zero_start)
       std::copy(b.cbegin(), b.cend(), _r0.begin());
     else {
-      mt::mv_nt(A, x, _Ax);
-      // A.mv(x, _Ax);
+      mt::multiply_nt(A, x, _Ax);
+      // A.multiply(x, _Ax);
       for (size_type i(0); i < n; ++i) _r0[i] = b[i] - _Ax[i];
     }
     const auto &r0  = _r0;
@@ -189,9 +189,9 @@ class FQMRCGSTAB
       //   flag = M_SOLVE_ERROR;
       //   break;
       // }
-      UseIR ? M.solve(A, _p, innersteps, _ph) : M.solve(_p, _ph);
-      mt::mv_nt(A, _ph, _v);
-      // A.mv(_ph, _v);
+      UseIR ? M.hifir(A, _p, innersteps, _ph) : M.solve(_p, _ph);
+      mt::multiply_nt(A, _ph, _v);
+      // A.multiply(_ph, _v);
       auto rho2 = inner(r0, _v);
       if (rho2 == value_type(0)) {
         Cerr(__HIF_FILE__, __HIF_FUNC__, __LINE__,
@@ -225,9 +225,9 @@ class FQMRCGSTAB
       //   flag = M_SOLVE_ERROR;
       //   break;
       // }
-      UseIR ? M.solve(A, _s, innersteps, _sh) : M.solve(_s, _sh);
-      mt::mv_nt(A, _sh, _t);
-      // A.mv(_sh, _t);
+      UseIR ? M.hifir(A, _s, innersteps, _sh) : M.solve(_s, _sh);
+      mt::multiply_nt(A, _sh, _t);
+      // A.multiply(_sh, _t);
 
       const auto uu = inner(_s, _t), vv = norm2_sq(_t);
       const auto omega = uu / vv;
@@ -251,8 +251,8 @@ class FQMRCGSTAB
       }
 
       // update residual
-      mt::mv_nt(A, x, _Ax);
-      // A.mv(x, _Ax);
+      mt::multiply_nt(A, x, _Ax);
+      // A.multiply(x, _Ax);
       for (size_type i(0); i < n; ++i) _Ax[i] = b[i] - _Ax[i];
       const auto resid_prev = _resids.back();
       _resids.push_back(norm2(_Ax));
