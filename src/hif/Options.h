@@ -356,7 +356,7 @@ namespace internal {
 #    define _HIF_TOTAL_OPTIONS 26
 /*
  * build a byte map, i.e. the value is the leading byte position of the attrs
- * in Options
+ * in Options **Deprecated!**
  */
 const static std::size_t option_attr_pos[_HIF_TOTAL_OPTIONS] = {
     0,
@@ -459,21 +459,94 @@ const static std::unordered_map<std::string, int> option_tag2pos = {
 /// variable names.
 template <typename T>
 inline bool set_option_attr(const std::string &attr, const T v, Options &opt) {
-  const static bool failed  = true;
-  char *            opt_raw = reinterpret_cast<char *>(&opt);
+  const static bool failed = true;
+  int               pos;
   try {
-    const int         pos     = internal::option_tag2pos.at(attr);
-    const std::size_t pos_raw = internal::option_attr_pos[pos];
-    const bool        dtype   = internal::option_dtypes[pos];
-    opt_raw += pos_raw;
-    if (dtype)
-      *reinterpret_cast<double *>(opt_raw) = v;
-    else
-      *reinterpret_cast<int *>(opt_raw) = v;
-    return !failed;
+    pos = internal::option_tag2pos.at(attr);
   } catch (const std::out_of_range &) {
     return failed;
   }
+  switch (pos) {
+    case 0:
+      opt.tau_L = v;
+      break;
+    case 1:
+      opt.tau_U = v;
+      break;
+    case 2:
+      opt.kappa_d = v;
+      break;
+    case 3:
+      opt.kappa = v;
+      break;
+    case 4:
+      opt.alpha_L = v;
+      break;
+    case 5:
+      opt.alpha_U = v;
+      break;
+    case 6:
+      opt.rho = v;
+      break;
+    case 7:
+      opt.c_d = v;
+      break;
+    case 8:
+      opt.c_h = v;
+      break;
+    case 9:
+      opt.N = v;
+      break;
+    case 10:
+      opt.verbose = v;
+      break;
+    case 11:
+      opt.rf_par = v;
+      break;
+    case 12:
+      opt.reorder = v;
+      break;
+    case 13:
+      opt.spd = v;
+      break;
+    case 14:
+      opt.check = v;
+      break;
+    case 15:
+      opt.pre_scale = v;
+      break;
+    case 16:
+      opt.symm_pre_lvls = v;
+      break;
+    case 17:
+      opt.threads = v;
+      break;
+    case 18:
+      opt.mumps_blr = v;
+      break;
+    case 19:
+      opt.fat_schur_1st = v;
+      break;
+    case 20:
+      opt.rrqr_cond = v;
+      break;
+    case 21:
+      opt.pivot = v;
+      break;
+    case 22:
+      opt.gamma = v;
+      break;
+    case 23:
+      opt.beta = v;
+      break;
+    case 24:
+      opt.is_symm = v;
+      break;
+    default:
+      opt.no_pre = v;
+      break;
+  }
+  return !failed;
 }
 
 /*!
