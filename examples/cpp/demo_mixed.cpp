@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
   timer.start();
   std::shared_ptr<prec_t> _M(new prec_t());
   auto &                  M = *_M;
-  M.factorize(A2, 0u, opts);
+  M.factorize(A2, opts, 0u);
   timer.finish();
   hif_info(
       "\nMLILU done!\n"
@@ -127,7 +127,7 @@ int main(int argc, char *argv[]) {
   do {
     // for mixed-precision, we compute the actual residual
     array_t r(b.size());
-    A.mv(x, r);
+    A.multiply(x, r);
     for (array_t::size_type i(0); i < b.size(); ++i) r[i] -= b[i];
     act_rs = norm2(r) / normb;
   } while (false);

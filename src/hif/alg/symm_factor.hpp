@@ -180,12 +180,24 @@ inline CsType symm_level_factorize(
   Array<scalar_type>       s, t;
   BiPermMatrix<index_type> p, q;
   size_type                m;
-  // only use symmetric preprocessing
-  if (hif_verbose(INFO, opts))
-    hif_info("performing symm preprocessing with leading block size %zd...",
-             m0);
-  m = do_preprocessing<true>(A_ccs, A_crs, m0, cur_level, opts, s, t, p, q);
-
+  if (!opts.no_pre) {
+    // only use symmetric preprocessing
+    if (hif_verbose(INFO, opts))
+      hif_info("performing symm preprocessing with leading block size %zd...",
+               m0);
+    m = do_preprocessing<true>(A_ccs, A_crs, m0, cur_level, opts, s, t, p, q);
+  } else {
+    if (hif_verbose(INFO, opts)) hif_info("skipping preprocessing... ");
+    p.resize(A.nrows());
+    q.resize(A.ncols());
+    p.make_eye();
+    q.make_eye();
+    s.resize(A.nrows());
+    std::fill(s.begin(), s.end(), scalar_type(1));
+    t.resize(A.ncols());
+    std::fill(t.begin(), t.end(), scalar_type(1));
+    m = A.nrows();
+  }
   timer.finish();  // prefile pre-processing
 
   // if post flag is 0, means we do standard Schur treatment after ILU

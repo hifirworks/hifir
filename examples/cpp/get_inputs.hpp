@@ -46,6 +46,6 @@ inline std::tuple<MatrixType, ArrayType> get_inputs(std::string dir,
     for (auto &v : b) f >> v;
     f.close();
   } else
-    A.mv_nt(ArrayType(b.size(), 1.0), b);
+    A.multiply_nt(ArrayType(b.size(), 1.0), b);
   return std::make_tuple(A, b);
 }

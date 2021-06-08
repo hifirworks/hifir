@@ -153,8 +153,8 @@ class FBICGSTAB
     if (zero_start)
       std::copy(b.cbegin(), b.cend(), _r.begin());
     else {
-      mt::mv_nt(A, x, _r);
-      // A.mv(x, _r);
+      mt::multiply_nt(A, x, _r);
+      // A.multiply(x, _r);
       for (size_type i(0); i < n; ++i) _r[i] = b[i] - _r[i];
     }
     if ((_resids[0] = norm2(_r)) <= rtol * normb)
@@ -188,9 +188,9 @@ class FBICGSTAB
       //   flag = M_SOLVE_ERROR;
       //   break;
       // }
-      UseIR ? M.solve(A, _p, innersteps, _p_hat) : M.solve(_p, _p_hat);
-      mt::mv_nt(A, _p_hat, _v);
-      // A.mv(_p_hat, _v);
+      UseIR ? M.hifir(A, _p, innersteps, _p_hat) : M.solve(_p, _p_hat);
+      mt::multiply_nt(A, _p_hat, _v);
+      // A.multiply(_p_hat, _v);
       alpha = rho / inner(r_tld, _v);
       for (size_type i(0); i < n; ++i) {
         x[i] += alpha * _p_hat[i];
@@ -214,9 +214,9 @@ class FBICGSTAB
       //   flag = M_SOLVE_ERROR;
       //   break;
       // }
-      UseIR ? M.solve(A, _s, innersteps, _p_hat) : M.solve(_s, _p_hat);
-      mt::mv_nt(A, _p_hat, _v);
-      // A.mv(_p_hat, _v);
+      UseIR ? M.hifir(A, _s, innersteps, _p_hat) : M.solve(_s, _p_hat);
+      mt::multiply_nt(A, _p_hat, _v);
+      // A.multiply(_p_hat, _v);
       omega = inner(_v, _s) / norm2_sq(_v);
       for (size_type i(0); i < n; ++i) {
         x[i] += omega * _p_hat[i];

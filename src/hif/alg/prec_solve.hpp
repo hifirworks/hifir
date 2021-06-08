@@ -293,13 +293,13 @@ inline void prec_solve_utdlt(const UType &U, const DiagType &d, const LType &L,
   if (!m) return;
 
   // y=inv(U)'*y
-  U.solve_as_strict_lower_tran(y);
+  U.solve_as_strict_upper_tran(y);
 
   // y=inv(D)*y
   for (size_type i = 0u; i < m; ++i) y[i] /= conjugate(d[i]);
 
   // y = inv(L)'*y
-  L.solve_as_strict_upper_tran(y);
+  L.solve_as_strict_lower_tran(y);
 }
 }  // namespace internal
 
@@ -373,7 +373,7 @@ inline void prec_solve(PrecItr prec_itr, const RhsType &b,
       internal::prec_solve_ldu(prec.U_B, prec.d_B, prec.L_B, work);
 
     // then compute y(m+1:n) = E*work(1:m)
-    prec.E.mv_nt_low(&work[0], y.data() + m);
+    prec.E.multiply_nt_low(&work[0], y.data() + m);
     // then subtract b from the y(m+1:n)
     for (size_type i = m; i < n; ++i) y[i] = s[p[i]] * b[p[i]] - y[i];
   }
@@ -410,7 +410,7 @@ inline void prec_solve(PrecItr prec_itr, const RhsType &b,
   // only handle the F part if it's not empty
   if (prec.F.ncols()) {
     // compute F*y(m+1:n) and store it to work(1:m)
-    prec.F.mv_nt_low(y.data() + m, &work[0]);
+    prec.F.multiply_nt_low(y.data() + m, &work[0]);
     // subtract b(1:m) from work(1:m)
     for (size_type i = 0u; i < m; ++i) work[i] = s[p[i]] * b[p[i]] - work[i];
   } else if (nm) {
@@ -488,7 +488,7 @@ inline void prec_solve_mrhs(PrecItr prec_itr,
     internal::prec_solve_ldu_mrhs(prec.U_B, prec.d_B, prec.L_B, work);
 
     // then compute y(m+1:n) = E*work(1:m)
-    prec.E.template mv_mrhs_nt_low<Nrhs>(work[0].data(),
+    prec.E.template multiply_mrhs_nt_low<Nrhs>(work[0].data(),
                                          y[0].data() + Nrhs * m);
     // then subtract b from the y(m+1:n)
     for (size_type i = m; i < n; ++i) {
@@ -524,7 +524,7 @@ inline void prec_solve_mrhs(PrecItr prec_itr,
   // only handle the F part if it's not empty
   if (prec.F.ncols()) {
     // compute F*y(m+1:n) and store it to work(1:m)
-    prec.F.template mv_mrhs_nt_low<Nrhs>(y[0].data() + Nrhs * m,
+    prec.F.template multiply_mrhs_nt_low<Nrhs>(y[0].data() + Nrhs * m,
                                          work[0].data());
     // subtract b(1:m) from work(1:m)
     for (size_type i = 0u; i < m; ++i) {
@@ -594,9 +594,10 @@ inline void prec_solve_tran(PrecItr prec_itr, const RhsType &b,
   if (prec.F.ncols()) {
     // solve B^{-T}
     internal::prec_solve_utdlt(prec.U_B, prec.d_B, prec.L_B, work);
-    prec.F.mv_t_low(&work[0], y.data() + m);
+    prec.F.multiply_t_low(&work[0], y.data() + m);
     for (size_type i(m); i < n; ++i) y[i] = t[q[i]] * b[q[i]] - y[i];
-  }
+  } else if (nm)
+    for (size_type i(m); i < n; ++i) y[i] = t[q[i]] * b[q[i]];
 
   // check for last level dense (direct) solver
   if (prec.is_last_level()) {
@@ -631,9 +632,10 @@ inline void prec_solve_tran(PrecItr prec_itr, const RhsType &b,
 
   // only handle the E part if it's not empty
   if (nm) {
-    prec.E.mv_t_low(y.data() + m, &work[0]);
+    prec.E.multiply_t_low(y.data() + m, &work[0]);
     for (size_type i(0); i < m; ++i) work[i] = t[q[i]] * b[q[i]] - work[i];
-  }
+  } else
+    for (size_type i(0); i < m; ++i) work[i] = t[q[i]] * b[q[i]];
   internal::prec_solve_utdlt(prec.U_B, prec.d_B, prec.L_B, work);
 
   // Now, we have work(1:n) storing the complete solution before final scaling

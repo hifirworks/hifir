@@ -105,6 +105,7 @@ struct hif_Options {
   double gamma;         /*!< threshold for thresholded pivoting (1.0) */
   double beta;          /*!< safeguard factor for equlibrition scaling (1e3) */
   int    is_symm;       /*!< is symmetric (Hermitian) system? (default 0) */
+  int    no_pre;        /*!< no preprocessing (default 0) */
 };
 
 /*!
@@ -112,6 +113,12 @@ struct hif_Options {
  * \brief type wrapper
  */
 typedef struct hif_Options hif_Options;
+
+/*!
+ * \typedef hif_Params
+ * \brief alias of \ref hif_Options
+ */
+typedef struct hif_Options hif_Params;
 
 /*!
  * \brief get the default controls
@@ -142,7 +149,15 @@ static hif_Options hif_get_default_options(void) {
                        .pivot         = HIF_PIVOTING_OFF,
                        .gamma         = 1.0,
                        .beta          = 1e3,
-                       .is_symm       = 0};
+                       .is_symm       = 0,
+                       .no_pre        = 0};
+}
+
+/*!
+ * \brief alias of \ref hif_get_default_options
+ */
+static hif_Params hif_get_default_params(void) {
+  return hif_get_default_options();
 }
 
 /*!
@@ -247,6 +262,12 @@ enum : int {
 typedef hif_Options Options;
 
 /*!
+ * \typedef Params
+ * \brief alias of \ref Options
+ */
+typedef Options Params;
+
+/*!
  * \brief get the reordering method name
  */
 inline std::string get_reorder_name(const Options &opt) {
@@ -271,6 +292,17 @@ inline std::string get_verbose(const Options &opt);
  * \brief get the default configuration
  */
 inline Options get_default_options() { return ::hif_get_default_options(); }
+
+/*!
+ * \brief alias of \ref get_default_options
+ */
+inline Params get_default_params() { return get_default_options(); }
+
+/*!
+ * \var DEFAULT_PARAMS
+ * \brief global default parameters
+ */
+const static Params DEFAULT_PARAMS = get_default_params();
 
 /*!
  * \brief represent an option control with C++ string
@@ -316,15 +348,15 @@ inline std::string opt_repr(const Options &opt) {
                                 : (opt_.pivot == PIVOTING_ON ? "on" : "auto");
                    }) +
          pack_double("gamma", opt.gamma) + pack_double("beta", opt.beta) +
-         pack_int("is_symm", opt.is_symm);
+         pack_int("is_symm", opt.is_symm) + pack_int("no_pre", opt.no_pre);
 }
 
 #  ifndef DOXYGEN_SHOULD_SKIP_THIS
 namespace internal {
-#    define _HIF_TOTAL_OPTIONS 25
+#    define _HIF_TOTAL_OPTIONS 26
 /*
  * build a byte map, i.e. the value is the leading byte position of the attrs
- * in Options
+ * in Options **Deprecated!**
  */
 const static std::size_t option_attr_pos[_HIF_TOTAL_OPTIONS] = {
     0,
@@ -351,7 +383,8 @@ const static std::size_t option_attr_pos[_HIF_TOTAL_OPTIONS] = {
     option_attr_pos[20] + sizeof(double),
     option_attr_pos[21] + sizeof(int),
     option_attr_pos[22] + sizeof(double),
-    option_attr_pos[23] + sizeof(double)};
+    option_attr_pos[23] + sizeof(double),
+    option_attr_pos[24] + sizeof(int)};
 
 /* data type tags, true for double, false for int */
 const static bool option_dtypes[_HIF_TOTAL_OPTIONS] = {
@@ -380,6 +413,7 @@ const static bool option_dtypes[_HIF_TOTAL_OPTIONS] = {
     true,   // 22
     true,   // 23
     false,  // 24
+    false,  // 25
 };
 
 /* using unordered map to store the string to index map */
@@ -408,7 +442,8 @@ const static std::unordered_map<std::string, int> option_tag2pos = {
     {"pivot", 21},
     {"gamma", 22},
     {"beta", 23},
-    {"is_symm", 24}};
+    {"is_symm", 24},
+    {"no_pre", 25}};
 
 } /* namespace internal */
 #  endif /* DOXYGEN_SHOULD_SKIP_THIS */
@@ -424,21 +459,94 @@ const static std::unordered_map<std::string, int> option_tag2pos = {
 /// variable names.
 template <typename T>
 inline bool set_option_attr(const std::string &attr, const T v, Options &opt) {
-  const static bool failed  = true;
-  char *            opt_raw = reinterpret_cast<char *>(&opt);
+  const static bool failed = true;
+  int               pos;
   try {
-    const int         pos     = internal::option_tag2pos.at(attr);
-    const std::size_t pos_raw = internal::option_attr_pos[pos];
-    const bool        dtype   = internal::option_dtypes[pos];
-    opt_raw += pos_raw;
-    if (dtype)
-      *reinterpret_cast<double *>(opt_raw) = v;
-    else
-      *reinterpret_cast<int *>(opt_raw) = v;
-    return !failed;
+    pos = internal::option_tag2pos.at(attr);
   } catch (const std::out_of_range &) {
     return failed;
   }
+  switch (pos) {
+    case 0:
+      opt.tau_L = v;
+      break;
+    case 1:
+      opt.tau_U = v;
+      break;
+    case 2:
+      opt.kappa_d = v;
+      break;
+    case 3:
+      opt.kappa = v;
+      break;
+    case 4:
+      opt.alpha_L = v;
+      break;
+    case 5:
+      opt.alpha_U = v;
+      break;
+    case 6:
+      opt.rho = v;
+      break;
+    case 7:
+      opt.c_d = v;
+      break;
+    case 8:
+      opt.c_h = v;
+      break;
+    case 9:
+      opt.N = v;
+      break;
+    case 10:
+      opt.verbose = v;
+      break;
+    case 11:
+      opt.rf_par = v;
+      break;
+    case 12:
+      opt.reorder = v;
+      break;
+    case 13:
+      opt.spd = v;
+      break;
+    case 14:
+      opt.check = v;
+      break;
+    case 15:
+      opt.pre_scale = v;
+      break;
+    case 16:
+      opt.symm_pre_lvls = v;
+      break;
+    case 17:
+      opt.threads = v;
+      break;
+    case 18:
+      opt.mumps_blr = v;
+      break;
+    case 19:
+      opt.fat_schur_1st = v;
+      break;
+    case 20:
+      opt.rrqr_cond = v;
+      break;
+    case 21:
+      opt.pivot = v;
+      break;
+    case 22:
+      opt.gamma = v;
+      break;
+    case 23:
+      opt.beta = v;
+      break;
+    case 24:
+      opt.is_symm = v;
+      break;
+    default:
+      opt.no_pre = v;
+      break;
+  }
+  return !failed;
 }
 
 /*!
@@ -462,7 +570,7 @@ inline InStream &operator>>(InStream &in_str, hif::Options &opt) {
       opt.alpha_U >> opt.rho >> opt.c_d >> opt.c_h >> opt.N >> opt.verbose >>
       opt.rf_par >> opt.reorder >> opt.spd >> opt.check >> opt.pre_scale >>
       opt.symm_pre_lvls >> opt.threads >> opt.mumps_blr >> opt.fat_schur_1st >>
-      opt.rrqr_cond >> opt.gamma >> opt.beta >> opt.is_symm;
+      opt.rrqr_cond >> opt.gamma >> opt.beta >> opt.is_symm >> opt.no_pre;
   return in_str;
 }
 

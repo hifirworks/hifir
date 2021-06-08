@@ -105,10 +105,11 @@ class LUP : public SmallScaleBase<ValueType> {
 
   /// \brief wrapper if \a value_type is different from input's
   template <class ArrayType>
-  inline void solve(ArrayType &x, const bool tran = false) const {
+  inline void solve(ArrayType &x, const size_type /* rank */ = 0,
+                    const bool tran = false) const {
     _base::_x.resize(x.size());
     std::copy(x.cbegin(), x.cend(), _base::_x.begin());
-    solve(_base::_x, tran);
+    solve(_base::_x, size_type(0), tran);
     std::copy(_base::_x.cbegin(), _base::_x.cend(), x.begin());
   }
 
@@ -128,6 +129,32 @@ class LUP : public SmallScaleBase<ValueType> {
       hif_error("GETRS returned negative info!");
     for (size_type j = 0; j < Nrhs; ++j)
       for (size_type i(0); i < x.size(); ++i) x[i][j] = _base::_mrhs(i, j);
+  }
+
+  /// \brief compute \f$\mathbf{y}=\mathbf{P}^{T}\mathbf{LUx}\f$
+  /// \param[in] x input vector
+  /// \param[out] y output vector
+  /// \param[in] tran (optional) tranpose flag
+  inline void multiply(const Array<value_type> &x, Array<value_type> &y,
+                       const size_type /* rank */ = 0,
+                       const bool tran            = false) const {
+    hif_error_if(x.size() != _mat_backup.nrows(),
+                 "unmatched sizes between system and x");
+    hif_error_if(x.size() != y.size(), "unmatched sizes x and y");
+    lapack_kernel::gemv(tran ? 'C' : 'N', value_type(1), _mat_backup, x,
+                        value_type(0), y);
+  }
+
+  /// \brief wrapper if \a value_type is different from input's
+  template <class ArrayIn, class ArrayOut>
+  inline void multiply(const ArrayIn &x, ArrayOut &y,
+                       const size_type /* rank */ = 0,
+                       const bool tran            = false) const {
+    _base::_x.resize(x.size());
+    _base::_y.resize(y.size());
+    std::copy(x.cbegin(), x.cend(), _base::_x.begin());
+    multiply(_base::_x, _base::_y, size_type(0), tran);
+    std::copy(_base::_y.cbegin(), _base::_y.cend(), y.begin());
   }
 
  protected:

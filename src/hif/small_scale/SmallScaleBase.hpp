@@ -92,6 +92,7 @@ class SmallScaleBase {
   dense_type                _mat_backup;  ///< backup matrix
   size_type                 _rank;        ///< rank
   mutable Array<value_type> _x;     ///< buffer for handling solve in derived
+  mutable Array<value_type> _y;     ///< buffer for handling mv in derived
   mutable dense_type        _mrhs;  ///< multiple RHS buffer
 };
 
