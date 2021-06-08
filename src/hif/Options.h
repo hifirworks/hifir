@@ -101,7 +101,7 @@ struct hif_Options {
   int    mumps_blr;     /*!< MUMPS BLR options (default 2) */
   int    fat_schur_1st; /*!< double alpha for dropping L_E and U_F on 1st lvl */
   double rrqr_cond;     /*!< condition number threshold for RRQR (default 0) */
-  int    pivot;         /*!< pivoting flag (default is OFF (0)) */
+  int    pivot;         /*!< pivoting flag (default is AUTO (2)) */
   double gamma;         /*!< threshold for thresholded pivoting (1.0) */
   double beta;          /*!< safeguard factor for equlibrition scaling (1e3) */
   int    is_symm;       /*!< is symmetric (Hermitian) system? (default 0) */
@@ -146,7 +146,7 @@ static hif_Options hif_get_default_options(void) {
                        .mumps_blr     = 1,
                        .fat_schur_1st = 0,
                        .rrqr_cond     = 0.0,
-                       .pivot         = HIF_PIVOTING_OFF,
+                       .pivot         = HIF_PIVOTING_AUTO,
                        .gamma         = 1.0,
                        .beta          = 1e3,
                        .is_symm       = 0,
