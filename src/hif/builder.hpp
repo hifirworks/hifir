@@ -175,10 +175,16 @@ class HIF {
            ((prec_last.n - prec_last.m) - prec_last.last_rank());
   }
 
-  /// \brief get the numerical rank for last level
-  inline size_type last_rank() const {
+  /// \brief get the numerical rank for last level (dense Schur complement)
+  inline size_type schur_rank() const {
     if (empty()) return 0u;
     return precs().back().last_rank();
+  }
+
+  /// \brief get the Schur complement size
+  inline size_type schur_size() const {
+    if (empty()) return 0u;
+    return precs().back().n - precs().back().m;
   }
 
   /// \brief compute the nnz in \a E and \a F components
