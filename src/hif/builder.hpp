@@ -483,7 +483,8 @@ class HIF {
                                 const Params &opts, iarray_type &row_sizes,
                                 iarray_type &        col_sizes,
                                 const CroutStreamer &Crout_info,
-                                const int            schur_threads = 1) {
+                                const int            schur_threads = 1,
+                                const bool           must_pivot    = false) {
     hif_error_if(A.nrows() != A.ncols(),
                  "Currently only squared systems are supported");
     size_type       m(m0);  // init m
@@ -496,17 +497,17 @@ class HIF {
     else
       N = cur_level == 1u ? A.nrows() : _precs.front().n;
 
-    // check symmetry
+    // check partial symmetry
     const bool sym = cur_level == 1u && m > 0u;
     if (!sym) m = A.nrows();  // IMPORTANT! If asymmetric, set m = n
 
     CsType S;
+    int    pivot_flag = 0;
     if (opts.is_symm) {
       S = symm_level_factorize(A, m, N, opts, Crout_info, _precs, row_sizes,
                                _stats, schur_threads);
     } else {
-      if (sym || opts.pivot == PIVOTING_OFF ||
-          (opts.pivot == PIVOTING_AUTO && cur_level == 1u))
+      if (opts.pivot == PIVOTING_OFF)
         // instantiate IsSymm here
         S = sym ? level_factorize<true>(A, m, N, opts, Crout_info, _precs,
                                         row_sizes, col_sizes, _stats,
@@ -518,25 +519,25 @@ class HIF {
         S = pivot_level_factorize(A, m, N, opts, Crout_info, _precs, row_sizes,
                                   col_sizes, _stats, schur_threads);
       else {
-        hif_assert(cur_level > 1u, "should not happen");
-        // auto
-        const size_type must_symm_pre_lvls =
-            opts.symm_pre_lvls <= 0 ? 0 : opts.symm_pre_lvls;
-        // apply deferring-only factorization for symmetric preprocessing
-        S = cur_level > must_symm_pre_lvls
-                ? pivot_level_factorize(A, m, N, opts, Crout_info, _precs,
-                                        row_sizes, col_sizes, _stats,
-                                        schur_threads)
-                : level_factorize<false>(A, m, N, opts, Crout_info, _precs,
-                                         row_sizes, col_sizes, _stats,
-                                         schur_threads);
+        if (must_pivot) {
+          S          = pivot_level_factorize(A, m, N, opts, Crout_info, _precs,
+                                    row_sizes, col_sizes, _stats,
+                                    schur_threads);
+          pivot_flag = 1;  // Always recursively do pivoting
+        } else
+          S = sym ? level_factorize<true>(A, m, N, opts, Crout_info, _precs,
+                                          row_sizes, col_sizes, _stats,
+                                          schur_threads, &pivot_flag)
+                  : level_factorize<false>(A, m, N, opts, Crout_info, _precs,
+                                           row_sizes, col_sizes, _stats,
+                                           schur_threads, &pivot_flag);
       }
     }
 
     // check last level
     if (!_precs.back().is_last_level())
       this->_factorize_kernel(S, 0u, opts, row_sizes, col_sizes, Crout_info,
-                              schur_threads);
+                              schur_threads, pivot_flag != 0);
   }
 
  protected:

@@ -122,7 +122,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 /// Schur complements, HIF will enforce to use dense direct factorization
 /// for the sake of actual runtime performance.
 #ifndef HIF_LASTLEVEL_DENSE_SIZE
-#  define HIF_LASTLEVEL_DENSE_SIZE 1500
+#  define HIF_LASTLEVEL_DENSE_SIZE 2000
 #endif
 
 /// \def HIF_LASTLEVEL_SPARSE_SIZE

@@ -59,7 +59,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #  endif  // HIF_RESERVE_FAC
 
 #  ifndef HIF_LASTLEVEL_DENSE_SIZE
-#    define HIF_LASTLEVEL_DENSE_SIZE 1500
+#    define HIF_LASTLEVEL_DENSE_SIZE 2000
 #  endif  // HIF_RESERVE_FAC
 
 #  ifndef HIF_LASTLEVEL_SPARSE_SIZE
@@ -518,20 +518,20 @@ inline void print_post_flag(const int flag) {
 /// \param[in,out] row_sizes local row nnz of user input
 /// \param[in,out] col_sizes local column nnz of user input
 /// \param[in,out] stats hierarchical stats
-/// \param[in] schur_threads threads usedin Schur-related computations
+/// \param[in] schur_threads (optional) threads usedin Schur-related
+///                          computations
+/// \param[out] auto_pivot_tag (optional) pivoting tag for \ref PIVOT_AUTO
 /// \return Schur complement for next level (if needed), in the same type as
 ///         that of the input, i.e. \a CsType
 /// \ingroup fac
 template <bool IsSymm, class CsType, class CroutStreamer, class PrecsType,
           class IntArray>
-inline CsType level_factorize(const CsType &                   A,
-                              const typename CsType::size_type m0,
-                              const typename CsType::size_type N,
-                              const Options &                  opts,
-                              const CroutStreamer &Crout_info, PrecsType &precs,
-                              IntArray &row_sizes, IntArray &col_sizes,
-                              typename CsType::size_type *stats,
-                              const int                   schur_threads = 1) {
+inline CsType level_factorize(
+    const CsType &A, const typename CsType::size_type m0,
+    const typename CsType::size_type N, const Options &opts,
+    const CroutStreamer &Crout_info, PrecsType &precs, IntArray &row_sizes,
+    IntArray &col_sizes, typename CsType::size_type *stats,
+    const int schur_threads = 1, int *auto_pivot_tag = nullptr) {
   typedef CsType                      input_type;
   typedef typename CsType::other_type other_type;
   using cs_trait = internal::CompressedTypeTrait<input_type, other_type>;
@@ -992,6 +992,18 @@ inline CsType level_factorize(const CsType &                   A,
   } else if ((double)m <= 0.4 * m2)
     post_flag = -1;
 
+  if (auto_pivot_tag) *auto_pivot_tag = post_flag;
+
+  // NOTE: If this happens in non-pivoting kernel, we try to recompute the
+  // the factorization using pivoting kernel
+  if (opts.pivot == PIVOTING_AUTO && post_flag != 0) {
+    if (hif_verbose(INFO, opts))
+      hif_info(
+          "directly return the input for pivoting factorization due to "
+          "too-many dynamic deferrals...");
+    return A;
+  }
+
   // collecting stats for deferrals
   stats[0] += m0 - m;                            // total deferals
   stats[1] += m ? step.defers() : size_type(0);  // dynamic deferrals
@@ -1169,9 +1181,11 @@ inline CsType level_factorize(const CsType &                   A,
   dense_type      S_D;
   hif_assert(S_D.empty(), "fatal!");
 
-  if (post_flag < 0 ||
+  if ((post_flag < 0 && opts.pivot != PIVOTING_AUTO) ||
       (size_type)std::ceil(nm * nm * opts.rho) <= dense_thres1 ||
       nm <= dense_thres2 || !m) {
+    // NOTE: if pivoting is auto, then we try to compute the Schur using the
+    // pivoting kernel.
     S_D = dense_type::from_sparse(S);
     if (hif_verbose(INFO, opts))
       hif_info("converted Schur complement (S) to dense for last level...");
