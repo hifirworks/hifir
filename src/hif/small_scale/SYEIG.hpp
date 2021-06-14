@@ -35,7 +35,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "hif/Options.h"
 #include "hif/ds/Array.hpp"
-#include "hif/small_scale/SmallScaleBase.hpp"
+#include "hif/ds/DenseMatrix.hpp"
 #include "hif/small_scale/lapack.hpp"
 #include "hif/utils/common.hpp"
 #include "hif/utils/math.hpp"
@@ -47,13 +47,12 @@ namespace hif {
 /// \tparam ValueType value type, e.g. \a double
 /// \ingroup sss
 template <class ValueType>
-class SYEIG : public SmallScaleBase<ValueType> {
-  using _base = SmallScaleBase<ValueType>;
-
+class SYEIG {
  public:
-  typedef ValueType                 value_type;     ///< value type
-  typedef Lapack<value_type>        lapack_kernel;  ///< lapack backend
-  typedef typename _base::size_type size_type;      ///< size type
+  typedef ValueType                      value_type;     ///< value type
+  typedef DenseMatrix<value_type>        dense_type;     ///< dense type
+  typedef typename dense_type::size_type size_type;      ///< size type
+  typedef Lapack<value_type>             lapack_kernel;  ///< lapack backend
   typedef typename ValueTypeTrait<value_type>::value_type scalar_type;
   ///< scalar type
 
@@ -61,13 +60,53 @@ class SYEIG : public SmallScaleBase<ValueType> {
   inline static const char *method() { return "SYEIG"; }
 
   /// \brief default constructor
-  SYEIG() = default;
+  SYEIG() { _rank = 0u; }
+
+  // utilities
+  inline bool              empty() const { return _mat.empty(); }
+  inline size_type         rank() const { return _rank; }
+  inline const dense_type &mat() const { return _mat; }
+  inline dense_type &      mat() { return _mat; }
+  inline const dense_type &mat_backup() const { return _mat_backup; }
+  inline dense_type &      mat_backup() { return _mat_backup; }
+  inline bool              is_squared() const { return _mat.is_squared(); }
+  inline bool full_rank() const { return _rank != 0u && _rank == _mat.ncols(); }
+
+  /// \brief set operator
+  /// \tparam CsType compressed storage type, see \ref CCS and \ref CRS
+  /// \param[in] cs compressed storage
+  template <class CsType>
+  inline void set_matrix(const CsType &cs) {
+    _mat = dense_type::from_sparse(cs);
+    _mat_backup.resize(_mat.nrows(), _mat.ncols());
+    std::copy(_mat.array().cbegin(), _mat.array().cend(),
+              _mat_backup.array().begin());
+  }
+
+  /// \brief set a dense operator, this is needed for H version
+  /// \param[in,out] mat input matrix, the data is \b destroyed upon output
+  inline void set_matrix(dense_type &&mat) {
+    _mat = std::move(mat);
+    _mat_backup.resize(_mat.nrows(), _mat.ncols());
+    std::copy(_mat.array().cbegin(), _mat.array().cend(),
+              _mat_backup.array().begin());
+  }
+
+  /// \brief set a dense operator from other data type
+  /// \tparam T value type
+  template <class T>
+  inline void set_matrix(const DenseMatrix<T> &mat) {
+    _mat = dense_type(mat);
+    _mat_backup.resize(_mat.nrows(), _mat.ncols());
+    std::copy(_mat.array().cbegin(), _mat.array().cend(),
+              _mat_backup.array().begin());
+  }
 
   /// \brief compute decomposition and determine the rank
   /// \param[in] opts control parameters, see \ref Options
   inline void factorize(const Options &opts) {
     hif_error_if(_mat.empty(), "matrix is still empty!");
-    hif_error_if(!_base::is_squared(), "the matrix must be squared!");
+    hif_error_if(!is_squared(), "the matrix must be squared!");
     if (hif_verbose(INFO, opts))
       hif_info("factorizing dense level by symmetric (%s) eigendecomp...",
                opts.spd > 0 ? "PD" : (opts.spd < 0 ? "ND" : "ID"));
@@ -169,10 +208,10 @@ class SYEIG : public SmallScaleBase<ValueType> {
   /// \brief wrapper if \a value_type is different from input's
   template <class ArrayType>
   inline void solve(ArrayType &x, const size_type rank = 0) const {
-    _base::_x.resize(x.size());
-    std::copy(x.cbegin(), x.cend(), _base::_x.begin());
-    solve(_base::_x, rank);
-    std::copy(_base::_x.cbegin(), _base::_x.cend(), x.begin());
+    _x.resize(x.size());
+    std::copy(x.cbegin(), x.cend(), _x.begin());
+    solve(_x, rank);
+    std::copy(_x.cbegin(), _x.cend(), x.begin());
   }
 
   /// \brief solve with multiple RHS
@@ -188,13 +227,13 @@ class SYEIG : public SmallScaleBase<ValueType> {
     const auto      n  = x.size();
     const size_type rk = rank == 0u ? _rank : (rank > n ? n : rank);
     // copy to internal column-major buffer
-    _base::_mrhs.resize(x.size(), Nrhs);
+    _mrhs.resize(x.size(), Nrhs);
     for (size_type j = 0; j < Nrhs; ++j)
-      for (size_type i(0); i < x.size(); ++i) _base::_mrhs(i, j) = x[i][j];
+      for (size_type i(0); i < x.size(); ++i) _mrhs(i, j) = x[i][j];
     for (size_type i = 0; i < Nrhs; ++i) {
       // step 1, compute y=Q^T*x
       lapack_kernel::gemv('C', _mat.nrows(), _mat.ncols(), value_type(1),
-                          _mat.data(), _mat.nrows(), &_base::_mrhs(0, i * Nrhs),
+                          _mat.data(), _mat.nrows(), &_mrhs(0, i * Nrhs),
                           value_type(0), _work.data());
       // step 2, solve inv(lambda)*y with truncation
       for (size_type i(0); i < rk; ++i)
@@ -203,11 +242,11 @@ class SYEIG : public SmallScaleBase<ValueType> {
       // step 3, compute x=Q*y
       lapack_kernel::gemv('N', _mat.nrows(), _mat.ncols(), value_type(1),
                           _mat.data(), _mat.nrows(), _work.data(),
-                          value_type(0), &_base::_mrhs(0, i * Nrhs));
+                          value_type(0), &_mrhs(0, i * Nrhs));
     }
     // copy back to the application
     for (int j = 0; j < Nrhs; ++j)
-      for (size_type i(0); i < x.size(); ++i) x[i][j] = _base::_mrhs(i, j);
+      for (size_type i(0); i < x.size(); ++i) x[i][j] = _mrhs(i, j);
   }
 
   /// \brief matrix-vector \f$\mathbf{Q\Lambda Q}^H\mathbf{x}\f$
@@ -234,10 +273,10 @@ class SYEIG : public SmallScaleBase<ValueType> {
   /// \brief wrapper if \a value_type is different from input's for mv
   template <class ArrayType>
   inline void multiply(ArrayType &x, const size_type rank = 0) const {
-    _base::_x.resize(x.size());
-    std::copy(x.cbegin(), x.cend(), _base::_x.begin());
-    multiply(_base::_x, rank);
-    std::copy(_base::_x.cbegin(), _base::_x.cend(), x.begin());
+    _x.resize(x.size());
+    std::copy(x.cbegin(), x.cend(), _x.begin());
+    multiply(_x, rank);
+    std::copy(_x.cbegin(), _x.cend(), x.begin());
   }
 
   /// \brief matrix-vector with multiple RHS
@@ -253,13 +292,13 @@ class SYEIG : public SmallScaleBase<ValueType> {
     const auto      n  = x.size();
     const size_type rk = rank == 0u ? _rank : (rank > n ? n : rank);
     // copy to internal column-major buffer
-    _base::_mrhs.resize(x.size(), Nrhs);
+    _mrhs.resize(x.size(), Nrhs);
     for (size_type j = 0; j < Nrhs; ++j)
-      for (size_type i(0); i < x.size(); ++i) _base::_mrhs(i, j) = x[i][j];
+      for (size_type i(0); i < x.size(); ++i) _mrhs(i, j) = x[i][j];
     for (size_type i = 0; i < Nrhs; ++i) {
       // step 1, compute y=Q^T*x
       lapack_kernel::gemv('C', _mat.nrows(), _mat.ncols(), value_type(1),
-                          _mat.data(), _mat.nrows(), &_base::_mrhs(0, i * Nrhs),
+                          _mat.data(), _mat.nrows(), &_mrhs(0, i * Nrhs),
                           value_type(0), _work.data());
       // step 2, compute lambda*y with truncation
       for (size_type i(0); i < rk; ++i)
@@ -268,20 +307,23 @@ class SYEIG : public SmallScaleBase<ValueType> {
       // step 3, compute x=Q*y
       lapack_kernel::gemv('N', _mat.nrows(), _mat.ncols(), value_type(1),
                           _mat.data(), _mat.nrows(), _work.data(),
-                          value_type(0), &_base::_mrhs(0, i * Nrhs));
+                          value_type(0), &_mrhs(0, i * Nrhs));
     }
     // copy back to the application
     for (int j = 0; j < Nrhs; ++j)
-      for (size_type i(0); i < x.size(); ++i) x[i][j] = _base::_mrhs(i, j);
+      for (size_type i(0); i < x.size(); ++i) x[i][j] = _mrhs(i, j);
   }
 
  protected:
-  using _base::_mat;                        ///< matrix
-  using _base::_mat_backup;                 ///< matrix backup
-  using _base::_rank;                       ///< rank
-  Array<scalar_type>         _w;            ///< Eigenvalues
-  mutable Array<value_type>  _work;         ///< work buffer
-  mutable Array<scalar_type> _rwork;        ///< rwork buffer
+  dense_type                 _mat;         ///< matrix
+  dense_type                 _mat_backup;  ///< backup matrix
+  size_type                  _rank;        ///< rank
+  mutable Array<value_type>  _x;      ///< buffer for handling solve in derived
+  mutable Array<value_type>  _y;      ///< buffer for handling mv in derived
+  mutable dense_type         _mrhs;   ///< multiple RHS buffer
+  Array<scalar_type>         _w;      ///< Eigenvalues
+  mutable Array<value_type>  _work;   ///< work buffer
+  mutable Array<scalar_type> _rwork;  ///< rwork buffer
   Array<int>                 _trunc_order;  ///< truncated dimensions
 };
 

@@ -34,7 +34,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "hif/Options.h"
 #include "hif/ds/Array.hpp"
-#include "hif/small_scale/SmallScaleBase.hpp"
+#include "hif/ds/DenseMatrix.hpp"
 #include "hif/small_scale/lapack.hpp"
 
 namespace hif {
@@ -44,25 +44,64 @@ namespace hif {
 /// \tparam ValueType value type, e.g. \a double
 /// \ingroup sss
 template <class ValueType>
-class LUP : public SmallScaleBase<ValueType> {
-  using _base = SmallScaleBase<ValueType>;
-
+class LUP {
  public:
-  typedef ValueType                 value_type;     ///< value type
-  typedef Lapack<value_type>        lapack_kernel;  ///< lapack backend
-  typedef typename _base::size_type size_type;      ///< size type
+  typedef ValueType                      value_type;     ///< value type
+  typedef DenseMatrix<value_type>        dense_type;     ///< dense matrix
+  typedef Lapack<value_type>             lapack_kernel;  ///< lapack backend
+  typedef typename dense_type::size_type size_type;      ///< size type
 
   /// \brief get the solver type
   inline static const char *method() { return "LUP"; }
 
   /// \brief default constructor
-  LUP() = default;
+  LUP() { _rank = 0u; }
+
+  // utilities
+  inline bool              empty() const { return _mat.empty(); }
+  inline size_type         rank() const { return _rank; }
+  inline const dense_type &mat() const { return _mat; }
+  inline dense_type &      mat() { return _mat; }
+  inline const dense_type &mat_backup() const { return _mat_backup; }
+  inline dense_type &      mat_backup() { return _mat_backup; }
+  inline bool              is_squared() const { return _mat.is_squared(); }
+  inline bool full_rank() const { return _rank != 0u && _rank == _mat.ncols(); }
+
+  /// \brief set operator
+  /// \tparam CsType compressed storage type, see \ref CCS and \ref CRS
+  /// \param[in] cs compressed storage
+  template <class CsType>
+  inline void set_matrix(const CsType &cs) {
+    _mat = dense_type::from_sparse(cs);
+    _mat_backup.resize(_mat.nrows(), _mat.ncols());
+    std::copy(_mat.array().cbegin(), _mat.array().cend(),
+              _mat_backup.array().begin());
+  }
+
+  /// \brief set a dense operator, this is needed for H version
+  /// \param[in,out] mat input matrix, the data is \b destroyed upon output
+  inline void set_matrix(dense_type &&mat) {
+    _mat = std::move(mat);
+    _mat_backup.resize(_mat.nrows(), _mat.ncols());
+    std::copy(_mat.array().cbegin(), _mat.array().cend(),
+              _mat_backup.array().begin());
+  }
+
+  /// \brief set a dense operator from other data type
+  /// \tparam T value type
+  template <class T>
+  inline void set_matrix(const DenseMatrix<T> &mat) {
+    _mat = dense_type(mat);
+    _mat_backup.resize(_mat.nrows(), _mat.ncols());
+    std::copy(_mat.array().cbegin(), _mat.array().cend(),
+              _mat_backup.array().begin());
+  }
 
   /// \brief perform LU with partial pivoting
   /// \param[in] opts control parameters, see \ref Options
   inline void factorize(const Options &opts) {
     hif_error_if(_mat.empty(), "matrix is still empty!");
-    hif_error_if(!_base::is_squared(), "the matrix must be squared!");
+    hif_error_if(!is_squared(), "the matrix must be squared!");
     if (hif_verbose(INFO, opts)) hif_info("factorizing dense level by LU...");
 
     _ipiv.resize(_mat.nrows());
@@ -107,10 +146,10 @@ class LUP : public SmallScaleBase<ValueType> {
   template <class ArrayType>
   inline void solve(ArrayType &x, const size_type /* rank */ = 0,
                     const bool tran = false) const {
-    _base::_x.resize(x.size());
-    std::copy(x.cbegin(), x.cend(), _base::_x.begin());
-    solve(_base::_x, size_type(0), tran);
-    std::copy(_base::_x.cbegin(), _base::_x.cend(), x.begin());
+    _x.resize(x.size());
+    std::copy(x.cbegin(), x.cend(), _x.begin());
+    solve(_x, size_type(0), tran);
+    std::copy(_x.cbegin(), _x.cend(), x.begin());
   }
 
   /// \brief solve with multiple RHS
@@ -122,13 +161,13 @@ class LUP : public SmallScaleBase<ValueType> {
         "either the matrix is not set or the factorization has not yet done!");
     hif_error_if(x.size() != _mat.nrows(),
                  "unmatched sizes between system and rhs");
-    _base::_mrhs.resize(x.size(), Nrhs);
+    _mrhs.resize(x.size(), Nrhs);
     for (size_type j = 0; j < Nrhs; ++j)
-      for (size_type i(0); i < x.size(); ++i) _base::_mrhs(i, j) = x[i][j];
-    if (lapack_kernel::getrs(_mat, _ipiv, _base::_mrhs, tran ? 'T' : 'N') < 0)
+      for (size_type i(0); i < x.size(); ++i) _mrhs(i, j) = x[i][j];
+    if (lapack_kernel::getrs(_mat, _ipiv, _mrhs, tran ? 'T' : 'N') < 0)
       hif_error("GETRS returned negative info!");
     for (size_type j = 0; j < Nrhs; ++j)
-      for (size_type i(0); i < x.size(); ++i) x[i][j] = _base::_mrhs(i, j);
+      for (size_type i(0); i < x.size(); ++i) x[i][j] = _mrhs(i, j);
   }
 
   /// \brief compute \f$\mathbf{y}=\mathbf{P}^{T}\mathbf{LUx}\f$
@@ -150,18 +189,21 @@ class LUP : public SmallScaleBase<ValueType> {
   inline void multiply(const ArrayIn &x, ArrayOut &y,
                        const size_type /* rank */ = 0,
                        const bool tran            = false) const {
-    _base::_x.resize(x.size());
-    _base::_y.resize(y.size());
-    std::copy(x.cbegin(), x.cend(), _base::_x.begin());
-    multiply(_base::_x, _base::_y, size_type(0), tran);
-    std::copy(_base::_y.cbegin(), _base::_y.cend(), y.begin());
+    _x.resize(x.size());
+    _y.resize(y.size());
+    std::copy(x.cbegin(), x.cend(), _x.begin());
+    multiply(_x, _y, size_type(0), tran);
+    std::copy(_y.cbegin(), _y.cend(), y.begin());
   }
 
  protected:
-  using _base::_mat;            ///< matrix
-  using _base::_mat_backup;     ///< matrix backup
-  using _base::_rank;           ///< rank
-  Array<hif_lapack_int> _ipiv;  ///< row pivoting array
+  dense_type                _mat;         ///< matrix
+  dense_type                _mat_backup;  ///< backup matrix
+  size_type                 _rank;        ///< rank
+  mutable Array<value_type> _x;     ///< buffer for handling solve in derived
+  mutable Array<value_type> _y;     ///< buffer for handling mv in derived
+  mutable dense_type        _mrhs;  ///< multiple RHS buffer
+  Array<hif_lapack_int>     _ipiv;  ///< row pivoting array
 };
 
 }  // namespace hif
