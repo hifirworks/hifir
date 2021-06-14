@@ -1,6 +1,6 @@
 /*
 ///////////////////////////////////////////////////////////////////////////////
-//                  This file is part of HIF project                         //
+//                  This file is part of the HIFIR library                         //
 ///////////////////////////////////////////////////////////////////////////////
 */
 
@@ -10,7 +10,7 @@
  * \author Qiao Chen
 
 \verbatim
-Copyright (C) 2019 NumGeom Group at Stony Brook University
+Copyright (C) 2021 NumGeom Group at Stony Brook University
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -38,14 +38,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //  4: UPPER
 //  5: UPPER_
 //  6: UPPER__
-
-// For MKL, use convention 1
-#ifdef HIF_HAS_MKL
-#  ifdef HIF_FC
-#    undef HIF_FC
-#  endif
-#  define HIF_FC 1
-#endif
 
 #ifndef HIF_FC
 /*
