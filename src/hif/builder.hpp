@@ -396,12 +396,6 @@ class HIF {
     factorize(A, params, m0);
   }
 
-  /// \brief optimization a priori
-  /// \param[in] tag optimization tag
-  inline void optimize(const int tag = 0) {
-    for (auto &prec : _precs) prec.optimize(tag);
-  }
-
   /// \brief solve \f$\mathbf{x}=\mathbf{M}^{-1}\mathbf{b}\f$
   /// \tparam RhsType right-hand side type
   /// \tparam SolType solution type
