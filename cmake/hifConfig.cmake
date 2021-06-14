@@ -1,5 +1,5 @@
 ###############################################################################
-#                 This file is part of the HIFIR library                        #
+#                This file is part of the HIFIR library                       #
 ###############################################################################
 
 # Copyright (C) 2021 NumGeom Group at Stony Brook University

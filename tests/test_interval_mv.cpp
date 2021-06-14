@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-//                  This file is part of the HIFIR library                         //
+//                  This file is part of the HIFIR library                   //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "common.hpp"
@@ -27,14 +27,14 @@ TEST(MV, crs) {
     if (1) {
       const auto    x = gen_ran_vec<Array<double>>(n);
       Array<double> y1(m);
-      A.mv(x, y1);
+      A.multiply(x, y1);
       const auto y2 = dense_mv(A_d, x);
       for (int i = 0; i < m; ++i) EXPECT_NEAR(y1[i], y2[i], 1e-12) << i;
     }
     if (1) {
       const auto    x = gen_ran_vec<Array<double>>(m);
       Array<double> y1(n);
-      A.mv(x, y1, true);
+      A.multiply(x, y1, true);
       const auto y2 = dense_mv(A_d, x, true);
       for (int i = 0; i < n; ++i) EXPECT_NEAR(y1[i], y2[i], 1e-12) << i;
     }
@@ -52,14 +52,14 @@ TEST(MV, ccs) {
     if (1) {
       const auto    x = gen_ran_vec<Array<double>>(n);
       Array<double> y1(m);
-      A.mv(x, y1);
+      A.multiply(x, y1);
       const auto y2 = dense_mv(A_d, x);
       for (int i = 0; i < m; ++i) EXPECT_NEAR(y1[i], y2[i], 1e-12) << i;
     }
     if (1) {
       const auto    x = gen_ran_vec<Array<double>>(m);
       Array<double> y1(n);
-      A.mv(x, y1, true);
+      A.multiply(x, y1, true);
       const auto y2 = dense_mv(A_d, x, true);
       for (int i = 0; i < n; ++i) EXPECT_NEAR(y1[i], y2[i], 1e-12) << i;
     }

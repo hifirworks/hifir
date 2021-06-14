@@ -1,5 +1,5 @@
 //===========================================================================//
-//                  This file is part of the HIFIR library                         //
+//                  This file is part of the HIFIR library                   //
 //===========================================================================//
 
 // common interface for parsing user options for demo programs

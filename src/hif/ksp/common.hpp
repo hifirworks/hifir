@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-//                  This file is part of the HIFIR library                         //
+//                  This file is part of the HIFIR library                   //
 ///////////////////////////////////////////////////////////////////////////////
 
 /*!
@@ -520,7 +520,7 @@ class KSP {
     if (!with_init_guess) std::fill(x.begin(), x.end(), value_type(0));
     if (verbose) hif_info("Calling user-M %s kernel...", ChildSolver::repr());
     return verbose ? _this().template _solve<true>(
-                         A, M, b, inner_steps, !with_init_guess, x, Cout, Cerr)
+                         A, M       , b, inner_steps, !with_init_guess, x, Cout, Cerr)
                    : _this().template _solve<true>(A, M, b, inner_steps,
                                                    !with_init_guess, x,
                                                    Dummy_streamer, Dummy_cerr);

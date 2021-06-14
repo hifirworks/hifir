@@ -1,6 +1,6 @@
 #!/bin/bash
 ###############################################################################
-#                   This file is part of the HIFIR library                      #
+#                   This file is part of the HIFIR library                    #
 ###############################################################################
 
 # script to parse a test script's first 50 lines into space/nl separated

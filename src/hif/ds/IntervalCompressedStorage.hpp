@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-//                  This file is part of the HIFIR library                         //
+//                  This file is part of the HIFIR library                   //
 ///////////////////////////////////////////////////////////////////////////////
 
 /*!
@@ -540,7 +540,7 @@ class IntervalCCS {
   }
 
   /// \brief convert from a CRS matrix
-  /// \param[in] A CRS input
+  /// \param[in] A CRS input       
   /// \param[in] smart_convert (optional) Perform smart converting
   IntervalCCS(const crs_type &A, const bool smart_convert = true)
       : IntervalCCS(ccs_type(A), smart_convert) {}
@@ -673,7 +673,7 @@ class IntervalCCS {
   }
 
   /// \brief matrix vector multiplication
-  /// \tparam IArray input array type
+  /// \tparam IArray input array type       
   /// \tparam OArray output array type
   /// \param[in] x input array
   /// \param[out] y output array

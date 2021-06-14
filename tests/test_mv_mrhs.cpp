@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-//                  This file is part of the HIFIR library                         //
+//                  This file is part of the HIFIR library                   //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "common.hpp"
@@ -30,7 +30,7 @@ TEST(MV, crs) {
         x[i][1] = x1[i + n];
       }
       Array<std::array<double, 2>> y1(m);
-      A.mv_mrhs_nt(x, y1);
+      A.multiply_mrhs_nt(x, y1);
       std::vector<double> x2(x1.cbegin(), x1.cbegin() + n);
       const auto          y2 = dense_mv(A_d, x2);
       std::vector<double> x3(x1.cbegin() + n, x1.cend());
@@ -48,7 +48,7 @@ TEST(MV, crs) {
         x[i][1] = x1[i + m];
       }
       Array<std::array<double, 2>> y1(n);
-      A.mv_mrhs(x, y1, true);
+      A.multiply_mrhs(x, y1, true);
       std::vector<double> x2(x1.cbegin(), x1.cbegin() + m);
       const auto          y2 = dense_mv(A_d, x2, true);
       std::vector<double> x3(x1.cbegin() + m, x1.cend());
@@ -75,7 +75,7 @@ TEST(MV, ccs) {
         x[i][1] = x1[i + n];
       }
       Array<std::array<double, 2>> y1(m);
-      A.mv_mrhs_nt(x, y1);
+      A.multiply_mrhs_nt(x, y1);
       std::vector<double> x2(x1.cbegin(), x1.cbegin() + n);
       const auto          y2 = dense_mv(A_d, x2);
       std::vector<double> x3(x1.cbegin() + n, x1.cend());
@@ -93,7 +93,7 @@ TEST(MV, ccs) {
         x[i][1] = x1[i + m];
       }
       Array<std::array<double, 2>> y1(n);
-      A.mv_mrhs(x, y1, true);
+      A.multiply_mrhs(x, y1, true);
       std::vector<double> x2(x1.cbegin(), x1.cbegin() + m);
       const auto          y2 = dense_mv(A_d, x2, true);
       std::vector<double> x3(x1.cbegin() + m, x1.cend());

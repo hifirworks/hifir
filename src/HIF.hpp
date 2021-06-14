@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-//                  This file is part of the HIFIR library                         //
+//                  This file is part of the HIFIR library                   //
 ///////////////////////////////////////////////////////////////////////////////
 
 /*!
@@ -34,11 +34,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #else
 #  define HIF_HAS_MKL 0
 #endif  // MKL
-#if defined(_MKL_SPBLAS_H_) || HIF_HAS_MKL
-#  define HIF_HAS_SPARSE_MKL 1
-#else
-#  define HIF_HAS_SPARSE_MKL 0
-#endif
+// #if defined(_MKL_SPBLAS_H_) || HIF_HAS_MKL
+// #  define HIF_HAS_SPARSE_MKL 1
+// #else
+// #  define HIF_HAS_SPARSE_MKL 0
+// #endif
 
 #include "hif/macros.hpp"
 

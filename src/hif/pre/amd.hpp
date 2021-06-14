@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-//                  This file is part of the HIFIR library                         //
+//                  This file is part of the HIFIR library                   //
 //                                                                           //
 //            Copyright (C) 1996-2015, Timothy A. Davis,                     //
 //                                     Patrick R. Amestoy, and               //
@@ -364,7 +364,7 @@ class AMD {
 
     lnz     = 0;
     ndiv    = 0;
-    nms_lu  = 0;
+    nms_lu  = 0;       
     nms_ldl = 0;
     dmax    = 1;
     me      = EMPTY;
