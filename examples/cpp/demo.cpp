@@ -81,6 +81,8 @@ int main(int argc, char *argv[]) {
   array_t x(b.size());  // solution
   crs_t   A2(A, true);
   std::cout << "eliminated " << A2.eliminate(1e-15) << " small entries\n";
+  for (size_t i(0); i < A2.ind_start().size(); ++i) ++A2.ind_start()[i];
+  for (size_t i(0); i < A2.col_ind().size(); ++i) ++A2.col_ind()[i];
 
   DefaultTimer timer;
 

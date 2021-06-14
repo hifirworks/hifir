@@ -363,15 +363,7 @@ inline void prec_solve(PrecItr prec_itr, const RhsType &b,
   // compute the E part only if E is not empty
   if (nm) {
     // solve for work(1:m)=inv(U)*inv(B)*inv(L)*work(1:m), this is done inplace
-    if (!prec.ls_U.empty())
-      internal::prec_solve_ldu(prec.ls_U, prec.d_B, prec.ls_L, work);
-#if HIF_HAS_SPARSE_MKL
-    else if (!prec.mkl_U.empty())
-      internal::prec_solve_ldu(prec.mkl_U, prec.d_B, prec.mkl_L, work);
-#endif
-    else
-      internal::prec_solve_ldu(prec.U_B, prec.d_B, prec.L_B, work);
-
+    internal::prec_solve_ldu(prec.U_B, prec.d_B, prec.L_B, work);
     // then compute y(m+1:n) = E*work(1:m)
     prec.E.multiply_nt_low(&work[0], y.data() + m);
     // then subtract b from the y(m+1:n)
@@ -419,14 +411,7 @@ inline void prec_solve(PrecItr prec_itr, const RhsType &b,
   }
 
   // solve for work(1:m)=inv(U)*inv(B)*inv(L)*work(1:m), inplace
-  if (!prec.ls_U.empty())
-    internal::prec_solve_ldu(prec.ls_U, prec.d_B, prec.ls_L, work);
-#if HIF_HAS_SPARSE_MKL
-  else if (!prec.mkl_U.empty())
-    internal::prec_solve_ldu(prec.mkl_U, prec.d_B, prec.mkl_L, work);
-#endif
-  else
-    internal::prec_solve_ldu(prec.U_B, prec.d_B, prec.L_B, work);
+  internal::prec_solve_ldu(prec.U_B, prec.d_B, prec.L_B, work);
 
   // Now, we have work(1:n) storing the complete solution before final scaling
   // and permutation
@@ -489,7 +474,7 @@ inline void prec_solve_mrhs(PrecItr prec_itr,
 
     // then compute y(m+1:n) = E*work(1:m)
     prec.E.template multiply_mrhs_nt_low<Nrhs>(work[0].data(),
-                                         y[0].data() + Nrhs * m);
+                                               y[0].data() + Nrhs * m);
     // then subtract b from the y(m+1:n)
     for (size_type i = m; i < n; ++i) {
       const auto spi = s[p[i]];
@@ -525,7 +510,7 @@ inline void prec_solve_mrhs(PrecItr prec_itr,
   if (prec.F.ncols()) {
     // compute F*y(m+1:n) and store it to work(1:m)
     prec.F.template multiply_mrhs_nt_low<Nrhs>(y[0].data() + Nrhs * m,
-                                         work[0].data());
+                                               work[0].data());
     // subtract b(1:m) from work(1:m)
     for (size_type i = 0u; i < m; ++i) {
       const auto spi = s[p[i]];
