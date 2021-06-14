@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-//                  This file is part of the HIFIR library                         //
+//                  This file is part of the HIFIR library                   //
 ///////////////////////////////////////////////////////////////////////////////
 
 /*!
@@ -63,9 +63,8 @@ const static char *intro =
     "\n"
     " > Package information:\n"
     "\n"
-    "\t\t* Copyright (C) NumGeom Group at Stony Brook University\n"
-    "\t\t* Version: %d.%d.%d\n"
-    "\t\t* Built on: %s, %s\n"
+    "\t* Copyright (C) NumGeom Group at Stony Brook University\n"
+    "\t* Version: %d.%d.%d\n"
     "\n"
     "=======================================================================\n";
 static bool introduced = false;
