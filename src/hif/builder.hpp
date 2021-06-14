@@ -279,7 +279,7 @@ class HIF {
     if (hif_verbose(INFO, params)) {
       if (!internal::introduced) {
         hif_info(internal::intro, HIF_GLOBAL_VERSION, HIF_MAJOR_VERSION,
-                 HIF_MINOR_VERSION, __TIME__, __DATE__);
+                 HIF_MINOR_VERSION);
         internal::introduced = true;
       }
       hif_info("Params (control parameters) are:\n");
