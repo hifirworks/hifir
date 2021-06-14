@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-//                  This file is part of HIF project                         //
+//                  This file is part of the HIFIR library                         //
 ///////////////////////////////////////////////////////////////////////////////
 
 /*!
@@ -8,7 +8,7 @@
  * \author Qiao Chen
 
 \verbatim
-Copyright (C) 2019 NumGeom Group at Stony Brook University
+Copyright (C) 2021 NumGeom Group at Stony Brook University
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -51,31 +51,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 /// \brief indicate HIF to drop the ASCII color code in the logging
 /// \note default value is off
 #  define HIF_LOG_PLAIN_PREFIX
-
-/// \def HIF_FC_UPPER
-/// \brief Fortran name mangling uses all upper cases
-/// \note default is off
-#  define HIF_FC_UPPER
-
-/// \def HIF_FC_LOWER
-/// \brief Fortran name mangling uses all lower cases
-/// \note default is on (implicit)
-#  define HIF_FC_LOWER
-
-/// \def HIF_FC_NC
-/// \brief Fortran name mangling appends no _
-/// \note default is off
-#  define HIF_FC_NC
-
-/// \def HIF_FC_APPEND__
-/// \brief Fortran name mangling appends two _
-/// \note default is off
-#  define HIF_FC_APPEND__
-
-/// \def HIF_FC_APPEND_
-/// \brief Fortran name mangling appends single _
-/// \note default is on (implicit)
-#  define HIF_FC_APPEND_
 
 /// \def HIF_HIGH_PRECISION_SOLVE
 /// \brief Use higher precision in the back solve in hif

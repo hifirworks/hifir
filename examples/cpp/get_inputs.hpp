@@ -1,5 +1,5 @@
 //===========================================================================//
-//                  This file is part of HIF project                         //
+//                  This file is part of the HIFIR library                         //
 //===========================================================================//
 
 // common interface for getting input A, b and leading dimension
