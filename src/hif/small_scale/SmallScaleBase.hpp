@@ -47,6 +47,8 @@ class SmallScaleBase {
   /// \brief default constructor
   SmallScaleBase() : _mat(), _rank(0u) {}
 
+  inline ~SmallScaleBase() {}
+
   // utilities
   inline bool              empty() const { return _mat.empty(); }
   inline size_type         rank() const { return _rank; }
