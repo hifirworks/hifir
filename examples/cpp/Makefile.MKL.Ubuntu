@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-#                Copyright (C) 2019 The HIF AUTHORS
+#                Copyright (C) 2021 NumGeom Group at Stony Brook University
 # ----------------------------------------------------------------------------
 
 # This is a makefile for Ubuntu, assuming MKL is installed

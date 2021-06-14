@@ -1,5 +1,5 @@
 ###############################################################################
-#                   This file is part of HIF project                      #
+#                   This file is part of the HIFIR library                      #
 ###############################################################################
 
 # automatic makefile for unit testing
