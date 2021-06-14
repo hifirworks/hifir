@@ -40,7 +40,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 /// nicely to \a ostream \a __ss, thus can be later transferred to, e.g.,
 /// HIF_STDERR
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && defined(__unix__)
 #  include <cxxabi.h>
 #  include <execinfo.h>
 #  define LOAD_STACKTRACE(__ss, __limit)                                     \
