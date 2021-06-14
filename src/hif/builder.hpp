@@ -290,13 +290,6 @@ class HIF {
     else
       warn_flag(1);
 
-    // check validity of the input system
-    if (params.check) {
-      if (hif_verbose(INFO, params))
-        hif_info("perform input matrix validity checking");
-      A.check_validity();
-    }
-
     _nrows = A.nrows();
     _ncols = A.ncols();
 
@@ -316,8 +309,26 @@ class HIF {
 
     cs_type AA;
     AA.resize(A.nrows(), A.ncols());
-    AA.ind_start() = A.ind_start();
-    AA.inds()      = A.inds();
+    // check index base
+    if (A.nrows()) {
+      if (A.ind_start()[0] == index_type(0)) {
+        // 0-based, shallow copy
+        AA.ind_start() = A.ind_start();
+        AA.inds()      = A.inds();
+      } else if (A.ind_start()[0] == index_type(1)) {
+        // 1-based
+        if (hif_verbose(INFO, params))
+          hif_info("converting to 0-based compressed matrix...");
+        AA.ind_start().resize(A.ind_start().size());
+        for (size_type i(0); i < A.ind_start().size(); ++i)
+          AA.ind_start()[i] = A.ind_start()[i] - 1;
+        AA.inds().resize(A.inds().size());
+        for (size_type i(0); i < A.inds().size(); ++i)
+          AA.inds()[i] = A.inds()[i] - 1;
+      } else
+        hif_error("only {0,1}-based compressed sparse matrices are supported!");
+    }
+    // check value type consistency
     if (std::is_same<value_type, typename CsType::value_type>::value)
       AA.vals() = array_type(A.nnz(), (value_type *)A.vals().data(), true);
     else {
@@ -329,6 +340,12 @@ class HIF {
       hif_error_if(AA.vals().status() == DATA_UNDEF,
                    "memory allocation failed");
       std::copy(A.vals().cbegin(), A.vals().cend(), AA.vals().begin());
+    }
+    // check validity of the input system
+    if (params.check) {
+      if (hif_verbose(INFO, params))
+        hif_info("perform input matrix validity checking");
+      AA.check_validity();
     }
     // create size references for dropping
     iarray_type row_sizes, col_sizes;
@@ -377,12 +394,6 @@ class HIF {
     const foreign_cs_type A(n, (IndexType_ *)indptr, (IndexType_ *)indices,
                             (ValueType_ *)vals, true);
     factorize(A, params, m0);
-  }
-
-  /// \brief optimization a priori
-  /// \param[in] tag optimization tag
-  inline void optimize(const int tag = 0) {
-    for (auto &prec : _precs) prec.optimize(tag);
   }
 
   /// \brief solve \f$\mathbf{x}=\mathbf{M}^{-1}\mathbf{b}\f$

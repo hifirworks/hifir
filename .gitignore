@@ -21,6 +21,8 @@ tmp
 src/psmilu_matching/hsl_mc64*.h
 *.hilucsi
 *.psmilu
+*.hif
+*.hifir
 *.bin
 *.mat
 !examples/demo_inputs/A.hilucsi

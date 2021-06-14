@@ -22,10 +22,6 @@
 
 #include <fstream>
 
-#ifdef HIF_DEMO_USE_MKL
-#  include <mkl.h>
-#endif
-
 #include "get_inputs.hpp"
 #include "parse_options.hpp"
 
@@ -81,6 +77,8 @@ int main(int argc, char *argv[]) {
   array_t x(b.size());  // solution
   crs_t   A2(A, true);
   std::cout << "eliminated " << A2.eliminate(1e-15) << " small entries\n";
+  for (size_t i(0); i < A2.ind_start().size(); ++i) ++A2.ind_start()[i];
+  for (size_t i(0); i < A2.col_ind().size(); ++i) ++A2.col_ind()[i];
 
   DefaultTimer timer;
 
@@ -102,16 +100,6 @@ int main(int argc, char *argv[]) {
       M.rank(), 100.0 * M.nnz() / A.nnz(), 100.0 * M.nnz_ef() / A.nnz(),
       100.0 * M.nnz_ef() / M.nnz(), M.levels(), 100.0 * M.stats(5) / M.stats(4),
       timer.time());
-
-#if 0
-  timer.start();
-  M.optimize();
-  timer.finish();
-  hif_info(
-      "\nOptimization preconditioner done!\n"
-      "\ttime: %.4gs\n",
-      timer.time());
-#endif
 
   // solve
   timer.start();

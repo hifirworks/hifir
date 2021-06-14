@@ -40,10 +40,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifdef HIF_ENABLE_MUMPS
 #  include "hif/sparse_direct/mumps.hpp"
 #endif  // HIF_ENABLE_MUMPS
-#if HIF_HAS_SPARSE_MKL
-#  include "hif/arch/mkl_trsv.hpp"
-#endif
-#include "hif/arch/ls_trsv.hpp"
 
 namespace hif {
 
@@ -299,7 +295,6 @@ struct Prec {
     p     = std::move(P);
     q_inv = std::move(Q_inv);
   }
-#endif
 
   /// \brief a priori optimization
   /// \param[in] tag optimization tag
@@ -312,18 +307,19 @@ struct Prec {
       ls_U.setup(_U_crs);
       ls_U.template optimize<true>();
     }
-#if HIF_HAS_SPARSE_MKL
+#  if HIF_HAS_SPARSE_MKL
     else if (tag == 1) {
       mkl_L.setup(_L_crs.row_start(), _L_crs.col_ind(), _L_crs.vals());
       mkl_U.setup(_U_crs.row_start(), _U_crs.col_ind(), _U_crs.vals());
       mkl_L.template optimize<false>(1);
       mkl_U.template optimize<true>(1);
     }
-#else
+#  else
     else
       hif_error("unknown optimization tag %d", tag);
-#endif
+#  endif
   }
+#endif
 
   /// \brief check if this a last level preconditioner
   ///
@@ -487,13 +483,6 @@ struct Prec {
  protected:
   crs_type _L_crs;  ///< crs type for parallel trsv
   crs_type _U_crs;  ///< crs type for parallel trsv
- public:
-  LsSpTrSolver<value_type, index_type> ls_L;  ///< levelset L
-  LsSpTrSolver<value_type, index_type> ls_U;  ///< levelset U
-#if HIF_HAS_SPARSE_MKL
-  MKL_SpTrSolver<value_type, index_type> mkl_L;
-  MKL_SpTrSolver<value_type, index_type> mkl_U;
-#endif
 
  private:
   /// \brief allow casting to \a char, this is needed to add an empty node

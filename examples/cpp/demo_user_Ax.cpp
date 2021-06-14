@@ -22,10 +22,6 @@
 
 #include <fstream>
 
-#ifdef HIF_DEMO_USE_MKL
-#  include <mkl.h>
-#endif
-
 #include "get_inputs.hpp"
 #include "parse_options.hpp"
 
@@ -103,16 +99,6 @@ int main(int argc, char *argv[]) {
       100.0 * M.nnz_ef() / M.nnz(), M.levels(), 100.0 * M.stats(5) / M.stats(4),
       timer.time());
 
-#if 0
-  timer.start();
-  M.optimize();
-  timer.finish();
-  hif_info(
-      "\nOptimization preconditioner done!\n"
-      "\ttime: %.4gs\n",
-      timer.time());
-#endif
-
   // solve
   // wrap user callback, the interfaces are
   //   opaque pointer x: input array
@@ -128,7 +114,7 @@ int main(int argc, char *argv[]) {
     hif_error_if(xdtype != 'd', "input array must be double");
     hif_error_if(ydtype != 'd', "output array must be double");
     A.multiply_nt_low(reinterpret_cast<const double *>(x),
-                reinterpret_cast<double *>(y));
+                      reinterpret_cast<double *>(y));
   };
   timer.start();
   std::shared_ptr<solver_t> solver(create_ksp(ksp, _M));
