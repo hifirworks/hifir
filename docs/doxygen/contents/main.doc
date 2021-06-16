@@ -10,47 +10,79 @@
 Introduction
 ------------
 
-\c HIF is a C++ package for efficient implementation of hybrid incomplete
+\c HIFIR is a C++ package for efficient implementation of hybrid incomplete
 factorizations with nearly linear time complexity in both its factorization and
 triangular solves.
-
-How to Read The Documentation
------------------------------
-
-blah blah ...
-
-License
--------
-
-\verbinclude LICENSE
 
 Contacts
 --------
 
-This project is based on [cite reference here]; the package development is led
-by <a href="http://www.ams.sunysb.edu/~jiao/">Dr. Xiangmin (Jim) Jiao</a> with
+The package development is led
+by <a href="http://www.ams.sunysb.edu/~jiao/">Prof. Xiangmin (Jim) Jiao</a> with
 main developer(s) Qiao Chen.
 
-\li Dr. Xiangmin (Jim) Jiao, xiangmin.jiao@stonybrook.edu
-\li Qiao Chen, qiao.chen@stonybrook.edu
+\li Qiao Chen, qiao.chen@stonybrook.edu, benechiao@gmail.com
+\li Prof. Xiangmin (Jim) Jiao, xiangmin.jiao@stonybrook.edu
 
 Active maintainer(s):
 
 \li Qiao Chen
+\li Prof. Xiangmin (Jim) Jiao
 
-Publications
-------------
+Citations and Publications
+--------------------------
 
-blah blah ...
+If you plan to use HIFIR in solving for nonsingular systems, then please cite
+the following paper.
 
-Acknowledgments
----------------
+\verbatim
+@article{chen2021hilucsi,
+  author  = {Chen, Qiao and Ghai, Aditi and Jiao, Xiangmin},
+  title   = {{HILUCSI}: Simple, robust, and fast multilevel {ILU} for
+             large-scale saddle-point problems from {PDE}s},
+  journal = {Numer. Linear Algebra Appl.},
+  year    = {2021},
+  note    = {To appear},
+  doi     = {10.1002/nla.2400},
+}
+\endverbatim
 
-blah blah ...
+If you plan to use HIFIR in solving singular and ill-conditioned systems, then
+please cite the following papers.
 
-TODO List
----------
+\verbatim
+@article{jiao2020approximate,
+  author  = {Xiangmin Jiao and Qiao Chen},
+  journal = {arXiv},
+  title   = {Approximate generalized inverses with iterative refinement for
+             $\epsilon$-accurate preconditioning of singular systems},
+  year    = {2020},
+  note    = {arXiv:2009.01673},
+}
+\endverbatim
 
-blah blah ...
+\verbatim
+@article{chen2021hifir,
+  author  = {Chen, Qiao and Jiao, Xiangmin},
+  title   = {{HIFIR}: Hybrid incomplete factorization with iterative refinement
+             for preconditioning ill-conditioned and singular systems},
+  journal = {arXiv},
+  year    = {2021},
+  note    = {arXiv:21...},
+}
+\endverbatim
+
+Copyrights and Licenses
+-----------------------
+
+The HIFIR software package is released under a dual-license module. For academic
+users, individual users, or open-source software developers, you can use HIFIR
+under the GNU Affero General Public License version 3 (AGPLv3+, see below)
+free of charge for research and evaluation purpose. For commerical users,
+separate commerical licenses are available through the Stony Brook University.
+For inqueries regarding commerical licenses, please contact Prof. Xiangmin Jiao
+at xiangmin.jiao@stonybrook.edu.
+
+\verbinclude LICENSE
 
 */
