@@ -44,8 +44,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "hif/builder.hpp"
 
-#include "hif/ksp/interface.hpp"
-
 namespace hif {
 
 /// \brief get the version string representation during runtime
