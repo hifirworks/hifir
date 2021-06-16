@@ -92,7 +92,7 @@ static bool introduced = false;
 /// The following is a simple workflow for Builder.
 ///
 /// \code{.cpp}
-///   #include <HIF.hpp>
+///   #include <hifir.hpp>
 ///   using namespace hif;
 ///   using builder_t = HIF<double, int>;
 ///   using crs_t = builder_t::crs_type;

@@ -81,7 +81,7 @@ struct DefaultDenseSolver {
 /// The following demonstrates how to customize a user-defined dense factory
 ///
 /// \code{.cpp}
-///   #include <HIF.hpp>
+///   #include <hifir.hpp>
 ///   template <class T>
 ///   using MyQRCP = hif::QRCP<T>; // simply wrap built-in QRCP solver
 ///   template <class T>

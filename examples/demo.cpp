@@ -29,7 +29,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <string>
 #include <utility>
 
-#include "HIF.hpp"
+#include "hifir.hpp"
 
 using prec_t   = hif::HIF<double, int>;
 using matrix_t = prec_t::crs_type;

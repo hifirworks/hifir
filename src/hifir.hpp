@@ -3,7 +3,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /*!
- * \file HIF.hpp
+ * \file hifir.hpp
  * \brief top-level user interface
  * \author Qiao Chen
 
@@ -26,8 +26,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
  */
 
-#ifndef _HIF_HPP
-#define _HIF_HPP
+#ifndef _HIFIR_HPP
+#define _HIFIR_HPP
 
 #ifdef _MKL_H_
 #  define HIF_HAS_MKL 1
@@ -58,4 +58,4 @@ inline std::string version() {
 
 }  // namespace hif
 
-#endif  // _HIF_HPP
+#endif  // _HIFIR_HPP

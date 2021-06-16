@@ -12,7 +12,7 @@
 
 \section _install_cpp Installation of the C++ interface
 
-Installing the C++ interface can be easily done by copying \a HIF.hpp
+Installing the C++ interface can be easily done by copying \a hifir.hpp
 and folder \a hif to the destination. Thanks to the head-only design, one just
 needs to include \a HIF.hpp in his/her projects.
 
