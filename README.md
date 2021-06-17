@@ -2,41 +2,35 @@
 
 ## Introduction ##
 
-Welcome to the `HIFIR` package! `HIF` stands for `H`ybrid (`H`ierarchical) `I`ncomplete `F`actorizations with `I`terative `R`efinements, which is a new *multilevel ILU-like* software framework based on (near) linear time complexity and robust dropping strategy. Yup, you read it right, we have both!
+Welcome to the `HIFIR` package! `HIFIR` stands for `H`ybrid `I`ncomplete `F`actorization with `I`terative `R`efinement, which is a *multilevel* preconditioner for ill-conditioned and (nearly) singular systems. `HIFIR` has (near) linear time complexity in its factorization and solve and is robust due to its multilevel structure, scalability-oriented dropping, and careful control of the condition numbers of the triangular factors.
 
 ## Installation ##
 
-The C++ interface `HIFIR` is a header-only package, one can simply just
+The C++ interface of `HIFIR` is header-only. You can simply do the following on a UNIX system
 
 ```console
-sudo cp -r src/* /usr/local/include
+sudo cp /path/to/hifir/src/* /usr/local/include
 ```
 
-or regular user installation
+or copy `/path/to/hifir/src/*` to any user-level directory, for example,
 
 ```console
-mkdir -p $HOME/.local/include
-cp -r src/* $HOME/.local/include
+sudo cp /path/to/hifir/src/* $HOME/.local/include
 ```
+and then add `-I$HOME/.local/include` to the command line of your `c++` compiler.
 
-## License ##
+## Copyright and Licenses ##
 
-The `HIFIR` software package is released under a dual-license module. For academic users, individual users, or open-source software developers, you can use HIFIR under the GNU Affero General Public License version 3 (AGPLv3+, see [`LICENSE`](./LICENSE)) free of charge for research and evaluation purpose. For commerical users, separate commerical licenses are available through the Stony Brook University. For inqueries regarding commerical licenses, please contact Prof. Xiangmin Jiao at xiangmin.jiao@stonybrook.edu.
-## Contacts ##
+The `HIFIR` software suite (including `hifir4m` and `hifir4py`) are developed by the NumGeom Research Group at Stony Brook University.
 
-This packages is developed and being maintained by the *NumGeom* research group at Stony Brook University.
+The `HIFIR` software package is released under a dual-license model. For academic users, individual users, or open-source software developers, you can use HIFIR under the GNU Affero General Public License version 3 (AGPLv3+, see [`LICENSE`](./LICENSE)) free of charge for research and evaluation purpose. For commerical users, separate commerical licenses are available through the Stony Brook University. For inquiries regarding commercial licenses, please contact Prof. Xiangmin Jiao at xiangmin.jiao@stonybrook.edu.
 
-Active maintainer(s):
+## How to Cite `HIFIR` ##
 
-1. Qiao (Chiao) Chen, <qiao.chen@stonybrook.edu>, <benechiao@gmail.com>
-2. Xiangmin (Jim) Jiao, <xiangmin.jiao@stonybrook.edu>
-
-## Citations and Publications ##
-
-If you plan to use HIFIR in solving for nonsingular systems, then please cite the following paper.
+If you use `HIFIR` in your research for nonsingular systems, please cite the `HILUCSI` paper:
 
 ```bibtex
-@article{chen2021hilucsi,
+@Article{chen2021hilucsi,
   author  = {Chen, Qiao and Ghai, Aditi and Jiao, Xiangmin},
   title   = {{HILUCSI}: Simple, robust, and fast multilevel {ILU} for
              large-scale saddle-point problems from {PDE}s},
@@ -47,8 +41,7 @@ If you plan to use HIFIR in solving for nonsingular systems, then please cite th
 }
 ```
 
-If you plan to use HIFIR in solving singular and ill-conditioned systems, then
-please cite the following papers.
+If you plan to use HIFIR in solving singular and ill-conditioned systems, please cite the following papers.
 
 ```bibtex
 @article{jiao2020approximate,
@@ -71,3 +64,8 @@ please cite the following papers.
   note    = {arXiv:21...},
 }
 ```
+
+## Contacts ##
+
+- Qiao Chen, <qiao.chen@stonybrook.edu>, <benechiao@gmail.com>
+- Xiangmin Jiao, <xiangmin.jiao@stonybrook.edu>, <xmjiao@gmail.com>
