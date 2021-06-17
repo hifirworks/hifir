@@ -43,14 +43,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 /// \brief HIF minor version
 /// \ingroup itr
 
-/// \def HIF_VERSION
-/// \brief HIF uses three-digit version system, i.e. \a global.major.minor
-/// \ingroup itr
-
-#define HIF_GLOBAL_VERSION 1
-#define HIF_MAJOR_VERSION 0
+#define HIF_GLOBAL_VERSION 0
+#define HIF_MAJOR_VERSION 1
 #define HIF_MINOR_VERSION 0
-#define HIF_VERSION \
-  (100 * HIF_GLOBAL_VERSION + 10 * HIF_MAJOR_VERSION + HIF_MINOR_VERSION)
 
 #endif /* _HIF_VERSION_H */
