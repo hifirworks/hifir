@@ -334,11 +334,9 @@ inline void prec_solve(PrecItr prec_itr, const RhsType &b,
                        const std::size_t last_dim, SolType &y, WorkType &work) {
   using prec_type = typename std::remove_const<
       typename std::iterator_traits<PrecItr>::value_type>::type;
-  using value_type = typename prec_type::value_type;
   using interface_value_type =
       typename std::remove_reference<decltype(y[0])>::type;
   using size_type            = typename prec_type::size_type;
-  using array_type           = Array<value_type>;
   using interface_array_type = Array<interface_value_type>;
   using work_array_type =
       Array<typename std::remove_reference<decltype(work[0])>::type>;
@@ -434,10 +432,8 @@ inline void prec_solve_mrhs(PrecItr prec_itr,
                             Array<std::array<WorkValueType, Nrhs>> &work) {
   using prec_type = typename std::remove_const<
       typename std::iterator_traits<PrecItr>::value_type>::type;
-  using value_type           = typename prec_type::value_type;
   using interface_value_type = SolValueType;
   using size_type            = typename prec_type::size_type;
-  using array_type           = Array<std::array<value_type, Nrhs>>;
   using interface_array_type = Array<std::array<interface_value_type, Nrhs>>;
   using work_array_type      = Array<std::array<WorkValueType, Nrhs>>;
   constexpr static bool WRAP = true;
@@ -548,11 +544,9 @@ inline void prec_solve_tran(PrecItr prec_itr, const RhsType &b,
                             WorkType &work) {
   using prec_type = typename std::remove_const<
       typename std::iterator_traits<PrecItr>::value_type>::type;
-  using value_type = typename prec_type::value_type;
   using interface_value_type =
       typename std::remove_reference<decltype(y[0])>::type;
   using size_type            = typename prec_type::size_type;
-  using array_type           = Array<value_type>;
   using interface_array_type = Array<interface_value_type>;
   using work_array_type =
       Array<typename std::remove_reference<decltype(work[0])>::type>;

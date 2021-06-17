@@ -1025,7 +1025,9 @@ class AMD {
         symm_flag;
     size_t nzaat, slen;
     double mem = 0;
-    info       = Info != nullptr;
+    (void)do_check;
+    (void)symm_flag;
+    info = Info != nullptr;
     if (info) {
       for (i = 0; i < AMD_INFO; i++) {
         Info[i] = EMPTY;
