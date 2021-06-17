@@ -80,7 +80,6 @@ inline CsType pivot_level_factorize(
   typedef typename CsType::value_type                     value_type;
   typedef typename ValueTypeTrait<value_type>::value_type scalar_type;
   typedef DenseMatrix<value_type>                         dense_type;
-  typedef typename PrecsType::value_type prec_type;  // precs is std::list
 
   hif_error_if(A.nrows() != A.ncols(), "only squared systems are supported");
 
@@ -114,12 +113,14 @@ inline CsType pivot_level_factorize(
         std::ceil(min_local_size_ratio * A.nnz() / A.nrows());
     const size_type lower_col =
         std::ceil(min_local_size_ratio * A.nnz() / A.ncols());
-    std::replace_if(row_sizes.begin(), row_sizes.begin() + A.nrows(),
-                    [=](const index_type i) { return i < lower_row; },
-                    lower_row);
-    std::replace_if(col_sizes.begin(), col_sizes.begin() + A.ncols(),
-                    [=](const index_type i) { return i < lower_col; },
-                    lower_col);
+    std::replace_if(
+        row_sizes.begin(), row_sizes.begin() + A.nrows(),
+        [=](const index_type i) { return (size_type)i < lower_row; },
+        lower_row);
+    std::replace_if(
+        col_sizes.begin(), col_sizes.begin() + A.ncols(),
+        [=](const index_type i) { return (size_type)i < lower_col; },
+        lower_col);
   }
 
   const size_type must_symm_pre_lvls =
@@ -281,14 +282,14 @@ inline CsType pivot_level_factorize(
   // block range, and their corresponding incremental inverse norm estimations
   // for L and U are bounded bay kappa.
   auto pvt_l_op = [&](const index_type i) {
-    if (i >= m2) return false;  // pivots must be in the leading block
-    value_type kv;
+    if ((size_type)i >= m2)
+      return false;  // pivots must be in the leading block
     step.update_kappa(L, kappa_l, i);
     return std::abs(kappa_l[step]) <= kappa;
   };
   auto pvt_u_op = [&](const index_type i) {
-    if (i >= m2) return false;  // pivots must be in the leading block
-    value_type kv;
+    if ((size_type)i >= m2)
+      return false;  // pivots must be in the leading block
     step.update_kappa(U, kappa_ut, i);
     return std::abs(kappa_ut[step]) <= kappa;
   };

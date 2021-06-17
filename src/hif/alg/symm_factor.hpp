@@ -131,13 +131,12 @@ inline CsType symm_level_factorize(
   typedef CsType                      input_type;
   typedef typename CsType::other_type other_type;
   using cs_trait = internal::CompressedTypeTrait<input_type, other_type>;
-  typedef typename cs_trait::crs_type    crs_type;
-  typedef typename cs_trait::ccs_type    ccs_type;
-  typedef typename CsType::index_type    index_type;
-  typedef typename CsType::size_type     size_type;
-  typedef typename CsType::value_type    value_type;
-  typedef DenseMatrix<value_type>        dense_type;
-  typedef typename PrecsType::value_type prec_type;  // precs is std::list
+  typedef typename cs_trait::crs_type                     crs_type;
+  typedef typename cs_trait::ccs_type                     ccs_type;
+  typedef typename CsType::index_type                     index_type;
+  typedef typename CsType::size_type                      size_type;
+  typedef typename CsType::value_type                     value_type;
+  typedef DenseMatrix<value_type>                         dense_type;
   typedef typename ValueTypeTrait<value_type>::value_type scalar_type;
 
   hif_error_if(A.nrows() != A.ncols(), "only squared systems are supported");
@@ -170,9 +169,10 @@ inline CsType symm_level_factorize(
     // filter out too small terms
     const size_type lower_row =
         std::ceil(min_local_size_ratio * A.nnz() / A.nrows());
-    std::replace_if(row_sizes.begin(), row_sizes.begin() + A.nrows(),
-                    [=](const index_type i) { return i < lower_row; },
-                    lower_row);
+    std::replace_if(
+        row_sizes.begin(), row_sizes.begin() + A.nrows(),
+        [=](const index_type i) { return (size_type)i < lower_row; },
+        lower_row);
   }
 
   // preprocessing
