@@ -19,8 +19,12 @@ HIF_LDFLAGS = $(LDFLAGS)
 .PHONY: clean
 .PRECIOUS: demo
 
-demo: demo.cpp
+demo.exe: demo.cpp
 	$(HIF_CXX) $(HIF_CXXFLAGS) -I../src $< -o $@ $(HIF_LIBS) $(HIF_LDFLAGS)
 
+demo_libhifir.exe: demo_libhifir.cpp
+	$(HIF_CXX) $(HIF_CXXFLAGS) -I../src -I../libhifir $< -o $@ \
+		-L../libhifir -lhifir -Wl,-rpath,../libhifir
+
 clean:
-	rm -f demo
+	rm -f *.exe
