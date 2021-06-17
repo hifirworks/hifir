@@ -7,8 +7,8 @@ ifeq ($(HIF_CXX),)
 	HIF_CXX = g++
 endif
 HIF_CXXFLAGS = $(CXXFLAGS)
-HIF_CXXFLAGS += -g -O3 -ffast-math -std=c++11 -march=native
-HIF_LIBS = $(LIBS)
+HIF_CXXFLAGS += -g -O3 -ffast-math -std=c++11 -march=native -DNDEBUG
+HIF_LIBS = $(LIBS) -fopenmp
 ifeq ($(HIF_LAPACK_LIB),)
 	HIF_LIBS += -llapack -lblas
 else
