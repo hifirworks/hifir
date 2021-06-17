@@ -30,6 +30,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
  */
 
+/* Reference
+ * Amestoy, Patrick R., Timothy A. Davis, and Iain S. Duff. "Algorithm 837:
+ * AMD, an approximate minimum degree ordering algorithm." ACM Transactions
+ * on Mathematical Software (TOMS) 30.3 (2004): 381-388.
+ */
+
 #ifndef _HIF_PRE_AMD_HPP
 #define _HIF_PRE_AMD_HPP
 
