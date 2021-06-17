@@ -24,7 +24,7 @@ endif
 
 ifeq ($(DEBUG),)
 OPTFLAGS = -O3 -ffast-math
-end
+endif
 CXXFLAGS += $(DBGFLAGS) $(OPTFLAGS)
 
 LIBS = -pthread
