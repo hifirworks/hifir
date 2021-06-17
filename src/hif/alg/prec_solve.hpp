@@ -145,7 +145,7 @@ inline typename std::enable_if<!CcsType::ROW_MAJOR, T>::type prec_solve_ldu(
   for (size_type j = 0u; j < m; ++j) {
     const auto y_j = y[j];
     auto       itr = L.row_ind_cbegin(j);
-#  ifndef NDEBUG
+#  ifdef HIF_DEBUG
     if (itr != L.row_ind_cend(j))
       hif_error_if(size_type(*itr) <= j, "must be strictly lower part!");
 #  endif
@@ -165,7 +165,7 @@ inline typename std::enable_if<!CcsType::ROW_MAJOR, T>::type prec_solve_ldu(
     for (size_type j = m - 1; j != 0u; --j) {
       const auto y_j = y[j];
       auto       itr = rev_iterator(U.row_ind_cend(j));
-#  ifndef NDEBUG
+#  ifdef HIF_DEBUG
       if (itr != rev_iterator(U.row_ind_cbegin(j)))
         hif_error_if(size_type(*itr) >= j, "must be strictly upper part");
 #  endif

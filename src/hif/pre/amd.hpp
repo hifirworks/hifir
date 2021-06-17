@@ -256,13 +256,13 @@ class AMD {
 
   inline static Int post_tree(Int root, Int k, Int *Child, const Int *Sibling,
                               Int *Order, Int *Stack
-#ifndef NDEBUG
+#ifdef HIF_DEBUG
                               ,
                               Int nn
 #endif
   ) {
     Int f, head, h, i;
-#ifndef NDEBUG
+#ifdef HIF_DEBUG
     (void)nn;  // disable warning
 #endif
     head     = 0;
@@ -337,7 +337,7 @@ class AMD {
     for (i = 0; i < nn; i++) {
       if (Parent[i] == EMPTY && Nv[i] > 0) {
         k = post_tree(i, k, Child, Sibling, Order, Stack
-#ifndef NDEBUG
+#ifdef HIF_DEBUG
                       ,
                       nn
 #endif
@@ -370,7 +370,7 @@ class AMD {
 
     lnz     = 0;
     ndiv    = 0;
-    nms_lu  = 0;       
+    nms_lu  = 0;
     nms_ldl = 0;
     dmax    = 1;
     me      = EMPTY;

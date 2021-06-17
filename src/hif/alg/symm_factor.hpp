@@ -59,7 +59,7 @@ inline void compress_tail(L_Type &L, const PosArray &L_start,
   // reshape the secondary axis of the matrices
   L.resize_nrows(L.nrows() / 2);
 
-#ifndef NDEBUG
+#ifdef HIF_DEBUG
   L.check_validity();
 #endif
 }
@@ -385,7 +385,7 @@ inline CsType symm_level_factorize(
                       l);
 
     // update diagonal entries
-#ifndef NDEBUG
+#ifdef HIF_DEBUG
     const bool is_nonsingular =
 #else
     (void)

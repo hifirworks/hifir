@@ -296,7 +296,7 @@ inline Options get_default_options() { return ::hif_get_default_options(); }
 /*!
  * \brief alias of \ref get_default_options
  */
-inline Params get_default_params() { return get_default_options(); }
+inline Params get_default_params() { return ::hif_get_default_params(); }
 
 /*!
  * \var DEFAULT_PARAMS

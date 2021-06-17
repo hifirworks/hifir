@@ -165,7 +165,6 @@ inline void iterative_scale_p(const PermType &p, CrsType &A, ScalingType &rs,
   // This implementation is based on Scaling.h in Eigen under unsupported
 
   using value_type  = typename CrsType::value_type;
-  using array_type  = typename CrsType::array_type;
   using size_type   = typename CrsType::size_type;
   using scalar_type = typename ScalingType::value_type;
 
@@ -237,7 +236,7 @@ inline void iterative_scale_p(const PermType &p, CrsType &A, ScalingType &rs,
     }
     res_c = tmp;
     ++iters;
-#ifndef NDEBUG
+#ifdef HIF_DEBUG
     hif_info("iter-scaling, iter=%zd, res_r=%g, res_c=%g", iters, res_r, res_c);
 #endif
   } while ((res_r > tol || res_c > tol) && iters < max_iters);

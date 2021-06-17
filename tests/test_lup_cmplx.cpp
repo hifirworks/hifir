@@ -13,7 +13,7 @@
 
 using namespace hif;
 
-constexpr static double tol(1e-12);
+constexpr static double tol(1e-10);
 
 TEST(LU, d) {
   // randomized matrix from MATLAB of 20x20, in row order

@@ -33,10 +33,10 @@ TEST(L, crs) {
   A.solve_as_strict_lower_mrhs(y3);
   for (int i = 0; i < n; ++i) {
     EXPECT_NEAR(y3[i][0], y2[i][0],
-                1e-12 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
+                1e-10 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
         << 0 << ' ' << i;
     EXPECT_NEAR(y3[i][1], y2[i][1],
-                1e-12 * (std::abs(y2[i][1] ? y2[i][1] : 1.0)))
+                1e-10 * (std::abs(y2[i][1] ? y2[i][1] : 1.0)))
         << 1 << ' ' << i;
   }
 }
@@ -57,10 +57,10 @@ TEST(U, crs) {
   A.solve_as_strict_upper_mrhs(y3);
   for (int i = 0; i < n; ++i) {
     EXPECT_NEAR(y3[i][0], y2[i][0],
-                1e-12 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
+                1e-10 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
         << 0 << ' ' << i;
     EXPECT_NEAR(y3[i][1], y2[i][1],
-                1e-12 * (std::abs(y2[i][1] ? y2[i][1] : 1.0)))
+                1e-10 * (std::abs(y2[i][1] ? y2[i][1] : 1.0)))
         << 1 << ' ' << i;
   }
 }
@@ -81,10 +81,10 @@ TEST(L, ccs) {
   A.solve_as_strict_lower_mrhs(y3);
   for (int i = 0; i < n; ++i) {
     EXPECT_NEAR(y3[i][0], y2[i][0],
-                1e-12 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
+                1e-10 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
         << 0 << ' ' << i;
     EXPECT_NEAR(y3[i][1], y2[i][1],
-                1e-12 * (std::abs(y2[i][1] ? y2[i][1] : 1.0)))
+                1e-10 * (std::abs(y2[i][1] ? y2[i][1] : 1.0)))
         << 1 << ' ' << i;
   }
 }
@@ -106,10 +106,10 @@ TEST(U, ccs) {
   A.solve_as_strict_upper_mrhs(y3);
   for (int i = 0; i < n; ++i) {
     EXPECT_NEAR(y3[i][0], y2[i][0],
-                1e-12 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
+                1e-10 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
         << 0 << ' ' << i;
     EXPECT_NEAR(y3[i][1], y2[i][1],
-                1e-12 * (std::abs(y2[i][1] ? y2[i][1] : 1.0)))
+                1e-10 * (std::abs(y2[i][1] ? y2[i][1] : 1.0)))
         << 1 << ' ' << i;
   }
 }

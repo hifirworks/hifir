@@ -865,7 +865,7 @@ read_ascii(const char *fname, IndexArray &ind_start, IndexArray &indices,
   // read sizes
   f >> nrows >> ncols >> nnz >> m;
 
-#ifndef NDEBUG
+#ifdef HIF_DEBUG
   hif_info("file %s has size attributes: %zd, %zd, %zd, %zd", fname, nrows,
            ncols, nnz, m);
 #endif

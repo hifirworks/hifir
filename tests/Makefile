@@ -4,26 +4,29 @@
 
 # automatic makefile for unit testing
 # authors:
-#		Qiao,
+#		Qiao Chen
+#		Xiangmin Jiao
 
-USE_GTEST = 1
+DEBUG = 1
+CPPFLAGS = -I../src
 
 include ../Makefile.in
+
+# Specify the path for GTEST. If not defined, search for it in common places.
+GTEST_DIRS = /opt/local $HOME/.local
+GTEST_HOME := $(shell for d in $(GTEST_DIRS); \
+	do if [ -r $$d/include/gtest.h ]; then echo $$d; break; fi; done)
+ifneq ($(GTEST_HOME),)
+	CPPFLAGS += -I$(GTEST_HOME)/include
+	LDFLAGS += -L$(GTEST_HOME)/lib
+endif
+LIBS += -lgtest -lgtest_main
 
 TEST_SRCS = $(shell \ls test_*.cpp)
 TESTS = $(TEST_SRCS:%.cpp=%)
 EXECS = $(TEST_SRCS:%.cpp=%.exe)
-VPATH = $(PSMILU_ROOT)/src
-LAPACK_LIB =
-ifneq ($(LAPACK_LIB),)
-# add lapack blas libraries, use generic libraries for testing
-	LIBS += $(LAPACK_LIB)
-endif
-# Default, we use built-in assertions, set to 1 for sanitizer
-DEBUG_ = 
-ifeq ($(DEBUG),1)
-	DEBUG_ += -DNDEBUG -fno-omit-frame-pointer -fsanitize=address
-endif
+VPATH = $(HIFIR_HOME)/src
+
 .PHONY: clean
 .PRECIOUS: $(EXECS)
 
@@ -33,11 +36,17 @@ test_%: test_%.exe
 	./$<
 
 define MAKE_EXE_RULE =
-$(1).exe: $(1).cpp common.hpp $$(shell ./get_deps.sh $(1))
-	$(CXX) $(CXXFLAGS) $(DEBUG_) $$< -o $$@ $(LIBS) $(LDFLAGS)
+$(1).d: $(1).cpp | $(DEPDIR)
+	@$(CXX) $(CPPFLAGS) -MM -MP -MT $$@ -MF $$@ $$<
+include $(1).d
+
+$(1).exe: $(1).cpp common.hpp $(1).d
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $$< -o $$@ $(LDFLAGS) $(LIBS)
 endef
 
-$(foreach test,$(TESTS),$(eval $(call MAKE_EXE_RULE, $(test))))
+ifneq ("$(MAKECMDGOALS)","clean")
+    $(foreach test,$(TESTS),$(eval $(call MAKE_EXE_RULE, $(test))))
+endif
 
 clean:
-	@rm -f $(EXECS) *.dSYM foo.bin foo?.hif
+	@rm -f $(EXECS) *.dSYM foo.bin foo?.hif *.d

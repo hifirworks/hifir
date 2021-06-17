@@ -729,7 +729,7 @@ class Equilibrator {
                             const value_type *vals, index_type *perm) const {
     index_type pars[_PAR_NUM];
     detail::set_default_pars(pars);
-#ifdef NDEBUG
+#ifndef HIF_DEBUG
     pars[3] = 1;
 #endif
     _init(n, nnz);

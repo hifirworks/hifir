@@ -413,7 +413,7 @@ inline CsType pivot_level_factorize(
     step.compress_array(q);
 
     // update diagonal entries for u first
-#ifndef NDEBUG
+#ifdef HIF_DEBUG
     const bool u_is_nonsingular =
 #else
     (void)
@@ -425,7 +425,7 @@ inline CsType pivot_level_factorize(
     // Diagonal is maintained in JIT fashion due to pivoting
     // step.update_diag<false>(l, ut, m2, d);
 
-#ifndef NDEBUG
+#ifdef HIF_DEBUG
     const bool l_is_nonsingular =
 #else
     (void)

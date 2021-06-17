@@ -767,7 +767,7 @@ class Crout {
       const size_type idx   = q_inv[A_idx];
       if (idx > defer_thres) {
         // get the gapped index
-#ifndef NDEBUG
+#ifdef HIF_DEBUG
         const bool val_must_not_exit =
 #endif
             ut.push_back(idx, _step);
@@ -811,7 +811,7 @@ class Crout {
       const size_type idx   = p_inv[A_idx];
       // push to the sparse vector only if its in range _step+1:n
       if (idx > thres) {
-#ifndef NDEBUG
+#ifdef HIF_DEBUG
         const bool val_must_not_exit =
 #endif
             l.push_back(idx, _step);

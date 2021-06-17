@@ -28,7 +28,7 @@ TEST(L, crs) {
   crs_t A(A_, false);
   A.solve_as_strict_lower(y1);
   for (int i = 0; i < n; ++i)
-    EXPECT_NEAR(y1[i], y2[i][0], 1e-12 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
+    EXPECT_NEAR(y1[i], y2[i][0], 1e-10 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
         << i;
 }
 
@@ -44,7 +44,7 @@ TEST(U, crs) {
   crs_t A(std::move(A_), false);
   A.solve_as_strict_upper(y1);
   for (int i = 0; i < n; ++i)
-    EXPECT_NEAR(y1[i], y2[i][0], 1e-12 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
+    EXPECT_NEAR(y1[i], y2[i][0], 1e-10 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
         << i;
 }
 
@@ -60,7 +60,7 @@ TEST(L, ccs) {
   ccs_t A(std::move(A_), false);
   A.solve_as_strict_lower(y1);
   for (int i = 0; i < n; ++i)
-    EXPECT_NEAR(y1[i], y2[i][0], 1e-12 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
+    EXPECT_NEAR(y1[i], y2[i][0], 1e-10 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
         << i;
 }
 
@@ -76,6 +76,6 @@ TEST(U, ccs) {
   ccs_t A(A_, false);
   A.solve_as_strict_upper(y1);
   for (int i = 0; i < n; ++i)
-    EXPECT_NEAR(y1[i], y2[i][0], 1e-12 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
+    EXPECT_NEAR(y1[i], y2[i][0], 1e-10 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
         << i;
 }
