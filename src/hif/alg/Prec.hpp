@@ -37,9 +37,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "hif/ds/IntervalCompressedStorage.hpp"
 #include "hif/small_scale/solver.hpp"
 #include "hif/utils/common.hpp"
-#ifdef HIF_ENABLE_MUMPS
-#  include "hif/sparse_direct/mumps.hpp"
-#endif  // HIF_ENABLE_MUMPS
 
 namespace hif {
 
@@ -49,17 +46,6 @@ namespace hif {
 #  ifndef HIF_DENSE_MODE
 #    define HIF_DENSE_MODE 1
 #  endif  // HIF_DENSE_MODE
-
-namespace internal {
-struct DummySparseSolver {
-  inline constexpr bool        empty() const { return true; }
-  inline constexpr std::size_t nnz() const { return 0; }
-  inline constexpr int         info() const { return 0; }
-  inline static const char *   backend() { return "DummySparse"; }
-  template <class ArrayType>
-  inline void solve(ArrayType &, const bool = false) {}
-};
-}  // namespace internal
 
 template <class T>
 struct DefaultDenseSolver {
@@ -109,12 +95,8 @@ struct Prec {
                                                           last_level_type;
   typedef typename ValueTypeTrait<value_type>::value_type scalar_type;
   ///< scalar type
-  typedef Array<scalar_type> sarray_type;  ///< scalar array type
-#ifdef HIF_ENABLE_MUMPS
-  using sparse_direct_type = MUMPS<last_level_type>;
-#else
-  using sparse_direct_type = internal::DummySparseSolver;
-#endif                                           // HIF_ENABLE_MUMPS
+  typedef Array<scalar_type>
+                        sarray_type;  ///< scalar array type // HIF_ENABLE_MUMPS
   static constexpr char EMPTY_PREC     = '\0';   ///< empty prec
   static constexpr bool INTERVAL_BASED = false;  ///< interval
   using data_mat_type                  = typename std::conditional<
@@ -193,7 +175,6 @@ struct Prec {
     if (n - m) nz += E.nnz() + F.nnz();
     if (!dense_solver.empty() || !symm_dense_solver.empty())
       return nz + (n - m) * (n - m);
-    if (!sparse_solver.empty()) return nz + sparse_solver.nnz();
     return nz;
   }
 
@@ -263,64 +244,6 @@ struct Prec {
   inline typename std::enable_if<!is_interval_cs<mat_type>::value, T>::type
   report_status_lu() const {}
 
-#if 0
-  /// \brief enable explicitly calling move
-  /// \param[in,out] L_b lower part
-  /// \param[in,out] d_b diagonal
-  /// \param[in,out] U_b upper part
-  /// \param[in,out] e E part
-  /// \param[in,out] f F part
-  /// \param[in,out] S row scaling
-  /// \param[in,out] T column scaling
-  /// \param[in,out] P row permutation
-  /// \param[in,out] Q_inv inverse column permutation
-  /// \note Sizes are not included, assign them explicitly.
-  ///
-  /// we pass lvalue reference, but will explicitly destroy all input arguments
-  /// on output. This allows one to avoid writing a ton of \a std::move while
-  /// calling this routine.
-  ///
-  /// \warning Everything on output is destroyed, as the routine name says.
-  inline void move_destroy(tri_mat_interface_type &L_b, array_type &d_b,
-                           tri_mat_interface_type &U_b, mat_type &e,
-                           mat_type &f, array_type &S, array_type &T,
-                           perm_type &P, perm_type &Q_inv) {
-    L_B   = std::move(L_b);
-    d_B   = std::move(d_b);
-    U_B   = std::move(U_b);
-    E     = std::move(e);
-    F     = std::move(f);
-    s     = std::move(S);
-    t     = std::move(T);
-    p     = std::move(P);
-    q_inv = std::move(Q_inv);
-  }
-
-  /// \brief a priori optimization
-  /// \param[in] tag optimization tag
-  inline void optimize(const int tag = 0) {
-    _L_crs = crs_type(L_B);
-    _U_crs = crs_type(U_B);
-    if (!tag) {
-      ls_L.setup(_L_crs);
-      ls_L.template optimize<false>();
-      ls_U.setup(_U_crs);
-      ls_U.template optimize<true>();
-    }
-#  if HIF_HAS_SPARSE_MKL
-    else if (tag == 1) {
-      mkl_L.setup(_L_crs.row_start(), _L_crs.col_ind(), _L_crs.vals());
-      mkl_U.setup(_U_crs.row_start(), _U_crs.col_ind(), _U_crs.vals());
-      mkl_L.template optimize<false>(1);
-      mkl_U.template optimize<true>(1);
-    }
-#  else
-    else
-      hif_error("unknown optimization tag %d", tag);
-#  endif
-  }
-#endif
-
   /// \brief check if this a last level preconditioner
   ///
   /// The idea is first check if the \ref dense_solver is empty or not; be aware
@@ -329,15 +252,12 @@ struct Prec {
   ///
   /// \note Currently, we test m == n, which is fine for squared systems.
   inline bool is_last_level() const {
-    return !sparse_solver.empty() || !dense_solver.empty() ||
-           !symm_dense_solver.empty() || m == n;
+    return !dense_solver.empty() || !symm_dense_solver.empty() || m == n;
   }
 
   /// \brief check the (numerical) rank for last level (if applicable)
   inline size_type last_rank() const {
     if (!is_last_level() || m == n) return 0u;
-    // NOTE: For sparse last level, we currently don't have QR, thus full rank
-    if (!sparse_solver.empty()) return n - m;
     if (!dense_solver.empty()) return dense_solver.rank();
     return symm_dense_solver.rank();
   }
@@ -430,9 +350,6 @@ struct Prec {
   inline void inquire_or_export_dense(T *mat, size_type &nrows,
                                       size_type &ncols,
                                       const bool destroy = false) {
-#ifdef HIF_ENABLE_MUMPS
-    hif_error("cannot export data for direct sparse last level!");
-#endif
     if (!dense_solver.empty()) {
       if (!mat) {
         nrows = dense_solver.mat_backup().nrows();
@@ -477,8 +394,7 @@ struct Prec {
   perm_type            q;             ///< column permutation matrix
   perm_type            q_inv;         ///< column inverse permutation matrix
   sss_solver_type      dense_solver;  ///< dense decomposition
-  sss_symm_solver_type symm_dense_solver;    ///< symmetric dense decomposition
-  mutable sparse_direct_type sparse_solver;  ///< sparse solver
+  sss_symm_solver_type symm_dense_solver;  ///< symmetric dense decomposition
 
  protected:
   crs_type _L_crs;  ///< crs type for parallel trsv

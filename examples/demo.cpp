@@ -63,8 +63,16 @@ int main() {
   M.mmultiply(x, b2);
   // compute error
   const double err1 = compute_error(b, b2, x);
-  hif_info("\nrelative error is %g...\n", err1);
+  hif_info("\nrelative error of non-tran is %g...\n", err1);
   hif_warning_if(err1 >= 1e-10, "error is too large!");
+
+  // perform triangular solve and matrix-vector multiplication in tranpose mode
+  M.solve(b, x, true);
+  M.mmultiply(x, b2, true);
+  // compute error
+  const double err2 = compute_error(b, b2, x);
+  hif_info("\nrelative error of tran is %g...\n", err2);
+  hif_warning_if(err2 >= 1e-10, "error is too large!");
 
   return 0;
 }

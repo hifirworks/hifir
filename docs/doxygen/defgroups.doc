@@ -40,9 +40,6 @@
 /// \defgroup fac Multilevel Factorization
 /// \ingroup alg
 
-/// \defgroup sparse Sparse Direct Solver
-/// \ingroup alg
-
 /// \defgroup ir Iterative Refinement
 /// \ingroup alg
 

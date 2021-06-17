@@ -70,11 +70,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ///          mechanism except this one.
 #  define HIF_DISABLE_SPACE_DROP
 
-/// \def HIF_ENABLE_MUMPS
-/// \brief enabling mumps for last level solver
-/// \note default is off
-#  define HIF_ENABLE_MUMPS
-
 #endif  // ONLY_FOR_DOXYGEN
 
 /// \def HIF_RESERVE_FAC
@@ -99,13 +94,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef HIF_LASTLEVEL_DENSE_SIZE
 #  define HIF_LASTLEVEL_DENSE_SIZE 2000
 #endif
-
-/// \def HIF_LASTLEVEL_SPARSE_SIZE
-/// \brief sparse version of \ref HIF_LASTLEVEL_DENSE_SIZE
-/// \note default is 15000
-#ifndef HIF_LASTLEVEL_SPARSE_SIZE
-#  define HIF_LASTLEVEL_SPARSE_SIZE 15000
-#endif  // HIF_LASTLEVEL_SPARSE_SIZE
 
 /// \def HIF_FALLBACK_SPARSE_DIRECT_RATIO
 /// \brief fallback to use complete factorization for a certain level

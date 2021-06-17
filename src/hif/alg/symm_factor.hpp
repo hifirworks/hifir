@@ -654,31 +654,6 @@ inline CsType symm_level_factorize(
     if (hif_verbose(INFO, opts))
       hif_info("successfully factorized the dense component...");
   }
-#ifdef HIF_ENABLE_MUMPS
-  else {
-    if (nm <= static_cast<size_type>(HIF_LASTLEVEL_SPARSE_SIZE)) {
-      DefaultTimer timer2;
-      auto &       last_level = precs.back().sparse_solver;
-      last_level.set_info(
-          opts.mumps_blr,
-          std::sqrt(
-              Const<typename ValueTypeTrait<value_type>::value_type>::EPS),
-          schur_threads);
-      const double nnz_b4 = 0.01 * S.nnz();
-      timer2.start();
-      last_level.factorize(S);
-      timer2.finish();
-      hif_error_if(last_level.info(), "%s returned error %d",
-                   last_level.backend(), last_level.info());
-      if (hif_verbose(INFO, opts))
-        hif_info(
-            "successfully factorized the sparse component with %s...\n"
-            "\tfill-ratio: %.2f%%\n"
-            "\ttime: %gs...",
-            last_level.backend(), last_level.nnz() / nnz_b4, timer2.time());
-    }
-  }
-#endif  // HIF_ENABLE_MUMPS
 
   timer.finish();  // profile post-processing
 

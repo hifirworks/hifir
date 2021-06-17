@@ -83,13 +83,10 @@ inline void prec_prod(PrecItr prec_itr, const RhsType &b,
   if (prec.is_last_level()) {
     if (nm) {
       std::copy_n(&work[m], nm, y_mn.begin());
-      if (prec.sparse_solver.empty()) {
-        if (!prec.dense_solver.empty())
-          prec.dense_solver.multiply(y_mn, last_dim);
-        else
-          prec.symm_dense_solver.multiply(y_mn, last_dim);
-      } else
-        hif_error("matrix-vector product does not support complete sparse!");
+      if (!prec.dense_solver.empty())
+        prec.dense_solver.multiply(y_mn, last_dim);
+      else
+        prec.symm_dense_solver.multiply(y_mn, last_dim);
     }
   } else {
     // recursive product
@@ -183,13 +180,10 @@ inline void prec_prod_tran(PrecItr prec_itr, const RhsType &b,
   if (prec.is_last_level()) {
     if (nm) {
       std::copy_n(&work[m], nm, y_mn.begin());
-      if (prec.sparse_solver.empty()) {
-        if (!prec.dense_solver.empty())
-          prec.dense_solver.multiply(y_mn, last_dim, true);
-        else
-          prec.symm_dense_solver.multiply(y_mn, last_dim);
-      } else
-        hif_error("matrix-vector product does not support complete sparse!");
+      if (!prec.dense_solver.empty())
+        prec.dense_solver.multiply(y_mn, last_dim, true);
+      else
+        prec.symm_dense_solver.multiply(y_mn, last_dim);
     }
   } else {
     // recursive product
