@@ -1,26 +1,33 @@
 CXX = c++
 
-# Specify commonly used paths for GTEST
-ifeq ($(GTEST_INCDIR),)
-    GTEST_INCDIR=/opt/local/include
-endif
-ifeq ($(GTEST_LIBDIR),)
-    GTEST_LIBDIR=/opt/local/lib
+# Absolute path for HIFIR root directory
+ifeq ($(HIFIR_HOME),)
+    HIFIR_DIRS = .. $HOME/.local /usr/local /opt/local
+    HIFIR_HOME := $(shell for d in $(HIFIR_DIRS); \
+        do if [ -r $$d/include/hifir.h ]; then echo $$d; break; fi; done)
 endif
 
-# Abs root
-PSMILU_ROOT=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+CPPFLAGS = -I$(HIFIR_HOME)/include
+CXXFLAGS = -fopenmp -rdynamic -Wall -Wextra -std=c++11
 
-CXXFLAGS = \
-    -I$(PSMILU_ROOT)/src \
-    -g -rdynamic -Wall -Wextra -std=c++11
-
-ifeq ($(USE_GTEST),1)
-    CXXFLAGS := -I$(GTEST_INCDIR) $(CXXFLAGS)
+# By default, we disable DEBUG, which disables assertions.
+# Set to 1 to enable all assertions and set to 2 to use sanitize of gcc.
+ifeq ($(DEBUG),2)
+	DEBUGFLAGS += -g -fno-omit-frame-pointer -fsanitize=address
+else ifeq ($(DEBUG),1)
+	DEBUGFLAGS += -g -DHIF_DEBUG
+else
+	DEBUGFLAGS += -DNDEBUG
 endif
+CXXFLAGS += $(DEBUGFLAGS)
 
 LIBS = -pthread
-ifeq ($(USE_GTEST),1)
-    LIBS += -L$(GTEST_LIBDIR) -lgtest -lgtest_main
-endif
 LDFLAGS =
+
+# Customize LAPACK libraries
+LAPACK_LIB = -llapack -lblas
+
+ifneq ($(LAPACK_LIB),)
+# add lapack blas libraries, use generic libraries for testing
+	LIBS += $(LAPACK_LIB)
+endif
