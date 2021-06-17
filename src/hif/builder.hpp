@@ -4,7 +4,7 @@
 
 /*!
  * \file hif/builder.hpp
- * \brief Top level user class for building MILU preconditioner
+ * \brief Top level user class for building HIF preconditioner
  * \author Qiao Chen
 
 \verbatim
@@ -55,15 +55,15 @@ namespace internal {
 const static char *intro =
     "\n"
     "=======================================================================\n"
-    "|           Hybrid (Hierarchical) Incomplete Factorizations           |\n"
+    "|           HIF: Hybrid Incomplete Factorization                      |\n"
     "|                                                                     |\n"
-    "| HIF is a package for computing hybrid (hierarchical) incomplete fa- |\n"
-    "| ctorizations with nearly linear time complexity.                    |\n"
+    "| HIF is a package for computing hybrid incomplete factorization      |\n"
+    "| with near linear time complexity.                                   |\n"
     "-----------------------------------------------------------------------\n"
     "\n"
     " > Package information:\n"
     "\n"
-    "\t* Copyright (C) NumGeom Group at Stony Brook University\n"
+    "\t* Copyright (C) 2019--2021 NumGeom Group at Stony Brook University\n"
     "\t* Version: %d.%d.%d\n"
     "\n"
     "=======================================================================\n";
@@ -256,7 +256,7 @@ class HIF {
     _ir.clear();
   }
 
-  /// \brief factorize the MILU preconditioner
+  /// \brief factorize the HIF preconditioner
   /// \tparam CsType compressed storage input, either \ref CRS or \ref CCS
   /// \param[in] A input matrix
   /// \param[in] params control parameters, using the default values
@@ -365,7 +365,7 @@ class HIF {
     if (revert_warn) (void)warn_flag(1);
   }
 
-  /// \brief factorize the MILU preconditioner with generic interface
+  /// \brief factorize the HIF preconditioner with generic interface
   /// \tparam IsCrs if \a true, then the input compressed structure will be
   ///               assumed to be \ref CRS format
   /// \tparam IndexType_ integer data type, e.g., \a int

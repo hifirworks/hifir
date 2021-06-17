@@ -299,7 +299,7 @@ class AugmentedCore {
     }
   }
 
-  /// \brief interface the head and tail nodes given list i and k
+  /// \brief interchange the head and tail nodes given list i and k
   /// \param[in] i i-th linked list
   /// \param[in] k k-th linked list
   /// \note Complexity: \f$\mathcal{O}(1)\f$

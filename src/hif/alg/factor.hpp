@@ -471,7 +471,7 @@ inline void print_post_flag(const int flag) {
   hif_info("\t=================================");
   switch (flag) {
     case 0:
-      hif_info("\tthe Schur compl. has good size");
+      hif_info("\tthe Schur complement has good size");
       break;
     case 1:
       hif_info(
@@ -488,7 +488,7 @@ inline void print_post_flag(const int flag) {
     default:
       hif_info(
           "\tuse complete factorization on\n"
-          "\tthe Schur compl. due to its size\n"
+          "\tthe Schur complement due to its size\n"
           "\tis relatively large compared to\n"
           "\tthe input");
       break;
@@ -824,9 +824,9 @@ inline CsType level_factorize(
       if (m == step) break;  // break for
     }
 
-    //----------------
-    // inverse thres
-    //----------------
+    //------------------
+    // inverse threshold
+    //------------------
 
     const auto k_ut = kappa_ut[step], k_l = kappa_l[step];
 

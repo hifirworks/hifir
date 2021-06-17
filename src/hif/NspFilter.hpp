@@ -153,7 +153,7 @@ class NspFilter {
 
   /// \brief overridable routine for filtering
   virtual void user_filter(void *, const std::size_t, const char) const {
-    hif_error("user routine was not overrided!");
+    hif_error("user routine was not overriden!");
   }
 
  protected:

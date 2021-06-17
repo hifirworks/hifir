@@ -123,7 +123,7 @@ class Array {
     std::fill_n(_data, _size, v);
   }
 
-  /// \brief constructo for copying or wrapping external data
+  /// \brief constructor for copying or wrapping external data
   /// \param[in] n size of array
   /// \param[in] data external data
   /// \param[in] wrap flag to indicate wrapping or copying (optional)
@@ -149,7 +149,7 @@ class Array {
     _size = _cap = n;
   }
 
-  /// \brief constructor to copy a foreign array, useful in type conversion
+  /// \brief constructor for copying a foreign array, useful in type conversion
   /// \tparam V foreign value type
   /// \param other another array
   template <class V>

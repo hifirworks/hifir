@@ -53,7 +53,7 @@ class IterRefine {
   /// \brief Stationary iteration used as refinement
   /// \tparam MType preconditioner, see \ref HIF
   /// \tparam Matrix matrix type, see \ref CRS or \ref CCS
-  /// \param[in] M MLILU preconditioner
+  /// \param[in] M HIF preconditioner
   /// \param[in] A input matrix
   /// \param[in] b right-hand side vector
   /// \param[in] N number of iterations
