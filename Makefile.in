@@ -10,21 +10,22 @@ ifneq ($(HIFIR_HOME),)
     CPPFLAGS += -I$(HIFIR_HOME)/include
 endif
 
-CXXFLAGS += -fopenmp -rdynamic -Wall -Wextra -std=c++11
+OPTFLAGS = -O3 -ffast-math
+CXXFLAGS += -fopenmp -fpic -std=c++11
 
 # By default, we disable DEBUG, which disables assertions.
 # Set to 1 to enable all assertions and set to 2 to use sanitize of gcc.
 ifeq ($(DEBUG),2)
-    DEBUGFLAGS += -g -fno-omit-frame-pointer -fsanitize=address
+    DBGFLAGS += -g -fno-omit-frame-pointer -fsanitize=address -Wall -Wextra
 else ifeq ($(DEBUG),1)
-    DEBUGFLAGS += -g -DHIF_DEBUG
+    DBGFLAGS += -g -DHIF_DEBUG -Wall -Wextra
 else
-    DEBUGFLAGS += -DNDEBUG
+    DBGFLAGS += -DNDEBUG
 endif
-CXXFLAGS += $(DEBUGFLAGS)
+CXXFLAGS += $(DBGFLAGS) $(OPTFLAGS)
 
 LIBS = -pthread
-LDFLAGS =
+LDFLAGS = -rdynamic
 
 # Customize LAPACK libraries
 LAPACK_LIB = -llapack -lblas
