@@ -43,7 +43,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 namespace hif {
 
 /// \class SYEIG
-/// \brief Symmetric eigendecompsition for small scale solver
+/// \brief Symmetric eigen-decompsition for small scale solver
 /// \tparam ValueType value type, e.g. \a double
 /// \ingroup sss
 template <class ValueType>

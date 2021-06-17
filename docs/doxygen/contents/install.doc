@@ -10,20 +10,12 @@
 \addindex installation
 \tableofcontents
 
-\section _install_unix How to install on UNIX
+\section _install_cpp Installation of the C++ interface
 
-blah blah ...
+Installing the C++ interface can be easily done by copying \a hifir.hpp
+and folder \a hif to the destination. Thanks to the head-only design, one just
+needs to include \a HIF.hpp in his/her projects.
 
-\section _install_mac How to install on Mac
-
-blah blah ...
-
-\section _install_win How to install on Windows
-
-blah blah ...
-
-\section _install_py How to install with \c Python
-
-blah blah ...
+\section _install_c Installation of the C library (libhif)
 
 */

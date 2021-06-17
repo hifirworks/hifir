@@ -1,5 +1,4 @@
-# This list is for people who have contributed HIFIR, it follows the same
-# rule of AUTHORS file, i.e.
+# This list is for people who have major contributions to HIFIR.
 
 # Names should be added to this file as:
 # Name <email address> or Organization
@@ -9,10 +8,11 @@
 # by a tab space with "-"
 
 Qiao (Chiao) Chen <qiao.chen@stonybrook.edu> <benechiao@gmail.com>
-    - initial developer, setup the software framework
-    - serial HIFIR developer with parallel Schur computation
-    - implemented KSP solvers
-    - implemented mixed precision support with float and double
+    - setup of the software framework
+    - implementation of serial HIFIR with parallel construction of Schur complement
+    - implementation of mixed-precision in single and double
+    - implementation of complex numbers
 
-Yujie Xiao <yujie.xiao@stonybrook.edu>
-    - helped cleaning up matching/scaling implementation as done in equilibrate.hpp
+Xiangmin Jiao <xiangin.jiao@stonybrook.edu> <xmjiao@gmail.com>
+    - Algorithm design and analysis
+    - Software specification

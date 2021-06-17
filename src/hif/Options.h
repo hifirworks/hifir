@@ -98,7 +98,7 @@ struct hif_Options {
   int    symm_pre_lvls;
   /*!< levels to be applied with symm preprocessing (default is 1) */
   int    threads;       /*!< user specified threads (default 0) */
-  int    mumps_blr;     /*!< MUMPS BLR options (default 2) */
+  int    mumps_blr;     /*!< MUMPS BLR options (default 2) *deprecated* */
   int    fat_schur_1st; /*!< double alpha for dropping L_E and U_F on 1st lvl */
   double rrqr_cond;     /*!< condition number threshold for RRQR (default 0) */
   int    pivot;         /*!< pivoting flag (default is AUTO (2)) */
@@ -296,7 +296,7 @@ inline Options get_default_options() { return ::hif_get_default_options(); }
 /*!
  * \brief alias of \ref get_default_options
  */
-inline Params get_default_params() { return get_default_options(); }
+inline Params get_default_params() { return ::hif_get_default_params(); }
 
 /*!
  * \var DEFAULT_PARAMS
@@ -338,7 +338,6 @@ inline std::string opt_repr(const Options &opt) {
          pack_int("pre_scale", opt.pre_scale) +
          pack_int("symm_pre_lvls", opt.symm_pre_lvls) +
          pack_int("threads", opt.threads) +
-         pack_int("mumps_blr", opt.mumps_blr) +
          pack_int("fat_schur_1st", opt.fat_schur_1st) +
          pack_double("rrqr_cond", opt.rrqr_cond) +
          pack_name("pivot",

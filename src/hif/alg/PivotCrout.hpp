@@ -462,7 +462,7 @@ class PivotCrout : public Crout {
     std::swap(d[deferred_step()], a_k[pivot]);
   }
 
-  /// \brief Apply thresholded rook pivoting
+  /// \brief Apply inverse-based rook pivoting
   /// \tparam ScaleArray Row/column scaling array, see \ref Array
   /// \tparam PermType Permutation array type
   /// \tparam PermType2 Inverse permutation array type

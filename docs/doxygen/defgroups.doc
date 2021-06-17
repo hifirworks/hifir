@@ -40,9 +40,6 @@
 /// \defgroup fac Multilevel Factorization
 /// \ingroup alg
 
-/// \defgroup sparse Sparse Direct Solver
-/// \ingroup alg
-
 /// \defgroup ir Iterative Refinement
 /// \ingroup alg
 
@@ -50,11 +47,3 @@
 
 /// \defgroup macros Preprocessor macros
 /// \ingroup itr
-
-/// \defgroup ksp Krylov Subspace Solvers
-
-/// \defgroup gmres Flexible GMRES
-/// \ingroup ksp
-
-/// \defgroup qmrcgstab Flexible QMRCGSTAB
-/// \ingroup ksp

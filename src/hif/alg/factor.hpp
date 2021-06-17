@@ -62,10 +62,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #    define HIF_LASTLEVEL_DENSE_SIZE 2000
 #  endif  // HIF_RESERVE_FAC
 
-#  ifndef HIF_LASTLEVEL_SPARSE_SIZE
-#    define HIF_LASTLEVEL_SPARSE_SIZE 15000
-#  endif  // HIF_LASTLEVEL_SPARSE_SIZE
-
 #  ifndef HIF_MIN_LOCAL_SIZE_PERCTG
 #    define HIF_MIN_LOCAL_SIZE_PERCTG 85
 #  endif  // HIF_RESERVE_FAC
@@ -460,7 +456,7 @@ inline void compress_tails(U_Type &U, L_Type &L, const PosArray &U_start,
   L.resize_nrows(L.nrows() / 2);
   U.resize_ncols(U.ncols() / 2);
 
-#ifndef NDEBUG
+#ifdef HIF_DEBUG
   L.check_validity();
   U.check_validity();
 #endif
@@ -471,7 +467,7 @@ inline void print_post_flag(const int flag) {
   hif_info("\t=================================");
   switch (flag) {
     case 0:
-      hif_info("\tthe Schur compl. has good size");
+      hif_info("\tthe Schur complement has good size");
       break;
     case 1:
       hif_info(
@@ -488,7 +484,7 @@ inline void print_post_flag(const int flag) {
     default:
       hif_info(
           "\tuse complete factorization on\n"
-          "\tthe Schur compl. due to its size\n"
+          "\tthe Schur complement due to its size\n"
           "\tis relatively large compared to\n"
           "\tthe input");
       break;
@@ -824,9 +820,9 @@ inline CsType level_factorize(
       if (m == step) break;  // break for
     }
 
-    //----------------
-    // inverse thres
-    //----------------
+    //------------------
+    // inverse threshold
+    //------------------
 
     const auto k_ut = kappa_ut[step], k_l = kappa_l[step];
 
@@ -863,7 +859,7 @@ inline CsType level_factorize(
                            U, U_start, U_list, l);
 
     // update diagonal entries for u first
-#ifndef NDEBUG
+#ifdef HIF_DEBUG
     const bool u_is_nonsingular =
 #else
     (void)
@@ -875,7 +871,7 @@ inline CsType level_factorize(
     // update diagonals b4 dropping
     step.update_diag<IsSymm>(l, ut, m2, d);
 
-#ifndef NDEBUG
+#ifndef HIF_DEBUG
     const bool l_is_nonsingular =
 #else
     (void)
@@ -961,6 +957,13 @@ inline CsType level_factorize(
   // compress permutation vectors
   for (; step < n; ++step) {
     step.assign_gap_array(P, p);
+
+/// \def HIF_LASTLEVEL_SPARSE_SIZE
+/// \brief sparse version of \ref HIF_LASTLEVEL_DENSE_SIZE
+/// \note default is 15000
+#ifndef HIF_LASTLEVEL_SPARSE_SIZE
+#  define HIF_LASTLEVEL_SPARSE_SIZE 15000
+#endif  // HIF_LASTLEVEL_SPARSE_SIZE
     step.assign_gap_array(Q, q);
   }
 
@@ -1150,7 +1153,7 @@ inline CsType level_factorize(
         hif_info("pure Schur computation time: %gs...", timer2.time());
     } while (false);
   } else {
-    S = A;
+    S = A_crs;
     p.make_eye();
     q.make_eye();
     std::fill(s.begin(), s.end(), 1);
@@ -1240,31 +1243,6 @@ inline CsType level_factorize(
     if (hif_verbose(INFO, opts))
       hif_info("successfully factorized the dense component...");
   }
-#ifdef HIF_ENABLE_MUMPS
-  else {
-    if (nm <= static_cast<size_type>(HIF_LASTLEVEL_SPARSE_SIZE)) {
-      DefaultTimer timer2;
-      auto &       last_level = precs.back().sparse_solver;
-      last_level.set_info(
-          opts.mumps_blr,
-          std::sqrt(
-              Const<typename ValueTypeTrait<value_type>::value_type>::EPS),
-          schur_threads);
-      const double nnz_b4 = 0.01 * S.nnz();
-      timer2.start();
-      last_level.factorize(S);
-      timer2.finish();
-      hif_error_if(last_level.info(), "%s returned error %d",
-                   last_level.backend(), last_level.info());
-      if (hif_verbose(INFO, opts))
-        hif_info(
-            "successfully factorized the sparse component with %s...\n"
-            "\tfill-ratio: %.2f%%\n"
-            "\ttime: %gs...",
-            last_level.backend(), last_level.nnz() / nnz_b4, timer2.time());
-    }
-  }
-#endif  // HIF_ENABLE_MUMPS
 
   timer.finish();  // profile post-processing
 

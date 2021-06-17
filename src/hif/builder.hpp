@@ -4,7 +4,7 @@
 
 /*!
  * \file hif/builder.hpp
- * \brief Top level user class for building MILU preconditioner
+ * \brief Top level user class for building HIF preconditioner
  * \author Qiao Chen
 
 \verbatim
@@ -55,15 +55,15 @@ namespace internal {
 const static char *intro =
     "\n"
     "=======================================================================\n"
-    "|           Hybrid (Hierarchical) Incomplete Factorizations           |\n"
+    "|           HIF: Hybrid Incomplete Factorization                      |\n"
     "|                                                                     |\n"
-    "| HIF is a package for computing hybrid (hierarchical) incomplete fa- |\n"
-    "| ctorizations with nearly linear time complexity.                    |\n"
+    "| HIF is a package for computing hybrid incomplete factorization      |\n"
+    "| with near linear time complexity.                                   |\n"
     "-----------------------------------------------------------------------\n"
     "\n"
     " > Package information:\n"
     "\n"
-    "\t* Copyright (C) NumGeom Group at Stony Brook University\n"
+    "\t* Copyright (C) 2019--2021 NumGeom Group at Stony Brook University\n"
     "\t* Version: %d.%d.%d\n"
     "\n"
     "=======================================================================\n";
@@ -92,7 +92,7 @@ static bool introduced = false;
 /// The following is a simple workflow for Builder.
 ///
 /// \code{.cpp}
-///   #include <HIF.hpp>
+///   #include <hifir.hpp>
 ///   using namespace hif;
 ///   using builder_t = HIF<double, int>;
 ///   using crs_t = builder_t::crs_type;
@@ -126,15 +126,6 @@ class HIF {
   ///< high-precision value type
   typedef Array<boost_value_type> work_array_type;  ///< work array type
 
-  /// \brief check if or not we can export data
-  constexpr bool can_export() const {
-#ifdef HIF_ENABLE_MUMPS
-    return false;
-#else
-    return true;
-#endif  // HIF_ENABLE_MUMPS
-  }
-
   /// \brief check empty or not
   inline bool empty() const { return _precs.empty(); }
 
@@ -144,8 +135,7 @@ class HIF {
     const size_type lvls = _precs.size();
     if (lvls)
       return lvls + !_precs.back().dense_solver.empty() +
-             !_precs.back().symm_dense_solver.empty() +
-             !_precs.back().sparse_solver.empty();
+             !_precs.back().symm_dense_solver.empty();
     return 0;
   }
 
@@ -256,7 +246,7 @@ class HIF {
     _ir.clear();
   }
 
-  /// \brief factorize the MILU preconditioner
+  /// \brief factorize the HIF preconditioner
   /// \tparam CsType compressed storage input, either \ref CRS or \ref CCS
   /// \param[in] A input matrix
   /// \param[in] params control parameters, using the default values
@@ -365,7 +355,7 @@ class HIF {
     if (revert_warn) (void)warn_flag(1);
   }
 
-  /// \brief factorize the MILU preconditioner with generic interface
+  /// \brief factorize the HIF preconditioner with generic interface
   /// \tparam IsCrs if \a true, then the input compressed structure will be
   ///               assumed to be \ref CRS format
   /// \tparam IndexType_ integer data type, e.g., \a int
@@ -434,8 +424,6 @@ class HIF {
                          const size_type r = 0u) const {
     hif_error_if(empty(), "MILU-Prec is empty!");
     hif_error_if(b.size() != x.size(), "unmatched sizes");
-    hif_error_if(!_precs.back().sparse_solver.empty(),
-                 "multiple RHS solve does not support sparse last level");
     const auto nw = compute_prec_work_space(_precs.cbegin(), _precs.cend());
     if (_prec_work.empty()) _prec_work.resize(nw * Nrhs);
     Array<std::array<boost_value_type, Nrhs>> w(

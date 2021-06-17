@@ -27,6 +27,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
  */
 
+/* Reference: Iain S Duff and Jacko Koster, "On algorithms for permuting large
+ * entries to the diagonal of a sparse matrix", SIAM J. Matrix Anal. Appl.
+ * 22(4) (2001), pp. 973--996.
+*/
+
 #ifndef _HIF_PRE_EQUILIBRATE_HPP
 #define _HIF_PRE_EQUILIBRATE_HPP
 
@@ -724,7 +729,7 @@ class Equilibrator {
                             const value_type *vals, index_type *perm) const {
     index_type pars[_PAR_NUM];
     detail::set_default_pars(pars);
-#ifdef NDEBUG
+#ifndef HIF_DEBUG
     pars[3] = 1;
 #endif
     _init(n, nnz);

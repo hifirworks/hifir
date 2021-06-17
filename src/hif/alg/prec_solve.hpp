@@ -145,7 +145,7 @@ inline typename std::enable_if<!CcsType::ROW_MAJOR, T>::type prec_solve_ldu(
   for (size_type j = 0u; j < m; ++j) {
     const auto y_j = y[j];
     auto       itr = L.row_ind_cbegin(j);
-#  ifndef NDEBUG
+#  ifdef HIF_DEBUG
     if (itr != L.row_ind_cend(j))
       hif_error_if(size_type(*itr) <= j, "must be strictly lower part!");
 #  endif
@@ -165,7 +165,7 @@ inline typename std::enable_if<!CcsType::ROW_MAJOR, T>::type prec_solve_ldu(
     for (size_type j = m - 1; j != 0u; --j) {
       const auto y_j = y[j];
       auto       itr = rev_iterator(U.row_ind_cend(j));
-#  ifndef NDEBUG
+#  ifdef HIF_DEBUG
       if (itr != rev_iterator(U.row_ind_cbegin(j)))
         hif_error_if(size_type(*itr) >= j, "must be strictly upper part");
 #  endif
@@ -375,16 +375,10 @@ inline void prec_solve(PrecItr prec_itr, const RhsType &b,
       // create an array wrapper with size of n-m, of y(m+1:n)
       auto y_mn = interface_array_type(nm, y.data() + m, WRAP);
       // std::copy_n(y.data() + m, nm, y_mn.begin());
-      if (prec.sparse_solver.empty()) {
-        if (!prec.dense_solver.empty())
-          prec.dense_solver.solve(y_mn, last_dim);
-        else
-          prec.symm_dense_solver.solve(y_mn, last_dim);
-      } else {
-        prec.sparse_solver.solve(y_mn);
-        hif_error_if(prec.sparse_solver.info(), "%s returned error %d",
-                     prec.sparse_solver.backend(), prec.sparse_solver.info());
-      }
+      if (!prec.dense_solver.empty())
+        prec.dense_solver.solve(y_mn, last_dim);
+      else
+        prec.symm_dense_solver.solve(y_mn, last_dim);
       // std::copy_n(y_mn.cbegin(), nm, y.data() + m);
     }
   } else {
@@ -588,19 +582,13 @@ inline void prec_solve_tran(PrecItr prec_itr, const RhsType &b,
   if (prec.is_last_level()) {
     if (nm) {
       // create an array wrapper with size of n-m, of y(m+1:n)
-      auto y_mn = work_array_type(nm, &work[0], WRAP);
-      std::copy_n(y.data() + m, nm, y_mn.begin());
-      if (prec.sparse_solver.empty()) {
-        if (!prec.dense_solver.empty())
-          prec.dense_solver.solve(y_mn, last_dim, true);
-        else
-          prec.symm_dense_solver.solve(y_mn, last_dim);
-      } else {
-        prec.sparse_solver.solve(y_mn, true);
-        hif_error_if(prec.sparse_solver.info(), "%s returned error %d",
-                     prec.sparse_solver.backend(), prec.sparse_solver.info());
-      }
-      std::copy_n(y_mn.cbegin(), nm, y.data() + m);
+      auto y_mn = interface_array_type(nm, y.data() + m, WRAP);
+      // td::copy_n(y.data() + m, nm, y_mn.begin());
+      if (!prec.dense_solver.empty())
+        prec.dense_solver.solve(y_mn, last_dim, true);
+      else
+        prec.symm_dense_solver.solve(y_mn, last_dim);
+      // std::copy_n(y_mn.cbegin(), nm, y.data() + m);
     }
   } else {
     // recursive call

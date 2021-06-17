@@ -397,7 +397,7 @@ class QRCP {
     // for normal mapping, we have x=b(p), for inverse, we need x(p)=b
     const size_type n = _jpvt.size();
     _work.resize(_mat.nrows());
-    for (int i = 0; i < Nrhs; ++i) {
+    for (size_type i = 0; i < Nrhs; ++i) {
       value_type *xi = x + i * _mat.nrows();
       for (size_type i = 0u; i < rk; ++i) _work[_jpvt[i] - 1] = xi[i];
       for (size_type i = rk; i < n; ++i) _work[_jpvt[i] - 1] = value_type(0);
@@ -421,7 +421,7 @@ class QRCP {
     // permutation P^T
     const size_type n = _jpvt.size();
     _work.resize(_mat.nrows());
-    for (int i = 0; i < Nrhs; ++i) {
+    for (size_type i = 0; i < Nrhs; ++i) {
       value_type *xi = x + i * _mat.nrows();
       for (size_type i = 0u; i < rk; ++i) _work[i] = xi[_jpvt[i] - 1];
       for (size_type i = rk; i < n; ++i) _work[i] = value_type(0);
@@ -463,7 +463,7 @@ class QRCP {
     // permutation P^T
     const size_type n = _jpvt.size();
     _work.resize(_mat.nrows());
-    for (int i = 0; i < Nrhs; ++i) {
+    for (size_type i = 0; i < Nrhs; ++i) {
       value_type *xi = x + i * _mat.nrows();
       for (size_type i = 0u; i < rk; ++i) _work[i] = xi[_jpvt[i] - 1];
       for (size_type i = rk; i < n; ++i) _work[i] = value_type(0);
@@ -528,7 +528,7 @@ class QRCP {
     // for normal mapping, we have x=b(p), for inverse, we need x(p)=b
     const size_type n = _jpvt.size();
     _work.resize(_mat.nrows());
-    for (int i = 0; i < Nrhs; ++i) {
+    for (size_type i = 0; i < Nrhs; ++i) {
       value_type *xi = x + i * _mat.nrows();
       for (size_type i = 0u; i < rk; ++i) _work[_jpvt[i] - 1] = xi[i];
       for (size_type i = rk; i < n; ++i) _work[_jpvt[i] - 1] = value_type(0);

@@ -210,7 +210,7 @@ inline void error(const char *prefix, const char *file, const char *func,
 /// \brief code will only be translated on debug builds
 /// \ingroup util
 
-#ifndef NDEBUG
+#if defined HIF_DEBUG
 #  define hif_assert(__cond, __msgs...)                                      \
     if (!(__cond))                                                           \
     ::hif::error("condition " #__cond " failed", __HIF_FILE__, __HIF_FUNC__, \

@@ -131,7 +131,7 @@ inline void build_intervals(const CsType &A, const IndexArray &itrv_start,
   }
 }
 
-/// \brief Analyzing the cost ratio of interval to classical storages
+/// \brief Analyze the cost ratio of interval to classical storages
 /// \tparam INDEX_SIZE Index size
 /// \tparam VALUE_SIZE Value type size
 /// \tparam INTERVAL_SIZE Interval type size
@@ -540,7 +540,7 @@ class IntervalCCS {
   }
 
   /// \brief convert from a CRS matrix
-  /// \param[in] A CRS input       
+  /// \param[in] A CRS input
   /// \param[in] smart_convert (optional) Perform smart converting
   IntervalCCS(const crs_type &A, const bool smart_convert = true)
       : IntervalCCS(ccs_type(A), smart_convert) {}
@@ -673,7 +673,7 @@ class IntervalCCS {
   }
 
   /// \brief matrix vector multiplication
-  /// \tparam IArray input array type       
+  /// \tparam IArray input array type
   /// \tparam OArray output array type
   /// \param[in] x input array
   /// \param[out] y output array

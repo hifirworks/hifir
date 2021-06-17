@@ -28,7 +28,7 @@ TEST(L, crs) {
   forward_sub_unit_diag(A_d, y2);
   A.solve_as_strict_lower(y1);
   for (int i = 0; i < n; ++i)
-    EXPECT_NEAR(y1[i], y2[i][0], 1e-12 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
+    EXPECT_NEAR(y1[i], y2[i][0], 1e-10 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
         << i;
 }
 
@@ -50,7 +50,7 @@ TEST(L_tran, crs) {
   backward_sub_unit_diag(A_d, y2);
   A.solve_as_strict_lower_tran(y1);
   for (int i = 0; i < n; ++i)
-    EXPECT_NEAR(y1[i], y2[i][0], 1e-12 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
+    EXPECT_NEAR(y1[i], y2[i][0], 1e-10 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
         << i;
 }
 
@@ -65,7 +65,7 @@ TEST(U, crs) {
   backward_sub_unit_diag(A_d, y2);
   A.solve_as_strict_upper(y1);
   for (int i = 0; i < n; ++i)
-    EXPECT_NEAR(y1[i], y2[i][0], 1e-12 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
+    EXPECT_NEAR(y1[i], y2[i][0], 1e-10 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
         << i;
 }
 
@@ -101,7 +101,7 @@ TEST(L, ccs) {
   forward_sub_unit_diag(A_d, y2);
   A.solve_as_strict_lower(y1);
   for (int i = 0; i < n; ++i)
-    EXPECT_NEAR(y1[i], y2[i][0], 1e-12 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
+    EXPECT_NEAR(y1[i], y2[i][0], 1e-10 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
         << i;
 }
 
@@ -122,7 +122,7 @@ TEST(L_tran, ccs) {
   backward_sub_unit_diag(A_d, y2);
   A.solve_as_strict_lower_tran(y1);
   for (int i = 0; i < n; ++i)
-    EXPECT_NEAR(y1[i], y2[i][0], 1e-12 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
+    EXPECT_NEAR(y1[i], y2[i][0], 1e-10 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
         << i;
 }
 
@@ -138,7 +138,7 @@ TEST(U, ccs) {
   backward_sub_unit_diag(A_d, y2);
   A.solve_as_strict_upper(y1);
   for (int i = 0; i < n; ++i)
-    EXPECT_NEAR(y1[i], y2[i][0], 1e-12 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
+    EXPECT_NEAR(y1[i], y2[i][0], 1e-10 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
         << i;
 }
 
@@ -160,6 +160,6 @@ TEST(U_tran, ccs) {
   forward_sub_unit_diag(A_d, y2);
   A.solve_as_strict_upper_tran(y1);
   for (int i = 0; i < n; ++i)
-    EXPECT_NEAR(y1[i], y2[i][0], 1e-12 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
+    EXPECT_NEAR(y1[i], y2[i][0], 1e-10 * (std::abs(y2[i][0] ? y2[i][0] : 1.0)))
         << i;
 }

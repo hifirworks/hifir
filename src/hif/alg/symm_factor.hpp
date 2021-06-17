@@ -59,7 +59,7 @@ inline void compress_tail(L_Type &L, const PosArray &L_start,
   // reshape the secondary axis of the matrices
   L.resize_nrows(L.nrows() / 2);
 
-#ifndef NDEBUG
+#ifdef HIF_DEBUG
   L.check_validity();
 #endif
 }
@@ -385,7 +385,7 @@ inline CsType symm_level_factorize(
                       l);
 
     // update diagonal entries
-#ifndef NDEBUG
+#ifdef HIF_DEBUG
     const bool is_nonsingular =
 #else
     (void)
@@ -564,7 +564,7 @@ inline CsType symm_level_factorize(
         hif_info("pure Schur computation time: %gs...", timer2.time());
     } while (false);
   } else {
-    S = A;
+    S = A_crs;
     p.make_eye();
     std::fill(s.begin(), s.end(), 1);
     std::fill(t.begin(), t.end(), 1);
@@ -654,31 +654,6 @@ inline CsType symm_level_factorize(
     if (hif_verbose(INFO, opts))
       hif_info("successfully factorized the dense component...");
   }
-#ifdef HIF_ENABLE_MUMPS
-  else {
-    if (nm <= static_cast<size_type>(HIF_LASTLEVEL_SPARSE_SIZE)) {
-      DefaultTimer timer2;
-      auto &       last_level = precs.back().sparse_solver;
-      last_level.set_info(
-          opts.mumps_blr,
-          std::sqrt(
-              Const<typename ValueTypeTrait<value_type>::value_type>::EPS),
-          schur_threads);
-      const double nnz_b4 = 0.01 * S.nnz();
-      timer2.start();
-      last_level.factorize(S);
-      timer2.finish();
-      hif_error_if(last_level.info(), "%s returned error %d",
-                   last_level.backend(), last_level.info());
-      if (hif_verbose(INFO, opts))
-        hif_info(
-            "successfully factorized the sparse component with %s...\n"
-            "\tfill-ratio: %.2f%%\n"
-            "\ttime: %gs...",
-            last_level.backend(), last_level.nnz() / nnz_b4, timer2.time());
-    }
-  }
-#endif  // HIF_ENABLE_MUMPS
 
   timer.finish();  // profile post-processing
 
