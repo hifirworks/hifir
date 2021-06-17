@@ -21,6 +21,7 @@ else ifeq ($(DEBUG),1)
 else
     DBGFLAGS += -DNDEBUG
 endif
+DBGFLAGS += -Wno-comment
 
 ifeq ($(DEBUG),)
 OPTFLAGS = -O3 -ffast-math

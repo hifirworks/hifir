@@ -20,7 +20,7 @@ TEST(Timer, serial) {
   timer.finish();
   ASSERT_LE(std::fabs(timer.time() - 0.1), 1e-3);
   ASSERT_LE(std::fabs(timer.time_milli() - 100.0), 2);
-  ASSERT_LE(std::fabs(timer.time_micro() - 1e2 * 1e3), 500.0);
+  ASSERT_LE(std::fabs(timer.time_micro() - 1e2 * 1e3), 600.0);
   ASSERT_LE(std::fabs(timer.time_nano() - 1e2 * 1e6), 1e6);
   // reuse
   timer.start();
@@ -28,7 +28,7 @@ TEST(Timer, serial) {
   timer.finish();
   ASSERT_LE(std::fabs(timer.time() - 0.2), 1e-3);
   ASSERT_LE(std::fabs(timer.time_milli() - 200.0), 2);
-  ASSERT_LE(std::fabs(timer.time_micro() - 2e2 * 1e3), 500.0);
+  ASSERT_LE(std::fabs(timer.time_micro() - 2e2 * 1e3), 600.0);
   ASSERT_LE(std::fabs(timer.time_nano() - 2e2 * 1e6), 1e6);
 }
 
@@ -41,7 +41,6 @@ TEST(Timer, MT) {
     timer.finish();
     ASSERT_LE(std::fabs(timer.time() - 0.1), 1e-3);
     ASSERT_LE(std::fabs(timer.time_milli() - 100.0), 2);
-    ASSERT_LE(std::fabs(timer.time_micro() - 1e2 * 1e3), 500.0);
     ASSERT_LE(std::fabs(timer.time_nano() - 1e2 * 1e6), 1e6);
   };
   const auto func2 = []() {
@@ -51,7 +50,6 @@ TEST(Timer, MT) {
     timer.finish();
     ASSERT_LE(std::fabs(timer.time() - 0.2), 1e-3);
     ASSERT_LE(std::fabs(timer.time_milli() - 200.0), 2);
-    ASSERT_LE(std::fabs(timer.time_micro() - 2e2 * 1e3), 500.0);
     ASSERT_LE(std::fabs(timer.time_nano() - 2e2 * 1e6), 1e6);
   };
   std::thread t1(func1), t2(func2);

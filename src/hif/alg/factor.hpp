@@ -456,7 +456,7 @@ inline void compress_tails(U_Type &U, L_Type &L, const PosArray &U_start,
   L.resize_nrows(L.nrows() / 2);
   U.resize_ncols(U.ncols() / 2);
 
-#ifndef NDEBUG
+#ifdef HIF_DEBUG
   L.check_validity();
   U.check_validity();
 #endif
@@ -859,7 +859,7 @@ inline CsType level_factorize(
                            U, U_start, U_list, l);
 
     // update diagonal entries for u first
-#ifndef NDEBUG
+#ifdef HIF_DEBUG
     const bool u_is_nonsingular =
 #else
     (void)
@@ -871,7 +871,7 @@ inline CsType level_factorize(
     // update diagonals b4 dropping
     step.update_diag<IsSymm>(l, ut, m2, d);
 
-#ifndef NDEBUG
+#ifndef HIF_DEBUG
     const bool l_is_nonsingular =
 #else
     (void)

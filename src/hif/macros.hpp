@@ -37,10 +37,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // Hey! Don't define this for compiling for applications!
 #ifdef ONLY_FOR_DOXYGEN
 
-/// \def NDEBUG
-/// \brief standard macro for release builds
-/// \note default is off, i.e. debug mode, code runs way slower
-#  define NDEBUG
+/// \def HIF_DEBUG
+/// \brief debugging mode
+/// \note default is off, i.e. debug mode off
+#  define HIF_DEBUG
 
 /// \def HIF_THROW
 /// \brief let HIF use C++ exceptions intead of \a abort
