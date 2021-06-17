@@ -6,18 +6,20 @@ ifeq ($(HIFIR_HOME),)
     HIFIR_HOME := $(shell for d in $(HIFIR_DIRS); \
         do if [ -r $$d/include/hifir.h ]; then echo $$d; break; fi; done)
 endif
+ifneq ($(HIFIR_HOME),)
+    CPPFLAGS += -I$(HIFIR_HOME)/include
+endif
 
-CPPFLAGS = -I$(HIFIR_HOME)/include
-CXXFLAGS = -fopenmp -rdynamic -Wall -Wextra -std=c++11
+CXXFLAGS += -fopenmp -rdynamic -Wall -Wextra -std=c++11
 
 # By default, we disable DEBUG, which disables assertions.
 # Set to 1 to enable all assertions and set to 2 to use sanitize of gcc.
 ifeq ($(DEBUG),2)
-	DEBUGFLAGS += -g -fno-omit-frame-pointer -fsanitize=address
+    DEBUGFLAGS += -g -fno-omit-frame-pointer -fsanitize=address
 else ifeq ($(DEBUG),1)
-	DEBUGFLAGS += -g -DHIF_DEBUG
+    DEBUGFLAGS += -g -DHIF_DEBUG
 else
-	DEBUGFLAGS += -DNDEBUG
+    DEBUGFLAGS += -DNDEBUG
 endif
 CXXFLAGS += $(DEBUGFLAGS)
 
@@ -29,5 +31,5 @@ LAPACK_LIB = -llapack -lblas
 
 ifneq ($(LAPACK_LIB),)
 # add lapack blas libraries, use generic libraries for testing
-	LIBS += $(LAPACK_LIB)
+    LIBS += $(LAPACK_LIB)
 endif

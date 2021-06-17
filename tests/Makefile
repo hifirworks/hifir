@@ -8,7 +8,7 @@
 #		Xiangmin Jiao
 
 DEBUG = 1
-HIFIR_HOME = '../'
+CPPFLAGS = -I../src
 
 include ../Makefile.in
 
@@ -16,15 +16,11 @@ include ../Makefile.in
 GTEST_DIRS = /opt/local $HOME/.local
 GTEST_HOME := $(shell for d in $(GTEST_DIRS); \
 	do if [ -r $$d/include/gtest.h ]; then echo $$d; break; fi; done)
-ifeq ($(GTEST_INCDIR),)
-	GTEST_INCDIR = $(GTEST_HOME)/include
+ifneq ($(GTEST_HOME),)
+	CPPFLAGS += -I$(GTEST_HOME)/include
+	LDFLAGS += -L$(GTEST_HOME)/lib
 endif
-ifeq ($(GTEST_LIBDIR),)
-	GTEST_LIBDIR = $(GTEST_HOME)/lib
-endif
-
-CPPFLAGS += -I$(GTEST_INCDIR)
-LIBS += -L$(GTEST_LIBDIR) -lgtest -lgtest_main
+LIBS += -lgtest -lgtest_main
 
 TEST_SRCS = $(shell \ls test_*.cpp)
 TESTS = $(TEST_SRCS:%.cpp=%)
@@ -45,11 +41,11 @@ $(1).d: $(1).cpp | $(DEPDIR)
 include $(1).d
 
 $(1).exe: $(1).cpp common.hpp $(1).d
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $$< -o $$@ $(LIBS) $(LDFLAGS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $$< -o $$@ $(LDFLAGS) $(LIBS)
 endef
 
 ifneq ("$(MAKECMDGOALS)","clean")
-$(foreach test,$(TESTS),$(eval $(call MAKE_EXE_RULE, $(test))))
+    $(foreach test,$(TESTS),$(eval $(call MAKE_EXE_RULE, $(test))))
 endif
 
 clean:
