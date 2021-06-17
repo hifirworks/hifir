@@ -9,13 +9,13 @@ Welcome to the `HIFIR` package! `HIFIR` stands for `H`ybrid `I`ncomplete `F`acto
 The C++ interface of `HIFIR` is header-only. You can simply do the following on a UNIX system
 
 ```console
-sudo cp /path/to/hifir/src/* /usr/local/include
+sudo cp -r /path/to/hifir/src/* /usr/local/include
 ```
 
 or copy `/path/to/hifir/src/*` to any user-level directory, for example,
 
 ```console
-sudo cp /path/to/hifir/src/* $HOME/.local/include
+cp -r /path/to/hifir/src/* $HOME/.local/include
 ```
 and then add `-I$HOME/.local/include` to the command line of your `c++` compiler.
 
