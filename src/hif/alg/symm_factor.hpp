@@ -564,7 +564,7 @@ inline CsType symm_level_factorize(
         hif_info("pure Schur computation time: %gs...", timer2.time());
     } while (false);
   } else {
-    S = A;
+    S = A_crs;
     p.make_eye();
     std::fill(s.begin(), s.end(), 1);
     std::fill(t.begin(), t.end(), 1);

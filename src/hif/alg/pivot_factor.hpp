@@ -666,7 +666,7 @@ inline CsType pivot_level_factorize(
         hif_info("pure Schur computation time: %gs...", timer2.time());
     } while (false);
   } else {
-    S = A;
+    S = A_crs;
     p.make_eye();
     q.make_eye();
     std::fill(s.begin(), s.end(), 1);
