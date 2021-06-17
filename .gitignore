@@ -26,6 +26,7 @@ src/psmilu_matching/hsl_mc64*.h
 *.hifir
 *.bin
 *.mat
+*.bak
 !examples/demo_inputs/A.hilucsi
 !examples/demo_inputs/matlab.mat
 internal_tests
