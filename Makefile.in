@@ -23,7 +23,7 @@ else
 endif
 
 ifeq ($(DEBUG),)
-OPTFLAGS += -O3 -ffast-math
+OPTFLAGS += -O3 -ffast-math -march=native
 endif
 CXXFLAGS += $(DBGFLAGS) $(OPTFLAGS)
 
