@@ -533,7 +533,7 @@ class HIF {
     }
 
     // check last level
-    if (!_precs.back().is_last_level())
+    if (_precs.empty() || !_precs.back().is_last_level())
       this->_factorize_kernel(S, 0u, opts, row_sizes, col_sizes, Crout_info,
                               schur_threads, pivot_flag != 0);
   }

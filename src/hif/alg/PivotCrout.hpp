@@ -393,7 +393,6 @@ class PivotCrout : public Crout {
                            const size_type entry = 0u) {
     using value_type          = typename AugCsType::value_type;
     using index_type          = typename AugCsType::index_type;
-    using size_type           = typename AugCsType::size_type;
     constexpr static bool one = true, neg_one = false;
 
     if (!_step) {
@@ -517,6 +516,10 @@ class PivotCrout : public Crout {
     static_assert(!CcsType::ROW_MAJOR, "must be CCS");
     static_assert(CrsType::ROW_MAJOR, "must be CRS");
     using index_type = typename CcsType::index_type;
+
+#ifndef HIF_DEBUG
+    (void)m;
+#endif
 
     int        pivot_step(0), col_pivots(0), row_pivots(0);
     const auto k = deferred_step();  // current step (with gap considerred)
