@@ -25,7 +25,6 @@ LIBS += -lgtest -lgtest_main
 TEST_SRCS = $(shell \ls test_*.cpp)
 TESTS = $(TEST_SRCS:%.cpp=%)
 EXECS = $(TEST_SRCS:%.cpp=%.exe)
-VPATH = $(HIFIR_HOME)/src
 
 .PHONY: clean
 .PRECIOUS: $(EXECS)
@@ -40,7 +39,7 @@ $(1).d: $(1).cpp | $(DEPDIR)
 	@$(CXX) $(CPPFLAGS) -MM -MP -MT $$@ -MF $$@ $$<
 include $(1).d
 
-$(1).exe: $(1).cpp common.hpp $(1).d
+$(1).exe: $(1).cpp $(1).d
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $$< -o $$@ $(LDFLAGS) $(LIBS)
 endef
 
