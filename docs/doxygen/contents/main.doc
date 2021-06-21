@@ -43,7 +43,7 @@ the following paper.
   journal = {Numer. Linear Algebra Appl.},
   year    = {2021},
   note    = {To appear},
-  doi     = {10.1002/nla.2400},
+  doi     = {10.1002/nla.2400}
 }
 \endverbatim
 
@@ -57,7 +57,7 @@ please cite the following papers.
   title   = {Approximate generalized inverses with iterative refinement for
              $\epsilon$-accurate preconditioning of singular systems},
   year    = {2020},
-  note    = {arXiv:2009.01673},
+  note    = {arXiv:2009.01673}
 }
 \endverbatim
 
@@ -68,7 +68,7 @@ please cite the following papers.
              for preconditioning ill-conditioned and singular systems},
   journal = {arXiv},
   year    = {2021},
-  note    = {arXiv:21...},
+  note    = {arXiv:2106.09877}
 }
 \endverbatim
 

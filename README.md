@@ -37,7 +37,7 @@ If you use `HIFIR` in your research for nonsingular systems, please cite the `HI
   journal = {Numer. Linear Algebra Appl.},
   year    = {2021},
   note    = {To appear},
-  doi     = {10.1002/nla.2400},
+  doi     = {10.1002/nla.2400}
 }
 ```
 
@@ -50,7 +50,7 @@ If you plan to use HIFIR in solving singular and ill-conditioned systems, please
   title   = {Approximate generalized inverses with iterative refinement for
              $\epsilon$-accurate preconditioning of singular systems},
   year    = {2020},
-  note    = {arXiv:2009.01673},
+  note    = {arXiv:2009.01673}
 }
 ```
 
@@ -61,7 +61,7 @@ If you plan to use HIFIR in solving singular and ill-conditioned systems, please
              for preconditioning ill-conditioned and singular systems},
   journal = {arXiv},
   year    = {2021},
-  note    = {arXiv:21...},
+  note    = {arXiv:2106.09877}
 }
 ```
 
