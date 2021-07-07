@@ -36,7 +36,6 @@ If you use `HIFIR` in your research for nonsingular systems, please cite the `HI
              large-scale saddle-point problems from {PDE}s},
   journal = {Numer. Linear Algebra Appl.},
   year    = {2021},
-  note    = {To appear},
   doi     = {10.1002/nla.2400}
 }
 ```
