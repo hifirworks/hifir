@@ -31,6 +31,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "hif/ds/Array.hpp"
 #include "hif/ds/CompressedStorage.hpp"
+#include "hif/utils/math.hpp"
 #include "hif/utils/mv_helper.hpp"
 
 namespace hif {
@@ -74,7 +75,7 @@ class IterRefine {
   template <class MType, class Matrix, class IArrayType, class OArrayType>
   inline void iter_refine(const MType &M, const Matrix &A, const IArrayType &b,
                           const size_type N, OArrayType &x,
-                          const size_type last_dim = 0u,
+                          const size_type last_dim = static_cast<size_type>(-1),
                           const bool      tran     = false) const {
     if (N <= 1) {
       // if iteration is less than 2, then use original interface
@@ -99,6 +100,60 @@ class IterRefine {
       M.solve(x, _r, tran, last_dim);  // compute inv(M)*x=r
       for (size_type i(0); i < n; ++i) x[i] = _r[i] + _xk[i];  // update
     }
+  }
+
+  /// \brief Stationary iteration used as refinement
+  /// \tparam MType preconditioner, see \ref HIF
+  /// \tparam Matrix matrix type, see \ref CRS or \ref CCS
+  /// \param[in] M HIF preconditioner
+  /// \param[in] A input matrix
+  /// \param[in] b right-hand side vector
+  /// \param[in] N number of iterations
+  /// \param[in] betas lower and upper bound of residual norms
+  /// \param[out] x solution of Jacobi after \a N iterations
+  /// \param[in] last_dim (optional) dimension for back solve for last level
+  ///                     default is its numerical rank in \a M
+  /// \param[in] tran (optional) transpose/Herimitian flag, default is false
+  /// \return Number of refinements
+  template <class MType, class Matrix, class IArrayType, class OArrayType>
+  inline size_type iter_refine(
+      const MType &M, const Matrix &A, const IArrayType &b, const size_type N,
+      const double *betas, OArrayType &x,
+      const size_type last_dim = static_cast<size_type>(-1),
+      const bool      tran     = false) const {
+    if (N <= 1) {
+      // if iteration is less than 2, then use original interface
+      M.solve(b, x, tran, last_dim);
+      return 1u;
+    }
+    // compute norm of RHS
+    const double bnorm = norm2(b);
+    if (bnorm == 0.0) {
+      std::fill_n(x.begin(), x.end(), 0.0);
+      return 0u;
+    }
+    // now, allocate space
+    _init(M.ncols());
+    const size_type n(b.size());                   // dimension
+    std::fill(x.begin(), x.end(), value_type(0));  // init to zero
+    size_type i(0);
+    for (; i < N; ++i) {
+      std::copy(x.cbegin(), x.cend(), _xk.begin());  // copy rhs to x
+      if (i) {
+        // starting 2nd iteration
+        if (!tran)
+          mt::multiply_nt(A, _xk, x);
+        else
+          multiply(A, _xk, x, true);
+        for (size_type i(0); i < n; ++i) x[i] = b[i] - x[i];  // residual
+        const double res = norm2(x) / bnorm;
+        if (res > betas[1] || res <= betas[0]) break;
+      } else
+        std::copy_n(b.cbegin(), n, x.begin());
+      M.solve(x, _r, tran, last_dim);  // compute inv(M)*x=r
+      for (size_type i(0); i < n; ++i) x[i] = _r[i] + _xk[i];  // update
+    }
+    return i;
   }
 
   /// \brief clear storage
