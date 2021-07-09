@@ -1743,10 +1743,8 @@ inline CRS<ValueType, IndexType> wrap_const_crs(
           first, last,
           [](const IndexType i, const IndexType j) { return i <= j; });
       if (itr != last)
-        hif_error(
-            "%zd row is not sorted, the checking failed at entry %td, run "
-            "with help_sort=true",
-            i, itr - first);
+        hif_error("%zd row is not sorted, the checking failed at entry %td", i,
+                  itr - first);
       else
         hif_error_if(size_type(*(last - 1)) >= mat.ncols(),
                      "%zd exceeds column size %zd", size_type(*(last - 1)),
@@ -1754,29 +1752,6 @@ inline CRS<ValueType, IndexType> wrap_const_crs(
     }
   }
   return mat;
-}
-
-/// \brief wrap user data in C index
-/// \tparam ValueType value type, e.g. \a double
-/// \tparam IndexType index type, e.g. \a int
-/// \param[in] nrows number of rows
-/// \param[in] ncols number of columns
-/// \param[in] row_start data for row pointer, size of \a nrows + 1
-/// \param[in] col_ind column indices
-/// \param[in] vals numerical data
-/// \param[in] check if \a true (default), then perform validation checking
-/// \param[in] help_sort help sort unsorted rows (if any), require \a check=1
-/// \return a \ref CRS matrix wrapped around user data.
-/// \warning It's the user's responsibility to maintain the external data
-/// \ingroup ds
-template <class ValueType, class IndexType>
-inline CRS<ValueType, IndexType> wrap_crs(
-    const typename CRS<ValueType, IndexType>::size_type nrows,
-    const typename CRS<ValueType, IndexType>::size_type ncols,
-    const IndexType *row_start, const IndexType *col_ind, const ValueType *vals,
-    bool check = true, bool help_sort = false) {
-  return wrap_crs<false>(nrows, ncols, row_start, col_ind, vals, check,
-                         help_sort);
 }
 
 /// \class CCS
@@ -2644,10 +2619,8 @@ inline CCS<ValueType, IndexType> wrap_const_ccs(
           first, last,
           [](const IndexType i, const IndexType j) { return i <= j; });
       if (itr != last)
-        hif_error(
-            "%zd row is not sorted, the checking failed at entry %td, run "
-            "with help_sort=true",
-            i, itr - first);
+        hif_error("%zd row is not sorted, the checking failed at entry %td", i,
+                  itr - first);
       else
         hif_error_if(size_type(*(last - 1)) >= mat.nrows(),
                      "%zd exceeds row size %zd", size_type(*(last - 1)),
