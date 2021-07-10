@@ -95,18 +95,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #  define HIF_LASTLEVEL_DENSE_SIZE 2000
 #endif
 
-/// \def HIF_FALLBACK_SPARSE_DIRECT_RATIO
-/// \brief fallback to use complete factorization for a certain level
-/// \note default ratio is 85%
-///
-/// There are certain problems where almost all entries can be deferred. In
-/// this case, if we have sparse direct solver enabled, we can redo the
-/// factorization with a complete version as a fallback plan. This is probably
-/// the best we can do, but there is not control over the sizes of systems...
-#ifndef HIF_FALLBACK_SPARSE_DIRECT_RATIO
-#  define HIF_FALLBACK_SPARSE_DIRECT_RATIO 85
-#endif  // HIF_FALLBACK_SPARSE_DIRECT_RATIO
-
 /// \def HIF_MIN_LOCAL_SIZE_PERCTG
 /// \brief minimum percentation of the local row and column sizes wrt the
 ///        the averaged nnz per row/column for row and column, resp.
