@@ -97,7 +97,7 @@ static bool introduced = false;
 ///   using builder_t = HIF<double, int>;
 ///   using crs_t = builder_t::crs_type;
 ///   int main() {
-///     const auto A = wrap_crs<crs_t>(...);
+///     const auto A = wrap_const_crs(...);
 ///     builder_t builder;
 ///     builder.factorize(A);
 ///     builder.solve(...);

@@ -37,6 +37,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "hif/ds/Array.hpp"
 #include "hif/utils/common.hpp"
+#include "hif/utils/coo2compress.hpp"
 #include "hif/utils/io.hpp"
 #include "hif/utils/math.hpp"
 #include "hif/utils/mt_mv.hpp"
@@ -843,6 +844,15 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
     return crs;
   }
 
+  /// \brief Read a matrix from a MatrixMarket file
+  /// \param[in] filename file name
+  /// \return A CRS matrix
+  inline static CRS from_mm(const char *filename) {
+    CRS A;
+    A.read_mm(filename);
+    return A;
+  }
+
   /// \brief default constructor
   CRS() : _base(), _ncols(0u) {}
 
@@ -1550,6 +1560,27 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
     return m;
   }
 
+  /// \brief Read data from a MatrixMarket file
+  /// \param[in] fname File name
+  /// \sa write_mm
+  inline void read_mm(const char *fname) {
+    iarray_type rows, cols;
+    array_type  coovals;
+    size_type   m, n;
+    read_mm_sparse(fname, m, n, rows, cols, coovals);
+    // convert to CRS
+    convert_coo2cs(m, n, rows, cols, coovals, row_start(), col_ind(), vals());
+    _psize = m;
+    _ncols = n;
+  }
+
+  /// \brief Write data to a MatrixMarket file
+  /// \param[in] fname File name
+  /// \sa read_mm
+  inline void write_mm(const char *fname) const {
+    write_mm_sparse<true>(fname, _ncols, row_start(), col_ind(), vals());
+  }
+
   /// \brief split the matrix against column
   /// \tparam IsSecond if \a true, then the second half is returned
   /// \param[in] m column size
@@ -1743,10 +1774,8 @@ inline CRS<ValueType, IndexType> wrap_const_crs(
           first, last,
           [](const IndexType i, const IndexType j) { return i <= j; });
       if (itr != last)
-        hif_error(
-            "%zd row is not sorted, the checking failed at entry %td, run "
-            "with help_sort=true",
-            i, itr - first);
+        hif_error("%zd row is not sorted, the checking failed at entry %td", i,
+                  itr - first);
       else
         hif_error_if(size_type(*(last - 1)) >= mat.ncols(),
                      "%zd exceeds column size %zd", size_type(*(last - 1)),
@@ -1754,29 +1783,6 @@ inline CRS<ValueType, IndexType> wrap_const_crs(
     }
   }
   return mat;
-}
-
-/// \brief wrap user data in C index
-/// \tparam ValueType value type, e.g. \a double
-/// \tparam IndexType index type, e.g. \a int
-/// \param[in] nrows number of rows
-/// \param[in] ncols number of columns
-/// \param[in] row_start data for row pointer, size of \a nrows + 1
-/// \param[in] col_ind column indices
-/// \param[in] vals numerical data
-/// \param[in] check if \a true (default), then perform validation checking
-/// \param[in] help_sort help sort unsorted rows (if any), require \a check=1
-/// \return a \ref CRS matrix wrapped around user data.
-/// \warning It's the user's responsibility to maintain the external data
-/// \ingroup ds
-template <class ValueType, class IndexType>
-inline CRS<ValueType, IndexType> wrap_crs(
-    const typename CRS<ValueType, IndexType>::size_type nrows,
-    const typename CRS<ValueType, IndexType>::size_type ncols,
-    const IndexType *row_start, const IndexType *col_ind, const ValueType *vals,
-    bool check = true, bool help_sort = false) {
-  return wrap_crs<false>(nrows, ncols, row_start, col_ind, vals, check,
-                         help_sort);
 }
 
 /// \class CCS
@@ -1825,6 +1831,15 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
     const auto b_size = ccs.read_ascii(filename);
     if (m) *m = b_size;
     return ccs;
+  }
+
+  /// \brief read from a MatrixMarket file
+  /// \param[in] filename file name
+  /// \return A CCS matrix
+  inline static CCS from_mm(const char *filename) {
+    CCS A;
+    A.read_mm(filename);
+    return A;
   }
 
   /// \brief default constructor
@@ -2458,6 +2473,27 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
     return m;
   }
 
+  /// \brief Read data from a MatrixMarket file
+  /// \param[in] fname File name
+  /// \sa write_mm
+  inline void read_mm(const char *fname) {
+    iarray_type rows, cols;
+    array_type  coovals;
+    size_type   m, n;
+    read_mm_sparse(fname, m, n, rows, cols, coovals);
+    // convert to CCS
+    convert_coo2cs(n, m, cols, rows, coovals, col_start(), row_ind(), vals());
+    _psize = n;
+    _nrows = m;
+  }
+
+  /// \brief Write data to a MatrixMarket file
+  /// \param[in] fname File name
+  /// \sa read_mm
+  inline void write_mm(const char *fname) const {
+    write_mm_sparse<false>(fname, _nrows, col_start(), row_ind(), vals());
+  }
+
   /// \brief split against row
   /// \tparam IsSecond if \a true, then the offset part is returned
   /// \param[in] m splitted row size
@@ -2644,10 +2680,8 @@ inline CCS<ValueType, IndexType> wrap_const_ccs(
           first, last,
           [](const IndexType i, const IndexType j) { return i <= j; });
       if (itr != last)
-        hif_error(
-            "%zd row is not sorted, the checking failed at entry %td, run "
-            "with help_sort=true",
-            i, itr - first);
+        hif_error("%zd row is not sorted, the checking failed at entry %td", i,
+                  itr - first);
       else
         hif_error_if(size_type(*(last - 1)) >= mat.nrows(),
                      "%zd exceeds row size %zd", size_type(*(last - 1)),
