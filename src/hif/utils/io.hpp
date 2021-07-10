@@ -54,6 +54,10 @@
  * only allowed at the beginning of the file; a line of comment starts with
  * character '#', which is a commonly used convension, e.g. shell, make,
  * Python, etc.
+ *
+ * In addition, we provide routines to handle the Matrix Market file format.
+ * In particular, we support read all sparse matrices. For dense matrix, we
+ * will treat it as an array for RHS, thus we only read the first column.
 
 \verbatim
 Copyright (C) 2021 NumGeom Group at Stony Brook University
@@ -78,32 +82,36 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define _HIF_UTILS_IO_HPP
 
 #include <algorithm>
+#include <cctype>
 #include <complex>
 #include <cstdint>
+#include <cstdio>
 #include <fstream>
 #include <tuple>
 #include <type_traits>
 
 #include "hif/ds/Array.hpp"
+#include "hif/utils/math.hpp"
+#include "hif/version.h"
 
 namespace hif {
 namespace internal {
 
 /// \brief check if the os is litter endian
-/// \ingroup util
+/// \ingroup io
 inline bool is_little_endian() {
   int a = 1;
   return *(char *)&a;
 }
 
 /// \brief check the word size
-/// \ingroup util
+/// \ingroup io
 inline constexpr std::size_t get_word_size() { return sizeof(void *); }
 
 /// \brief read the general information
 /// \tparam InStream input stream type, should be \a std::ifstream
 /// \param[in,out] i_str in-file streamer
-/// \ingroup util
+/// \ingroup io
 /// \return a \a tuple of args, from left to right, endianness, word size,
 ///         integer size, row-major flag, C index flag, double precision flag,
 ///         real/complex flag.
@@ -138,7 +146,7 @@ read_general_info(InStream &i_str) {
 /// \brief read the matrix size information
 /// \tparam InStream input stream type, should be \a std::ifstream
 /// \param[in,out] i_str in-file streamer
-/// \ingroup util
+/// \ingroup io
 /// \return a \a tuple of args, from left to right, row size, column size,
 ///         number of nonzeros, and leading symmetric block size.
 /// \sa write_matrix_sizes
@@ -166,7 +174,7 @@ read_matrix_sizes(InStream &i_str) {
 /// \param[out] ind_start raw data of size at least int_size*(start_size+1)
 /// \param[out] indices raw data of size at least int_size*nnz
 /// \param[out] vals raw data of size at least real_size*nnz
-/// \ingroup util
+/// \ingroup io
 /// \sa write_matrix_data_attrs
 template <class InStream>
 inline void read_matrix_data_attrs(InStream &i_str, const std::size_t int_size,
@@ -187,7 +195,7 @@ inline void read_matrix_data_attrs(InStream &i_str, const std::size_t int_size,
 /// \param[in] is_c C index flag
 /// \param[in] is_double double precision flag
 /// \param[in] is_real real/complex flag
-/// \ingroup util
+/// \ingroup io
 /// \sa read_general_info
 template <class OutStream>
 inline void write_general_info(OutStream &o_str, const std::size_t int_size,
@@ -216,7 +224,7 @@ inline void write_general_info(OutStream &o_str, const std::size_t int_size,
 /// \param[in] col column size
 /// \param[in] nnz total number of nonzeros
 /// \param[in] m leading symmetric block size
-/// \ingroup util
+/// \ingroup io
 /// \sa read_matrix_sizes
 template <class OutStream>
 inline void write_matrix_sizes(OutStream &o_str, const std::uint64_t row,
@@ -238,7 +246,7 @@ inline void write_matrix_sizes(OutStream &o_str, const std::uint64_t row,
 /// \param[in] ind_start opaque pointer to start positions
 /// \param[in] indices opaque pointer to indices
 /// \param[in] vals opaque pointer to value array
-/// \ingroup util
+/// \ingroup io
 /// \sa read_matrix_data_attrs
 template <class OutStream>
 inline void write_matrix_data_attrs(
@@ -299,7 +307,7 @@ inline void copy_vals_helper<16u, 8u>(const std::uint64_t nnz, const void *v1,
 }  // namespace internal
 
 /*!
- * \addtogroup util
+ * \addtogroup io
  * @{
  */
 
@@ -894,7 +902,446 @@ read_ascii(const char *fname, IndexArray &ind_start, IndexArray &indices,
 
 /*!
  * @}
- */ // group util
+ */ // group io
+
+// Matrix Market
+
+namespace internal {
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+// helper to handle complex and real
+
+template <class V>
+inline typename std::enable_if<std::is_floating_point<V>::value>::type set_real(
+    const double r, V &x) {
+  x = r;
+}
+
+template <class V>
+inline typename std::enable_if<!std::is_floating_point<V>::value>::type
+set_real(const double r, V &x) {
+  // assume V is std::complex
+  x.real(r);
+}
+
+template <class V>
+inline typename std::enable_if<std::is_floating_point<V>::value>::type set_imag(
+    const double, V &) {}
+
+template <class V>
+inline typename std::enable_if<!std::is_floating_point<V>::value>::type
+set_imag(const double i, V &x) {
+  // assume V is std::complex
+  x.imag(i);
+}
+#endif  // DOXYGEN_SHOULD_SKIP_THIS
+
+/*!
+ * \addtogroup io
+ * @{
+ */
+
+/// \brief Internal routine to read sparse data
+template <int TypeID, bool IsReal, class IndexType, class ValueType>
+inline void mm_read_sparse_data(std::FILE *f, const std::size_t nnz,
+                                Array<IndexType> &rows, Array<IndexType> &cols,
+                                Array<ValueType> &vals) {
+  // type IDs
+  static constexpr int GENERAL = 0, SYMM = 1, HERM = 2, SK_SYMM = 3;
+  static_assert(TypeID == GENERAL || TypeID == SYMM || TypeID == HERM ||
+                    TypeID == SK_SYMM,
+                "invalid TypeID");
+
+  if (TypeID != GENERAL) {
+    // shrink at the end if necessary
+    rows.resize(nnz * 2);
+    cols.resize(nnz * 2);
+    vals.resize(nnz * 2);
+  } else {
+    rows.resize(nnz);
+    cols.resize(nnz);
+    vals.resize(nnz);
+  }
+
+  std::size_t index(0);
+  int         r, c;
+  double      vr, vi;
+  for (std::size_t i(0); i < nnz; ++i) {
+    const int flag = IsReal ? std::fscanf(f, "%d %d %lg", &r, &c, &vr)
+                            : std::fscanf(f, "%d %d %lg %lg", &r, &c, &vr, &vi);
+    if (flag != 4 - IsReal) {
+      std::fclose(f);
+      hif_error("insufficient objects scanned from fscanf");
+    }
+    rows[index] = r - 1;  // to 0-based index
+    cols[index] = c - 1;  // to 0-based index
+    set_real(vr, vals[index]);
+    set_imag(vi, vals[index]);
+    ++index;
+    if (TypeID == GENERAL || r == c) continue;
+    // not general and not along the diagonal
+    rows[index] = c - 1;  // to 0-based index
+    cols[index] = r - 1;  // to 0-based index
+    if (TypeID == SYMM)
+      vals[index] = vals[index - 1];
+    else if (TypeID == HERM)
+      vals[index] = conjugate(vals[index - 1]);
+    else
+      vals[index] = -vals[index - 1];
+    ++index;
+  }
+  if (index != nnz) {
+    rows.resize(index);
+    cols.resize(index);
+    vals.resize(index);
+  }
+}
+
+/// \brief Internal routine to read vector data
+template <bool IsReal, class ValueType>
+inline void mm_read_vector_data(std::FILE *f, const std::size_t n,
+                                Array<ValueType> &v) {
+  v.resize(n);
+  double vr, vi;
+  for (std::size_t i(0); i < n; ++i) {
+    const int flag = IsReal ? std::fscanf(f, "%lg", &vr)
+                            : std::fscanf(f, "%lg %lg", &vr, &vi);
+    if (flag != 2 - IsReal) {
+      std::fclose(f);
+      hif_error("insufficient objects scanned from fscanf");
+    }
+    set_real(vr, v[i]);
+    set_imag(vi, v[i]);
+  }
+}
+
+/// \brief Internal routine to parse the first line
+inline void mm_read_fistline(std::FILE *f, bool &is_sparse, bool &is_real,
+                             int &type_id) {
+  char line[1025];
+  char banner[65];
+  char mtx[65];
+  char crd[65];
+  char data_type[65];
+  char storage_scheme[65];
+
+  // read the first line
+  if (!std::fgets(line, 1025, f)) hif_error("unable to read the first line");
+  if (std::sscanf(line, "%s %s %s %s %s", banner, mtx, crd, data_type,
+                  storage_scheme) != 5) {
+    std::fclose(f);
+    hif_error("insufficient number of tokens in the first line");
+  }
+  std::string banner_str(banner);
+  if (banner_str != std::string("%%MatrixMarket")) {
+    std::fclose(f);
+    hif_error("incorrect banner");
+  }
+
+  std::string mtx_str(mtx);
+  // convert to lower
+  auto to_lower = [](std::string &ss) {
+    std::transform(ss.begin(), ss.end(), ss.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
+  };
+  to_lower(mtx_str);
+  if (mtx_str != std::string("matrix")) {
+    std::fclose(f);
+    hif_error("incorrect mtx");
+  }
+
+  std::string crd_str(crd), data_type_str(data_type),
+      storage_scheme_str(storage_scheme);
+  to_lower(crd_str);
+  to_lower(data_type_str);
+  to_lower(storage_scheme_str);
+
+  if (crd_str != std::string("coordinate") && crd_str != std::string("array")) {
+    std::fclose(f);
+    hif_error("unknown crd %s", crd_str.c_str());
+  }
+  is_sparse = crd_str != std::string("array");
+
+  if (data_type_str != std::string("real") &&
+      data_type_str != std::string("complex")) {
+    std::fclose(f);
+    hif_error("HIFIR unsupported data type %s", data_type_str.c_str());
+  }
+  is_real = data_type_str != std::string("complex");
+
+  if (storage_scheme_str == std::string("general"))
+    type_id = 0;
+  else if (storage_scheme_str == std::string("symmetric"))
+    type_id = 1;
+  else if (storage_scheme_str == std::string("hermitian"))
+    type_id = 2;
+  else if (storage_scheme_str == std::string("skey-symmetric"))
+    type_id = 3;
+  else {
+    std::fclose(f);
+    hif_error("unknown storage_scheme %s", storage_scheme_str.c_str());
+  }
+}
+
+/// \brief Internal routine to read sizes
+inline void mm_read_sparse_size(std::FILE *f, std::size_t &nrows,
+                                std::size_t &ncols, std::size_t &nnz) {
+  char line[1025];
+
+  nrows = ncols = nnz = 0u;
+
+  /* now continue scanning until you reach the end-of-comments */
+  do {
+    if (!std::fgets(line, 1025, f)) {
+      std::fclose(f);
+      hif_error("unable to read file");
+    }
+  } while (line[0] == '%');
+
+  int m, n, nz;
+  if (sscanf(line, "%d %d %d", &m, &n, &nz) == 3) {
+    nrows = m;
+    ncols = n;
+    nnz   = nz;
+    return;
+  }
+
+  int num_items_read;
+  do {
+    num_items_read = std::fscanf(f, "%d %d %d", &m, &n, &nz);
+    if (num_items_read == EOF) {
+      std::fclose(f);
+      hif_error("reached EOF!");
+    }
+  } while (num_items_read != 3);
+  nrows = m;
+  ncols = n;
+  nnz   = nz;
+}
+
+inline void mm_read_dense_size(std::FILE *f, std::size_t &nrows,
+                               std::size_t &ncols) {
+  char line[1025];
+
+  nrows = ncols = 0u;
+
+  /* now continue scanning until you reach the end-of-comments */
+  do {
+    if (!std::fgets(line, 1025, f)) {
+      std::fclose(f);
+      hif_error("unable to read file");
+    }
+  } while (line[0] == '%');
+
+  int m, n;
+  if (sscanf(line, "%d %d", &m, &n) == 2) {
+    nrows = m;
+    ncols = n;
+    return;
+  }
+
+  int num_items_read;
+  do {
+    num_items_read = std::fscanf(f, "%d %d", &m, &n);
+    if (num_items_read == EOF) {
+      std::fclose(f);
+      hif_error("reached EOF!");
+    }
+  } while (num_items_read != 2);
+  nrows = m;
+  ncols = n;
+}
+
+/*!
+ * @}
+ */ // group io
+
+}  // namespace internal
+
+/*!
+ * \addtogroup io
+ * @{
+ */
+
+/// \brief Read a sparse matrix form a MatrixMarket file
+/// \tparam IndexType Index type
+/// \tparam ValueType Value type
+/// \param[in] filename File name
+/// \param[out] nrows Output number of rows
+/// \param[out] ncols Output number of columns
+/// \param[out] rows Output row indices
+/// \param[out] cols Output column indices
+/// \param[out] vals Output values
+///
+/// Regardless what storage does \a filename uses, we always output a general
+/// matrix. Also, note that matrix market use coordinate format (aka IJV),
+/// thus if you plan to use this routine directly, then you need to convert
+/// the coordinate data structures into CRS/CCS if necessary.
+template <class IndexType, class ValueType>
+inline void read_mm_sparse(const char *filename, std::size_t &nrows,
+                           std::size_t &ncols, Array<IndexType> &rows,
+                           Array<IndexType> &cols, Array<ValueType> &vals) {
+  // open the file
+  std::FILE *f = std::fopen(filename, "r");
+  hif_error_if(!f, "unable to open matrix market file %s", filename);
+  bool is_sparse, is_real;
+  int  type_id;
+  // parse the first line
+  internal::mm_read_fistline(f, is_sparse, is_real, type_id);
+  if (!is_sparse) {
+    std::fclose(f);
+    hif_error("must be sparse matrix");
+  }
+  if (std::is_floating_point<ValueType>::value ^ is_real) {
+    // XOR
+    std::fclose(f);
+    hif_error("data types did not match between array and file");
+  }
+  std::size_t nnz;
+  internal::mm_read_sparse_size(f, nrows, ncols, nnz);
+  // read data
+  if (is_real) {
+    if (type_id == 0)
+      internal::mm_read_sparse_data<0, true>(f, nnz, rows, cols, vals);
+    else if (type_id == 1)
+      internal::mm_read_sparse_data<1, true>(f, nnz, rows, cols, vals);
+    else if (type_id == 2)
+      internal::mm_read_sparse_data<2, true>(f, nnz, rows, cols, vals);
+    else
+      internal::mm_read_sparse_data<3, true>(f, nnz, rows, cols, vals);
+  } else {
+    if (type_id == 0)
+      internal::mm_read_sparse_data<0, false>(f, nnz, rows, cols, vals);
+    else if (type_id == 1)
+      internal::mm_read_sparse_data<1, false>(f, nnz, rows, cols, vals);
+    else if (type_id == 2)
+      internal::mm_read_sparse_data<2, false>(f, nnz, rows, cols, vals);
+    else
+      internal::mm_read_sparse_data<3, false>(f, nnz, rows, cols, vals);
+  }
+  std::fclose(f);
+}
+
+/// \brief Read vector from a MatrixMarket file
+/// \tparam ValueType Value type
+/// \param[in] filename File name
+/// \param[out] v Output vector
+/// \note We only read the first column is the file contains multiple columns
+/// \sa read_mm_sparse
+template <class ValueType>
+inline void read_mm_vector(const char *filename, Array<ValueType> &v) {
+  // open the file
+  std::FILE *f = std::fopen(filename, "r");
+  hif_error_if(!f, "unable to open matrix market file %s", filename);
+  bool is_sparse, is_real;
+  int  type_id;
+  // parse the first line
+  internal::mm_read_fistline(f, is_sparse, is_real, type_id);
+  if (is_sparse) {
+    std::fclose(f);
+    hif_error("must be dense matrix");
+  }
+  if (std::is_floating_point<ValueType>::value ^ is_real) {
+    // XOR
+    std::fclose(f);
+    hif_error("data types did not match between array and file");
+  }
+  std::size_t m, n;
+  internal::mm_read_dense_size(f, m, n);
+
+  if (is_real)
+    internal::mm_read_vector_data<true>(f, m, v);
+  else
+    internal::mm_read_vector_data<false>(f, m, v);
+
+  std::fclose(f);
+}
+
+/// \brief Write a float-point vector to a MatrixMarket file
+/// \sa read_mm_vector
+template <class ValueType>
+inline void write_mm_vector(const char *filename, const Array<ValueType> &v) {
+  // only for floating numbers
+  static constexpr bool IS_REAL   = std::is_floating_point<ValueType>::value;
+  static const char *   DATA_TYPE = IS_REAL ? "real" : "complex";
+  static constexpr int  PREC =
+      (IS_REAL && sizeof(ValueType) == sizeof(double)) ||
+              (!IS_REAL && sizeof(ValueType) == sizeof(std::complex<double>))
+          ? 16
+          : 8;
+
+  std::ofstream f(filename);
+  hif_error_if(!f.is_open(), "cannot open file %s", filename);
+  f << "%%MatrixMarket matrix array " << DATA_TYPE << " general\n";
+  f << "% Written by HIFIR " << HIF_GLOBAL_VERSION << '.' << HIF_MAJOR_VERSION
+    << '.' << HIF_MINOR_VERSION << '\n';
+  f << ' ' << v.size() << " 1\n";
+  f.setf(std::ios::scientific);
+  f.precision(PREC);
+  for (const auto val : v) {
+    f << real(val);
+    if (!IS_REAL) f << '\t' << imag(val);
+    f << '\n';
+  }
+  f.close();
+}
+
+/// \brief Write a sparse matrix
+///
+/// \tparam IsRowMajor Boolean tag for row-major (CRS) or not (CCS)
+/// \tparam IndptrType Index pionter type
+/// \tparam IndexType Index type
+/// \tparam ValueType Value type
+/// \param[in] filename Output file name
+/// \param[in] other_size The size of the uncompressed axis, e.g., ncols for CRS
+/// \param[in] ind_start Index pionter
+/// \param[in] indices Index list
+/// \param[in] vals Data values
+///
+/// For CRS, call this function as write_mm_sparse<true>("test.mm", ncols,
+/// rowptr, colind, vals). Similarly, for CCS, call this function as
+/// write_mm_sparse<false>("test.mm", nrows, colptr, rowind, vals).
+template <bool IsRowMajor, class IndptrType, class IndexType, class ValueType>
+inline void write_mm_sparse(const char *filename, const std::size_t other_size,
+                            const Array<IndptrType> &ind_start,
+                            const Array<IndexType> & indices,
+                            const Array<ValueType> & vals) {
+  static constexpr bool IS_REAL   = std::is_floating_point<ValueType>::value;
+  static const char *   DATA_TYPE = IS_REAL ? "real" : "complex";
+  static constexpr int  PREC =
+      (IS_REAL && sizeof(ValueType) == sizeof(double)) ||
+              (!IS_REAL && sizeof(ValueType) == sizeof(std::complex<double>))
+          ? 16
+          : 8;
+
+  if (ind_start.size() == 0u) hif_error("cannot write empty matrix");
+  std::ofstream f(filename);
+  hif_error_if(!f.is_open(), "cannot open file %s", filename);
+  f << "%%MatrixMarket matrix coordinate " << DATA_TYPE << " general\n";
+  f << "% Written by HIFIR " << HIF_GLOBAL_VERSION << '.' << HIF_MAJOR_VERSION
+    << '.' << HIF_MINOR_VERSION << '\n';
+  const std::size_t primary_size = ind_start.size() - 1;
+  f << ' ' << (IsRowMajor ? primary_size : other_size) << ' '
+    << (IsRowMajor ? other_size : primary_size) << ' ' << vals.size() << '\n';
+  f.setf(std::ios::scientific);
+  f.precision(PREC);
+  for (std::size_t i(0); i < primary_size; ++i) {
+    for (auto k = ind_start[i]; k < ind_start[i + 1]; ++k) {
+      const auto index = indices[k] + 1;  // to fortran index
+      const auto val   = vals[k];
+      f << (IsRowMajor ? static_cast<IndexType>(i + 1) : index) << '\t'
+        << (IsRowMajor ? index : static_cast<IndexType>(i + 1)) << '\t'
+        << real(val);
+      if (!IS_REAL) f << '\t' << imag(val);
+      f << '\n';
+    }
+  }
+  f.close();
+}
+
+/*!
+ * @}
+ */ // group io
 
 }  // namespace hif
 
