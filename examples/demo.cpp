@@ -25,8 +25,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // triangular solve and matrix-vector multiplication interfaces.
 // Author: Qiao Chen
 
-#include <fstream>
-#include <string>
 #include <utility>
 
 #include "hifir.hpp"
@@ -78,15 +76,8 @@ int main() {
 }
 
 inline std::pair<matrix_t, array_t> get_input_data() {
-  matrix_t::size_type m;
-  // read A
-  auto          A = matrix_t::from_bin("demo_inputs/A.data", &m);
-  array_t       b(A.nrows());
-  std::ifstream f("demo_inputs/b.txt");
-  hif_error_if(!f.is_open(), "unable to open \"demo_inputs/b.txt\"");
-  for (auto &v : b) f >> v;
-  f.close();
-  return std::make_pair(A, b);
+  return std::make_pair(matrix_t::from_mm("demo_inputs/A.mm"),
+                        array_t::from_mm("demo_inputs/b.mm"));
 }
 
 inline double compute_error(const array_t &v1, const array_t &v2,
