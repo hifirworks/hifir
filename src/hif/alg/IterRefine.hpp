@@ -94,11 +94,11 @@ class IterRefine {
           mt::multiply_nt(A, _xk, x);
         else
           multiply(A, _xk, x, true);
-        for (size_type i(0); i < n; ++i) x[i] = b[i] - x[i];  // residual
+        for (size_type j(0); j < n; ++j) x[j] = b[j] - x[j];  // residual
       } else
         std::copy_n(b.cbegin(), n, x.begin());
       M.solve(x, _r, tran, last_dim);  // compute inv(M)*x=r
-      for (size_type i(0); i < n; ++i) x[i] = _r[i] + _xk[i];  // update
+      for (size_type j(0); j < n; ++j) x[j] = _r[j] + _xk[j];  // update
     }
   }
 
@@ -114,9 +114,10 @@ class IterRefine {
   /// \param[in] last_dim (optional) dimension for back solve for last level
   ///                     default is its numerical rank in \a M
   /// \param[in] tran (optional) transpose/Herimitian flag, default is false
-  /// \return Number of refinements
+  /// \return Number of refinements and flag. If flag == 0, then it converges;
+  ///         if flag > 0, then it diverges; otherwise, it reaches maxit bound.
   template <class MType, class Matrix, class IArrayType, class OArrayType>
-  inline size_type iter_refine(
+  inline std::pair<size_type, int> iter_refine(
       const MType &M, const Matrix &A, const IArrayType &b, const size_type N,
       const double *betas, OArrayType &x,
       const size_type last_dim = static_cast<size_type>(-1),
@@ -124,36 +125,41 @@ class IterRefine {
     if (N <= 1) {
       // if iteration is less than 2, then use original interface
       M.solve(b, x, tran, last_dim);
-      return 1u;
+      return std::make_pair(size_type(1), -1);
     }
     // compute norm of RHS
     const double bnorm = norm2(b);
     if (bnorm == 0.0) {
       std::fill_n(x.begin(), x.end(), 0.0);
-      return 0u;
+      return std::make_pair(size_type(0), 0);
     }
     // now, allocate space
     _init(M.ncols());
     const size_type n(b.size());                   // dimension
     std::fill(x.begin(), x.end(), value_type(0));  // init to zero
-    size_type i(0);
-    for (; i < N; ++i) {
-      std::copy(x.cbegin(), x.cend(), _xk.begin());  // copy rhs to x
-      if (i) {
-        // starting 2nd iteration
-        if (!tran)
-          mt::multiply_nt(A, _xk, x);
-        else
-          multiply(A, _xk, x, true);
-        for (size_type i(0); i < n; ++i) x[i] = b[i] - x[i];  // residual
-        const double res = norm2(x) / bnorm;
-        if (res > betas[1] || res <= betas[0]) break;
-      } else
-        std::copy_n(b.cbegin(), n, x.begin());
-      M.solve(x, _r, tran, last_dim);  // compute inv(M)*x=r
-      for (size_type i(0); i < n; ++i) x[i] = _r[i] + _xk[i];  // update
+    std::copy_n(b.cbegin(), n, _r.begin());
+    size_type iters(0);
+    int       flag(0);
+    for (;;) {
+      M.solve(_r, _xk, tran, last_dim);  // compute xk=inv(M)*x
+      for (size_type j(0); j < n; ++j) x[j] += _xk[j];
+      if (++iters >= N) {
+        flag = -1;
+        break;
+      }
+      if (!tran)
+        mt::multiply_nt(A, x, _xk);
+      else
+        multiply(A, x, _xk, true);
+      for (size_type j(0); j < n; ++j) _r[j] = b[j] - _xk[j];
+      const double res = norm2(_r) / bnorm;
+      if (res <= betas[0]) break;
+      if (res > betas[1]) {
+        flag = 1;
+        break;
+      }
     }
-    return i;
+    return std::make_pair(iters, flag);
   }
 
   /// \brief clear storage
