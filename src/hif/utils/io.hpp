@@ -1075,7 +1075,7 @@ inline void mm_read_fistline(std::FILE *f, bool &is_sparse, bool &is_real,
     type_id = 1;
   else if (storage_scheme_str == std::string("hermitian"))
     type_id = 2;
-  else if (storage_scheme_str == std::string("skey-symmetric"))
+  else if (storage_scheme_str == std::string("skew-symmetric"))
     type_id = 3;
   else {
     std::fclose(f);
