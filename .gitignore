@@ -44,3 +44,4 @@ CMakeFiles
 *.dSYM
 .MATLABDriveTag
 examples/demo
+tests/*.mm
