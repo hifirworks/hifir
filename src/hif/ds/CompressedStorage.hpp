@@ -37,6 +37,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "hif/ds/Array.hpp"
 #include "hif/utils/common.hpp"
+#include "hif/utils/coo2compress.hpp"
 #include "hif/utils/io.hpp"
 #include "hif/utils/math.hpp"
 #include "hif/utils/mt_mv.hpp"
@@ -843,6 +844,15 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
     return crs;
   }
 
+  /// \brief Read a matrix from a MatrixMarket file
+  /// \param[in] filename file name
+  /// \return A CRS matrix
+  inline static CRS from_mm(const char *filename) {
+    CRS A;
+    A.read_mm(filename);
+    return A;
+  }
+
   /// \brief default constructor
   CRS() : _base(), _ncols(0u) {}
 
@@ -1550,6 +1560,27 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
     return m;
   }
 
+  /// \brief Read data from a MatrixMarket file
+  /// \param[in] fname File name
+  /// \sa write_mm
+  inline void read_mm(const char *fname) {
+    iarray_type rows, cols;
+    array_type  coovals;
+    size_type   m, n;
+    read_mm_sparse(fname, m, n, rows, cols, coovals);
+    // convert to CRS
+    convert_coo2cs(m, n, rows, cols, coovals, row_start(), col_ind(), vals());
+    _psize = m;
+    _ncols = n;
+  }
+
+  /// \brief Write data to a MatrixMarket file
+  /// \param[in] fname File name
+  /// \sa read_mm
+  inline void write_mm(const char *fname) const {
+    write_mm_sparse<true>(fname, _ncols, row_start(), col_ind(), vals());
+  }
+
   /// \brief split the matrix against column
   /// \tparam IsSecond if \a true, then the second half is returned
   /// \param[in] m column size
@@ -1800,6 +1831,15 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
     const auto b_size = ccs.read_ascii(filename);
     if (m) *m = b_size;
     return ccs;
+  }
+
+  /// \brief read from a MatrixMarket file
+  /// \param[in] filename file name
+  /// \return A CCS matrix
+  inline static CCS from_mm(const char *filename) {
+    CCS A;
+    A.read_mm(filename);
+    return A;
   }
 
   /// \brief default constructor
@@ -2431,6 +2471,27 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
           CCS(other_type(row, col, i_start.data(), is.data(), vs.data(), true));
 
     return m;
+  }
+
+  /// \brief Read data from a MatrixMarket file
+  /// \param[in] fname File name
+  /// \sa write_mm
+  inline void read_mm(const char *fname) {
+    iarray_type rows, cols;
+    array_type  coovals;
+    size_type   m, n;
+    read_mm_sparse(fname, m, n, rows, cols, coovals);
+    // convert to CCS
+    convert_coo2cs(n, m, cols, rows, coovals, col_start(), row_ind(), vals());
+    _psize = n;
+    _nrows = m;
+  }
+
+  /// \brief Write data to a MatrixMarket file
+  /// \param[in] fname File name
+  /// \sa read_mm
+  inline void write_mm(const char *fname) const {
+    write_mm_sparse<false>(fname, _nrows, col_start(), row_ind(), vals());
   }
 
   /// \brief split against row
