@@ -41,13 +41,14 @@ using prec_t = hif::HIF<double, int>;
 // A, b. M: System (A, b) with HIF preconditioner (M)
 // restart, rtol, maxit: (30, 1e-6, 500) by default
 // return is the solution, i.e., $x \approx A^{-1}b$
-inline std::tuple<array_t, int, int> gmres_hif(
-    const matrix_t &A, const array_t &b, const prec_t &M,
-    const int restart = 30, const double rtol = 1e-6, const int maxit = 500,
-    const bool verbose = true);
+std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
+                                        const prec_t &M, const int restart = 30,
+                                        const double rtol    = 1e-6,
+                                        const int    maxit   = 500,
+                                        const bool   verbose = true);
 
 // parse command-line arguments for restart, rtol, maxit, and verbose
-inline std::tuple<int, double, int, bool> parse_args(int argc, char *argv[]);
+std::tuple<int, double, int, bool> parse_args(int argc, char *argv[]);
 
 int main(int argc, char *argv[]) {
   // read inputs
@@ -93,9 +94,10 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
-inline std::tuple<array_t, int, int> gmres_hif(
-    const matrix_t &A, const array_t &b, const prec_t &M, const int restart,
-    const double rtol, const int maxit, const bool verbose) {
+std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
+                                        const prec_t &M, const int restart,
+                                        const double rtol, const int maxit,
+                                        const bool verbose) {
   using size_type = array_t::size_type;
 
   int             iter(0), flag(SUCCESS);
@@ -194,7 +196,7 @@ inline std::tuple<array_t, int, int> gmres_hif(
   return std::make_tuple(x, flag, iter);
 }
 
-inline std::tuple<int, double, int, bool> parse_args(int argc, char *argv[]) {
+std::tuple<int, double, int, bool> parse_args(int argc, char *argv[]) {
   using std::string;
   static const char *help_message =
       "usage:\n\n"
