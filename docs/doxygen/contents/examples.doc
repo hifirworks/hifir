@@ -49,9 +49,9 @@
 
 /// \example demo_multiply.cpp
 /// This example illustrates how to use multilevel matrix-vector multiplication,
-/// which is a uncommon operation in preconditioning, but it can be useful in
-/// developing some advanced techniques, especially in the context of seeking for
-/// null-space vectors.
+/// which is uncommon in preconditioning but can be useful in
+/// developing some advanced techniques, such as in the context of computing
+/// null-space vectors or solving singular systems.
 
 /// \example demo_mixedprecision.cpp
 /// This example illustrates how to enable mixed-precision computation.
@@ -68,7 +68,7 @@
 ///     1. calling \ref hif::wrap_const_crs or \ref hif::wrap_const_ccs to wrap
 ///        their sparse matrices and calling \ref hif::wrap_const_array to wrap
 ///        the right-hand-side vectors, or
-///     2. loading their systems via Matrix Market file format; for instance,
+///     2. loading their systems in Matrix Market file format; for instance,
 ///        one can call \ref hif::CRS::from_mm and \ref hif::Array::from_mm to
 ///        load the sparse matrix and its corresponding RHS vector (if
 ///        applicable), respectively.
