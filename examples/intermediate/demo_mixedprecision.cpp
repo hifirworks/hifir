@@ -7,7 +7,7 @@
   This file contains an example of using HIFIR with mixed-precision support.
 
   Author: Qiao Chen
-  Level: Beginner
+  Level: Intermediate
 
 */
 
