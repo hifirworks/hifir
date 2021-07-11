@@ -2,10 +2,12 @@
 #              This file is part of the HIFIR library                         #
 #-----------------------------------------------------------------------------#
 
-CPPFLAGS = -I../src
+CPPFLAGS = -I../src -I.
 include ../Makefile.in
 
-DEMOS_SRC = demo.cpp
+DEMOS_SRC = $(shell \ls beginner/demo_*.cpp) \
+	$(shell \ls intermediate/demo_*.cpp) \
+	$(shell \ls advanced/demo_*.cpp)
 DEMOS = $(DEMOS_SRC:%.cpp=%)
 DEMOS_EXE = $(DEMOS_SRC:%.cpp=%.exe)
 
@@ -21,6 +23,7 @@ include $(1).d
 
 $(1).exe: $(1).cpp $(1).d
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $$< -o $$@ $(LDFLAGS) $(LIBS)
+	@cp $$@ .
 endef
 
 ifneq ("$(MAKECMDGOALS)","clean")
@@ -28,5 +31,5 @@ ifneq ("$(MAKECMDGOALS)","clean")
 endif
 
 clean:
-	@rm -f $(DEMOS_EXE) *.dSYM *.d
+	@rm -f $(DEMOS_EXE) *.dSYM $(DEMOS_SRC:%.cpp=%.d) *.exe
 

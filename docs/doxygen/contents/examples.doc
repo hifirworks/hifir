@@ -10,14 +10,65 @@
 \addindex examples
 \tableofcontents
 
-\section _eg1 A comprehensive demonstration
+\section _eg_beginner Beginner
 
-The example \ref demo.cpp shows the detailed usage of how to use HIF and its
-two essential interfaces, namely multilevel triangular solve and matrix-vector
-multiplication.
+- \ref demo_simple.cpp
+- \ref demo_trans.cpp
+- \ref demo_verbose.cpp
+
+\section _eg_intermediate Intermediate
+
+- \ref demo_params.cpp
+- \ref demo_multiply.cpp
+- \ref demo_mixedprecision.cpp
+- \ref demo_complex.cpp
+
+\section _eg_advanced Advanced
+
+- \ref demo_hifir.cpp
+- \ref demo_gmreshif.cpp
 
 */
 
-// generate doxygen example collections
+/// \example demo_simple.cpp
+/// This example illustrates the essentail usage of a HIF preconditioner, i.e.
+/// its multilevel triangular solve.
 
-/// \example demo.cpp
+/// \example demo_trans.cpp
+/// This example is similar to \ref demo_simple.cpp, but it illustrates how to
+/// perform transpose/Hermitian multilevel triangular solve.
+
+/// \example demo_verbose.cpp
+/// This example shows you how to disable logging in HIFIR or enable different
+/// levels of logging.
+
+/// \example demo_params.cpp
+/// This example illustrates how to tune core parameters for HIF, such as \f$\tau\f$,
+/// aka \a droptol, \f$\alpha\f$ (fill factor), and \f$\kappa\f$ (inverse-norm
+/// threshold).
+
+/// \example demo_multiply.cpp
+/// This example illustrates how to use multilevel matrix-vector multiplication,
+/// which is uncommon in preconditioning but can be useful in
+/// developing some advanced techniques, such as in the context of computing
+/// null-space vectors or solving singular systems.
+
+/// \example demo_mixedprecision.cpp
+/// This example illustrates how to enable mixed-precision computation.
+
+/// \example demo_complex.cpp
+/// This example illustrates how to use complex arithmetic in HIFIR library.
+
+/// \example demo_hifir.cpp
+/// This example shows how to perform HIF with iterative refinement (HIFIR).
+
+/// \example demo_gmreshif.cpp
+/// This example shows how to incorporate HIF in right-preconditioned GMRES, leading
+/// to HIF-preconditioned GMRES. The users can use their own systems by either
+///     1. calling \ref hif::wrap_const_crs or \ref hif::wrap_const_ccs to wrap
+///        their sparse matrices and calling \ref hif::wrap_const_array to wrap
+///        the right-hand-side vectors, or
+///     2. loading their systems in Matrix Market file format; for instance,
+///        one can call \ref hif::CRS::from_mm and \ref hif::Array::from_mm to
+///        load the sparse matrix and its corresponding RHS vector (if
+///        applicable), respectively.

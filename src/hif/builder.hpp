@@ -464,12 +464,13 @@ class HIF {
   /// \param[in] trans (optional) transpose/Hermitian flag, default is false
   /// \param[in] r (optional) dimension for back solve for last level
   ///            default is its numerical rank
-  /// \return Number of refinements
+  /// \return Number of refinements and flag. If flag == 0, then it converges;
+  ///         if flag > 0, then it diverges; otherwise, it reaches maxit bound.
   template <class Matrix, class RhsType, class SolType>
-  inline size_type hifir(const Matrix &A, const RhsType &b, const size_type N,
-                         const double *betas, SolType &x,
-                         const bool      trans = false,
-                         const size_type r = static_cast<size_type>(-1)) const {
+  inline std::pair<size_type, int> hifir(
+      const Matrix &A, const RhsType &b, const size_type N, const double *betas,
+      SolType &x, const bool trans = false,
+      const size_type r = static_cast<size_type>(-1)) const {
     // NOTE, do not assume A shares interface of CRS, as it can be
     // user callback
     return _ir.iter_refine(*this, A, b, N, betas, x, r, trans);
