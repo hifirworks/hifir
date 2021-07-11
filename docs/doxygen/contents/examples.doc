@@ -61,5 +61,4 @@
 /// \example demo_gmreshif.cpp
 /// This example shows how to incorporate HIF in right-preconditioned GMRES, leading
 /// to HIF-preconditioned GMRES. In addition, we use the solver to solve a testing
-/// system arising from FEM-discretized Stokes equation using Taylor-Hood elements,
-/// which results in a symmetric saddle-point problem.
+/// system arising from the Stokes equations.

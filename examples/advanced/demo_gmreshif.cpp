@@ -5,8 +5,7 @@
 /*
 
   This file contains an example of using HIF in right-preconditioned GMRES(m).
-  The testing system comes from the Stokes equations discretized using the
-  Taylor-Hood elements. Hence, the problem is a symmetric saddle-point system.
+  The testing system comes from the Stokes equations.
 
   Author: Qiao Chen
   Level: Advanced
