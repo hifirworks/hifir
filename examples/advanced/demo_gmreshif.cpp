@@ -4,9 +4,9 @@
 
 /*
 
-  This file contains an example of using HIF as right-preconditioner for GMRES(m).
-  The example uses the testing system under "demo_inputs." The users can use
-  their systems by (1) calling hif::wrap_const_{crs,ccs} and
+  This file contains an example of using HIF as right-preconditioner for
+  GMRES(m). The example uses the testing system under "demo_inputs." The users
+  can use their systems by (1) calling hif::wrap_const_{crs,ccs} and
   hif::wrap_const_array to directly wrap their systems or (2) loading data in
   Matrix Market file format, e.g.,
 
@@ -22,6 +22,8 @@
 
 */
 
+#include <cstdlib>
+#include <iostream>
 #include <tuple>
 
 #include "../demo_utils.hpp"
@@ -37,16 +39,25 @@ using prec_t = hif::HIF<double, int>;
 // using MGS for Arnoldi
 //
 // A, b. M: System (A, b) with HIF preconditioner (M)
-// restart, rtol, maxit: (30, 1e-12, 500) by default
+// restart, rtol, maxit: (30, 1e-6, 500) by default
 // return is the solution, i.e., $x \approx A^{-1}b$
-inline std::tuple<array_t, int, int> gmres_hif(
-    const matrix_t &A, const array_t &b, const prec_t &M,
-    const int restart = 30, const double rtol = 1e-12, const int maxit = 500,
-    const bool verbose = true);
+std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
+                                        const prec_t &M, const int restart = 30,
+                                        const double rtol    = 1e-6,
+                                        const int    maxit   = 500,
+                                        const bool   verbose = true);
 
-int main() {
+// parse command-line arguments for restart, rtol, maxit, and verbose
+std::tuple<int, double, int, bool> parse_args(int argc, char *argv[]);
+
+int main(int argc, char *argv[]) {
   // read inputs
   system_t prob = get_input_data();
+  // parse options for gmres
+  int    restart, maxit;
+  double rtol;
+  bool   verbose;
+  std::tie(restart, rtol, maxit, verbose) = parse_args(argc, argv);
 
   // get timer
   hif::DefaultTimer timer;
@@ -65,10 +76,13 @@ int main() {
            timer.time(), 100.0 * M.nnz() / prob.A.nnz());
 
   // call HIF-preconditioned GMRES
+  hif_info("Invoke HIF-preconditioned GMRES(%d) with rtol=%g and maxit=%d",
+           restart, rtol, maxit);
   array_t x;
   int     flag, iters;
   timer.start();
-  std::tie(x, flag, iters) = gmres_hif(prob.A, prob.b, M);
+  std::tie(x, flag, iters) =
+      gmres_hif(prob.A, prob.b, M, restart, rtol, maxit, verbose);
   timer.finish();
   if (flag == SUCCESS)
     hif_info("Finished GMRES in %.2g seconds and %d iterations.", timer.time(),
@@ -80,9 +94,10 @@ int main() {
   return 0;
 }
 
-inline std::tuple<array_t, int, int> gmres_hif(
-    const matrix_t &A, const array_t &b, const prec_t &M, const int restart,
-    const double rtol, const int maxit, const bool verbose) {
+std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
+                                        const prec_t &M, const int restart,
+                                        const double rtol, const int maxit,
+                                        const bool verbose) {
   using size_type = array_t::size_type;
 
   int             iter(0), flag(SUCCESS);
@@ -179,4 +194,61 @@ inline std::tuple<array_t, int, int> gmres_hif(
     if (resid <= rtol || flag != SUCCESS) break;
   }
   return std::make_tuple(x, flag, iter);
+}
+
+std::tuple<int, double, int, bool> parse_args(int argc, char *argv[]) {
+  using std::string;
+  static const char *help_message =
+      "usage:\n\n"
+      "\t./demo_gmreshif.exe [options] [flags]\n\n"
+      "Options:\n\n"
+      " -m|--restart m\n"
+      "    Restart in GMRES, default is m=30\n"
+      " -t|--rtol rtol\n"
+      "    Relative residual tolerance in GMRES, default is rtol=1e-6\n"
+      " -n|--maxit maxit\n"
+      "    Maximum iteration limit in GMRES, default is maxit=500\n\n"
+      "Flags:\n\n"
+      " -s|--silent\n"
+      "    Disable verbose message in GMRES, default is false (verbose on)\n"
+      " -h|--help\n"
+      "    Show this help message and exit\n";
+
+  int    restart(30), maxit(500);
+  double rtol(1e-6);
+  bool   verbose(true);
+  if (argc == 1) return std::make_tuple(restart, rtol, maxit, verbose);
+
+  for (int i = 1; i < argc; ++i) {
+    auto arg = string(argv[i]);
+    if (arg == "-h" || arg == "--help") {
+      std::cout << help_message;
+      std::exit(0);
+    }
+    if (arg == "-s" || arg == "--silent")
+      verbose = false;
+    else if (arg == "-m" || arg == "--restart") {
+      if (i + 1 >= argc) {
+        std::cerr << "Missing restart value!\n\n" << help_message;
+        std::exit(1);
+      }
+      restart = std::atoi(argv[++i]);
+      if (restart <= 0) restart = 30;
+    } else if (arg == "-t" || arg == "--rtol") {
+      if (i + 1 >= argc) {
+        std::cerr << "Missing rtol value!\n\n" << help_message;
+        std::exit(1);
+      }
+      rtol = std::atof(argv[++i]);
+      if (rtol <= 0.0) rtol = 1e-6;
+    } else if (arg == "-n" || arg == "--maxit") {
+      if (i + 1 >= argc) {
+        std::cerr << "Missing maxit value!\n\n" << help_message;
+        std::exit(1);
+      }
+      maxit = std::atoi(argv[++i]);
+      if (maxit <= 0) maxit = 500;
+    }
+  }
+  return std::make_tuple(restart, rtol, maxit, verbose);
 }
