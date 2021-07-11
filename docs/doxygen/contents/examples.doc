@@ -68,7 +68,7 @@
 ///     1. calling \ref hif::wrap_const_crs or \ref hif::wrap_const_ccs to wrap
 ///        their sparse matrices and calling \ref hif::wrap_const_array to wrap
 ///        the right-hand-side vectors, or
-///     2. loading their systems via Matrix Market files; for instance, one can
-///        call \ref hif::CRS::from_mm and \ref hif::Array::from_mm to load
-///        the sparse matrix and its corresponding RHS vector (if applicable),
-///        respectively.
+///     2. loading their systems via Matrix Market file format; for instance,
+///        one can call \ref hif::CRS::from_mm and \ref hif::Array::from_mm to
+///        load the sparse matrix and its corresponding RHS vector (if
+///        applicable), respectively.
