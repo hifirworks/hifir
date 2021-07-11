@@ -5,7 +5,15 @@
 /*
 
   This file contains an example of using HIF in right-preconditioned GMRES(m).
-  The testing system comes from the Stokes equations.
+  The example uses the testing system under "demo_inputs." The users can use
+  their systems by (1) calling hif::wrap_const_{crs,ccs} and hif::wrap_const_array
+  to directly wrap their systems or (2) loading data from Matrix Market files, e.g.,
+
+      auto A = hif::CRS<double,int>::from_mm("/path/to/sparse-mm-file")
+      auto b = hif::Array<double>::from_mm("/path/to/dense-mm-file").
+
+  Note that our GMRES implementation also works for complex arithmetic if
+  matrix_t, array_t, and prec_t are complex values.
 
   Author: Qiao Chen
   Level: Advanced
