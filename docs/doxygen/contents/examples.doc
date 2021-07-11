@@ -21,6 +21,7 @@
 - \ref demo_params.cpp
 - \ref demo_multiply.cpp
 - \ref demo_mixedprecision.cpp
+- \ref demo_complex.cpp
 
 \section _eg_advanced Advanced
 
@@ -54,6 +55,9 @@
 
 /// \example demo_mixedprecision.cpp
 /// This example illustrates how to enable mixed-precision computation.
+
+/// \example demo_complex.cpp
+/// This example illustrates how to use complex arithmetic in HIFIR library.
 
 /// \example demo_hifir.cpp
 /// This example shows how to perform HIF with iterative refinement (HIFIR).
