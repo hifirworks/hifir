@@ -6,14 +6,16 @@
 
   This file contains an example of using HIF in right-preconditioned GMRES(m).
   The example uses the testing system under "demo_inputs." The users can use
-  their systems by (1) calling hif::wrap_const_{crs,ccs} and hif::wrap_const_array
-  to directly wrap their systems or (2) loading data from Matrix Market files, e.g.,
+  their systems by (1) calling hif::wrap_const_{crs,ccs} and
+  hif::wrap_const_array to directly wrap their systems or (2) loading data from
+  Matrix Market files, e.g.,
 
       auto A = hif::CRS<double,int>::from_mm("/path/to/sparse-mm-file")
       auto b = hif::Array<double>::from_mm("/path/to/dense-mm-file").
 
   Note that our GMRES implementation also works for complex arithmetic if
-  matrix_t, array_t, and prec_t are complex values.
+  matrix_t, array_t, and prec_t are complex values (with some minor
+  modifications).
 
   Author: Qiao Chen
   Level: Advanced
@@ -59,8 +61,8 @@ int main() {
   timer.start();
   M.factorize(prob.A, params);
   timer.finish();
-  hif_info("HIF finished in %.2g seconds with nnz ration %.2f%%.\n", timer.time(),
-           100.0 * M.nnz() / prob.A.nnz());
+  hif_info("HIF finished in %.2g seconds with nnz ration %.2f%%.\n",
+           timer.time(), 100.0 * M.nnz() / prob.A.nnz());
 
   // call HIF-preconditioned GMRES
   array_t x;
