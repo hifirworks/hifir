@@ -48,23 +48,23 @@ std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
                                         const bool   verbose = true);
 
 // parse command-line arguments for restart, rtol, maxit, and verbose
-std::tuple<int, double, int, bool> parse_args(int argc, char *argv[]);
+std::tuple<system_t, int, double, int, bool> parse_args(int argc, char *argv[]);
 
 int main(int argc, char *argv[]) {
-  // read inputs
-  system_t prob = get_input_data();
   // parse options for gmres
-  int    restart, maxit;
-  double rtol;
-  bool   verbose;
-  std::tie(restart, rtol, maxit, verbose) = parse_args(argc, argv);
+  int      restart, maxit;
+  double   rtol;
+  bool     verbose;
+  system_t prob;
+  std::tie(prob, restart, rtol, maxit, verbose) = parse_args(argc, argv);
 
   // get timer
   hif::DefaultTimer timer;
 
   // create HIF preconditioner, and factorize with default params
-  auto M       = prec_t();
-  auto params  = hif::DEFAULT_PARAMS;
+  auto M      = prec_t();
+  auto params = hif::DEFAULT_PARAMS;
+  // tune the following parameters if necessary
   params.tau_L = params.tau_U = 1e-2;     // droptol
   params.alpha_L = params.alpha_U = 3.0;  // fill factors
   params.kappa = params.kappa_d = 5.0;    // inverse-norm thres
@@ -72,8 +72,8 @@ int main(int argc, char *argv[]) {
   timer.start();
   M.factorize(prob.A, params);
   timer.finish();
-  hif_info("HIF finished in %.2g seconds with nnz ration %.2f%%.\n",
-           timer.time(), 100.0 * M.nnz() / prob.A.nnz());
+  hif_info("HIF(lvls=%zd) finished in %.2g seconds with nnz ratio %.2f%%.\n",
+           M.levels(), timer.time(), 100.0 * M.nnz() / prob.A.nnz());
 
   // call HIF-preconditioned GMRES
   hif_info("Invoke HIF-preconditioned GMRES(%d) with rtol=%g and maxit=%d",
@@ -196,7 +196,8 @@ std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
   return std::make_tuple(x, flag, iter);
 }
 
-std::tuple<int, double, int, bool> parse_args(int argc, char *argv[]) {
+std::tuple<system_t, int, double, int, bool> parse_args(int   argc,
+                                                        char *argv[]) {
   using std::string;
   static const char *help_message =
       "usage:\n\n"
@@ -207,17 +208,24 @@ std::tuple<int, double, int, bool> parse_args(int argc, char *argv[]) {
       " -t|--rtol rtol\n"
       "    Relative residual tolerance in GMRES, default is rtol=1e-6\n"
       " -n|--maxit maxit\n"
-      "    Maximum iteration limit in GMRES, default is maxit=500\n\n"
+      "    Maximum iteration limit in GMRES, default is maxit=500\n"
+      " -Afile Afile\n"
+      "    LHS matrix stored in Matrix Market format (coordinate)\n"
+      " -bfile bfile\n"
+      "    RHS vector stored in Matrix Market format (array), if \'Afile\'\n"
+      "    is provided but \'bfile\' is missing, then b=A*1 will be used\n\n"
       "Flags:\n\n"
       " -s|--silent\n"
       "    Disable verbose message in GMRES, default is false (verbose on)\n"
       " -h|--help\n"
       "    Show this help message and exit\n";
 
-  int    restart(30), maxit(500);
-  double rtol(1e-6);
-  bool   verbose(true);
-  if (argc == 1) return std::make_tuple(restart, rtol, maxit, verbose);
+  int      restart(30), maxit(500);
+  double   rtol(1e-6);
+  bool     verbose(true);
+  system_t prob;
+
+  string Afile, bfile;
 
   for (int i = 1; i < argc; ++i) {
     auto arg = string(argv[i]);
@@ -248,7 +256,26 @@ std::tuple<int, double, int, bool> parse_args(int argc, char *argv[]) {
       }
       maxit = std::atoi(argv[++i]);
       if (maxit <= 0) maxit = 500;
+    } else if (arg == "-Afile") {
+      if (i + 1 >= argc) {
+        std::cerr << "Missing Afile!\n\n" << help_message;
+        std::exit(1);
+      }
+      Afile = argv[++i];
+    } else if (arg == "-bfile") {
+      if (i + 1 >= argc) {
+        std::cerr << "Missing bfile!\n\n" << help_message;
+        std::exit(1);
+      }
+      bfile = argv[++i];
     }
   }
-  return std::make_tuple(restart, rtol, maxit, verbose);
+  if (Afile.empty())
+    prob = get_input_data();
+  else {
+    const char *bfile_cstr = nullptr;
+    if (!bfile.empty()) bfile_cstr = bfile.c_str();
+    prob = get_input_data(Afile.c_str(), bfile_cstr);
+  }
+  return std::make_tuple(prob, restart, rtol, maxit, verbose);
 }
