@@ -6,7 +6,12 @@ Welcome to the `HIFIR` package! `HIFIR` stands for `H`ybrid `I`ncomplete `F`acto
 
 ## Installation ##
 
-The C++ interface of `HIFIR` is header-only. You can simply do the following on a UNIX system
+To download the latest version of the code, use the command
+```console
+git clone -–depth 1 https://github.com/hifirworks/hifir.git hifir
+```
+
+The C++ interface of `HIFIR` is header-only. To install the code, you can simply do the following on a UNIX system
 
 ```console
 sudo cp -r /path/to/hifir/src/* /usr/local/include
@@ -17,7 +22,7 @@ or copy `/path/to/hifir/src/*` to any user-level directory, for example,
 ```console
 cp -r /path/to/hifir/src/* $HOME/.local/include
 ```
-and then add `-I$HOME/.local/include` to the command line of your `c++` compiler.
+and then add `-I$HOME/.local/include` to the command line of your `C++` compiler.
 
 ## Copyright and Licenses ##
 
