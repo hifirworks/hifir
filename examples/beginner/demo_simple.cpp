@@ -17,9 +17,9 @@
 
 using prec_t = hif::HIF<double, int>;
 
-int main() {
+int main(int argc, char *argv[]) {
   // read inputs
-  system_t prob = get_input_data();
+  system_t prob = parse_cmd4input(argc, argv);
 
   // create HIF preconditioner, and factorize with default params
   auto M = prec_t();
