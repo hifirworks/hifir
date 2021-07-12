@@ -24,6 +24,6 @@ For each example, one can simply invoke its executable. In addition, the user ca
 ./beginner/demo_simplest.exe -Afile /path/to/my/LHS-file -bfile /path/to/my/RHS-file
 ```
 
-Note that the RHS file (`-bfile`) is optional, which will be set to be A*1 if it is missing. The default files are `demo_inputs/{A,b}.mm`.
+Note that the default data files are `demo_inputs/{A,b}.mm`. If only the LHS matrix file is provided by the user, then the RHS will be A\*1, i.e., b=A\*1.
 
 In addition, for the advanced example of HIF-preconditioned GMRES (`advanced/demo_gmreshif.cpp`), the user can customize the behavior of GMRES, i.e., using different restart, rtol, and maxit. For more, please see the help message by `./advanced/demo_gmreshif.exe -h`.

@@ -75,7 +75,8 @@ inline std::pair<std::string, std::string> parse_input_files(int   argc,
       "Where \'Afile\' is the LHS (matrix) file and \'bfile\' is the RHS "
       "file.\n"
       "The default files are \'demo_inputs/{A,b}.mm\'.\n"
-      "If the RHS file is missing, then A*1 will be used.\n";
+      "If only the LHS file is provided by the user, then b=A*1 will be "
+      "used.\n";
 
   string Afile, bfile;
   if (argc == 1) return std::make_pair(Afile, bfile);
