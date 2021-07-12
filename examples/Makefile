@@ -23,7 +23,6 @@ include $(1).d
 
 $(1).exe: $(1).cpp $(1).d
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $$< -o $$@ $(LDFLAGS) $(LIBS)
-	@cp $$@ .
 endef
 
 ifneq ("$(MAKECMDGOALS)","clean")
