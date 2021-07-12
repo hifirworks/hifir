@@ -37,6 +37,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 namespace hif {
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
+// prototype
+template <class T>
+class Array;
+
+// prototyp for MatrixMarket I/O
+template <class ValueType>
+inline void read_mm_vector(const char*, Array<ValueType>&);
+
+template <class ValueType>
+inline void write_mm_vector(const char*, const Array<ValueType>&);
+#endif  // DOXYGEN_SHOULD_SKIP_THIS
+
 /*!
  * \addtogroup ds
  * @{
@@ -91,6 +105,14 @@ class Array {
 #endif  // DOXYGEN_SHOULD_SKIP_THIS
 
  public:
+  /// \brief Read data from a MatrixMarket file
+  /// \param[in] fname Input file name
+  static inline Array from_mm(const char* fname) {
+    Array v;
+    v.read_mm(fname);
+    return v;
+  }
+
   /// \brief default constructor
   Array()
       : _data(nullptr),
@@ -412,6 +434,19 @@ class Array {
     const size_type start = _size;
     resize(_size + n);
     std::copy_n(first, n, _data + start);
+  }
+
+  /// \brief Read data from a MatrixMarket file
+  /// \param[in] fname Input file name
+  /// \sa write_mm
+  /// \note Only the first column is loaded
+  inline void read_mm(const char* fname) { read_mm_vector(fname, *this); }
+
+  /// \brief Write data to a MatrixMarket file
+  /// \param[in] fname Output file name
+  /// \sa read_mm
+  inline void write_mm(const char* fname) const {
+    write_mm_vector(fname, *this);
   }
 
  protected:

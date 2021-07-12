@@ -12,6 +12,9 @@
 /// \defgroup mt Multithreading
 /// \ingroup util
 
+/// \defgroup io File I/O
+/// \ingroup util
+
 /// \defgroup pre Preprocessing
 
 /// \defgroup alg Algorithms

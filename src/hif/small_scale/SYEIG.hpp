@@ -186,6 +186,7 @@ class SYEIG {
 
   /// \brief solve \f$\mathbf{Q\Lambda Q}^H\mathbf{x}=\mathbf{b}\f$
   /// \param[in,out] x input rhs, output solution
+  /// \param[in] rank (optional) numerical rank
   inline void solve(Array<value_type> &x, const size_type rank = 0) const {
     hif_error_if(
         _mat.empty() || _w.empty(),
@@ -251,6 +252,7 @@ class SYEIG {
 
   /// \brief matrix-vector \f$\mathbf{Q\Lambda Q}^H\mathbf{x}\f$
   /// \param[in,out] x input rhs, output solution
+  /// \param[in] rank (optional) numerical rank
   inline void multiply(Array<value_type> &x, const size_type rank = 0) const {
     hif_error_if(
         _mat.empty() || _w.empty(),

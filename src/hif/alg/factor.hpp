@@ -516,7 +516,7 @@ inline void print_post_flag(const int flag) {
 /// \param[in,out] stats hierarchical stats
 /// \param[in] schur_threads (optional) threads usedin Schur-related
 ///                          computations
-/// \param[out] auto_pivot_tag (optional) pivoting tag for \ref PIVOT_AUTO
+/// \param[out] auto_pivot_tag (optional) pivoting tag for PIVOT_AUTO
 /// \return Schur complement for next level (if needed), in the same type as
 ///         that of the input, i.e. \a CsType
 /// \ingroup fac
@@ -958,13 +958,6 @@ inline CsType level_factorize(
   // compress permutation vectors
   for (; step < n; ++step) {
     step.assign_gap_array(P, p);
-
-/// \def HIF_LASTLEVEL_SPARSE_SIZE
-/// \brief sparse version of \ref HIF_LASTLEVEL_DENSE_SIZE
-/// \note default is 15000
-#ifndef HIF_LASTLEVEL_SPARSE_SIZE
-#  define HIF_LASTLEVEL_SPARSE_SIZE 15000
-#endif  // HIF_LASTLEVEL_SPARSE_SIZE
     step.assign_gap_array(Q, q);
   }
 
