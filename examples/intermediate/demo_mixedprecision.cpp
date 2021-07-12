@@ -18,9 +18,9 @@
 // supports double-precision triangular solves
 using single_prec_t = hif::HIF<float, int>;
 
-int main() {
+int main(int argc, char *argv[]) {
   // read inputs
-  system_t prob = get_input_data();
+  system_t prob = parse_cmd4input(argc, argv);
 
   // create HIF preconditioner, and factorize with default params
   auto M = single_prec_t();
