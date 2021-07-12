@@ -130,7 +130,7 @@ class IterRefine {
     // compute norm of RHS
     const double bnorm = norm2(b);
     if (bnorm == 0.0) {
-      std::fill_n(x.begin(), x.end(), 0.0);
+      std::fill(x.begin(), x.end(), value_type(0));
       return std::make_pair(size_type(0), 0);
     }
     // now, allocate space
