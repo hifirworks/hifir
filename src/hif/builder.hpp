@@ -355,6 +355,19 @@ class HIF {
     if (revert_warn) (void)warn_flag(1);
   }
 
+  /// \brief factorize the HIF preconditioner
+  /// \tparam CsType compressed storage input, either \ref CRS or \ref CCS
+  /// \param[in] A input matrix
+  /// \param[in] params control parameters, using the default values
+  /// \param[in] m0 leading block size, if it's zero (default), then the routine
+  ///               will assume an asymmetric leading block.
+  /// \note This function is an alias of \ref factorize
+  template <class CsType>
+  inline void setup(const CsType &A, const Params &params = DEFAULT_PARAMS,
+                    const size_type m0 = 0u) {
+    factorize(A, params, m0);
+  }
+
   /// \brief factorize the HIF preconditioner with generic interface
   /// \tparam IsCrs if \a true, then the input compressed structure will be
   ///               assumed to be \ref CRS format
@@ -384,6 +397,27 @@ class HIF {
     const foreign_cs_type A(n, (IndexType_ *)indptr, (IndexType_ *)indices,
                             (ValueType_ *)vals, true);
     factorize(A, params, m0);
+  }
+
+  /// \brief factorize the HIF preconditioner with generic interface
+  /// \tparam IsCrs if \a true, then the input compressed structure will be
+  ///               assumed to be \ref CRS format
+  /// \tparam IndexType_ integer data type, e.g., \a int
+  /// \tparam ValueType_ value data type, e.g., \a double
+  /// \param[in] n size of system
+  /// \param[in] indptr index starting position array, must be length of \a n+1
+  /// \param[in] indices index value array, must be length of \a indptr[n]
+  /// \param[in] vals value array, same length as that of \a indices
+  /// \param[in] params control parameters, using the default values.
+  /// \param[in] m0 leading block size, if it's zero (default), then the routine
+  ///               will assume an asymmetric leading block.
+  /// \note This function is an alias of \ref factorize
+  template <bool IsCrs, class IndexType_, class ValueType_>
+  inline void setup(const size_type n, const IndexType_ *indptr,
+                    const IndexType_ *indices, const ValueType_ *vals,
+                    const Params &  params = DEFAULT_PARAMS,
+                    const size_type m0     = 0u) {
+    factorize<IsCrs>(n, indptr, indices, vals, params, m0);
   }
 
   /// \brief solve \f$\mathbf{x}=\mathbf{M}^{-1}\mathbf{b}\f$
