@@ -36,7 +36,7 @@ inline system_t get_user_data(const char *A_file, const char *b_file) {
 inline system_t get_input_data(const char *A_file = nullptr,
                                const char *b_file = nullptr) {
   if (!A_file) {
-    auto f = std::ifstream("demo_inputs/A.mm");
+    std::ifstream f("demo_inputs/A.mm");
     if (f.is_open()) {
       f.close();
       return (system_t){.A = matrix_t::from_mm("demo_inputs/A.mm"),

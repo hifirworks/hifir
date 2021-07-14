@@ -18,7 +18,7 @@ all: $(DEMOS_EXE)
 
 define MAKE_EXE_RULE =
 $(1).d: $(1).cpp
-	@$(CXX) $(CPPFLAGS) -MM -MP -MT $$@ -MF $$@ $$<
+	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MM -MP -MT $$@ -MF $$@ $$<
 include $(1).d
 
 $(1).exe: $(1).cpp $(1).d
