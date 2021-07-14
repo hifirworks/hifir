@@ -87,8 +87,9 @@ int main(int argc, char *argv[]) {
   if (flag == SUCCESS) {
     hif_info("Finished GMRES in %.2g seconds and %d iterations.", timer.time(),
              iters);
-    hif_info("Relative residual of |b-Ax|/|b|=%e",
+    hif_info("Relative residual of ||b-Ax||/||b||=%e",
              compute_relres(prob.A, prob.b, x));
+    hif_info("Success!");
   } else if (flag == STAGNATED)
     hif_info("GMRES stagnated in %d iterations.", iters);
   else if (flag == DIVERGED)
