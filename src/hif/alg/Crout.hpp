@@ -287,11 +287,11 @@ class Crout {
       if (_step) {
         index_type U_row = U_list[deferred_step()];
         while (U_row != nil) {
-          if (!IsSymm)
-            hif_assert(
-                (size_type)U_row < _step,
-                "compute_ut row index %zd should not exceed step %zd for U",
-                (size_type)U_row, _step);
+          hif_assert(
+              IsSymm || (size_type)U_row < _step,
+              "compute_ut row index %zd should not exceed step %zd for U",
+              (size_type)U_row, _step);
+
           // compute d*U
           const auto du = d[U_row] * *(U.val_cbegin(U_row) + U_start[U_row]);
           auto       L_v_itr = L.val_cbegin(U_row) + L_start[U_row];
