@@ -84,10 +84,12 @@ int main(int argc, char *argv[]) {
   std::tie(x, flag, iters) =
       gmres_hif(prob.A, prob.b, M, restart, rtol, maxit, verbose);
   timer.finish();
-  if (flag == SUCCESS)
+  if (flag == SUCCESS) {
     hif_info("Finished GMRES in %.2g seconds and %d iterations.", timer.time(),
              iters);
-  else if (flag == STAGNATED)
+    hif_info("Relative residual of |b-Ax|/|b|=%e",
+             compute_relres(prob.A, prob.b, x));
+  } else if (flag == STAGNATED)
     hif_info("GMRES stagnated in %d iterations.", iters);
   else if (flag == DIVERGED)
     hif_info("GMRES diverged.");
@@ -156,7 +158,7 @@ std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
       y[j + 1]       = -J(j, 1) * y[j];
       y[j]           = hif::conjugate(J(j, 0)) * y[j];
       w2[j]          = rho;
-      std::copy_n(w.cbegin(), j + 1, R.col_begin(j));
+      std::copy_n(w2.cbegin(), j + 1, R.col_begin(j));
 
       // get residual
       const auto resid_prev = resid;
