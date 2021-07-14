@@ -48,8 +48,7 @@ std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
                                         const bool   verbose = true);
 
 // parse command-line arguments for restart, rtol, maxit, and verbose
-std::tuple<system_t, array_t, int, double, int, bool> parse_args(int   argc,
-                                                                 char *argv[]);
+std::tuple<system_t, int, double, int, bool> parse_args(int argc, char *argv[]);
 
 int main(int argc, char *argv[]) {
   // parse options for gmres
@@ -57,8 +56,7 @@ int main(int argc, char *argv[]) {
   double   rtol;
   bool     verbose;
   system_t prob;
-  array_t  xref;
-  std::tie(prob, xref, restart, rtol, maxit, verbose) = parse_args(argc, argv);
+  std::tie(prob, restart, rtol, maxit, verbose) = parse_args(argc, argv);
 
   // get timer
   hif::DefaultTimer timer;
@@ -91,11 +89,6 @@ int main(int argc, char *argv[]) {
              iters);
     hif_info("Relative residual of |b-Ax|/|b|=%e",
              compute_relres(prob.A, prob.b, x));
-    if (xref.size())
-      hif_info(
-          "Relative solution array compared to reference solution is "
-          "|x-x*|/|x*|=%e",
-          compute_error(xref, x));
   } else if (flag == STAGNATED)
     hif_info("GMRES stagnated in %d iterations.", iters);
   else if (flag == DIVERGED)
@@ -205,8 +198,8 @@ std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
   return std::make_tuple(x, flag, iter);
 }
 
-std::tuple<system_t, array_t, int, double, int, bool> parse_args(int   argc,
-                                                                 char *argv[]) {
+std::tuple<system_t, int, double, int, bool> parse_args(int   argc,
+                                                        char *argv[]) {
   using std::string;
   static const char *help_message =
       "usage:\n\n"
@@ -224,13 +217,7 @@ std::tuple<system_t, array_t, int, double, int, bool> parse_args(int   argc,
       " -bfile bfile\n"
       "    RHS vector stored in Matrix Market format (array), default is\n"
       "    \'demo_inputs/b.mm\'. If \'Afile\' is provided by the user but\n"
-      "    \'bfile\' is missing, then b=A*1 will be used\n"
-      " -xfile xfile\n"
-      "    LHS reference solution vector stored in Matrix Market format,\n"
-      "    default is \'demo_inputs/expected_soln.mm\', which is the\n"
-      "    solution computed by direct solver of \'A.mm\' and \'b.mm\'.\n"
-      "    Note that if b=A*1 is used, then xref=1 regardless what users\n"
-      "    pass in\n\n"
+      "    \'bfile\' is missing, then b=A*1 will be used\n\n"
       "Flags:\n\n"
       " -s|--silent\n"
       "    Disable verbose message in GMRES, default is false (verbose on)\n"
@@ -241,9 +228,8 @@ std::tuple<system_t, array_t, int, double, int, bool> parse_args(int   argc,
   double   rtol(1e-6);
   bool     verbose(true);
   system_t prob;
-  array_t  x;
 
-  string Afile, bfile, xfile;
+  string Afile, bfile;
 
   for (int i = 1; i < argc; ++i) {
     auto arg = string(argv[i]);
@@ -286,32 +272,14 @@ std::tuple<system_t, array_t, int, double, int, bool> parse_args(int   argc,
         std::exit(1);
       }
       bfile = argv[++i];
-    } else if (arg == "-xfile") {
-      if (i + 1 >= argc) {
-        std::cerr << "Missing reference solution xfile!\n\n" << help_message;
-        std::exit(1);
-      }
-      xfile = argv[++i];
     }
   }
-  if (Afile.empty()) {
-    prob   = get_input_data();
-    auto f = std::ifstream("demo_inputs/expected_soln.mm");
-    if (f.is_open()) {
-      f.close();
-      x = array_t::from_mm("demo_inputs/expected_soln.mm");
-    } else
-      x = array_t::from_mm("../demo_inputs/expected_soln.mm");
-  } else {
+  if (Afile.empty())
+    prob = get_input_data();
+  else {
     const char *bfile_cstr = nullptr;
     if (!bfile.empty()) bfile_cstr = bfile.c_str();
     prob = get_input_data(Afile.c_str(), bfile_cstr);
-    if (!bfile_cstr) {
-      // b = A*1
-      x.resize(prob.b.size());
-      std::fill(x.begin(), x.end(), 1.0);
-    } else if (!xfile.empty())
-      x = array_t::from_mm(xfile.c_str());
   }
-  return std::make_tuple(prob, x, restart, rtol, maxit, verbose);
+  return std::make_tuple(prob, restart, rtol, maxit, verbose);
 }
