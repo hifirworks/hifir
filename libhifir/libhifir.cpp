@@ -98,15 +98,15 @@ static inline hif::Params create_params(const double params[]) {
   return p;
 }
 
-template <bool UseCrs, class ValueType, class IndexType, class PrecType>
+template <bool UseCrs, class ValueType, class PrecType>
 static inline void factorize(PrecType &M, const std::size_t n,
                              const void *ind_start, const void *indices,
                              const void *vals, const double params[]) {
-  using crs_t    = hif::CRS<ValueType, IndexType>;
-  using ccs_t    = hif::CCS<ValueType, IndexType>;
+  using index_t  = typename PrecType::index_type;
+  using crs_t    = hif::CRS<ValueType, index_t>;
+  using ccs_t    = hif::CCS<ValueType, index_t>;
   using matrix_t = typename std::conditional<UseCrs, crs_t, ccs_t>::type;
   using value_t  = typename matrix_t::value_type;
-  using index_t  = typename matrix_t::index_type;
 
   // create input matrix
   matrix_t A(n, n, (index_t *)ind_start, (index_t *)indices, (value_t *)vals,
@@ -124,6 +124,47 @@ static inline void apply(const PrecType &M, const std::size_t n, const void *b,
     M.solve(bb, xx, trans, rank);
   else
     M.mmultiply(bb, xx, trans, rank);
+}
+
+template <class ValueType, class PrecType>
+static inline void hifir(const PrecType &M, const std::size_t n,
+                         const void *ind_ptr, const void *indices,
+                         const void *vals, const bool is_crs, const void *b,
+                         const int nirs, const double *betas, const bool trans,
+                         const int rank, void *x, int *iters, int *ir_status) {
+  using array_t = hif::Array<ValueType>;
+  using index_t = typename PrecType::index_type;
+  array_t bb(n, (ValueType *)b, true);
+  array_t xx(n, (ValueType *)x, true);
+  if (!betas) {
+    if (is_crs) {
+      using matrix_t = hif::CRS<ValueType, index_t>;
+      matrix_t A(n, n, (index_t *)ind_ptr, (index_t *)indices,
+                 (ValueType *)vals, true);
+      M.hifir(A, bb, nirs, xx, trans, rank);
+    } else {
+      using matrix_t = hif::CCS<ValueType, index_t>;
+      matrix_t A(n, n, (index_t *)ind_ptr, (index_t *)indices,
+                 (ValueType *)vals, true);
+      M.hifir(A, bb, nirs, xx, trans, rank);
+    }
+  } else {
+    if (is_crs) {
+      using matrix_t = hif::CRS<ValueType, index_t>;
+      matrix_t   A(n, n, (index_t *)ind_ptr, (index_t *)indices,
+                 (ValueType *)vals, true);
+      const auto info = M.hifir(A, bb, nirs, betas, xx, trans, rank);
+      *iters          = info.first;
+      *ir_status      = info.second;
+    } else {
+      using matrix_t = hif::CCS<ValueType, index_t>;
+      matrix_t   A(n, n, (index_t *)ind_ptr, (index_t *)indices,
+                 (ValueType *)vals, true);
+      const auto info = M.hifir(A, bb, nirs, betas, xx, trans, rank);
+      *iters          = info.first;
+      *ir_status      = info.second;
+    }
+  }
 }
 
 }  // namespace libhifir
@@ -375,70 +416,68 @@ int libhifir_factorize(const char M[], const long long *n,
       using value_t = double;
       if (!libhifir::is_complex(prec_type)) {
         if (!libhifir::is_int64(prec_type))
-          use_crs ? libhifir::factorize<true, value_t, int>(
+          use_crs ? libhifir::factorize<true, value_t>(
                         *(hif::HIF<value_t, int> *)prec, *n, ind_start, indices,
                         vals, params)
-                  : libhifir::factorize<false, value_t, int>(
+                  : libhifir::factorize<false, value_t>(
                         *(hif::HIF<value_t, int> *)prec, *n, ind_start, indices,
                         vals, params);
         else
-          use_crs ? libhifir::factorize<true, value_t, std::int64_t>(
+          use_crs ? libhifir::factorize<true, value_t>(
                         *(hif::HIF<value_t, std::int64_t> *)prec, *n, ind_start,
                         indices, vals, params)
-                  : libhifir::factorize<false, value_t, std::int64_t>(
+                  : libhifir::factorize<false, value_t>(
                         *(hif::HIF<value_t, std::int64_t> *)prec, *n, ind_start,
                         indices, vals, params);
       } else {
         if (!libhifir::is_int64(prec_type))
-          use_crs ? libhifir::factorize<true, std::complex<value_t>, int>(
+          use_crs ? libhifir::factorize<true, std::complex<value_t>>(
                         *(hif::HIF<std::complex<value_t>, int> *)prec, *n,
                         ind_start, indices, vals, params)
-                  : libhifir::factorize<false, std::complex<value_t>, int>(
+                  : libhifir::factorize<false, std::complex<value_t>>(
                         *(hif::HIF<std::complex<value_t>, int> *)prec, *n,
                         ind_start, indices, vals, params);
         else
-          use_crs
-              ? libhifir::factorize<true, std::complex<value_t>, std::int64_t>(
-                    *(hif::HIF<std::complex<value_t>, std::int64_t> *)prec, *n,
-                    ind_start, indices, vals, params)
-              : libhifir::factorize<false, std::complex<value_t>, std::int64_t>(
-                    *(hif::HIF<std::complex<value_t>, std::int64_t> *)prec, *n,
-                    ind_start, indices, vals, params);
+          use_crs ? libhifir::factorize<true, std::complex<value_t>>(
+                        *(hif::HIF<std::complex<value_t>, std::int64_t> *)prec,
+                        *n, ind_start, indices, vals, params)
+                  : libhifir::factorize<false, std::complex<value_t>>(
+                        *(hif::HIF<std::complex<value_t>, std::int64_t> *)prec,
+                        *n, ind_start, indices, vals, params);
       }
     } else {
       // NOTE: The input is assumed to be double-precision
       using value_t = float;
       if (!libhifir::is_complex(prec_type)) {
         if (!libhifir::is_int64(prec_type))
-          use_crs ? libhifir::factorize<true, double, int>(
+          use_crs ? libhifir::factorize<true, double>(
                         *(hif::HIF<value_t, int> *)prec, *n, ind_start, indices,
                         vals, params)
-                  : libhifir::factorize<false, double, int>(
+                  : libhifir::factorize<false, double>(
                         *(hif::HIF<value_t, int> *)prec, *n, ind_start, indices,
                         vals, params);
         else
-          use_crs ? libhifir::factorize<true, double, std::int64_t>(
+          use_crs ? libhifir::factorize<true, double>(
                         *(hif::HIF<value_t, std::int64_t> *)prec, *n, ind_start,
                         indices, vals, params)
-                  : libhifir::factorize<false, double, std::int64_t>(
+                  : libhifir::factorize<false, double>(
                         *(hif::HIF<value_t, std::int64_t> *)prec, *n, ind_start,
                         indices, vals, params);
       } else {
         if (!libhifir::is_int64(prec_type))
-          use_crs ? libhifir::factorize<true, std::complex<double>, int>(
+          use_crs ? libhifir::factorize<true, std::complex<double>>(
                         *(hif::HIF<std::complex<value_t>, int> *)prec, *n,
                         ind_start, indices, vals, params)
-                  : libhifir::factorize<false, std::complex<double>, int>(
+                  : libhifir::factorize<false, std::complex<double>>(
                         *(hif::HIF<std::complex<value_t>, int> *)prec, *n,
                         ind_start, indices, vals, params);
         else
-          use_crs
-              ? libhifir::factorize<true, std::complex<double>, std::int64_t>(
-                    *(hif::HIF<std::complex<value_t>, std::int64_t> *)prec, *n,
-                    ind_start, indices, vals, params)
-              : libhifir::factorize<false, std::complex<double>, std::int64_t>(
-                    *(hif::HIF<std::complex<value_t>, std::int64_t> *)prec, *n,
-                    ind_start, indices, vals, params);
+          use_crs ? libhifir::factorize<true, std::complex<double>>(
+                        *(hif::HIF<std::complex<value_t>, std::int64_t> *)prec,
+                        *n, ind_start, indices, vals, params)
+                  : libhifir::factorize<false, std::complex<double>>(
+                        *(hif::HIF<std::complex<value_t>, std::int64_t> *)prec,
+                        *n, ind_start, indices, vals, params);
       }
     }
   } catch (const std::exception &e) {
@@ -561,6 +600,87 @@ int libhifir_mmultiply(const char M[], const long long *n, const void *b,
           libhifir::apply<false, std::complex<double>>(
               *(hif::HIF<std::complex<value_t>, std::int64_t> *)prec, *n, b,
               tran, rnk, x);
+      }
+    }
+  } catch (const std::exception &e) {
+    // internal error
+    libhifir::error_msgs[1] = e.what();
+    return LIBHIFIR_HIFIR_ERROR;
+  }
+  return LIBHIFIR_SUCCESS;
+}
+
+/*
+void hifir(const PrecType &M, const std::size_t n,
+                         const void *ind_ptr, const void *indices,
+                         const void *vals, const bool is_crs, const void *b,
+                         const int nirs, const double *betas, const bool trans,
+                         const int rank, void *x, int *iters, int *ir_status)
+*/
+
+// hifir operation
+int libhifir_hifir(const char M[], const long long *n, const void *ind_start,
+                   const void *indices, const void *vals, const int *is_crs,
+                   const void *b, const int *nirs, const double *betas,
+                   const int *trans, const int *rank, void *x, int *iters,
+                   int *ir_status) {
+  if (!nirs || *nirs <= 1) return libhifir_solve(M, n, b, trans, rank, x);
+  const bool           tran      = trans ? *trans : false;
+  const int            rnk       = rank ? *rank : 0;
+  const bool           iscrs     = is_crs ? *is_crs : true;
+  void *               prec      = nullptr;
+  const int            prec_type = M[1];
+  const std::uintptr_t prec_tag  = *(std::uintptr_t *)&M[2];
+  libhifir::PrecCoder  encoder;
+  encoder.tag = prec_tag;
+  prec        = encoder.ptr;
+  try {
+    if (!libhifir::is_mixed(prec_type)) {
+      using value_t = double;
+      if (!libhifir::is_complex(prec_type)) {
+        if (!libhifir::is_int64(prec_type))
+          libhifir::hifir<value_t>(*(hif::HIF<value_t, int> *)prec, *n,
+                                   ind_start, indices, vals, iscrs, b, *nirs,
+                                   betas, tran, rnk, x, iters, ir_status);
+        else
+          libhifir::hifir<value_t>(*(hif::HIF<value_t, std::int64_t> *)prec, *n,
+                                   ind_start, indices, vals, iscrs, b, *nirs,
+                                   betas, tran, rnk, x, iters, ir_status);
+      } else {
+        if (!libhifir::is_int64(prec_type))
+          libhifir::hifir<std::complex<value_t>>(
+              *(hif::HIF<std::complex<value_t>, int> *)prec, *n, ind_start,
+              indices, vals, iscrs, b, *nirs, betas, tran, rnk, x, iters,
+              ir_status);
+        else
+          libhifir::hifir<std::complex<value_t>>(
+              *(hif::HIF<std::complex<value_t>, std::int64_t> *)prec, *n,
+              ind_start, indices, vals, iscrs, b, *nirs, betas, tran, rnk, x,
+              iters, ir_status);
+      }
+    } else {
+      // NOTE: The input is assumed to be double-precision
+      using value_t = float;
+      if (!libhifir::is_complex(prec_type)) {
+        if (!libhifir::is_int64(prec_type))
+          libhifir::hifir<double>(*(hif::HIF<value_t, int> *)prec, *n,
+                                  ind_start, indices, vals, iscrs, b, *nirs,
+                                  betas, tran, rnk, x, iters, ir_status);
+        else
+          libhifir::hifir<double>(*(hif::HIF<value_t, std::int64_t> *)prec, *n,
+                                  ind_start, indices, vals, iscrs, b, *nirs,
+                                  betas, tran, rnk, x, iters, ir_status);
+      } else {
+        if (!libhifir::is_int64(prec_type))
+          libhifir::hifir<std::complex<double>>(
+              *(hif::HIF<std::complex<value_t>, int> *)prec, *n, ind_start,
+              indices, vals, iscrs, b, *nirs, betas, tran, rnk, x, iters,
+              ir_status);
+        else
+          libhifir::hifir<std::complex<double>>(
+              *(hif::HIF<std::complex<value_t>, std::int64_t> *)prec, *n,
+              ind_start, indices, vals, iscrs, b, *nirs, betas, tran, rnk, x,
+              iters, ir_status);
       }
     }
   } catch (const std::exception &e) {
@@ -733,6 +853,47 @@ int LIBHIFIR_MMULTIPLY_(const char M[], const long long *n, const void *b,
 int LIBHIFIR_MMULTIPLY__(const char M[], const long long *n, const void *b,
                          const int *trans, const int *rank, void *x) {
   return libhifir_mmultiply(M, n, b, trans, rank, x);
+}
+
+int libhifir_hifir_(const char M[], const long long *n, const void *ind_start,
+                    const void *indices, const void *vals, const int *is_crs,
+                    const void *b, const int *nirs, const double *betas,
+                    const int *trans, const int *rank, void *x, int *iters,
+                    int *ir_status) {
+  return libhifir_hifir(M, n, ind_start, indices, vals, is_crs, b, nirs, betas,
+                        trans, rank, x, iters, ir_status);
+}
+int libhifir_hifir__(const char M[], const long long *n, const void *ind_start,
+                     const void *indices, const void *vals, const int *is_crs,
+                     const void *b, const int *nirs, const double *betas,
+                     const int *trans, const int *rank, void *x, int *iters,
+                     int *ir_status) {
+  return libhifir_hifir(M, n, ind_start, indices, vals, is_crs, b, nirs, betas,
+                        trans, rank, x, iters, ir_status);
+}
+int LIBHIFIR_HIFIR(const char M[], const long long *n, const void *ind_start,
+                   const void *indices, const void *vals, const int *is_crs,
+                   const void *b, const int *nirs, const double *betas,
+                   const int *trans, const int *rank, void *x, int *iters,
+                   int *ir_status) {
+  return libhifir_hifir(M, n, ind_start, indices, vals, is_crs, b, nirs, betas,
+                        trans, rank, x, iters, ir_status);
+}
+int LIBHIFIR_HIFIR_(const char M[], const long long *n, const void *ind_start,
+                    const void *indices, const void *vals, const int *is_crs,
+                    const void *b, const int *nirs, const double *betas,
+                    const int *trans, const int *rank, void *x, int *iters,
+                    int *ir_status) {
+  return libhifir_hifir(M, n, ind_start, indices, vals, is_crs, b, nirs, betas,
+                        trans, rank, x, iters, ir_status);
+}
+int LIBHIFIR_HIFIR__(const char M[], const long long *n, const void *ind_start,
+                     const void *indices, const void *vals, const int *is_crs,
+                     const void *b, const int *nirs, const double *betas,
+                     const int *trans, const int *rank, void *x, int *iters,
+                     int *ir_status) {
+  return libhifir_hifir(M, n, ind_start, indices, vals, is_crs, b, nirs, betas,
+                        trans, rank, x, iters, ir_status);
 }
 
 #endif  // DOXYGEN_SHOULD_SKIP_THIS
