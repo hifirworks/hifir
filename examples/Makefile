@@ -29,9 +29,5 @@ ifneq ("$(MAKECMDGOALS)","clean")
     $(foreach test,$(DEMOS),$(eval $(call MAKE_EXE_RULE, $(test))))
 endif
 
-demo_libhifir.exe: demo_libhifir.cpp
-	$(HIF_CXX) $(HIF_CXXFLAGS) -I../src -I../libhifir $< -o $@ \
-		-L../libhifir -lhifir -Wl,-rpath,../libhifir
-
 clean:
 	@rm -f $(DEMOS_EXE) *.dSYM $(DEMOS_SRC:%.cpp=%.d) *.exe
