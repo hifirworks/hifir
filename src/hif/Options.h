@@ -96,7 +96,11 @@ struct hif_Options {
   int    check;     /*!< check user input (default is true (!=0)) */
   int    pre_scale; /*!< prescale (default 0 (off)) */
   int    symm_pre_lvls;
-  /*!< levels to be applied with symm preprocessing (default is 1) */
+  /*!< levels to be applied with symm preprocessing */
+  /*!< If this value is non-negative, then we will apply at most this */
+  /*!< number of symmetric preprocessing. If this number if negative, then */
+  /*!< within abs(symm_pre_lvls) levels, we will automatically determine */
+  /*!< symmetric preprocessing via pattern symmetry (default -2) */
   int    threads;       /*!< user specified threads (default 0) */
   int    mumps_blr;     /*!< MUMPS BLR options (default 2) *deprecated* */
   int    fat_schur_1st; /*!< double alpha for dropping L_E and U_F on 1st lvl */
@@ -141,7 +145,7 @@ static hif_Options hif_get_default_options(void) {
                        .spd           = 0,
                        .check         = 1,
                        .pre_scale     = 0,
-                       .symm_pre_lvls = 1,
+                       .symm_pre_lvls = -2,
                        .threads       = 0,
                        .mumps_blr     = 1,
                        .fat_schur_1st = 0,
