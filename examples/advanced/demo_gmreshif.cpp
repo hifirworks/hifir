@@ -48,13 +48,12 @@ std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
                                         const bool   verbose = true);
 
 // parse command-line arguments for restart, rtol, maxit, and verbose
-std::tuple<system_t, int, double, int, bool> parse_args(int argc, char *argv[]);
+std::tuple<system_t, int, double, int, int> parse_args(int argc, char *argv[]);
 
 int main(int argc, char *argv[]) {
   // parse options for gmres
-  int      restart, maxit;
+  int      restart, maxit, verbose;
   double   rtol;
-  bool     verbose;
   system_t prob;
   std::tie(prob, restart, rtol, maxit, verbose) = parse_args(argc, argv);
 
@@ -64,36 +63,48 @@ int main(int argc, char *argv[]) {
   // create HIF preconditioner, and factorize with default params
   auto M      = prec_t();
   auto params = hif::DEFAULT_PARAMS;
-  // tune the following parameters if necessary
-  params.tau_L = params.tau_U = 1e-2;     // droptol
-  params.alpha_L = params.alpha_U = 3.0;  // fill factors
-  params.kappa = params.kappa_d = 5.0;    // inverse-norm thres
-  params.verbose                = hif::VERBOSE_NONE;
+  // The following parameters are essential to a HIF preconditioner, namely
+  // droptol, fill factor, and inverse-norm threshold. Note that the default
+  // settings are for robustness. Hence, they might not be optimal for certain
+  // problems, e.g., systems from PDEs.
+  // For systems from PDEs, one may try to increase the droptol (tau_L,tau_U)
+  // up to 1e-2; the fill factor (alpha_L,alpha_U) can be decreased to 3 or 5;
+  // the inverse-norm (kappa,kappa_d former is for L/U, and latter is for D)
+  // can be enlarged to 5.
+  // params.tau_L = params.tau_U = 1e-2;     // droptol
+  // params.alpha_L = params.alpha_U = 3.0;  // fill factors
+  // params.kappa = params.kappa_d = 5.0;    // inverse-norm thres
+  if (verbose < 2) params.verbose = hif::VERBOSE_NONE;
   timer.start();
   M.factorize(prob.A, params);
   timer.finish();
-  hif_info("HIF(lvls=%zd) finished in %.2g seconds with nnz ratio %.2f%%.\n",
-           M.levels(), timer.time(), 100.0 * M.nnz() / prob.A.nnz());
 
-  // call HIF-preconditioned GMRES
-  hif_info("Invoke HIF-preconditioned GMRES(%d) with rtol=%g and maxit=%d",
-           restart, rtol, maxit);
+  if (verbose) {
+    hif_info("HIF(lvls=%zd) finished in %.2g seconds with nnz ratio %.2f%%.\n",
+             M.levels(), timer.time(), 100.0 * M.nnz() / prob.A.nnz());
+    // call HIF-preconditioned GMRES
+    hif_info("Invoke HIF-preconditioned GMRES(%d) with rtol=%g and maxit=%d",
+             restart, rtol, maxit);
+  }
+
   array_t x;
   int     flag, iters;
   timer.start();
   std::tie(x, flag, iters) =
       gmres_hif(prob.A, prob.b, M, restart, rtol, maxit, verbose);
   timer.finish();
-  if (flag == SUCCESS) {
-    hif_info("Finished GMRES in %.2g seconds and %d iterations.", timer.time(),
-             iters);
-    hif_info("Relative residual of ||b-Ax||/||b||=%e",
-             compute_relres(prob.A, prob.b, x));
-    hif_info("Success!");
-  } else if (flag == STAGNATED)
-    hif_info("GMRES stagnated in %d iterations.", iters);
-  else if (flag == DIVERGED)
-    hif_info("GMRES diverged.");
+  if (verbose) {
+    if (flag == SUCCESS) {
+      hif_info("Finished GMRES in %.2g seconds and %d iterations.",
+               timer.time(), iters);
+      hif_info("Relative residual of ||b-Ax||/||b||=%e",
+               compute_relres(prob.A, prob.b, x));
+      hif_info("Success!");
+    } else if (flag == STAGNATED)
+      hif_info("GMRES stagnated in %d iterations.", iters);
+    else if (flag == DIVERGED)
+      hif_info("GMRES diverged.");
+  }
   return 0;
 }
 
@@ -199,8 +210,7 @@ std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
   return std::make_tuple(x, flag, iter);
 }
 
-std::tuple<system_t, int, double, int, bool> parse_args(int   argc,
-                                                        char *argv[]) {
+std::tuple<system_t, int, double, int, int> parse_args(int argc, char *argv[]) {
   using std::string;
   static const char *help_message =
       "usage:\n\n"
@@ -218,16 +228,17 @@ std::tuple<system_t, int, double, int, bool> parse_args(int   argc,
       " -bfile bfile\n"
       "    RHS vector stored in Matrix Market format (array), default is\n"
       "    \'demo_inputs/b.mm\'. If \'Afile\' is provided by the user but\n"
-      "    \'bfile\' is missing, then b=A*1 will be used\n\n"
+      "    \'bfile\' is missing, then b=A*1 will be used\n"
+      " -v|--verbose verbose\n"
+      "    Verbose level for logging, default is 1. To run in complete\n"
+      "    silent, use 0. For any values larger than 1, verbose logging will\n"
+      "    be enabled for the factorization stage.\n\n"
       "Flags:\n\n"
-      " -s|--silent\n"
-      "    Disable verbose message in GMRES, default is false (verbose on)\n"
       " -h|--help\n"
       "    Show this help message and exit\n";
 
-  int      restart(30), maxit(500);
+  int      restart(30), maxit(500), verbose(1);
   double   rtol(1e-6);
-  bool     verbose(true);
   system_t prob;
 
   string Afile, bfile;
@@ -261,6 +272,13 @@ std::tuple<system_t, int, double, int, bool> parse_args(int   argc,
       }
       maxit = std::atoi(argv[++i]);
       if (maxit <= 0) maxit = 500;
+    } else if (arg == "-v" || arg == "verbose") {
+      if (i + 1 >= argc) {
+        std::cerr << "Missing verbose level!\n\n" << help_message;
+        std::exit(1);
+      }
+      verbose = std::atoi(argv[++i]);
+      if (verbose < 0) verbose = 0;
     } else if (arg == "-Afile") {
       if (i + 1 >= argc) {
         std::cerr << "Missing Afile!\n\n" << help_message;
