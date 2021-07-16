@@ -47,7 +47,7 @@ std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
                                         const int    maxit   = 500,
                                         const bool   verbose = true);
 
-// parse command-line arguments for restart, rtol, maxit, and verbose
+// parse command-line arguments for system, restart, rtol, maxit, and verbose
 std::tuple<system_t, int, double, int, int> parse_args(int argc, char *argv[]);
 
 int main(int argc, char *argv[]) {
@@ -227,8 +227,8 @@ std::tuple<system_t, int, double, int, int> parse_args(int argc, char *argv[]) {
       "    is \'demo_inputs/A.mm\'\n"
       " -bfile bfile\n"
       "    RHS vector stored in Matrix Market format (array), default is\n"
-      "    \'demo_inputs/b.mm\'. If \'Afile\' is provided by the user but\n"
-      "    \'bfile\' is missing, then b=A*1 will be used\n"
+      "    \'demo_inputs/b.mm\'. If \'Afile\' is provided by the \'bfile\' is\n"
+      "    missing, then b=A*1 will be used\n"
       " -v|--verbose verbose\n"
       "    Verbose level for logging, default is 1. To run in complete\n"
       "    silent, use 0. For any values larger than 1, verbose logging will\n"
