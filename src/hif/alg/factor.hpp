@@ -578,14 +578,14 @@ inline CsType level_factorize(
   double     pat_symm_ratio(-1);
   bool       do_symm_pre(IsSymm);
   if (!IsSymm) {
-    // If do partially symmetric leading block factorization, then we try to
-    // determine whether or not we should use symmetric preprocessing
-    // if opts.symm_pre_lvls < 0, then its abs value is the maximum levels that
+    // If not partially symmetric leading block factorization, then we try to
+    // determine whether or not we should use symmetric preprocessing.
+    // If opts.symm_pre_lvls < 0, then its abs value is the maximum levels that
     // we will check symmetric preprocessing via pattern symmetry ratios.
     // For instance, if this value is -2, then we only determine the symmetric
     // preprocessing for the first two levels. Asymmetric preprocessing will
-    // always be used for levels>2
-    // if this value is non-negative, then we enforce symmetric preprocessing
+    // always be used for levels>2.
+    // If this value is non-negative, then we enforce symmetric preprocessing
     // if the current level is no larger than its value.
     // NOTE for certain singular and very weird systems, we might need to
     // manually adjust symm_pre_lvls
