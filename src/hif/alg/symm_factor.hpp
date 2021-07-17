@@ -577,9 +577,11 @@ inline CsType symm_level_factorize(
   // L and U got freed, only L_B and U_B exist
 
   const size_type dense_thres1 = static_cast<size_type>(opts.alpha_L * AmB_nnz),
-                  dense_thres2 = std::max(static_cast<size_type>(std::ceil(
-                                              opts.c_d * std::cbrt(N))),
-                                          size_type(HIF_LASTLEVEL_DENSE_SIZE));
+                  dense_thres2 = std::max(
+                      static_cast<size_type>(
+                          std::ceil(opts.c_d * std::cbrt(N))),
+                      size_type(opts.dense_thres <= 0 ? 2000
+                                                      : opts.dense_thres));
 
   if (hif_verbose(INFO, opts))
     hif_info(
@@ -652,7 +654,8 @@ inline CsType symm_level_factorize(
     last_level.set_matrix(std::move(S_D));
     last_level.factorize(opts);
     if (hif_verbose(INFO, opts))
-      hif_info("successfully factorized the dense component...");
+      hif_info("successfully factorized the dense component of size %zd...",
+               last_level.symm_dense_solver.mat().nrows());
   }
 
   timer.finish();  // profile post-processing

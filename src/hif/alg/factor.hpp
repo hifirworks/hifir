@@ -58,10 +58,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #    define HIF_RESERVE_FAC 5
 #  endif  // HIF_RESERVE_FAC
 
-#  ifndef HIF_LASTLEVEL_DENSE_SIZE
-#    define HIF_LASTLEVEL_DENSE_SIZE 2000
-#  endif  // HIF_RESERVE_FAC
-
 #  ifndef HIF_MIN_LOCAL_SIZE_PERCTG
 #    define HIF_MIN_LOCAL_SIZE_PERCTG 85
 #  endif  // HIF_RESERVE_FAC
@@ -598,7 +594,7 @@ inline CsType level_factorize(
         // if more than 65% entries are pattern-symmetric, then we apply
         // symmetric preprocessing
         pat_symm_ratio = internal::compute_pattern_symm_ratio(A, A_counterpart);
-        do_symm_pre    = pat_symm_ratio >= 0.65;  // more than 60%
+        do_symm_pre    = pat_symm_ratio >= opts.nzp_thres;
       } else
         do_symm_pre = false;
     } else
@@ -1224,9 +1220,11 @@ inline CsType level_factorize(
 
   const size_type dense_thres1 = static_cast<size_type>(
                       std::max(opts.alpha_L, opts.alpha_U) * AmB_nnz),
-                  dense_thres2 = std::max(static_cast<size_type>(std::ceil(
-                                              opts.c_d * std::cbrt(N))),
-                                          size_type(HIF_LASTLEVEL_DENSE_SIZE));
+                  dense_thres2 = std::max(
+                      static_cast<size_type>(
+                          std::ceil(opts.c_d * std::cbrt(N))),
+                      size_type(opts.dense_thres <= 0 ? 2000
+                                                      : opts.dense_thres));
 
   if (hif_verbose(INFO, opts))
     hif_info(
@@ -1297,7 +1295,8 @@ inline CsType level_factorize(
     last_level.set_matrix(std::move(S_D));
     last_level.factorize(opts);
     if (hif_verbose(INFO, opts))
-      hif_info("successfully factorized the dense component...");
+      hif_info("successfully factorized the dense component of size %zd...",
+               last_level.dense_solver.mat().nrows());
   }
 
   timer.finish();  // profile post-processing
