@@ -436,8 +436,8 @@ inline void drop_L_E_and_U_F(const typename CrsType::iarray_type &ref_indptr_L,
   }
 
   // parallel
-  hif_assert(threads > 1, "thread number %d must be no smaller than 1",
-             threads);
+  hif_assert(nthreads > 1, "thread number %d must be no smaller than 1",
+             nthreads);
 
   if (nthreads <= 3) {
 #pragma omp parallel num_threads(2) default(shared)
