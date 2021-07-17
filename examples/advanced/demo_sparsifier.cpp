@@ -53,17 +53,19 @@ std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
                                         const bool   verbose = true);
 
 // parse command-line arguments for system, sparsifier restart, rtol, maxit,
-// and, verbose
-std::tuple<system_t, matrix_t, int, double, int, int> parse_args(int   argc,
-                                                                 char *argv[]);
+// verbose, and robust parameters
+std::tuple<system_t, matrix_t, int, double, int, int, bool> parse_args(
+    int argc, char *argv[]);
 
 int main(int argc, char *argv[]) {
   // parse options for gmres
   int      restart, maxit, verbose;
   double   rtol;
+  double   robust;
   system_t prob;
   matrix_t S;
-  std::tie(prob, S, restart, rtol, maxit, verbose) = parse_args(argc, argv);
+  std::tie(prob, S, restart, rtol, maxit, verbose, robust) =
+      parse_args(argc, argv);
 
   // See if we have user-provide sparsifier
   if (verbose) {
@@ -85,10 +87,20 @@ int main(int argc, char *argv[]) {
   // well-posed PDE systems, which are typically (nearly) pattern symmetric.
   // If you have very ill-conditioned or pattern asymmetric system, then please
   // use try robust parameters if the following setting fails.
-  params.tau_L = params.tau_U = 1e-2;     // droptol
-  params.alpha_L = params.alpha_U = 3.0;  // fill factors
-  params.kappa = params.kappa_d = 5.0;    // inverse-norm thres
+  if (!robust) {
+    params.tau_L = params.tau_U = 1e-2;     // droptol
+    params.alpha_L = params.alpha_U = 3.0;  // fill factors
+    params.kappa = params.kappa_d = 5.0;    // inverse-norm thres
+  }
   if (verbose < 2) params.verbose = hif::VERBOSE_NONE;
+  // if verbose > 1, then the factorize function will print out all parameters
+  if (verbose == 1) {
+    hif_info("droptols (tau_L/tau_U) are %g/%g", params.tau_L, params.tau_U);
+    hif_info("fill factors (alpha_L/alpha_U) are %g/%g", params.alpha_L,
+             params.alpha_U);
+    hif_info("inverse-norm thres (kappa/kappa_D) are %g/%g", params.kappa,
+             params.kappa_d);
+  }
   timer.start();
   M.factorize(S, params);  // we factorize S here not A
   timer.finish();
@@ -225,12 +237,12 @@ std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
   return std::make_tuple(x, flag, iter);
 }
 
-std::tuple<system_t, matrix_t, int, double, int, int> parse_args(int   argc,
-                                                                 char *argv[]) {
+std::tuple<system_t, matrix_t, int, double, int, int, bool> parse_args(
+    int argc, char *argv[]) {
   using std::string;
   static const char *help_message =
       "usage:\n\n"
-      "\t./demo_sparsifier.exe [options] [flags]\n\n"
+      "\targv[0] [options] [flags]\n\n"
       "Options:\n\n"
       " -m|--restart m\n"
       "    Restart in GMRES, default is m=30\n"
@@ -253,11 +265,14 @@ std::tuple<system_t, matrix_t, int, double, int, int> parse_args(int   argc,
       "    silent, use 0. For any values larger than 1, verbose logging will\n"
       "    be enabled for the factorization stage.\n\n"
       "Flags:\n\n"
+      " -r|--robust\n"
+      "    Use robust parameters for HIF, default is false\n"
       " -h|--help\n"
       "    Show this help message and exit\n";
 
   int    restart(30), maxit(500), verbose(1);
   double rtol(1e-6);
+  bool   robust(false);
 
   for (int i = 1; i < argc; ++i) {
     auto arg = string(argv[i]);
@@ -293,7 +308,8 @@ std::tuple<system_t, matrix_t, int, double, int, int> parse_args(int   argc,
       }
       verbose = std::atoi(argv[++i]);
       if (verbose < 0) verbose = 0;
-    }
+    } else if (arg == "-r" || arg == "--robust")
+      robust = true;
   }
   // load 4th order FDM with A*1 as rhs
   const bool prev_dir = std::ifstream("../demo_inputs/ad-fdm4.mm").is_open();
@@ -303,5 +319,5 @@ std::tuple<system_t, matrix_t, int, double, int, int> parse_args(int   argc,
                          prev_dir
                              ? matrix_t::from_mm("../demo_inputs/ad-fdm2.mm")
                              : matrix_t::from_mm("demo_inputs/ad-fdm2.mm"),
-                         restart, rtol, maxit, verbose);
+                         restart, rtol, maxit, verbose, robust);
 }

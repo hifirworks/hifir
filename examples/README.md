@@ -30,4 +30,4 @@ In addition, for the advanced example of HIF-preconditioned GMRES (`advanced/dem
 
 ## Parameters Tuning ##
 
-For `advanced/demo_gmreshif.cpp` and `advanced/demo_sparsifier.cpp`, we use optimized parameters for systems arising from well-posed PDEs, which are typically (nearly) pattern symmetric. For ill-conditioned and/or highly pattern asymmetric systems, we recommend to use robust parameters if the optimized parameters are not sufficient.
+For `advanced/demo_gmreshif.cpp` and `advanced/demo_sparsifier.cpp`, we use optimized parameters for systems arising from well-posed PDEs, which are typically (nearly) pattern symmetric. For ill-conditioned and/or highly pattern asymmetric systems, we recommend to use robust parameters if the optimized parameters are not sufficient. To see how to use robust parameters, run each example with flag `--robust`.
