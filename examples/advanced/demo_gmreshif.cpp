@@ -331,8 +331,10 @@ std::tuple<system_t, int, double, int, int, bool> parse_args(int   argc,
   }
   if (Afile.empty()) {
     if (verbose) {
-      hif_info("Afile is \'demo_inputs/A.mm\'");
-      hif_info("bfile is \'demo_inputs/b.mm\'\n");
+      const bool  dir_prev = std::ifstream("../demo_inputs/A.mm").is_open();
+      const char *prefix   = dir_prev ? "../" : "";
+      hif_info("Afile is \'%sdemo_inputs/A.mm\'", prefix);
+      hif_info("bfile is \'%sdemo_inputs/b.mm\'\n", prefix);
     }
     prob = get_input_data();
   } else {
