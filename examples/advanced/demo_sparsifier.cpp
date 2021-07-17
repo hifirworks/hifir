@@ -366,12 +366,13 @@ std::tuple<system_t, matrix_t, int, double, int, int, bool> parse_args(
       robust = true;
   }
   // load 4th order FDM with A*1 as rhs
-  const bool prev_dir = std::ifstream("../demo_inputs/ad-fdm4.mm").is_open();
   if (Afile.empty()) {
+    const bool prev_dir = std::ifstream("../demo_inputs/ad-fdm4.mm").is_open();
     if (verbose) {
-      hif_info("Afile is \'demo_inputs/ad-fdm4.mm\'");
+      const char *prefix = prev_dir ? "../" : "";
+      hif_info("Afile is \'%sdemo_inputs/ad-fdm4.mm\'", prefix);
       hif_info("b=A*1");
-      hif_info("Sfile is \'demo_inputs/ad-fdm2.mm\'\n");
+      hif_info("Sfile is \'%sdemo_inputs/ad-fdm2.mm\'\n", prefix);
     }
     return std::make_tuple(
         prev_dir ? get_input_data("../demo_inputs/ad-fdm4.mm")
