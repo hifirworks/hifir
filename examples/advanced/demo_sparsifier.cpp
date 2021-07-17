@@ -5,17 +5,22 @@
 /*
 
   This file contains an example of using HIF as right-preconditioner for
-  GMRES(m). The example uses the testing system under "demo_inputs." The users
-  can use their systems by (1) calling hif::wrap_const_{crs,ccs} and
-  hif::wrap_const_array to directly wrap their systems or (2) loading data in
-  Matrix Market file format, e.g.,
+  GMRES(m), where HIF can be computed via a sparser matrix than the one used
+  in the GMRES solver, i.e.,
+          A*M^{g}*y=b then x=M^{g}*y,
+  where M is computed on a sparser matrix (hence the name "sparsifier") S, s.t.
+  nnz(S) <= nnz(A). In this example, we solve the advection-diffusion (AD)
+  equation with FDM method on the unit square discretized by an equidistance
+  structured grid of 64x64. For the coefficient matrix, we use 4th order
+  FDM, whereas the sparsifier uses 2nd order FDM.
 
-      auto A = hif::CRS<double,int>::from_mm("/path/to/sparse-mm-file")
-      auto b = hif::Array<double>::from_mm("/path/to/dense-mm-file").
+  Try with
 
-  Note that our GMRES implementation also works for complex arithmetic if
-  matrix_t, array_t, and prec_t are complex values (with some minor
-  modifications). See examples/intermediate/demo_complex.cpp.
+    ./demo_sparsifier.exe [GMRES options]  # using sparsifier
+
+  and compare with
+
+    ./demo_gmreshif.exe -Afile ../demo_inputs/ad-fdm4.mm
 
   Author: Qiao Chen
   Level: Advanced
@@ -47,20 +52,39 @@ std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
                                         const int    maxit   = 500,
                                         const int    verbose = 1);
 
-// parse command-line arguments for system, restart, rtol, maxit, verbose, and
-// robust parameter flag
-std::tuple<system_t, int, double, int, int, bool> parse_args(int   argc,
-                                                             char *argv[]);
+// parse command-line arguments for system, sparsifier restart, rtol, maxit,
+// verbose, and robust parameters
+std::tuple<system_t, matrix_t, int, double, int, int, bool> parse_args(
+    int argc, char *argv[]);
 
 int main(int argc, char *argv[]) {
   // parse options for gmres
   int      restart, maxit, verbose;
   double   rtol;
+  double   robust;
   system_t prob;
-  bool     robust;
-  std::tie(prob, restart, rtol, maxit, verbose, robust) =
+  matrix_t S;
+  std::tie(prob, S, restart, rtol, maxit, verbose, robust) =
       parse_args(argc, argv);
 
+  if (S.nrows() == 0u) {
+    // We will prune tiny values in A, and make a copy of the result in S.
+    // Note that by default, the constructor only performs shallow copies
+    bool deep_copy = true;
+    S              = matrix_t(prob.A, deep_copy);
+    // the following function eliminate will prune any values that close to
+    // machine precision. In particular, S.eliminate(tol) will eliminate any
+    // entries in the i-th row whose magnitude is not larger than
+    // tol*max(abs(i-th row of S)).
+    const auto pruned = S.eliminate(1e-15);
+    if (verbose) hif_info("Eliminated %zd tiny entries in S.", pruned);
+  }
+
+  // See if we have user-provide sparsifier
+  if (verbose) {
+    hif_info("Coefficient matrix and sparsifier have %zd and %zd nnz, resp.",
+             prob.A.nnz(), S.nnz());
+  }
   // get timer
   hif::DefaultTimer timer;
 
@@ -88,12 +112,12 @@ int main(int argc, char *argv[]) {
              params.kappa_d);
   }
   timer.start();
-  M.factorize(prob.A, params);
+  M.factorize(S, params);  // we factorize S here not A
   timer.finish();
 
   if (verbose) {
     hif_info("HIF(lvls=%zd) finished in %g seconds with nnz ratio %.2f%%.\n",
-             M.levels(), timer.time(), 100.0 * M.nnz() / prob.A.nnz());
+             M.levels(), timer.time(), 100.0 * M.nnz() / S.nnz());
     // call HIF-preconditioned GMRES
     hif_info("Invoke HIF-preconditioned GMRES(%d) with rtol=%g and maxit=%d",
              restart, rtol, maxit);
@@ -102,6 +126,7 @@ int main(int argc, char *argv[]) {
   array_t x;
   int     flag, iters;
   timer.start();
+  // NOTE: The input is A here not S
   std::tie(x, flag, iters) =
       gmres_hif(prob.A, prob.b, M, restart, rtol, maxit, verbose);
   timer.finish();
@@ -252,6 +277,11 @@ void print_help_message(std::ostream &ostr, const char *cmd) {
       << "    RHS vector stored in Matrix Market format (array), default is\n"
       << "    \'demo_inputs/b.mm\'. If \'Afile\' is provided by the \'bfile\'\n"
       << "    is missing, then b=A*1 will be used\n"
+      << " -Sfile Sfile\n"
+      << "    Sparsifier, on which we will compute the HIF preconditioner.\n"
+      << "    If omitted, then (1) we will compute S by clipping tiny values\n"
+      << "    in A if \'Afile\' is specified, or (2) we will load the 2nd\n"
+      << "    FDM operator, which is used as sparsifier\n"
       << " -v|--verbose verbose\n"
       << "    Verbose level for logging, default is 1. To run in complete\n"
       << "    silent, use 0. For any values larger than 1, verbose logging\n"
@@ -263,21 +293,20 @@ void print_help_message(std::ostream &ostr, const char *cmd) {
       << "    Show this help message and exit\n";
 }
 
-std::tuple<system_t, int, double, int, int, bool> parse_args(int   argc,
-                                                             char *argv[]) {
+std::tuple<system_t, matrix_t, int, double, int, int, bool> parse_args(
+    int argc, char *argv[]) {
   using std::string;
 
-  int      restart(30), maxit(500), verbose(1);
-  double   rtol(1e-6);
-  bool     robust(false);
-  system_t prob;
+  int    restart(30), maxit(500), verbose(1);
+  double rtol(1e-6);
+  bool   robust(false);
 
-  string Afile, bfile;
+  string Afile, bfile, Sfile;
 
   for (int i = 1; i < argc; ++i) {
     auto arg = string(argv[i]);
     if (arg == "-h" || arg == "--help") {
-      print_help_message(std::cerr, argv[0]);
+      print_help_message(std::cout, argv[0]);
       std::exit(0);
     }
     if (arg == "-m" || arg == "--restart") {
@@ -326,26 +355,48 @@ std::tuple<system_t, int, double, int, int, bool> parse_args(int   argc,
         std::exit(1);
       }
       bfile = argv[++i];
+    } else if (arg == "-Sfile") {
+      if (i + 1 >= argc) {
+        std::cerr << "Missing Sfile!\n\n";
+        print_help_message(std::cerr, argv[0]);
+        std::exit(1);
+      }
+      Sfile = argv[++i];
     } else if (arg == "-r" || arg == "--robust")
       robust = true;
   }
+  // load 4th order FDM with A*1 as rhs
   if (Afile.empty()) {
+    const bool prev_dir = std::ifstream("../demo_inputs/ad-fdm4.mm").is_open();
     if (verbose) {
-      const bool  dir_prev = std::ifstream("../demo_inputs/A.mm").is_open();
-      const char *prefix   = dir_prev ? "../" : "";
-      hif_info("Afile is \'%sdemo_inputs/A.mm\'", prefix);
-      hif_info("bfile is \'%sdemo_inputs/b.mm\'\n", prefix);
+      const char *prefix = prev_dir ? "../" : "";
+      hif_info("Afile is \'%sdemo_inputs/ad-fdm4.mm\'", prefix);
+      hif_info("b=A*1");
+      hif_info("Sfile is \'%sdemo_inputs/ad-fdm2.mm\'\n", prefix);
     }
-    prob = get_input_data();
-  } else {
-    const char *bfile_cstr = nullptr;
-    if (!bfile.empty()) bfile_cstr = bfile.c_str();
-    std::cout << "Afile is \'" << Afile << "\'\n";
-    if (!bfile_cstr)
-      std::cout << "b=A*1\n\n";
-    else
-      std::cout << "bfile is \'" << bfile_cstr << "\'\n\n";
-    prob = get_input_data(Afile.c_str(), bfile_cstr);
+    return std::make_tuple(
+        prev_dir ? get_input_data("../demo_inputs/ad-fdm4.mm")
+                 : get_input_data("demo_inputs/ad-fdm4.mm"),
+        prev_dir ? matrix_t::from_mm("../demo_inputs/ad-fdm2.mm")
+                 : matrix_t::from_mm("demo_inputs/ad-fdm2.mm"),
+        restart, rtol, maxit, verbose, robust);
   }
-  return std::make_tuple(prob, restart, rtol, maxit, verbose, robust);
+
+  const char *bfile_cstr = nullptr;
+  if (!bfile.empty()) bfile_cstr = bfile.c_str();
+  auto     prob = get_input_data(Afile.c_str(), bfile_cstr);
+  matrix_t S;
+  if (!Sfile.empty()) S = matrix_t::from_mm(Sfile.c_str());
+  if (verbose) {
+    std::cout << "Afile is \'" << Afile << "\'\n";
+    if (bfile_cstr)
+      std::cout << "bfile is \'" << bfile << "\'\n";
+    else
+      std::cout << "b=A*1\n";
+    if (Sfile.empty())
+      std::cout << "Sfile is omitted (will prune A as sparsifier)\n\n";
+    else
+      std::cout << "Sfile is \'" << Sfile << "\'\n\n";
+  }
+  return std::make_tuple(prob, S, restart, rtol, maxit, verbose, robust);
 }

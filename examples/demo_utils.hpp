@@ -4,7 +4,8 @@
 
 /// \headerfile demo_utils.hpp "../demo_utils.hpp"
 
-#pragma once
+#ifndef _HIFIR_DEMOUTILS_HPP
+#define _HIFIR_DEMOUTILS_HPP
 
 #include <cstdlib>
 #include <fstream>
@@ -69,32 +70,34 @@ inline double compute_relres(const matrix_t &A, const array_t &b,
 inline std::pair<std::string, std::string> parse_input_files(int   argc,
                                                              char *argv[]) {
   using std::string;
-  static const char *help_message =
-      "usage:\n\n"
-      "\t./demo_exe [-Afile file] [-bfile file]\n\n"
-      "Where \'Afile\' is the LHS (matrix) file and \'bfile\' is the RHS "
-      "file.\n"
-      "The default files are \'demo_inputs/{A,b}.mm\'.\n"
-      "If only the LHS file is provided by the user, then b=A*1 will be "
-      "used.\n";
+  auto print_help_message = [](std::ostream &ostr, const char *cmd) {
+    ostr << "usage:\n\n"
+         << "\t" << cmd
+         << " [-Afile file] [-bfile file]\n\n"
+            "Where \'Afile\' is the LHS (matrix) file and \'bfile\' is the RHS "
+            "file.\n"
+            "The default files are \'demo_inputs/{A,b}.mm\'.\n"
+            "If only the LHS file is provided by the user, then b=A*1 will be "
+            "used.\n";
+  };
 
   string Afile, bfile;
   if (argc == 1) return std::make_pair(Afile, bfile);
   for (int i = 1; i < argc; ++i) {
     string arg = argv[i];
     if (arg == "-h" || arg == "--help") {
-      std::cout << help_message;
+      print_help_message(std::cout, argv[0]);
       std::exit(0);
     }
     if (arg == "-Afile") {
       if (i + 1 >= argc) {
-        std::cerr << "Missing Afile!\n\n" << help_message;
+        print_help_message(std::cerr << "Missing Afile!\n\n", argv[0]);
         std::exit(1);
       }
       Afile = argv[++i];
     } else if (arg == "-bfile") {
       if (i + 1 >= argc) {
-        std::cerr << "Missing bfile!\n\n" << help_message;
+        print_help_message(std::cerr << "Missing bfile!\n\n", argv[0]);
         std::exit(1);
       }
       bfile = argv[++i];
@@ -110,3 +113,5 @@ inline system_t parse_cmd4input(int argc, char *argv[]) {
   if (!files.second.empty()) bfile = files.second.c_str();
   return get_input_data(files.first.c_str(), bfile);
 }
+
+#endif  // _HIFIR_DEMOUTILS_HPP
