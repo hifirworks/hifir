@@ -414,7 +414,7 @@ namespace mt {
 /// \param[out] ibuf_L integer work space for \a L_E
 /// \param[out] buf_U work space for \a U_F
 /// \param[out] ibuf_U workspace for \a U_F
-/// \param[in] threads total threads used, must be at least 1, not alerted
+/// \param[in] nthreads total threads used, must be at least 1, not alerted
 /// \note buffers can be got from Crout work spaces
 template <class CrsType, class CcsType, class BufArray, class IntBufArray>
 inline void drop_L_E_and_U_F(const typename CrsType::iarray_type &ref_indptr_L,
@@ -423,23 +423,23 @@ inline void drop_L_E_and_U_F(const typename CrsType::iarray_type &ref_indptr_L,
                              const double alpha_U, CrsType &L_E, CcsType &U_F,
                              BufArray &buf_L, IntBufArray &ibuf_L,
                              BufArray &buf_U, IntBufArray &ibuf_U,
-                             const int threads) {
+                             const int nthreads) {
   using size_type  = typename CrsType::size_type;
   using index_type = typename CrsType::index_type;
 
   const size_type n = L_E.nrows();
   hif_assert(n == U_F.ncols(), "mismatched sizes between L_E and U_F");
-  if (threads == 1 || n <= 200u) {
+  if (nthreads == 1 || n <= 200u) {
     drop_L_E(ref_indptr_L, alpha_L, L_E, buf_L, ibuf_L);
     drop_U_F(ref_indptr_U, alpha_U, U_F, buf_U, ibuf_U);
     return;
   }
 
   // parallel
-  hif_assert(threads > 1, "thread number %d must be no smaller than 1",
-             threads);
+  hif_assert(nthreads > 1, "thread number %d must be no smaller than 1",
+             nthreads);
 
-  if (threads <= 3) {
+  if (nthreads <= 3) {
 #pragma omp parallel num_threads(2) default(shared)
     do {
       const int thread = get_thread();
@@ -451,18 +451,20 @@ inline void drop_L_E_and_U_F(const typename CrsType::iarray_type &ref_indptr_L,
     return;
   }
 
+  std::vector<BufArray> bufs_(nthreads - 2);
+  for (int i = 0; i < nthreads - 2; ++i) bufs_[i].resize(L_E.ncols());
   auto &gaps_L = ibuf_L, &gaps_U = ibuf_U;
-#pragma omp parallel num_threads(threads) default(shared)
+#pragma omp parallel num_threads(nthreads) default(shared)
   do {
     // determine thread id and work of partition
     const int       thread    = get_thread();
-    const auto      part      = uniform_partition(n, threads, thread);
+    const auto      part      = uniform_partition(n, nthreads, thread);
     const size_type start_idx = part.first, poe_idx = part.second;
 
     // create additional work buffer
-    BufArray buf_;
-    if (thread > 1) buf_.resize(L_E.ncols());
-    BufArray &buf = thread < 2 ? (thread ? buf_U : buf_L) : buf_;
+    // BufArray buf_;
+    // if (thread > 1) buf_.resize(L_E.ncols());
+    BufArray &buf = thread < 2 ? (thread ? buf_U : buf_L) : bufs_[thread - 2];
 
     // actual loop begins
     for (size_type i(start_idx); i < poe_idx; ++i) {
@@ -574,7 +576,7 @@ inline void drop_L_E_and_U_F(const typename CrsType::iarray_type &ref_indptr_L,
 /// \param[in] d diagonal entry that contains the leading block
 /// \param[in] U_F upper part after \ref Crout update
 /// \param[out] buf0 work space, can use directly passed in as from Crout bufs
-/// \param[in] threads number of threads used, must be at least 1, not alerted
+/// \param[in] nthreads number of threads used, must be at least 1, not alerted
 /// \return simple version of Schur complement
 template <class ScaleArray, class CrsType, class PermType, class DiagArray,
           class SpVecType>
@@ -584,12 +586,12 @@ inline CrsType compute_Schur_simple(const ScaleArray &s, const CrsType &A,
                                     const typename CrsType::size_type m,
                                     const CrsType &L_E, const DiagArray &d,
                                     const CrsType &U_F, SpVecType &buf0,
-                                    const int threads) {
-  if (threads == 1)
+                                    const int nthreads) {
+  if (nthreads == 1)
     return hif::compute_Schur_simple(s, A, t, p, q, m, L_E, d, U_F, buf0);
 
-  hif_assert(threads > 1, "thread number %d must be no smaller than 1",
-             threads);
+  hif_assert(nthreads > 1, "thread number %d must be no smaller than 1",
+             nthreads);
 
   using size_type        = typename CrsType::size_type;
   using value_type       = typename CrsType::value_type;
@@ -613,15 +615,17 @@ inline CrsType compute_Schur_simple(const ScaleArray &s, const CrsType &A,
   auto &row_start = SC.row_start();
   row_start.resize(N + 1);
   row_start.front() = 0;
-
-#pragma omp parallel num_threads(threads) default(shared)
+  std::vector<boost_sparse_vec_type> bufs(nthreads);
+  for (int i = 0; i < nthreads; ++i) bufs[i].resize(N);
+#pragma omp parallel num_threads(nthreads) default(shared)
   do {
     const int       thread    = get_thread();
-    const auto      part      = uniform_partition(N, threads, thread);
+    const auto      part      = uniform_partition(N, nthreads, thread);
     const size_type start_idx = part.first, poe_idx = part.second;
 
     // create local sparse buffer
-    boost_sparse_vec_type buf(N);
+    // boost_sparse_vec_type buf(N);
+    auto &buf = bufs[thread];
     // SpVecType buf_;
     // if (thread) buf_.resize(N);
     // SpVecType &buf = thread ? buf_ : buf0;
