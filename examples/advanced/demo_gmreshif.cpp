@@ -45,7 +45,7 @@ std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
                                         const prec_t &M, const int restart = 30,
                                         const double rtol    = 1e-6,
                                         const int    maxit   = 500,
-                                        const bool   verbose = true);
+                                        const int    verbose = 1);
 
 // parse command-line arguments for system, restart, rtol, maxit, verbose, and
 // robust parameter flag
@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
     hif_info("droptols (tau_L/tau_U) are %g/%g", params.tau_L, params.tau_U);
     hif_info("fill factors (alpha_L/alpha_U) are %g/%g", params.alpha_L,
              params.alpha_U);
-    hif_info("inverse-norm thres (kappa/kappa_D) are %g/%g", params.kappa,
+    hif_info("inverse-norm thres (kappa/kappa_D) are %g/%g\n", params.kappa,
              params.kappa_d);
   }
   timer.start();
@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
   timer.finish();
 
   if (verbose) {
-    hif_info("HIF(lvls=%zd) finished in %.2g seconds with nnz ratio %.2f%%.\n",
+    hif_info("HIF(lvls=%zd) finished in %g seconds with nnz ratio %.2f%%.\n",
              M.levels(), timer.time(), 100.0 * M.nnz() / prob.A.nnz());
     // call HIF-preconditioned GMRES
     hif_info("Invoke HIF-preconditioned GMRES(%d) with rtol=%g and maxit=%d",
@@ -107,8 +107,8 @@ int main(int argc, char *argv[]) {
   timer.finish();
   if (verbose) {
     if (flag == SUCCESS) {
-      hif_info("Finished GMRES in %.2g seconds and %d iterations.",
-               timer.time(), iters);
+      hif_info("Finished GMRES in %g seconds and %d iterations.", timer.time(),
+               iters);
       hif_info("Relative residual of ||b-Ax||/||b||=%e",
                compute_relres(prob.A, prob.b, x));
       hif_info("Success!");
@@ -117,13 +117,23 @@ int main(int argc, char *argv[]) {
     else if (flag == DIVERGED)
       hif_info("GMRES diverged.");
   }
+
+  if (flag != SUCCESS) {
+    hif_info(
+        "\nTry to rerun with flag \'--robust\' to enable robust parameters\n");
+    hif_info("  If you already did so, then please decrease droptol");
+    hif_info("  (params.tau_L, params.tau_U), increase the fill factors");
+    hif_info("  (params.alpha_L, params.alpha_U), and/or decrease the");
+    hif_info("  inverse-norm threshold (params.kappa, params.kappa_d). Then,");
+    hif_info("  recompile the problem.");
+  }
   return 0;
 }
 
 std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
                                         const prec_t &M, const int restart,
                                         const double rtol, const int maxit,
-                                        const bool verbose) {
+                                        const int verbose) {
   using size_type = array_t::size_type;
 
   int             iter(0), flag(SUCCESS);
@@ -143,7 +153,7 @@ std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
   const int max_outer_iters = std::ceil((double)maxit / restart);
   double    resid(1);  // residual norm
   for (int it_outer = 0; it_outer < max_outer_iters; ++it_outer) {
-    if (verbose) hif_info(" Enter outer iteration %d...", it_outer + 1);
+    if (verbose > 1) hif_info(" Enter outer iteration %d...", it_outer + 1);
     // initial residual
     if (iter) {
       A.multiply(x, v);                                       // A*x
@@ -188,16 +198,16 @@ std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
       const auto resid_prev = resid;
       resid                 = hif::abs(y[j + 1]) / beta0;  // current residual
       if (resid >= resid_prev * (1.0 - 1e-8)) {
-        if (verbose) hif_info("  Solver stagnated!");
+        if (verbose > 1) hif_info("  Solver stagnated!");
         flag = STAGNATED;
         break;
       } else if (iter >= maxit) {
-        if (verbose) hif_info("  Reached maxit iteration limit %d", maxit);
+        if (verbose > 1) hif_info("  Reached maxit iteration limit %d", maxit);
         flag = DIVERGED;
         break;
       }
       ++iter;
-      if (verbose)
+      if (verbose > 1)
         hif_info("  At iteration %d, relative residual is %g.", iter, resid);
       if (resid <= rtol || j + 1 >= restart) break;
       ++j;
@@ -223,7 +233,8 @@ std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
 }
 
 void print_help_message(std::ostream &ostr, const char *cmd) {
-  ostr << "Usage:\n\n"
+  ostr
+      << "Usage:\n\n"
       << "\t" << cmd << " [options] [flags]\n\n"
       << "Options:\n\n"
       << " -m|--restart m\n"
@@ -239,13 +250,15 @@ void print_help_message(std::ostream &ostr, const char *cmd) {
       << "    is \'demo_inputs/A.mm\'\n"
       << " -bfile bfile\n"
       << "    RHS vector stored in Matrix Market format (array), default is\n"
-      << "    \'demo_inputs/b.mm\'. If \'Afile\' is provided by the \'bfile\' is\n"
-      << "    missing, then b=A*1 will be used\n"
+      << "    \'demo_inputs/b.mm\'. If \'Afile\' is provided by the \'bfile\'\n"
+      << "    is missing, then b=A*1 will be used\n"
       << " -v|--verbose verbose\n"
       << "    Verbose level for logging, default is 1. To run in complete\n"
-      << "    silent, use 0. For any values larger than 1, verbose logging will\n"
-      << "    be enabled for the factorization stage.\n\n"
+      << "    silent, use 0. For any values larger than 1, verbose logging\n"
+      << "    will be enabled for both factorization and solve stages.\n\n"
       << "Flags:\n\n"
+      << " -r|--robust\n"
+      << "    Enable robust parameters, default is false\n"
       << " -h|--help\n"
       << "    Show this help message and exit\n";
 }
@@ -316,11 +329,20 @@ std::tuple<system_t, int, double, int, int, bool> parse_args(int   argc,
     } else if (arg == "-r" || arg == "--robust")
       robust = true;
   }
-  if (Afile.empty())
+  if (Afile.empty()) {
+    if (verbose) {
+      hif_info("Afile is \'demo_inputs/A.mm\'");
+      hif_info("bfile is \'demo_inputs/b.mm\'\n");
+    }
     prob = get_input_data();
-  else {
+  } else {
     const char *bfile_cstr = nullptr;
     if (!bfile.empty()) bfile_cstr = bfile.c_str();
+    std::cout << "Afile is \'" << Afile << "\'\n";
+    if (!bfile_cstr)
+      std::cout << "b=A*1\n\n";
+    else
+      std::cout << "bfile is \'" << bfile_cstr << "\'\n\n";
     prob = get_input_data(Afile.c_str(), bfile_cstr);
   }
   return std::make_tuple(prob, restart, rtol, maxit, verbose, robust);
