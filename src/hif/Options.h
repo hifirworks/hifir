@@ -79,26 +79,30 @@ enum {
  * \note Values in parentheses are default settings
  */
 struct hif_Options {
-  double tau_L;     /*!< inverse-based droptol for L (0.001) */
-  double tau_U;     /*!< inverse-based droptol for U (0.001) */
-  double kappa_d;   /*!< threshold for inverse-diagonal (3.) */
-  double kappa;     /*!< inverse-norm threshold (3.) */
-  double alpha_L;   /*!< growth factor of nnz per col (10) */
-  double alpha_U;   /*!< growth factor of nnz per row (10) */
-  double rho;       /*!< density threshold for dense LU (0.5) */
-  double c_d;       /*!< size parameter for dense LU (10.0) */
-  double c_h;       /*!< size parameter for H-version (2.0) */
-  int    N;         /*!< reference size of matrix (-1, system size) */
-  int    verbose;   /*!< message output level (1, i.e. info) */
-  int    rf_par;    /*!< parameter refinement (default 1) */
-  int    reorder;   /*!< reordering method (default is 2 (AMD)) */
-  int    spd;       /*!< SPD-ness: 0 (ID), >0 (PD), <0 (ND), (default 0) */
-  int    check;     /*!< check user input (default is true (!=0)) */
-  int    pre_scale; /*!< prescale (default 0 (off)) */
-  int    symm_pre_lvls;
-  /*!< levels to be applied with symm preprocessing (default is 1) */
-  int    threads;       /*!< user specified threads (default 0) */
-  int    mumps_blr;     /*!< MUMPS BLR options (default 2) *deprecated* */
+  double tau_L;      /*!< inverse-based droptol for L (0.001) */
+  double tau_U;      /*!< inverse-based droptol for U (0.001) */
+  double kappa_d;    /*!< threshold for inverse-diagonal (3.) */
+  double kappa;      /*!< inverse-norm threshold (3.) */
+  double alpha_L;    /*!< growth factor of nnz per col (10) */
+  double alpha_U;    /*!< growth factor of nnz per row (10) */
+  double rho;        /*!< density threshold for dense LU (0.5) */
+  double c_d;        /*!< size parameter for dense LU (10.0) */
+  double c_h;        /*!< size parameter for H-version (2.0) */
+  int    N;          /*!< reference size of matrix (-1, system size) */
+  int    verbose;    /*!< message output level (1, i.e. info) */
+  int    rf_par;     /*!< parameter refinement (default 1) */
+  int    reorder;    /*!< reordering method (default is 2 (AMD)) */
+  int    spd;        /*!< SPD-ness: 0 (ID), >0 (PD), <0 (ND), (default 0) */
+  int    check;      /*!< check user input (default is true (!=0)) */
+  int    pre_scale;  /*!< prescale (default 0 (off)) */
+  int symm_pre_lvls; /*!< levels to be applied with symm preprocessing. If this
+                        value is non-negative, then we will apply at most this
+                        number of symmetric preprocessing. If this number if
+                        negative, then within abs(symm_pre_lvls) levels, we will
+                        automatically determine symmetric preprocessing via
+                        pattern symmetry (default -2) */
+  int    threads;    /*!< user specified threads (default 0) */
+  int    mumps_blr;  /*!< MUMPS BLR options (default 2) *deprecated* */
   int    fat_schur_1st; /*!< double alpha for dropping L_E and U_F on 1st lvl */
   double rrqr_cond;     /*!< condition number threshold for RRQR (default 0) */
   int    pivot;         /*!< pivoting flag (default is AUTO (2)) */
@@ -106,6 +110,9 @@ struct hif_Options {
   double beta;          /*!< safeguard factor for equlibrition scaling (1e3) */
   int    is_symm;       /*!< is symmetric (Hermitian) system? (default 0) */
   int    no_pre;        /*!< no preprocessing (default 0) */
+  double nzp_thres;     /*!< nonzero pattern symmetry threshold for symm
+                           preprocessing (0.65) */
+  int dense_thres;      /*!< threshold for dense for Schur complement (2000) */
 };
 
 /*!
@@ -141,7 +148,7 @@ static hif_Options hif_get_default_options(void) {
                        .spd           = 0,
                        .check         = 1,
                        .pre_scale     = 0,
-                       .symm_pre_lvls = 1,
+                       .symm_pre_lvls = -2,
                        .threads       = 0,
                        .mumps_blr     = 1,
                        .fat_schur_1st = 0,
@@ -150,7 +157,9 @@ static hif_Options hif_get_default_options(void) {
                        .gamma         = 1.0,
                        .beta          = 1e3,
                        .is_symm       = 0,
-                       .no_pre        = 0};
+                       .no_pre        = 0,
+                       .nzp_thres     = 0.65,
+                       .dense_thres   = 2000};
 }
 
 /*!
@@ -347,43 +356,14 @@ inline std::string opt_repr(const Options &opt) {
                                 : (opt_.pivot == PIVOTING_ON ? "on" : "auto");
                    }) +
          pack_double("gamma", opt.gamma) + pack_double("beta", opt.beta) +
-         pack_int("is_symm", opt.is_symm) + pack_int("no_pre", opt.no_pre);
+         pack_int("is_symm", opt.is_symm) + pack_int("no_pre", opt.no_pre) +
+         pack_double("nzp_thres", opt.nzp_thres) +
+         pack_int("dense_thres", opt.dense_thres);
 }
 
 #  ifndef DOXYGEN_SHOULD_SKIP_THIS
 namespace internal {
-#    define _HIF_TOTAL_OPTIONS 26
-/*
- * build a byte map, i.e. the value is the leading byte position of the attrs
- * in Options **Deprecated!**
- */
-const static std::size_t option_attr_pos[_HIF_TOTAL_OPTIONS] = {
-    0,
-    sizeof(double),
-    option_attr_pos[1] + sizeof(double),
-    option_attr_pos[2] + sizeof(double),
-    option_attr_pos[3] + sizeof(double),
-    option_attr_pos[4] + sizeof(double),
-    option_attr_pos[5] + sizeof(double),
-    option_attr_pos[6] + sizeof(double),
-    option_attr_pos[7] + sizeof(double),
-    option_attr_pos[8] + sizeof(double),
-    option_attr_pos[9] + sizeof(int),
-    option_attr_pos[10] + sizeof(int),
-    option_attr_pos[11] + sizeof(int),
-    option_attr_pos[12] + sizeof(int),
-    option_attr_pos[13] + sizeof(int),
-    option_attr_pos[14] + sizeof(int),
-    option_attr_pos[15] + sizeof(int),
-    option_attr_pos[16] + sizeof(int),
-    option_attr_pos[17] + sizeof(int),
-    option_attr_pos[18] + sizeof(int),
-    option_attr_pos[19] + sizeof(int),
-    option_attr_pos[20] + sizeof(double),
-    option_attr_pos[21] + sizeof(int),
-    option_attr_pos[22] + sizeof(double),
-    option_attr_pos[23] + sizeof(double),
-    option_attr_pos[24] + sizeof(int)};
+#    define _HIF_TOTAL_OPTIONS 28
 
 /* data type tags, true for double, false for int */
 const static bool option_dtypes[_HIF_TOTAL_OPTIONS] = {
@@ -413,6 +393,8 @@ const static bool option_dtypes[_HIF_TOTAL_OPTIONS] = {
     true,   // 23
     false,  // 24
     false,  // 25
+    true,   // 26
+    false,  // 27
 };
 
 /* using unordered map to store the string to index map */
@@ -442,7 +424,9 @@ const static std::unordered_map<std::string, int> option_tag2pos = {
     {"gamma", 22},
     {"beta", 23},
     {"is_symm", 24},
-    {"no_pre", 25}};
+    {"no_pre", 25},
+    {"nzp_thres", 26},
+    {"dense_thres", 27}};
 
 } /* namespace internal */
 #  endif /* DOXYGEN_SHOULD_SKIP_THIS */
@@ -541,11 +525,23 @@ inline bool set_option_attr(const std::string &attr, const T v, Options &opt) {
     case 24:
       opt.is_symm = v;
       break;
-    default:
+    case 25:
       opt.no_pre = v;
       break;
+    case 26:
+      opt.nzp_thres = v;
+      break;
+    case 27:
+      opt.dense_thres = v;
   }
   return !failed;
+}
+
+/// \brief Set the param attributes/values
+/// \note Alias of \ref set_option_attr
+template <typename T>
+inline bool set_param_attr(const std::string &attr, const T v, Options &opt) {
+  return set_option_attr(attr, v, opt);
 }
 
 /*!
@@ -569,7 +565,8 @@ inline InStream &operator>>(InStream &in_str, hif::Options &opt) {
       opt.alpha_U >> opt.rho >> opt.c_d >> opt.c_h >> opt.N >> opt.verbose >>
       opt.rf_par >> opt.reorder >> opt.spd >> opt.check >> opt.pre_scale >>
       opt.symm_pre_lvls >> opt.threads >> opt.mumps_blr >> opt.fat_schur_1st >>
-      opt.rrqr_cond >> opt.gamma >> opt.beta >> opt.is_symm >> opt.no_pre;
+      opt.rrqr_cond >> opt.gamma >> opt.beta >> opt.is_symm >> opt.no_pre >>
+      opt.nzp_thres >> opt.dense_thres;
   return in_str;
 }
 
@@ -595,7 +592,7 @@ inline InStream &operator>>(InStream &in_str, hif::Options &opt) {
  */
 #  define hif_verbose(__LVL, __opt) hif_verbose2(__LVL, __opt.verbose)
 
-std::string hif::get_verbose(const hif::Options &opt) {
+inline std::string hif::get_verbose(const hif::Options &opt) {
   std::string name("");
   if (opt.verbose == VERBOSE_NONE)
     name = "none";

@@ -58,10 +58,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #    define HIF_RESERVE_FAC 5
 #  endif  // HIF_RESERVE_FAC
 
-#  ifndef HIF_LASTLEVEL_DENSE_SIZE
-#    define HIF_LASTLEVEL_DENSE_SIZE 2000
-#  endif  // HIF_RESERVE_FAC
-
 #  ifndef HIF_MIN_LOCAL_SIZE_PERCTG
 #    define HIF_MIN_LOCAL_SIZE_PERCTG 85
 #  endif  // HIF_RESERVE_FAC
@@ -492,6 +488,38 @@ inline void print_post_flag(const int flag) {
   hif_info("\t=================================");
 }
 
+/// \brief Determine pattern symmetry
+/// \tparam MatType Matrix type, either \ref CRS or \ref CCS
+/// \tparam OtherType Opposite of \a MatType, e.g., if \a MatType is CRS, then
+///                   this type is CCS
+/// \param[in] A Input matrix A
+/// \param[in] AT Transpose of A
+/// \return The pattern symmetry ratio
+template <class MatType, class OtherType>
+inline double compute_pattern_symm_ratio(const MatType &  A,
+                                         const OtherType &AT) {
+  using value_type = typename MatType::value_type;
+  using index_type = typename MatType::index_type;
+  using size_type  = typename MatType::size_type;
+
+  hif_assert(A.nnz() == AT.nnz(), "They should equal");
+
+  const auto                           n = A.nrows();
+  SparseVector<value_type, index_type> work(n);
+  size_type                            counts(0);
+  for (size_type i(0); i < n; ++i) {
+    // first push all nonzeros of i-th row/column to sparse vector
+    for (auto it = A.ind_cbegin(i); it != A.ind_cend(i); ++it)
+      work.push_back(*it, i);
+    // then determine for B, if we meet an already-registered index, then
+    // we increment pattern symmetry counter
+    for (auto it = AT.ind_cbegin(i); it != AT.ind_cend(i); ++it)
+      if (!work.push_back(*it, i)) ++counts;
+    work.reset_counter();
+  }
+  return (double)counts / A.nnz();
+}
+
 /*!
  * @}
  */ // fac group
@@ -545,14 +573,43 @@ inline CsType level_factorize(
              "leading size should be smaller than size of A");
   const size_type cur_level = precs.size() + 1;
 
-  if (hif_verbose(INFO, opts))
-    hif_info("\nenter level %zd (%s).\n", cur_level,
-             (IsSymm ? "symmetric" : "asymmetric"));
-
-  DefaultTimer timer;
-
   // build counterpart type
   other_type A_counterpart(A);
+  double     pat_symm_ratio(-1);
+  bool       do_symm_pre(IsSymm);
+  if (!IsSymm) {
+    // If not partially symmetric leading block factorization, then we try to
+    // determine whether or not we should use symmetric preprocessing.
+    // If opts.symm_pre_lvls < 0, then its abs value is the maximum levels that
+    // we will check symmetric preprocessing via pattern symmetry ratios.
+    // For instance, if this value is -2, then we only determine the symmetric
+    // preprocessing for the first two levels. Asymmetric preprocessing will
+    // always be used for levels>2.
+    // If this value is non-negative, then we enforce symmetric preprocessing
+    // if the current level is no larger than its value.
+    // NOTE for certain singular and very weird systems, we might need to
+    // manually adjust symm_pre_lvls
+    if (opts.symm_pre_lvls < 0) {
+      if ((int)cur_level <= -opts.symm_pre_lvls) {
+        // if more than 65% entries are pattern-symmetric, then we apply
+        // symmetric preprocessing
+        pat_symm_ratio = internal::compute_pattern_symm_ratio(A, A_counterpart);
+        do_symm_pre    = pat_symm_ratio >= opts.nzp_thres;
+      } else
+        do_symm_pre = false;
+    } else
+      do_symm_pre = (int)cur_level <= opts.symm_pre_lvls;
+  }
+
+  if (hif_verbose(INFO, opts)) {
+    hif_info("\nenter level %zd (%s).\n", cur_level,
+             (do_symm_pre ? "symmetric" : "asymmetric"));
+    if (pat_symm_ratio >= 0.0)
+      hif_info("automatically computed pattern symmetry ratio %.2f%%",
+               100.0 * pat_symm_ratio);
+  }
+
+  DefaultTimer timer;
 
   // now use our trait and its static methods to precisely determine the ccs
   // and crs components.
@@ -582,8 +639,8 @@ inline CsType level_factorize(
         lower_col);
   }
 
-  const size_type must_symm_pre_lvls =
-      opts.symm_pre_lvls <= 0 ? 0 : opts.symm_pre_lvls;
+  // const size_type must_symm_pre_lvls =
+  //     opts.symm_pre_lvls <= 0 ? 0 : opts.symm_pre_lvls;
 
   // preprocessing
   timer.start();
@@ -591,7 +648,8 @@ inline CsType level_factorize(
   BiPermMatrix<index_type> p, q;
   size_type                m;
   if (!opts.no_pre) {
-    if (!IsSymm && cur_level > must_symm_pre_lvls) {
+    // if (!IsSymm && cur_level > must_symm_pre_lvls) {
+    if (!do_symm_pre) {
       if (hif_verbose(INFO, opts))
         hif_info(
             "performing asymm preprocessing with leading block size % zd... ",
@@ -1162,9 +1220,11 @@ inline CsType level_factorize(
 
   const size_type dense_thres1 = static_cast<size_type>(
                       std::max(opts.alpha_L, opts.alpha_U) * AmB_nnz),
-                  dense_thres2 = std::max(static_cast<size_type>(std::ceil(
-                                              opts.c_d * std::cbrt(N))),
-                                          size_type(HIF_LASTLEVEL_DENSE_SIZE));
+                  dense_thres2 = std::max(
+                      static_cast<size_type>(
+                          std::ceil(opts.c_d * std::cbrt(N))),
+                      size_type(opts.dense_thres <= 0 ? 2000
+                                                      : opts.dense_thres));
 
   if (hif_verbose(INFO, opts))
     hif_info(
@@ -1235,7 +1295,8 @@ inline CsType level_factorize(
     last_level.set_matrix(std::move(S_D));
     last_level.factorize(opts);
     if (hif_verbose(INFO, opts))
-      hif_info("successfully factorized the dense component...");
+      hif_info("successfully factorized the dense component of size %zd...",
+               last_level.mat().nrows());
   }
 
   timer.finish();  // profile post-processing

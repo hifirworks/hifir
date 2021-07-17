@@ -13,6 +13,7 @@
 using namespace hif;
 
 TEST(IO, core) {
+  warn_flag(0);
   const int n  = RandIntGen(100, 300)();
   using crs_t  = CRS<double, int>;
   const auto A = gen_rand_sparse<crs_t>(n, n);
