@@ -91,7 +91,7 @@ struct hif_Options {
   int    N;         /*!< reference size of matrix (-1, system size) */
   int    verbose;   /*!< message output level (1, i.e. info) */
   int    rf_par;    /*!< parameter refinement (default 1) */
-  int    reorder;   /*!< reordering method */
+  int    reorder;   /*!< reordering method (default is 2 (AMD)) */
   int    spd;       /*!< SPD-ness: 0 (ID), >0 (PD), <0 (ND), (default 0) */
   int    check;     /*!< check user input (default is true (!=0)) */
   int    pre_scale; /*!< prescale (default 0 (off)) */
@@ -141,7 +141,7 @@ static hif_Options hif_get_default_options(void) {
                        .N             = -1,
                        .verbose       = HIF_VERBOSE_INFO,
                        .rf_par        = 1,
-                       .reorder       = HIF_REORDER_AUTO,
+                       .reorder       = HIF_REORDER_AMD,
                        .spd           = 0,
                        .check         = 1,
                        .pre_scale     = 0,
