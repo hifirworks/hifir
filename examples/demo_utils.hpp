@@ -4,7 +4,8 @@
 
 /// \headerfile demo_utils.hpp "../demo_utils.hpp"
 
-#pragma once
+#ifndef _HIFIR_DEMOUTILS_HPP
+#define _HIFIR_DEMOUTILS_HPP
 
 #include <cstdlib>
 #include <fstream>
@@ -110,3 +111,5 @@ inline system_t parse_cmd4input(int argc, char *argv[]) {
   if (!files.second.empty()) bfile = files.second.c_str();
   return get_input_data(files.first.c_str(), bfile);
 }
+
+#endif  // _HIFIR_DEMOUTILS_HPP
