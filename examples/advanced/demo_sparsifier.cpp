@@ -237,38 +237,40 @@ std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
   return std::make_tuple(x, flag, iter);
 }
 
+void print_help_message(std::ostream &ostr, const char *cmd) {
+  ostr << "Usage:\n\n"
+      << "\t" << cmd << " [options] [flags]\n\n"
+      << "Options:\n\n"
+      << " -m|--restart m\n"
+      << "    Restart in GMRES, default is m=30\n"
+      << " -t|--rtol rtol\n"
+      << "    Relative residual tolerance in GMRES, default is rtol=1e-6\n"
+      << " -n|--maxit maxit\n"
+      << "    Maximum iteration limit in GMRES, default is maxit=500\n"
+      << " -r|--robust\n"
+      << "    Use robust parameters for HIF, default is false\n"
+      << " -Afile Afile\n"
+      << "    LHS matrix stored in Matrix Market format (coordinate), default\n"
+      << "    is \'demo_inputs/A.mm\'\n"
+      << " -bfile bfile\n"
+      << "    RHS vector stored in Matrix Market format (array), default is\n"
+      << "    \'demo_inputs/b.mm\'. If \'Afile\' is provided by the \'bfile\' is\n"
+      << "    missing, then b=A*1 will be used\n"
+      << " -Sfile Sfile\n"
+      << "    Sparsifier, on which we will compute the HIF preconditioner.\n"
+      << "    If omitted, then we will compute S by clipping tiny values in A\n"
+      << " -v|--verbose verbose\n"
+      << "    Verbose level for logging, default is 1. To run in complete\n"
+      << "    silent, use 0. For any values larger than 1, verbose logging will\n"
+      << "    be enabled for the factorization stage.\n\n"
+      << "Flags:\n\n"
+      << " -h|--help\n"
+      << "    Show this help message and exit\n";
+}
+
 std::tuple<system_t, matrix_t, int, double, int, int, bool> parse_args(
     int argc, char *argv[]) {
   using std::string;
-  static const char *help_message =
-      "usage:\n\n"
-      "\targv[0] [options] [flags]\n\n"
-      "Options:\n\n"
-      " -m|--restart m\n"
-      "    Restart in GMRES, default is m=30\n"
-      " -t|--rtol rtol\n"
-      "    Relative residual tolerance in GMRES, default is rtol=1e-6\n"
-      " -n|--maxit maxit\n"
-      "    Maximum iteration limit in GMRES, default is maxit=500\n"
-      " -Afile Afile\n"
-      "    LHS matrix stored in Matrix Market format (coordinate), default\n"
-      "    is \'demo_inputs/A.mm\'\n"
-      " -bfile bfile\n"
-      "    RHS vector stored in Matrix Market format (array), default is\n"
-      "    \'demo_inputs/b.mm\'. If \'Afile\' is provided by the \'bfile\' is\n"
-      "    missing, then b=A*1 will be used\n"
-      " -Sfile Sfile\n"
-      "    Sparsifier, on which we will compute the HIF preconditioner.\n"
-      "    If omitted, then we will compute S by clipping tiny values in A\n"
-      " -v|--verbose verbose\n"
-      "    Verbose level for logging, default is 1. To run in complete\n"
-      "    silent, use 0. For any values larger than 1, verbose logging will\n"
-      "    be enabled for the factorization stage.\n\n"
-      "Flags:\n\n"
-      " -r|--robust\n"
-      "    Use robust parameters for HIF, default is false\n"
-      " -h|--help\n"
-      "    Show this help message and exit\n";
 
   int    restart(30), maxit(500), verbose(1);
   double rtol(1e-6);
@@ -277,33 +279,37 @@ std::tuple<system_t, matrix_t, int, double, int, int, bool> parse_args(
   for (int i = 1; i < argc; ++i) {
     auto arg = string(argv[i]);
     if (arg == "-h" || arg == "--help") {
-      std::cout << help_message;
+      print_help_message(std::cout, argv[0]);
       std::exit(0);
     }
     if (arg == "-m" || arg == "--restart") {
       if (i + 1 >= argc) {
-        std::cerr << "Missing restart value!\n\n" << help_message;
+        std::cerr << "Missing restart value!\n\n";
+        print_help_message(std::cerr, argv[0]);
         std::exit(1);
       }
       restart = std::atoi(argv[++i]);
       if (restart <= 0) restart = 30;
     } else if (arg == "-t" || arg == "--rtol") {
       if (i + 1 >= argc) {
-        std::cerr << "Missing rtol value!\n\n" << help_message;
+        std::cerr << "Missing rtol value!\n\n";
+        print_help_message(std::cerr, argv[0]);
         std::exit(1);
       }
       rtol = std::atof(argv[++i]);
       if (rtol <= 0.0) rtol = 1e-6;
     } else if (arg == "-n" || arg == "--maxit") {
       if (i + 1 >= argc) {
-        std::cerr << "Missing maxit value!\n\n" << help_message;
+        std::cerr << "Missing maxit value!\n\n";
+        print_help_message(std::cerr, argv[0]);
         std::exit(1);
       }
       maxit = std::atoi(argv[++i]);
       if (maxit <= 0) maxit = 500;
     } else if (arg == "-v" || arg == "verbose") {
       if (i + 1 >= argc) {
-        std::cerr << "Missing verbose level!\n\n" << help_message;
+        std::cerr << "Missing verbose level!\n\n";
+        print_help_message(std::cerr, argv[0]);
         std::exit(1);
       }
       verbose = std::atoi(argv[++i]);
