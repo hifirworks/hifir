@@ -29,6 +29,9 @@ ifneq ("$(MAKECMDGOALS)","clean")
     $(foreach test,$(DEMOS),$(eval $(call MAKE_EXE_RULE, $(test))))
 endif
 
+runall: $(DEMOS_EXE)
+	@echo $(DEMOS_EXE) | perl -e 's/\s+/\n/g' -p | xargs -I% sh -c '%'
+
 clean:
 	@rm -f $(DEMOS_EXE) *.dSYM $(DEMOS_SRC:%.cpp=%.d) *.exe
 
