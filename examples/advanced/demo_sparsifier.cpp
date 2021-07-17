@@ -9,18 +9,18 @@
   in the GMRES solver, i.e.,
           A*M^{g}*y=b then x=M^{g}*y,
   where M is computed on a sparser matrix (hence the name "sparsifier") S, s.t.
-  nnz(S) <= nnz(A).
+  nnz(S) <= nnz(A). In this example, we solve the advection-diffusion (AD)
+  equation with FDM method on the unit square discretized by an equidistance
+  structured grid of 64x64. For the coefficient matrix, we use 4th order
+  FDM, whereas the sparsifier uses 2nd order FDM.
 
-  Tip: Try with
+  Try with
 
-    ./demo_sparsifier.exe -Afile ../demo_inputs/Goodwin_023.mm
+    ./demo_sparsifier.exe [GMRES options]  # using sparsifier
 
   and compare with
 
-    ./demo_gmreshif.exe -Afile ../demo_inputs/Goodwin_023.mm
-
-  where input Goodwin_023 is from https://sparse.tamu.edu/Goodwin/Goodwin_023
-  The sparsifier will then be based on pruned Goodwin_023.
+    ./demo_gmreshif.exe -Afile ../demo_inputs/ad-fdm4.mm
 
   Author: Qiao Chen
   Level: Advanced
@@ -66,23 +66,13 @@ int main(int argc, char *argv[]) {
   std::tie(prob, S, restart, rtol, maxit, verbose) = parse_args(argc, argv);
 
   // See if we have user-provide sparsifier
-  if (S.nrows() == 0u) {
-    // By default, the constructor of CRS/CCS only creates shallow copies
-    const bool deep_copy = true;
-    S                    = matrix_t(prob.A, deep_copy);  // make a deep copy
-    // We prune values that are close to machine precision. In particular, let
-    // tol be the first input of the CRS::eliminate function. Then, we will
-    // remove any values in the i-th row whose magnitude are smaller than
-    // tol*max(abs(i-th row of S)). The default value of tol is zero, meaning
-    // we only prune exact zeros.
-    const auto pruned = S.eliminate(1e-15);
-    if (verbose)
-      hif_info(
-          "Elminated %zd tiny values (out of %zd) in S that are close to "
-          "the machine epsilon.",
-          pruned, prob.A.nnz());
-  } else if (verbose)
-    hif_info("Using user-provided sparsifier nnz=%zd", S.nnz());
+  if (verbose) {
+    hif_info(
+        "Using 2nd-order FDM as a sparsifier to precondition 4th-order FDM for "
+        "AD equation");
+    hif_info("Coefficient matrix and sparsifier have %zd and %zd nnz, resp.",
+             prob.A.nnz(), S.nnz());
+  }
   // get timer
   hif::DefaultTimer timer;
 
@@ -268,12 +258,8 @@ std::tuple<system_t, matrix_t, int, double, int, int> parse_args(int   argc,
       " -h|--help\n"
       "    Show this help message and exit\n";
 
-  int      restart(30), maxit(500), verbose(1);
-  double   rtol(1e-6);
-  system_t prob;
-  matrix_t S;
-
-  string Afile, bfile, Sfile;
+  int    restart(30), maxit(500), verbose(1);
+  double rtol(1e-6);
 
   for (int i = 1; i < argc; ++i) {
     auto arg = string(argv[i]);
@@ -281,9 +267,7 @@ std::tuple<system_t, matrix_t, int, double, int, int> parse_args(int   argc,
       std::cout << help_message;
       std::exit(0);
     }
-    if (arg == "-s" || arg == "--silent")
-      verbose = false;
-    else if (arg == "-m" || arg == "--restart") {
+    if (arg == "-m" || arg == "--restart") {
       if (i + 1 >= argc) {
         std::cerr << "Missing restart value!\n\n" << help_message;
         std::exit(1);
@@ -311,34 +295,15 @@ std::tuple<system_t, matrix_t, int, double, int, int> parse_args(int   argc,
       }
       verbose = std::atoi(argv[++i]);
       if (verbose < 0) verbose = 0;
-    } else if (arg == "-Afile") {
-      if (i + 1 >= argc) {
-        std::cerr << "Missing Afile!\n\n" << help_message;
-        std::exit(1);
-      }
-      Afile = argv[++i];
-    } else if (arg == "-bfile") {
-      if (i + 1 >= argc) {
-        std::cerr << "Missing bfile!\n\n" << help_message;
-        std::exit(1);
-      }
-      bfile = argv[++i];
-    } else if (arg == "-Sfile") {
-      if (i + 1 >= argc) {
-        std::cerr << "Missing Sfile!\n\n" << help_message;
-        std::exit(1);
-      }
-      Sfile = argv[++i];
     }
   }
-  if (Afile.empty())
-    prob = get_input_data();
-  else {
-    const char *bfile_cstr = nullptr;
-    if (!bfile.empty()) bfile_cstr = bfile.c_str();
-    prob = get_input_data(Afile.c_str(), bfile_cstr);
-  }
-  // see if has user-provided sparsifier
-  if (!Sfile.empty()) S = matrix_t::from_mm(Sfile.c_str());
-  return std::make_tuple(prob, S, restart, rtol, maxit, verbose);
+  // load 4th order FDM with A*1 as rhs
+  const bool prev_dir = std::ifstream("../demo_inputs/ad-fdm4.mm").is_open();
+  // sparsifier
+  return std::make_tuple(prev_dir ? get_input_data("../demo_inputs/ad-fdm4.mm")
+                                  : get_input_data("demo_inputs/ad-fdm4.mm"),
+                         prev_dir
+                             ? matrix_t::from_mm("../demo_inputs/ad-fdm2.mm")
+                             : matrix_t::from_mm("demo_inputs/ad-fdm2.mm"),
+                         restart, rtol, maxit, verbose);
 }

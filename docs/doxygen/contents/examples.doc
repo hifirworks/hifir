@@ -86,5 +86,9 @@
 /// \f]
 ///
 /// where \f$ M\f$ can is computed on a sparser matrix \f$ S\f$ (hence the name
-/// "sparsifier"), s.t. \f$\text{nnz}(S)\le\text{nnz}(A)\f$. For more details,
-/// see ./demo_sparsifier.exe --help
+/// "sparsifier"), s.t. \f$\text{nnz}(S)\le\text{nnz}(A)\f$. In this example,
+/// we solve 2D advection-diffusion equation with FDM on the unit square with
+/// equidistance structured grids of \f$ 64\times 64\f$. In particular, we use
+/// the 2nd-order FDM as sparsifier to precondition the 4th-order coefficient
+/// matrix. Try to compare <em>./demo_sparsifier.exe</em> and
+/// <em>./demo_gmreshif.exe -Afile ../demo_inputs/ad-fdm4.mm</em>.
