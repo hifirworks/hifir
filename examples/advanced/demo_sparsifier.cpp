@@ -81,15 +81,13 @@ int main(int argc, char *argv[]) {
   auto params = hif::DEFAULT_PARAMS;
   // The following parameters are essential to a HIF preconditioner, namely
   // droptol, fill factor, and inverse-norm threshold. Note that the default
-  // settings are for robustness. Hence, they might not be optimal for certain
-  // problems, e.g., systems from PDEs.
-  // For systems from PDEs, one may try to increase the droptol (tau_L,tau_U)
-  // up to 1e-2; the fill factor (alpha_L,alpha_U) can be decreased to 3 or 5;
-  // the inverse-norm (kappa,kappa_d former is for L/U, and latter is for D)
-  // can be enlarged to 5.
-  // params.tau_L = params.tau_U = 1e-2;     // droptol
-  // params.alpha_L = params.alpha_U = 3.0;  // fill factors
-  // params.kappa = params.kappa_d = 5.0;    // inverse-norm thres
+  // settings are for robustness. The following parameters are optimized for
+  // well-posed PDE systems, which are typically (nearly) pattern symmetric.
+  // If you have very ill-conditioned or pattern asymmetric system, then please
+  // use try robust parameters if the following setting fails.
+  params.tau_L = params.tau_U = 1e-2;     // droptol
+  params.alpha_L = params.alpha_U = 3.0;  // fill factors
+  params.kappa = params.kappa_d = 5.0;    // inverse-norm thres
   if (verbose < 2) params.verbose = hif::VERBOSE_NONE;
   timer.start();
   M.factorize(S, params);  // we factorize S here not A
