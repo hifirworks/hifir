@@ -50,7 +50,7 @@ std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
                                         const prec_t &M, const int restart = 30,
                                         const double rtol    = 1e-6,
                                         const int    maxit   = 500,
-                                        const bool   verbose = true);
+                                        const int    verbose = 1);
 
 // parse command-line arguments for system, sparsifier restart, rtol, maxit,
 // verbose, and robust parameters
@@ -67,11 +67,21 @@ int main(int argc, char *argv[]) {
   std::tie(prob, S, restart, rtol, maxit, verbose, robust) =
       parse_args(argc, argv);
 
+  if (S.nrows() == 0u) {
+    // We will prune tiny values in A, and make a copy of the result in S.
+    // Note that by default, the constructor only performs shallow copies
+    bool deep_copy = true;
+    S              = matrix_t(prob.A, deep_copy);
+    // the following function eliminate will prune any values that close to
+    // machine precision. In particular, S.eliminate(tol) will eliminate any
+    // entries in the i-th row whose magnitude is not larger than
+    // tol*max(abs(i-th row of S)).
+    const auto pruned = S.eliminate(1e-15);
+    if (verbose) hif_info("Eliminated %zd tiny entries in S.", pruned);
+  }
+
   // See if we have user-provide sparsifier
   if (verbose) {
-    hif_info(
-        "Using 2nd-order FDM as a sparsifier to precondition 4th-order FDM for "
-        "AD equation");
     hif_info("Coefficient matrix and sparsifier have %zd and %zd nnz, resp.",
              prob.A.nnz(), S.nnz());
   }
@@ -98,7 +108,7 @@ int main(int argc, char *argv[]) {
     hif_info("droptols (tau_L/tau_U) are %g/%g", params.tau_L, params.tau_U);
     hif_info("fill factors (alpha_L/alpha_U) are %g/%g", params.alpha_L,
              params.alpha_U);
-    hif_info("inverse-norm thres (kappa/kappa_D) are %g/%g", params.kappa,
+    hif_info("inverse-norm thres (kappa/kappa_D) are %g/%g\n", params.kappa,
              params.kappa_d);
   }
   timer.start();
@@ -106,7 +116,7 @@ int main(int argc, char *argv[]) {
   timer.finish();
 
   if (verbose) {
-    hif_info("HIF(lvls=%zd) finished in %.2g seconds with nnz ratio %.2f%%.\n",
+    hif_info("HIF(lvls=%zd) finished in %g seconds with nnz ratio %.2f%%.\n",
              M.levels(), timer.time(), 100.0 * M.nnz() / S.nnz());
     // call HIF-preconditioned GMRES
     hif_info("Invoke HIF-preconditioned GMRES(%d) with rtol=%g and maxit=%d",
@@ -122,8 +132,8 @@ int main(int argc, char *argv[]) {
   timer.finish();
   if (verbose) {
     if (flag == SUCCESS) {
-      hif_info("Finished GMRES in %.2g seconds and %d iterations.",
-               timer.time(), iters);
+      hif_info("Finished GMRES in %g seconds and %d iterations.", timer.time(),
+               iters);
       hif_info("Relative residual of ||b-Ax||/||b||=%e",
                compute_relres(prob.A, prob.b, x));
       hif_info("Success!");
@@ -132,13 +142,23 @@ int main(int argc, char *argv[]) {
     else if (flag == DIVERGED)
       hif_info("GMRES diverged.");
   }
+
+  if (flag != SUCCESS) {
+    hif_info(
+        "\nTry to rerun with flag \'--robust\' to enable robust parameters\n");
+    hif_info("  If you already did so, then please decrease droptol");
+    hif_info("  (params.tau_L, params.tau_U), increase the fill factors");
+    hif_info("  (params.alpha_L, params.alpha_U), and/or decrease the");
+    hif_info("  inverse-norm threshold (params.kappa, params.kappa_d). Then,");
+    hif_info("  recompile the problem.");
+  }
   return 0;
 }
 
 std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
                                         const prec_t &M, const int restart,
                                         const double rtol, const int maxit,
-                                        const bool verbose) {
+                                        const int verbose) {
   using size_type = array_t::size_type;
 
   int             iter(0), flag(SUCCESS);
@@ -158,7 +178,7 @@ std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
   const int max_outer_iters = std::ceil((double)maxit / restart);
   double    resid(1);  // residual norm
   for (int it_outer = 0; it_outer < max_outer_iters; ++it_outer) {
-    if (verbose) hif_info(" Enter outer iteration %d...", it_outer + 1);
+    if (verbose > 1) hif_info(" Enter outer iteration %d...", it_outer + 1);
     // initial residual
     if (iter) {
       A.multiply(x, v);                                       // A*x
@@ -203,16 +223,16 @@ std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
       const auto resid_prev = resid;
       resid                 = hif::abs(y[j + 1]) / beta0;  // current residual
       if (resid >= resid_prev * (1.0 - 1e-8)) {
-        if (verbose) hif_info("  Solver stagnated!");
+        if (verbose > 1) hif_info("  Solver stagnated!");
         flag = STAGNATED;
         break;
       } else if (iter >= maxit) {
-        if (verbose) hif_info("  Reached maxit iteration limit %d", maxit);
+        if (verbose > 1) hif_info("  Reached maxit iteration limit %d", maxit);
         flag = DIVERGED;
         break;
       }
       ++iter;
-      if (verbose)
+      if (verbose > 1)
         hif_info("  At iteration %d, relative residual is %g.", iter, resid);
       if (resid <= rtol || j + 1 >= restart) break;
       ++j;
@@ -238,7 +258,8 @@ std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
 }
 
 void print_help_message(std::ostream &ostr, const char *cmd) {
-  ostr << "Usage:\n\n"
+  ostr
+      << "Usage:\n\n"
       << "\t" << cmd << " [options] [flags]\n\n"
       << "Options:\n\n"
       << " -m|--restart m\n"
@@ -254,16 +275,20 @@ void print_help_message(std::ostream &ostr, const char *cmd) {
       << "    is \'demo_inputs/A.mm\'\n"
       << " -bfile bfile\n"
       << "    RHS vector stored in Matrix Market format (array), default is\n"
-      << "    \'demo_inputs/b.mm\'. If \'Afile\' is provided by the \'bfile\' is\n"
-      << "    missing, then b=A*1 will be used\n"
+      << "    \'demo_inputs/b.mm\'. If \'Afile\' is provided by the \'bfile\'\n"
+      << "    is missing, then b=A*1 will be used\n"
       << " -Sfile Sfile\n"
       << "    Sparsifier, on which we will compute the HIF preconditioner.\n"
-      << "    If omitted, then we will compute S by clipping tiny values in A\n"
+      << "    If omitted, then (1) we will compute S by clipping tiny values\n"
+      << "    in A if \'Afile\' is specified, or (2) we will load the 2nd\n"
+      << "    FDM operator, which is used as sparsifier\n"
       << " -v|--verbose verbose\n"
       << "    Verbose level for logging, default is 1. To run in complete\n"
-      << "    silent, use 0. For any values larger than 1, verbose logging will\n"
-      << "    be enabled for the factorization stage.\n\n"
+      << "    silent, use 0. For any values larger than 1, verbose logging\n"
+      << "    will be enabled for both factorization and solve stages.\n\n"
       << "Flags:\n\n"
+      << " -r|--robust\n"
+      << "    Enable robust parameters, default is false\n"
       << " -h|--help\n"
       << "    Show this help message and exit\n";
 }
@@ -275,6 +300,8 @@ std::tuple<system_t, matrix_t, int, double, int, int, bool> parse_args(
   int    restart(30), maxit(500), verbose(1);
   double rtol(1e-6);
   bool   robust(false);
+
+  string Afile, bfile, Sfile;
 
   for (int i = 1; i < argc; ++i) {
     auto arg = string(argv[i]);
@@ -314,16 +341,61 @@ std::tuple<system_t, matrix_t, int, double, int, int, bool> parse_args(
       }
       verbose = std::atoi(argv[++i]);
       if (verbose < 0) verbose = 0;
+    } else if (arg == "-Afile") {
+      if (i + 1 >= argc) {
+        std::cerr << "Missing Afile!\n\n";
+        print_help_message(std::cerr, argv[0]);
+        std::exit(1);
+      }
+      Afile = argv[++i];
+    } else if (arg == "-bfile") {
+      if (i + 1 >= argc) {
+        std::cerr << "Missing bfile!\n\n";
+        print_help_message(std::cerr, argv[0]);
+        std::exit(1);
+      }
+      bfile = argv[++i];
+    } else if (arg == "-Sfile") {
+      if (i + 1 >= argc) {
+        std::cerr << "Missing Sfile!\n\n";
+        print_help_message(std::cerr, argv[0]);
+        std::exit(1);
+      }
+      Sfile = argv[++i];
     } else if (arg == "-r" || arg == "--robust")
       robust = true;
   }
   // load 4th order FDM with A*1 as rhs
   const bool prev_dir = std::ifstream("../demo_inputs/ad-fdm4.mm").is_open();
-  // sparsifier
-  return std::make_tuple(prev_dir ? get_input_data("../demo_inputs/ad-fdm4.mm")
-                                  : get_input_data("demo_inputs/ad-fdm4.mm"),
-                         prev_dir
-                             ? matrix_t::from_mm("../demo_inputs/ad-fdm2.mm")
-                             : matrix_t::from_mm("demo_inputs/ad-fdm2.mm"),
-                         restart, rtol, maxit, verbose, robust);
+  if (Afile.empty()) {
+    if (verbose) {
+      hif_info("Afile is \'demo_inputs/ad-fdm4.mm\'");
+      hif_info("b=A*1");
+      hif_info("Sfile is \'demo_inputs/ad-fdm2.mm\'\n");
+    }
+    return std::make_tuple(
+        prev_dir ? get_input_data("../demo_inputs/ad-fdm4.mm")
+                 : get_input_data("demo_inputs/ad-fdm4.mm"),
+        prev_dir ? matrix_t::from_mm("../demo_inputs/ad-fdm2.mm")
+                 : matrix_t::from_mm("demo_inputs/ad-fdm2.mm"),
+        restart, rtol, maxit, verbose, robust);
+  }
+
+  const char *bfile_cstr = nullptr;
+  if (!bfile.empty()) bfile_cstr = bfile.c_str();
+  auto     prob = get_input_data(Afile.c_str(), bfile_cstr);
+  matrix_t S;
+  if (!Sfile.empty()) S = matrix_t::from_mm(Sfile.c_str());
+  if (verbose) {
+    std::cout << "Afile is \'" << Afile << "\'\n";
+    if (bfile_cstr)
+      std::cout << "bfile is \'" << bfile << "\'\n";
+    else
+      std::cout << "b=A*1\n";
+    if (Sfile.empty())
+      std::cout << "Sfile is omitted (will prune A as sparsifier)\n\n";
+    else
+      std::cout << "Sfile is \'" << Sfile << "\'\n\n";
+  }
+  return std::make_tuple(prob, S, restart, rtol, maxit, verbose, robust);
 }
