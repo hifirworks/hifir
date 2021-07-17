@@ -249,9 +249,7 @@ std::tuple<system_t, int, double, int, int> parse_args(int argc, char *argv[]) {
       std::cout << help_message;
       std::exit(0);
     }
-    if (arg == "-s" || arg == "--silent")
-      verbose = false;
-    else if (arg == "-m" || arg == "--restart") {
+    if (arg == "-m" || arg == "--restart") {
       if (i + 1 >= argc) {
         std::cerr << "Missing restart value!\n\n" << help_message;
         std::exit(1);
