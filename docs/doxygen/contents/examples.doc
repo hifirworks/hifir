@@ -27,6 +27,7 @@
 
 - \ref demo_hifir.cpp
 - \ref demo_gmreshif.cpp
+- \ref demo_sparsifier.cpp
 
 */
 
@@ -72,3 +73,18 @@
 ///        one can call \ref hif::CRS::from_mm and \ref hif::Array::from_mm to
 ///        load the sparse matrix and its corresponding RHS vector (if
 ///        applicable), respectively.
+/// In addition, the user may pass their system via command line inputs; see
+/// ./demo_gmreshif.exe --help
+
+/// \example demo_sparsifier.cpp
+/// This example shows an example of using HIF as right-preconditioner for
+/// GMRES(m), where HIF can be computed via a sparser matrix than the one used
+/// in the GMRES solver, i.e.,
+///
+/// \f[
+///     AM^{g}y=b\quad\text{then}\quad x=M^{g}y,
+/// \f]
+///
+/// where \f$ M\f$ can is computed on a sparser matrix \f$ S\f$ (hence the name
+/// "sparsifier"), s.t. \f$\text{nnz}(S)\le\text{nnz}(A)\f$. For more details,
+/// see ./demo_sparsifier.exe --help
