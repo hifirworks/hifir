@@ -83,18 +83,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #  define HIF_RESERVE_FAC 5
 #endif  // HIF_RESERVE_FAC
 
-/// \def HIF_LASTLEVEL_DENSE_SIZE
-/// \brief dense size for last level
-/// \note default is 1500
-///
-/// This is the threshold that if the current system is less than
-/// \a HIF_LASTLEVEL_DENSE_SIZE, then regardless the sparsity of the
-/// Schur complements, HIF will enforce to use dense direct factorization
-/// for the sake of actual runtime performance.
-#ifndef HIF_LASTLEVEL_DENSE_SIZE
-#  define HIF_LASTLEVEL_DENSE_SIZE 2000
-#endif
-
 /// \def HIF_MIN_LOCAL_SIZE_PERCTG
 /// \brief minimum percentation of the local row and column sizes wrt the
 ///        the averaged nnz per row/column for row and column, resp.
