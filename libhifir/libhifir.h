@@ -121,7 +121,7 @@ enum {
  */
 typedef enum LhfStatus {
   LHF_SUCCESS = 0,      /*!< Successful return */
-  LHF_NULL_MAT,         /*!< Calling functions on @a NULL matrices */
+  LHF_NULL_OBJ,         /*!< Calling functions on @a NULL objects */
   LHF_MISMATCHED_SIZES, /*!< Mismatched sizes */
   LHF_BAD_PREC,         /*!< Improper use of a preconditioner */
   LHF_HIFIR_ERROR,      /*!< Internal HIFIR error, call @ref lhfGetErrorMsg */
@@ -146,68 +146,60 @@ static const int LHF_DEFAULT_RANK = -2;
  */
 
 /*!
- * @struct LhfdMatrixStruct
- * @brief Double precision sparse matrix in @a libhifir
+ * @typedef LhfdMatrixHdl
+ * @brief Pointer to double precision sparse matrix in @a libhifir
  * @ingroup cdouble
  */
-struct LhfdMatrixStruct;
-typedef struct LhfdMatrixStruct* LhfdMatrix; /*!< Pointer of sparse matrix */
+typedef struct LhfdMatrix* LhfdMatrixHdl;
 
 /*!
- * @struct LhfsMatrixStruct
- * @brief Single precision sparse matrix in @a libhifir
+ * @typedef LhfsMatrixHdl
+ * @brief Pointer to single precision sparse matrix in @a libhifir
  * @ingroup csingle
  */
-struct LhfsMatrixStruct;
-typedef struct LhfsMatrixStruct* LhfsMatrix; /*!< Pointer of sparse matrix */
+typedef struct LhfsMatrix* LhfsMatrixHdl;
 
 /*!
- * @struct LhfzMatrixStruct
- * @brief Double precision complex sparse matrix in @a libhifir
+ * @typedef LhfzMatrixHdl
+ * @brief Pointer to double precision complex sparse matrix in @a libhifir
  * @ingroup ccomplexdouble
  */
-struct LhfzMatrixStruct;
-typedef struct LhfzMatrixStruct* LhfzMatrix; /*!< Pointer of sparse matrix */
+typedef struct LhfzMatrix* LhfzMatrixHdl;
 
 /*!
- * @struct LhfcMatrixStruct
- * @brief Single precision complex sparse matrix in @a libhifir
+ * @typedef LhfcMatrixHdl
+ * @brief Pointer to single precision complex sparse matrix in @a libhifir
  * @ingroup ccomplexsingle
  */
-struct LhfcMatrixStruct;
-typedef struct LhfcMatrixStruct* LhfcMatrix; /*!< Pointer of sparse matrix */
+typedef struct LhfcMatrix* LhfcMatrixHdl;
 
 /*!
- * @struct LhfdHIFStruct
- * @brief Double precision HIF structure in @a libhifir
+ * @typedef LhfdHifHdl
+ * @brief Pointer to double precision HIF structure in @a libhifir
  * @ingroup cdouble
  */
-struct LhfdHIFStruct;
-typedef struct LhfdHIFStruct* LhfdHIF; /*!< Pointer of HIF */
+typedef struct LhfdHif* LhfdHifHdl;
 
 /*!
- * @struct LhfsHIFStruct
- * @brief Single precision HIF structure in @a libhifir
+ * @typedef LhfsHifHdl
+ * @brief Pointer to single precision HIF structure in @a libhifir
  * @ingroup csingle
  */
-struct LhfsHIFStruct;
-typedef struct LhfsHIFStruct* LhfsHIF; /*!< Pointer of HIF */
+typedef struct LhfsHif* LhfsHifHdl;
 
 /*!
- * @struct LhfzHIFStruct
- * @brief Double precision complex HIF structure in @a libhifir
+ * @typedef LhfzHifHdl
+ * @brief Pointer to double precision complex HIF structure in @a libhifir
  * @ingroup ccomplexdouble
  */
-struct LhfzHIFStruct;
-typedef struct LhfzHIFStruct* LhfzHIF; /*!< Pointer of HIF */
+typedef struct LhfzHif* LhfzHifHdl;
 
 /*!
- * @struct LhfcHIFStruct
- * @brief Single precision complex HIF structure in @a libhifir
+ * @typedef LhfcHifHdl
+ * @brief Pointer to single precision complex HIF structure in @a libhifir
  * @ingroup ccomplexsingle
  */
-struct LhfcHIFStruct;
-typedef struct LhfcHIFStruct* LhfcHIF; /*!< Pointer of HIF */
+typedef struct LhfcHif* LhfcHifHdl;
 
 /*!
  * @addtogroup c
@@ -232,8 +224,9 @@ void lhfEnableWarning(void);
 void lhfDisableWarning(void);
 
 /*!
- * @brief Get global error message if the return status is @ref
+ * @brief Get global error message if the return status is @ref LHF_HIFIR_ERROR
  */
+const char* lhfGetErrorMsg(void);
 
 /*!
  * @brief Initialize parameters with default options
@@ -283,26 +276,26 @@ LhfStatus lhfSetKappa(const double kappa, double params[]);
  *       instance of sparse matrix.
  * @ingroup cdouble
  */
-LhfdMatrix lhfdCreateMatrix(const int is_rowmajor, const size_t n,
-                            const LhfInt* indptr, const LhfInt* indices,
-                            const double* vals);
+LhfdMatrixHdl lhfdCreateMatrix(const int is_rowmajor, const size_t n,
+                               const LhfInt* indptr, const LhfInt* indices,
+                               const double* vals);
 
 /*!
  * @brief Destroy a double-precision matrix instance
  * @param[in,out] mat Matrix instance
  * @ingroup cdouble
  */
-LhfStatus lhfdDestroyMatrix(LhfdMatrix mat);
+LhfStatus lhfdDestroyMatrix(LhfdMatrixHdl mat);
 
 /*!
  * @brief Get the matrix size
  */
-size_t lhfdGetMatrixSize(const LhfdMatrix mat);
+size_t lhfdGetMatrixSize(const LhfdMatrixHdl mat);
 
 /*!
  * @brief Get the matrix number of nonzeros
  */
-size_t lhfdGetMatrixNnz(const LhfdMatrix mat);
+size_t lhfdGetMatrixNnz(const LhfdMatrixHdl mat);
 
 /*!
  * @brief Create an instance of single-precision sparse matrix
@@ -315,26 +308,26 @@ size_t lhfdGetMatrixNnz(const LhfdMatrix mat);
  *       instance of sparse matrix.
  * @ingroup csingle
  */
-LhfsMatrix lhfsCreateMatrix(const int is_rowmajor, const size_t n,
-                            const LhfInt* indptr, const LhfInt* indices,
-                            const float* vals);
+LhfsMatrixHdl lhfsCreateMatrix(const int is_rowmajor, const size_t n,
+                               const LhfInt* indptr, const LhfInt* indices,
+                               const float* vals);
 
 /*!
  * @brief Destroy a single-precision matrix instance
  * @param[in,out] mat Matrix instance
  * @ingroup csingle
  */
-LhfStatus lhfsDestroyMatrix(LhfsMatrix mat);
+LhfStatus lhfsDestroyMatrix(LhfsMatrixHdl mat);
 
 /*!
  * @brief Get the matrix size
  */
-size_t lhfsGetMatrixSize(const LhfsMatrix mat);
+size_t lhfsGetMatrixSize(const LhfsMatrixHdl mat);
 
 /*!
  * @brief Get the matrix number of nonzeros
  */
-size_t lhfsGetMatrixNnz(const LhfsMatrix mat);
+size_t lhfsGetMatrixNnz(const LhfsMatrixHdl mat);
 
 /*!
  * @brief Create an instance of double-precision complex sparse matrix
@@ -347,26 +340,26 @@ size_t lhfsGetMatrixNnz(const LhfsMatrix mat);
  *       instance of sparse matrix.
  * @ingroup ccomplexdouble
  */
-LhfzMatrix lhfzCreateMatrix(const int is_rowmajor, const size_t n,
-                            const LhfInt* indptr, const LhfInt* indices,
-                            const void* vals);
+LhfzMatrixHdl lhfzCreateMatrix(const int is_rowmajor, const size_t n,
+                               const LhfInt* indptr, const LhfInt* indices,
+                               const void* vals);
 
 /*!
  * @brief Destroy a double-precision complex matrix instance
  * @param[in,out] mat Matrix instance
  * @ingroup ccomplexdouble
  */
-LhfStatus lhfzDestroyMatrix(LhfzMatrix mat);
+LhfStatus lhfzDestroyMatrix(LhfzMatrixHdl mat);
 
 /*!
  * @brief Get the matrix size
  */
-size_t lhfzGetMatrixSize(const LhfzMatrix mat);
+size_t lhfzGetMatrixSize(const LhfzMatrixHdl mat);
 
 /*!
  * @brief Get the matrix number of nonzeros
  */
-size_t lhfzGetMatrixNnz(const LhfzMatrix mat);
+size_t lhfzGetMatrixNnz(const LhfzMatrixHdl mat);
 
 /*!
  * @brief Create an instance of single-precision complex sparse matrix
@@ -379,26 +372,26 @@ size_t lhfzGetMatrixNnz(const LhfzMatrix mat);
  *       instance of sparse matrix.
  * @ingroup ccomplexsingle
  */
-LhfcMatrix lhfcCreateMatrix(const int is_rowmajor, const size_t n,
-                            const LhfInt* indptr, const LhfInt* indices,
-                            const void* vals);
+LhfcMatrixHdl lhfcCreateMatrix(const int is_rowmajor, const size_t n,
+                               const LhfInt* indptr, const LhfInt* indices,
+                               const void* vals);
 
 /*!
  * @brief Destroy a single-precision complex matrix instance
  * @param[in,out] mat Matrix instance
  * @ingroup ccomplexsingle
  */
-LhfStatus lhfcDestroyMatrix(LhfcMatrix mat);
+LhfStatus lhfcDestroyMatrix(LhfcMatrixHdl mat);
 
 /*!
  * @brief Get the matrix size
  */
-size_t lhfcGetMatrixSize(const LhfdMatrix mat);
+size_t lhfcGetMatrixSize(const LhfdMatrixHdl mat);
 
 /*!
  * @brief Get the matrix number of nonzeros
  */
-size_t lhfcGetMatrixNnz(const LhfdMatrix mat);
+size_t lhfcGetMatrixNnz(const LhfdMatrixHdl mat);
 
 /*!
  * @brief Wrap external data into a double-precision sparse matrix
@@ -409,8 +402,9 @@ size_t lhfcGetMatrixNnz(const LhfdMatrix mat);
  * @param[in] vals Numerical value array
  * @ingroup cdouble
  */
-LhfStatus lhfdWrapMatrix(LhfdMatrix mat, const size_t n, const LhfInt* indptr,
-                         const LhfInt* indices, const double* vals);
+LhfStatus lhfdWrapMatrix(LhfdMatrixHdl mat, const size_t n,
+                         const LhfInt* indptr, const LhfInt* indices,
+                         const double* vals);
 
 /*!
  * @brief Wrap external data into a single-precision sparse matrix
@@ -421,8 +415,9 @@ LhfStatus lhfdWrapMatrix(LhfdMatrix mat, const size_t n, const LhfInt* indptr,
  * @param[in] vals Numerical value array
  * @ingroup csingle
  */
-LhfStatus lhfsWrapMatrix(LhfsMatrix mat, const size_t n, const LhfInt* indptr,
-                         const LhfInt* indices, const float* vals);
+LhfStatus lhfsWrapMatrix(LhfsMatrixHdl mat, const size_t n,
+                         const LhfInt* indptr, const LhfInt* indices,
+                         const float* vals);
 
 /*!
  * @brief Wrap external data into a double-precision complex sparse matrix
@@ -433,8 +428,9 @@ LhfStatus lhfsWrapMatrix(LhfsMatrix mat, const size_t n, const LhfInt* indptr,
  * @param[in] vals Numerical value array
  * @ingroup ccomplexdouble
  */
-LhfStatus lhfzWrapMatrix(LhfzMatrix mat, const size_t n, const LhfInt* indptr,
-                         const LhfInt* indices, const void* vals);
+LhfStatus lhfzWrapMatrix(LhfzMatrixHdl mat, const size_t n,
+                         const LhfInt* indptr, const LhfInt* indices,
+                         const void* vals);
 
 /*!
  * @brief Wrap external data into a single-precision complex sparse matrix
@@ -445,8 +441,9 @@ LhfStatus lhfzWrapMatrix(LhfzMatrix mat, const size_t n, const LhfInt* indptr,
  * @param[in] vals Numerical value array
  * @ingroup ccomplexsingle
  */
-LhfStatus lhfcWrapMatrix(LhfcMatrix mat, const size_t n, const LhfInt* indptr,
-                         const LhfInt* indices, const void* vals);
+LhfStatus lhfcWrapMatrix(LhfcMatrixHdl mat, const size_t n,
+                         const LhfInt* indptr, const LhfInt* indices,
+                         const void* vals);
 
 // HIF preconditioners
 
@@ -471,15 +468,15 @@ LhfStatus lhfcWrapMatrix(LhfcMatrix mat, const size_t n, const LhfInt* indptr,
  *
  * @sa lhfdDestroy
  */
-LhfdHIF lhfdCreate(const LhfdMatrix A, const LhfdMatrix S,
-                   const double params[]);
+LhfdHifHdl lhfdCreate(const LhfdMatrixHdl A, const LhfdMatrixHdl S,
+                      const double params[]);
 
 /*!
  * @brief Destroy a double-precision HIF instance
  * @param[out] hif HIF preconditioner
  * @sa lhfdCreate
  */
-LhfStatus lhfdDestroy(LhfdHIF hif);
+LhfStatus lhfdDestroy(LhfdHifHdl hif);
 
 /*!
  * @brief Setup a double-precision HIF instance
@@ -494,8 +491,8 @@ LhfStatus lhfdDestroy(LhfdHIF hif);
  *
  * @sa lhfdCreate
  */
-LhfStatus lhfdSetup(LhfdHIF hif, const LhfdMatrix A, const LhfdMatrix S,
-                    const double params[]);
+LhfStatus lhfdSetup(LhfdHifHdl hif, const LhfdMatrixHdl A,
+                    const LhfdMatrixHdl S, const double params[]);
 
 /*!
  * @brief Update the @a A matrix in HIF
@@ -504,7 +501,7 @@ LhfStatus lhfdSetup(LhfdHIF hif, const LhfdMatrix A, const LhfdMatrix S,
  * @note This function will not call factorization on @a A.
  * @sa lhfdRefactorize
  */
-LhfStatus lhfdUpdate(LhfdHIF hif, const LhfdMatrix A);
+LhfStatus lhfdUpdate(LhfdHifHdl hif, const LhfdMatrixHdl A);
 
 /*!
  * @brief Refactorize a HIF preconditioner
@@ -515,7 +512,7 @@ LhfStatus lhfdUpdate(LhfdHIF hif, const LhfdMatrix A);
  * @note If @a params is @a NULL, then the default parameters will be used.
  * @sa lhfdUpdate
  */
-LhfStatus lhfdRefactorize(LhfdHIF hif, const LhfdMatrix S,
+LhfStatus lhfdRefactorize(LhfdHifHdl hif, const LhfdMatrixHdl S,
                           const double params[]);
 
 /*!
@@ -545,7 +542,7 @@ LhfStatus lhfdRefactorize(LhfdHIF hif, const LhfdMatrix S,
  *
  * @sa lhfdSolve
  */
-LhfStatus lhfdApply(const LhfdHIF hif, const LhfOperationType op,
+LhfStatus lhfdApply(const LhfdHifHdl hif, const LhfOperationType op,
                     const double* b, const int nirs, const double* betas,
                     const int rank, double* x, int* ir_status);
 
@@ -558,7 +555,7 @@ LhfStatus lhfdApply(const LhfdHIF hif, const LhfOperationType op,
  *
  * @sa lhfdApply
  */
-LhfStatus lhfdSolve(const LhfdHIF hif, const double* b, double* x);
+LhfStatus lhfdSolve(const LhfdHifHdl hif, const double* b, double* x);
 
 /*!
  * @brief Get the statistics of a computed HIF instance
@@ -576,31 +573,31 @@ LhfStatus lhfdSolve(const LhfdHIF hif, const double* b, double* x);
  *  - status[7]: The numerical rank of the final Schur complement
  *  - status[8]: The size of the final Schur complement (status[7]<=status[8])
  */
-LhfStatus lhfdGetStatus(const LhfdHIF hif, size_t status[]);
+LhfStatus lhfdGetStatus(const LhfdHifHdl hif, size_t status[]);
 
 /*!
  * @brief Get number of nonzeros of a HIF preconditioner
  * @sa lhfdGetStatus
  */
-size_t lhfdGetNnz(const LhfdHIF hif);
+size_t lhfdGetNnz(const LhfdHifHdl hif);
 
 /*!
  * @brief Get number of levels
  * @sa lhfdGetStatus
  */
-size_t lhfdGetLevels(const LhfdHIF hif);
+size_t lhfdGetLevels(const LhfdHifHdl hif);
 
 /*!
  * @brief Get the Schur complement size
  * @sa lhfdGetStatus
  */
-size_t lhfdGetSchurSize(const LhfdHIF hif);
+size_t lhfdGetSchurSize(const LhfdHifHdl hif);
 
 /*!
  * @brief Get the Schur complement rank
  * @sa lhfdGetStatus
  */
-size_t lhfdGetSchurRank(const LhfdHIF hif);
+size_t lhfdGetSchurRank(const LhfdHifHdl hif);
 
 /*!
  * @}
