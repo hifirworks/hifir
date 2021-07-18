@@ -57,8 +57,8 @@ all-debug: libhifir-debug.so libhifir_i64-debug.so
 %.so.$(GLOBAL_VERSION).$(MAJOR_VERSION): %.o
 	$(CXX) -shared -fPIC -Wl,-soname,$@ -o ${@}.${MINOR_VERSION} $< \
 		$(LIBHIFIR_LDFLAGS) $(LIBHIFIR_LIBS)
-	@chmod a-x ${@}.0
-	ln -sf ${@}.0 $@
+	@chmod a-x ${@}.${MINOR_VERSION}
+	ln -sf ${@}.${MINOR_VERSION} $@
 
 libhifir.o: libhifir.cpp libhifir.h
 	$(CXX) -c $(LIBHIFIR_OPT_FLAGS) $<
