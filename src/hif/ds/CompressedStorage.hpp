@@ -2671,7 +2671,7 @@ inline CCS<ValueType, IndexType> wrap_const_ccs(
       hif_error("first entry of row_start does not agree with 0.");
     Array<ValueType> buf;
     for (size_type i = 0u; i < nrows; ++i) {
-      if (!mat.nnz_in_row(i)) {
+      if (!mat.nnz_in_col(i)) {
         hif_warning("row %zd is empty!", i);
         continue;
       }
