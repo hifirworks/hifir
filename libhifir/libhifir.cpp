@@ -408,7 +408,7 @@ LhfStatus lhfdSolve(const LhfdHifHdl hif, const double *b, double *x) {
 }
 
 // query status
-LhfStatus lhfdGetStatus(const LhfdHifHdl hif, size_t stats[]) {
+LhfStatus lhfdGetStats(const LhfdHifHdl hif, size_t stats[]) {
   if (!hif)
     for (int i = 0; i < 9; ++i) stats[i] = 0;
   else
@@ -602,7 +602,7 @@ LhfStatus lhfsSolve(const LhfsHifHdl hif, const float *b, float *x) {
 }
 
 // query status
-LhfStatus lhfsGetStatus(const LhfsHifHdl hif, size_t stats[]) {
+LhfStatus lhfsGetStats(const LhfsHifHdl hif, size_t stats[]) {
   if (!hif)
     for (int i = 0; i < 9; ++i) stats[i] = 0;
   else
@@ -800,7 +800,7 @@ LhfStatus lhfzSolve(const LhfzHifHdl hif, const double _Complex *b,
 }
 
 // query status
-LhfStatus lhfzGetStatus(const LhfzHifHdl hif, size_t stats[]) {
+LhfStatus lhfzGetStats(const LhfzHifHdl hif, size_t stats[]) {
   if (!hif)
     for (int i = 0; i < 9; ++i) stats[i] = 0;
   else
@@ -1000,7 +1000,7 @@ LhfStatus lhfcSolve(const LhfcHifHdl hif, const float _Complex *b,
 }
 
 // query status
-LhfStatus lhfcGetStatus(const LhfcHifHdl hif, size_t stats[]) {
+LhfStatus lhfcGetStats(const LhfcHifHdl hif, size_t stats[]) {
   if (!hif)
     for (int i = 0; i < 9; ++i) stats[i] = 0;
   else

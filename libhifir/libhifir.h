@@ -602,29 +602,29 @@ LhfStatus lhfdSolve(const LhfdHifHdl hif, const double* b, double* x);
  *  - stats[7]: The numerical rank of the final Schur complement
  *  - stats[8]: The size of the final Schur complement (status[7]<=status[8])
  */
-LhfStatus lhfdGetStatus(const LhfdHifHdl hif, size_t stats[]);
+LhfStatus lhfdGetStats(const LhfdHifHdl hif, size_t stats[]);
 
 /*!
  * @brief Get number of nonzeros of a HIF preconditioner
- * @sa lhfdGetStatus
+ * @sa lhfdGetStats
  */
 size_t lhfdGetNnz(const LhfdHifHdl hif);
 
 /*!
  * @brief Get number of levels
- * @sa lhfdGetStatus
+ * @sa lhfdGetStats
  */
 size_t lhfdGetLevels(const LhfdHifHdl hif);
 
 /*!
  * @brief Get the Schur complement size
- * @sa lhfdGetStatus
+ * @sa lhfdGetStats
  */
 size_t lhfdGetSchurSize(const LhfdHifHdl hif);
 
 /*!
  * @brief Get the Schur complement rank
- * @sa lhfdGetStatus
+ * @sa lhfdGetStats
  */
 size_t lhfdGetSchurRank(const LhfdHifHdl hif);
 
@@ -758,29 +758,29 @@ LhfStatus lhfsSolve(const LhfsHifHdl hif, const float* b, float* x);
  *  - stats[7]: The numerical rank of the final Schur complement
  *  - stats[8]: The size of the final Schur complement (status[7]<=status[8])
  */
-LhfStatus lhfsGetStatus(const LhfsHifHdl hif, size_t stats[]);
+LhfStatus lhfsGetStats(const LhfsHifHdl hif, size_t stats[]);
 
 /*!
  * @brief Get number of nonzeros of a HIF preconditioner
- * @sa lhfsGetStatus
+ * @sa lhfsGetStats
  */
 size_t lhfsGetNnz(const LhfsHifHdl hif);
 
 /*!
  * @brief Get number of levels
- * @sa lhfsGetStatus
+ * @sa lhfsGetStats
  */
 size_t lhfsGetLevels(const LhfsHifHdl hif);
 
 /*!
  * @brief Get the Schur complement size
- * @sa lhfsGetStatus
+ * @sa lhfsGetStats
  */
 size_t lhfsGetSchurSize(const LhfsHifHdl hif);
 
 /*!
  * @brief Get the Schur complement rank
- * @sa lhfsGetStatus
+ * @sa lhfsGetStats
  */
 size_t lhfsGetSchurRank(const LhfsHifHdl hif);
 
@@ -916,29 +916,29 @@ LhfStatus lhfzSolve(const LhfzHifHdl hif, const double _Complex* b,
  *  - stats[7]: The numerical rank of the final Schur complement
  *  - stats[8]: The size of the final Schur complement (status[7]<=status[8])
  */
-LhfStatus lhfzGetStatus(const LhfzHifHdl hif, size_t stats[]);
+LhfStatus lhfzGetStats(const LhfzHifHdl hif, size_t stats[]);
 
 /*!
  * @brief Get number of nonzeros of a HIF preconditioner
- * @sa lhfzGetStatus
+ * @sa lhfzGetStats
  */
 size_t lhfzGetNnz(const LhfzHifHdl hif);
 
 /*!
  * @brief Get number of levels
- * @sa lhfzGetStatus
+ * @sa lhfzGetStats
  */
 size_t lhfzGetLevels(const LhfzHifHdl hif);
 
 /*!
  * @brief Get the Schur complement size
- * @sa lhfzGetStatus
+ * @sa lhfzGetStats
  */
 size_t lhfzGetSchurSize(const LhfzHifHdl hif);
 
 /*!
  * @brief Get the Schur complement rank
- * @sa lhfzGetStatus
+ * @sa lhfzGetStats
  */
 size_t lhfzGetSchurRank(const LhfzHifHdl hif);
 
@@ -1074,29 +1074,29 @@ LhfStatus lhfcSolve(const LhfcHifHdl hif, const float _Complex* b,
  *  - stats[7]: The numerical rank of the final Schur complement
  *  - stats[8]: The size of the final Schur complement (status[7]<=status[8])
  */
-LhfStatus lhfcGetStatus(const LhfcHifHdl hif, size_t stats[]);
+LhfStatus lhfcGetStats(const LhfcHifHdl hif, size_t stats[]);
 
 /*!
  * @brief Get number of nonzeros of a HIF preconditioner
- * @sa lhfcGetStatus
+ * @sa lhfcGetStats
  */
 size_t lhfcGetNnz(const LhfcHifHdl hif);
 
 /*!
  * @brief Get number of levels
- * @sa lhfcGetStatus
+ * @sa lhfcGetStats
  */
 size_t lhfcGetLevels(const LhfcHifHdl hif);
 
 /*!
  * @brief Get the Schur complement size
- * @sa lhfcGetStatus
+ * @sa lhfcGetStats
  */
 size_t lhfcGetSchurSize(const LhfcHifHdl hif);
 
 /*!
  * @brief Get the Schur complement rank
- * @sa lhfcGetStatus
+ * @sa lhfcGetStats
  */
 size_t lhfcGetSchurRank(const LhfcHifHdl hif);
 
