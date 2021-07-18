@@ -57,14 +57,6 @@ typedef int64_t LhfInt;
 #endif
 
 /*!
- * @def LHF_NUMBER_PARAMS
- * @brief Total number of parameters
- * @note In @a libhifir, we use a double array of size LHF_NUMBER_PARAMS for
- *       control parameters in factorization.
- */
-#define LHF_NUMBER_PARAMS 40 /* reserved for the future */
-
-/*!
  * We use an anonymous enum to group parameter positions in an array. The first
  * thing one needs to do is to create a @a double array of length
  * LHF_NUMBER_PARAMSs.
@@ -90,11 +82,12 @@ enum {
   LHF_PIVOT,         /*!< Pivoting option */
   LHF_BETA, /*!< Option for the threshold used in preventing bad scaling factors
                from equlibriation in preprocessing. */
-  LHF_ISSYMM,      /*!< Flag to tunning on symmetric/Hermitian input */
-  LHF_NOPRE,       /*!< Option to turn on/off preprocessing */
-  LHF_NZP_THRES,   /*!< Nonzero pattern symmetry threshold for symmetric
-                      preprocessing */
-  LHF_DENSE_THRES, /*!< Dense size threshold for the Schur complement */
+  LHF_ISSYMM,        /*!< Flag to tunning on symmetric/Hermitian input */
+  LHF_NOPRE,         /*!< Option to turn on/off preprocessing */
+  LHF_NZP_THRES,     /*!< Nonzero pattern symmetry threshold for symmetric
+                        preprocessing */
+  LHF_DENSE_THRES,   /*!< Dense size threshold for the Schur complement */
+  LHF_NUMBER_PARAMS, /*!< Total number of parameters */
 };
 
 // verbose levels
