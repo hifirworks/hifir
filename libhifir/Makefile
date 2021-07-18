@@ -4,8 +4,8 @@
 
 CXX = g++
 
-ifneq ($(HIFIR_HOME),)
-    CPPFLAGS = -I$(HIFIR_HOME)/include
+ifneq ($(HIFIR_HPP),)
+    CPPFLAGS = -I$(HIFIR_HPP)
 else
     CPPFLAGS = -I../src
 endif
@@ -32,53 +32,28 @@ ifeq ($(PREFIX),)
 	PREFIX = $(DEFAULT_PREFIX)
 endif
 
+.PRECIOUS: \
+	libhifir.so.0.1 \
+	libhifir_i64.so.0.1 \
+	libhifir-debug.so.0.1 \
+	libhifir_i64-debug.so.0.1
+
 default: libhifir.so
 
-lib: libhifir.so libhifir_i64.so
+all: libhifir.so libhifir_i64.so
 
-libhifir-debug.so: libhifir-debug.so.0
+debug: libhifir-debug.so
+
+all-debug: libhifir-debug.so libhifir_i64-debug.so
+
+%.so: %.so.0.1
 	ln -sf $< $@
 
-libhifir_i64-debug.so: libhifir_i64-debug.so.0
-	ln -sf $< $@
-
-libhifir.so: libhifir.so.0
-	ln -sf $< $@
-
-libhifir.so.0: libhifir.so.0.1.0
-	ln -sf $< $@
-
-libhifir.so.0.1.0: libhifir.o
-	$(CXX) -shared -fPIC -Wl,-soname,libhifir.so.0 -o $@ $< \
+%.so.0.1: %.o
+	$(CXX) -shared -fPIC -Wl,-soname,$@ -o ${@}.0 $< \
 		$(LIBHIFIR_LDFLAGS) $(LIBHIFIR_LIBS)
-	@chmod a-x $@
-
-libhifir_i64.so: libhifir_i64.so.0
-	ln -sf $< $@
-
-libhifir_i64.so.0: libhifir_i64.so.0.1.0
-	ln -sf $< $@
-
-libhifir_i64.so.0.1.0: libhifir_i64.o
-	$(CXX) -shared -fPIC -Wl,-soname,libhifir_i64.so.0 -o $@ $< \
-		$(LIBHIFIR_LDFLAGS) $(LIBHIFIR_LIBS)
-	@chmod a-x $@
-
-libhifir-debug.so.0: libhifir-debug.so.0.1.0
-	ln -sf $< $@
-
-libhifir-debug.so.0.1.0: libhifir-debug.o
-	$(CXX) -shared -fPIC -Wl,-soname,libhifir-debug.so.0 -o $@ $< \
-		$(LIBHIFIR_LDFLAGS) $(LIBHIFIR_LIBS)
-	@chmod a-x $@
-
-libhifir_i64-debug.so.0: libhifir_i64-debug.so.0.1.0
-	ln -sf $< $@
-
-libhifir_i64-debug.so.0.1.0: libhifir_i64-debug.o
-	$(CXX) -shared -fPIC -Wl,-soname,libhifir_i64-debug.so.0 -o $@ $< \
-		$(LIBHIFIR_LDFLAGS) $(LIBHIFIR_LIBS)
-	@chmod a-x $@
+	@chmod a-x ${@}.0
+	ln -sf ${@}.0 $@
 
 libhifir.o: libhifir.cpp libhifir.h
 	$(CXX) -c $(LIBHIFIR_OPT_FLAGS) $<
