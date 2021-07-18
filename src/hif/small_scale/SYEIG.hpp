@@ -111,8 +111,7 @@ class SYEIG {
       hif_info("factorizing dense level by symmetric (%s) eigendecomp...",
                opts.spd > 0 ? "PD" : (opts.spd < 0 ? "ND" : "ID"));
 
-    constexpr static scalar_type EPS =
-        std::pow(Const<scalar_type>::EPS, 2. / 3);
+    const static scalar_type EPS = std::pow(Const<scalar_type>::EPS, 2. / 3);
 
     // esimate the workspace
     if (!lapack_kernel::IS_REAL)

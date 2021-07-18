@@ -106,8 +106,8 @@ class QRCP {
   /// \param[in] opts control parameters, see \ref Options
   inline void factorize(const Options &opts) {
     // get tolerance
-    constexpr static scalar_type diag_tol = std::sqrt(Const<scalar_type>::EPS);
-    constexpr static scalar_type cond_tol =
+    const static scalar_type diag_tol = std::sqrt(Const<scalar_type>::EPS);
+    const static scalar_type cond_tol =
         scalar_type(1) / std::pow(Const<scalar_type>::EPS, 2. / 3);
 
     hif_error_if(_mat.empty(), "matrix is still empty!");
