@@ -169,7 +169,7 @@ class NspFilter {
     if (start == end) return;
     // compute I-one*one^t/n, which is equiv as shifting
     const T shift_val =
-        std::accumulate(x + start, x + end, T(0)) / (end - start);
+        std::accumulate(x + start, x + end, T(0)) / T(end - start);
     for (std::size_t i(start); i < end; ++i) x[i] -= shift_val;
   }
 
