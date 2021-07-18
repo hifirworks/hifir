@@ -31,6 +31,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _LIBHIFIR_H
 #define _LIBHIFIR_H
 
+#include <complex.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -266,6 +267,11 @@ LhfStatus lhfSetKappa(const double kappa, double params[]);
 // Matrices
 
 /*!
+ * @addtogroup cdouble
+ * @{
+ */
+
+/*!
  * @brief Create an instance of double-precision sparse matrix
  * @param[in] is_rowmajor If true, then we use CRS, otherwise CCS is assumed
  * @param[in] n Size of the squared matrix
@@ -274,7 +280,6 @@ LhfStatus lhfSetKappa(const double kappa, double params[]);
  * @param[in] vals Numerical value array
  * @note The last three entries can be @a NULL, which will create an empty
  *       instance of sparse matrix.
- * @ingroup cdouble
  */
 LhfdMatrixHdl lhfdCreateMatrix(const int is_rowmajor, const size_t n,
                                const LhfInt* indptr, const LhfInt* indices,
@@ -283,7 +288,6 @@ LhfdMatrixHdl lhfdCreateMatrix(const int is_rowmajor, const size_t n,
 /*!
  * @brief Destroy a double-precision matrix instance
  * @param[in,out] mat Matrix instance
- * @ingroup cdouble
  */
 LhfStatus lhfdDestroyMatrix(LhfdMatrixHdl mat);
 
@@ -298,6 +302,15 @@ size_t lhfdGetMatrixSize(const LhfdMatrixHdl mat);
 size_t lhfdGetMatrixNnz(const LhfdMatrixHdl mat);
 
 /*!
+ * @}
+ */
+
+/*!
+ * @addtogroup csingle
+ * @{
+ */
+
+/*!
  * @brief Create an instance of single-precision sparse matrix
  * @param[in] is_rowmajor If true, then we use CRS, otherwise CCS is assumed
  * @param[in] n Size of the squared matrix
@@ -306,7 +319,6 @@ size_t lhfdGetMatrixNnz(const LhfdMatrixHdl mat);
  * @param[in] vals Numerical value array
  * @note The last three entries can be @a NULL, which will create an empty
  *       instance of sparse matrix.
- * @ingroup csingle
  */
 LhfsMatrixHdl lhfsCreateMatrix(const int is_rowmajor, const size_t n,
                                const LhfInt* indptr, const LhfInt* indices,
@@ -315,7 +327,6 @@ LhfsMatrixHdl lhfsCreateMatrix(const int is_rowmajor, const size_t n,
 /*!
  * @brief Destroy a single-precision matrix instance
  * @param[in,out] mat Matrix instance
- * @ingroup csingle
  */
 LhfStatus lhfsDestroyMatrix(LhfsMatrixHdl mat);
 
@@ -330,6 +341,15 @@ size_t lhfsGetMatrixSize(const LhfsMatrixHdl mat);
 size_t lhfsGetMatrixNnz(const LhfsMatrixHdl mat);
 
 /*!
+ * @}
+ */
+
+/*!
+ * @addtogroup ccomplexdouble
+ * @{
+ */
+
+/*!
  * @brief Create an instance of double-precision complex sparse matrix
  * @param[in] is_rowmajor If true, then we use CRS, otherwise CCS is assumed
  * @param[in] n Size of the squared matrix
@@ -338,16 +358,14 @@ size_t lhfsGetMatrixNnz(const LhfsMatrixHdl mat);
  * @param[in] vals Numerical value array
  * @note The last three entries can be @a NULL, which will create an empty
  *       instance of sparse matrix.
- * @ingroup ccomplexdouble
  */
 LhfzMatrixHdl lhfzCreateMatrix(const int is_rowmajor, const size_t n,
                                const LhfInt* indptr, const LhfInt* indices,
-                               const void* vals);
+                               const double _Complex* vals);
 
 /*!
  * @brief Destroy a double-precision complex matrix instance
  * @param[in,out] mat Matrix instance
- * @ingroup ccomplexdouble
  */
 LhfStatus lhfzDestroyMatrix(LhfzMatrixHdl mat);
 
@@ -362,6 +380,15 @@ size_t lhfzGetMatrixSize(const LhfzMatrixHdl mat);
 size_t lhfzGetMatrixNnz(const LhfzMatrixHdl mat);
 
 /*!
+ * @}
+ */
+
+/*!
+ * @addtogroup ccomplexsingle
+ * @{
+ */
+
+/*!
  * @brief Create an instance of single-precision complex sparse matrix
  * @param[in] is_rowmajor If true, then we use CRS, otherwise CCS is assumed
  * @param[in] n Size of the squared matrix
@@ -370,28 +397,30 @@ size_t lhfzGetMatrixNnz(const LhfzMatrixHdl mat);
  * @param[in] vals Numerical value array
  * @note The last three entries can be @a NULL, which will create an empty
  *       instance of sparse matrix.
- * @ingroup ccomplexsingle
  */
 LhfcMatrixHdl lhfcCreateMatrix(const int is_rowmajor, const size_t n,
                                const LhfInt* indptr, const LhfInt* indices,
-                               const void* vals);
+                               const float _Complex* vals);
 
 /*!
  * @brief Destroy a single-precision complex matrix instance
  * @param[in,out] mat Matrix instance
- * @ingroup ccomplexsingle
  */
 LhfStatus lhfcDestroyMatrix(LhfcMatrixHdl mat);
 
 /*!
  * @brief Get the matrix size
  */
-size_t lhfcGetMatrixSize(const LhfdMatrixHdl mat);
+size_t lhfcGetMatrixSize(const LhfcMatrixHdl mat);
 
 /*!
  * @brief Get the matrix number of nonzeros
  */
-size_t lhfcGetMatrixNnz(const LhfdMatrixHdl mat);
+size_t lhfcGetMatrixNnz(const LhfcMatrixHdl mat);
+
+/*!
+ * @}
+ */
 
 /*!
  * @brief Wrap external data into a double-precision sparse matrix
@@ -430,7 +459,7 @@ LhfStatus lhfsWrapMatrix(LhfsMatrixHdl mat, const size_t n,
  */
 LhfStatus lhfzWrapMatrix(LhfzMatrixHdl mat, const size_t n,
                          const LhfInt* indptr, const LhfInt* indices,
-                         const void* vals);
+                         const double _Complex* vals);
 
 /*!
  * @brief Wrap external data into a single-precision complex sparse matrix
@@ -443,13 +472,13 @@ LhfStatus lhfzWrapMatrix(LhfzMatrixHdl mat, const size_t n,
  */
 LhfStatus lhfcWrapMatrix(LhfcMatrixHdl mat, const size_t n,
                          const LhfInt* indptr, const LhfInt* indices,
-                         const void* vals);
+                         const float _Complex* vals);
 
 // HIF preconditioners
 
 /*!
- * @addtogroup
- * {
+ * @addtogroup cdouble
+ * @{
  */
 
 /*!
@@ -560,20 +589,20 @@ LhfStatus lhfdSolve(const LhfdHifHdl hif, const double* b, double* x);
 /*!
  * @brief Get the statistics of a computed HIF instance
  * @param[in] hif A HIF instance
- * @param[out] status A length-9 array stores certain useful information
+ * @param[out] stats A length-9 array stores certain useful information
  *
- * Regarding the output @a status:
- *  - status[0]: Number of nonzeros of a preconditioner
- *  - status[1]: Total deferals
- *  - status[2]: Dynamic deferals (status[1]-status[2] are static deferals)
- *  - status[3]: Total droppings
- *  - status[4]: Droppings due to scalability-oriented strategy
- *  - status[5]: Number of levels
- *  - status[6]: Numerical rank of the whole preconditioner
- *  - status[7]: The numerical rank of the final Schur complement
- *  - status[8]: The size of the final Schur complement (status[7]<=status[8])
+ * Regarding the output @a stats:
+ *  - stats[0]: Number of nonzeros of a preconditioner
+ *  - stats[1]: Total deferals
+ *  - stats[2]: Dynamic deferals (status[1]-status[2] are static deferals)
+ *  - stats[3]: Total droppings
+ *  - stats[4]: Droppings due to scalability-oriented strategy
+ *  - stats[5]: Number of levels
+ *  - stats[6]: Numerical rank of the whole preconditioner
+ *  - stats[7]: The numerical rank of the final Schur complement
+ *  - stats[8]: The size of the final Schur complement (status[7]<=status[8])
  */
-LhfStatus lhfdGetStatus(const LhfdHifHdl hif, size_t status[]);
+LhfStatus lhfdGetStatus(const LhfdHifHdl hif, size_t stats[]);
 
 /*!
  * @brief Get number of nonzeros of a HIF preconditioner
@@ -598,6 +627,607 @@ size_t lhfdGetSchurSize(const LhfdHifHdl hif);
  * @sa lhfdGetStatus
  */
 size_t lhfdGetSchurRank(const LhfdHifHdl hif);
+
+/*!
+ * @}
+ */
+
+/*!
+ * @addtogroup csingle
+ * @{
+ */
+
+/*!
+ * @brief Create a single-precision HIF instance
+ * @param[in] A Input coefficient matrix (used in iterative refinement)
+ * @param[in] S Sparsifier input
+ * @param[in] params Control parameters, see @ref lhfSetDefaultParams
+ *
+ * This function create an instance of single-precision HIF (see @ref hif::HIF)
+ * preconditioner. Note that both @a A and @a S can be @a NULL, which then will
+ * create an empty instance. If both operators are provided, then the
+ * preconditioner will be factorized based on @a S. If only @a A is provided,
+ * then HIF is computed on @a A. If only @a S is provided, then @a A is set to
+ * be @a S besides computing the factorization on it. In addition, if @a params
+ * is @a NULL, then the default parameters will be used.
+ *
+ * @sa lhfsDestroy
+ */
+LhfsHifHdl lhfsCreate(const LhfsMatrixHdl A, const LhfsMatrixHdl S,
+                      const double params[]);
+
+/*!
+ * @brief Destroy a single-precision HIF instance
+ * @param[out] hif HIF preconditioner
+ * @sa lhfsCreate
+ */
+LhfStatus lhfsDestroy(LhfsHifHdl hif);
+
+/*!
+ * @brief Setup a single-precision HIF instance
+ * @param[out] hif A HIF instance
+ * @param[in] A Input coefficient matrix (used in iterative refinement)
+ * @param[in] S Sparsifier input
+ * @param[in] params Control parameters, see @ref lhfSetDefaultParams
+ *
+ * This function serves similar to @ref lhfsCreate, except that @a A and @a S
+ * cannot be both @a NULL. This function is to defer the factorization from
+ * construction of HIF preconditioners.
+ *
+ * @sa lhfsCreate
+ */
+LhfStatus lhfsSetup(LhfsHifHdl hif, const LhfsMatrixHdl A,
+                    const LhfsMatrixHdl S, const double params[]);
+
+/*!
+ * @brief Update the @a A matrix in HIF
+ * @param[out] hif A HIF instance
+ * @param[in] A A new matrix
+ * @note This function will not call factorization on @a A.
+ * @sa lhfsRefactorize
+ */
+LhfStatus lhfsUpdate(LhfsHifHdl hif, const LhfsMatrixHdl A);
+
+/*!
+ * @brief Refactorize a HIF preconditioner
+ * @param[out] hif A HIF instance
+ * @param[in] S A new sparsifier
+ * @param[in] params Control parameters
+ * @note This function will not update @a A inside @a hif
+ * @note If @a params is @a NULL, then the default parameters will be used.
+ * @sa lhfsUpdate
+ */
+LhfStatus lhfsRefactorize(LhfsHifHdl hif, const LhfsMatrixHdl S,
+                          const double params[]);
+
+/*!
+ * @brief Apply a preconditioner with a certian operation mode
+ * @param[in] hif A HIF instance
+ * @param[in] op Operation tag
+ * @param[in] b The RHS vector
+ * @param[in] nirs Number of iterative refinements
+ * @param[in] betas Relative residual norm bounds for IR with op=solve
+ * @param[in] rank Numerical rank
+ * @param[out] x Computed solution vector
+ * @param[out] ir_status (optional) If IR and @a betas is provided, then this
+ *                        records the number of actual IR ( @a ir_status[0] )
+ *                        and the IR status ( @a ir_status[1] ).
+ *
+ * This is the core function of HIF. A HIF instance can be applied in four
+ * different modes, namely triangular solve and its Hermitian/tranpose variant,
+ * as well as matrix-vector multiplication and its Hermitian/tranpose variant.
+ * For the triangular solve modes, @a nirs can be greater than one, which means
+ * iterative refinement is enabled. With IR enabled, if @a betas is provided,
+ * i.e., not @a NULL, then we will iterative until (1) res<=betas[0], (2)
+ * res>betas[1], or (3) it=nirs, and the actual iteratoin steps and return
+ * status are stored in @a ir_status if provided (i.e., not @a NULL ). On the
+ * other side, if @a betas=NULL, then the a fixed amount of IR ( @a nirs ) are
+ * performed and @a ir_status is not accessed. Regarding @a rank, in general, it
+ * should use @a LHF_DEFAULT_RANK.
+ *
+ * @sa lhfsSolve
+ */
+LhfStatus lhfsApply(const LhfsHifHdl hif, const LhfOperationType op,
+                    const float* b, const int nirs, const double* betas,
+                    const int rank, float* x, int* ir_status);
+
+/*!
+ * @brief Triangular solve
+ *
+ * For the sake of convenience, we provide the following routine as it is the
+ * most commonly used interface. The following routine is equivalent to calling
+ * @ref lhfsApply with @a op=LHF_S, @a nirs=1, and @a rank=LHF_DEFAULT_RANK.
+ *
+ * @sa lhfsApply
+ */
+LhfStatus lhfsSolve(const LhfsHifHdl hif, const float* b, float* x);
+
+/*!
+ * @brief Get the statistics of a computed HIF instance
+ * @param[in] hif A HIF instance
+ * @param[out] stats A length-9 array stores certain useful information
+ *
+ * Regarding the output @a stats:
+ *  - stats[0]: Number of nonzeros of a preconditioner
+ *  - stats[1]: Total deferals
+ *  - stats[2]: Dynamic deferals (status[1]-status[2] are static deferals)
+ *  - stats[3]: Total droppings
+ *  - stats[4]: Droppings due to scalability-oriented strategy
+ *  - stats[5]: Number of levels
+ *  - stats[6]: Numerical rank of the whole preconditioner
+ *  - stats[7]: The numerical rank of the final Schur complement
+ *  - stats[8]: The size of the final Schur complement (status[7]<=status[8])
+ */
+LhfStatus lhfsGetStatus(const LhfsHifHdl hif, size_t stats[]);
+
+/*!
+ * @brief Get number of nonzeros of a HIF preconditioner
+ * @sa lhfsGetStatus
+ */
+size_t lhfsGetNnz(const LhfsHifHdl hif);
+
+/*!
+ * @brief Get number of levels
+ * @sa lhfsGetStatus
+ */
+size_t lhfsGetLevels(const LhfsHifHdl hif);
+
+/*!
+ * @brief Get the Schur complement size
+ * @sa lhfsGetStatus
+ */
+size_t lhfsGetSchurSize(const LhfsHifHdl hif);
+
+/*!
+ * @brief Get the Schur complement rank
+ * @sa lhfsGetStatus
+ */
+size_t lhfsGetSchurRank(const LhfsHifHdl hif);
+
+/*!
+ * @}
+ */
+
+/*!
+ * @addtogroup ccomplexdouble
+ * @{
+ */
+
+/*!
+ * @brief Create a double-precision complex HIF instance
+ * @param[in] A Input coefficient matrix (used in iterative refinement)
+ * @param[in] S Sparsifier input
+ * @param[in] params Control parameters, see @ref lhfSetDefaultParams
+ *
+ * This function create an instance of double-precision HIF (see @ref hif::HIF)
+ * preconditioner. Note that both @a A and @a S can be @a NULL, which then will
+ * create an empty instance. If both operators are provided, then the
+ * preconditioner will be factorized based on @a S. If only @a A is provided,
+ * then HIF is computed on @a A. If only @a S is provided, then @a A is set to
+ * be @a S besides computing the factorization on it. In addition, if @a params
+ * is @a NULL, then the default parameters will be used.
+ *
+ * @sa lhfdDestroy
+ */
+LhfzHifHdl lhfzCreate(const LhfzMatrixHdl A, const LhfzMatrixHdl S,
+                      const double params[]);
+
+/*!
+ * @brief Destroy a double-precision complex HIF instance
+ * @param[out] hif HIF preconditioner
+ * @sa lhfzCreate
+ */
+LhfStatus lhfzDestroy(LhfzHifHdl hif);
+
+/*!
+ * @brief Setup a double-precision complex HIF instance
+ * @param[out] hif A HIF instance
+ * @param[in] A Input coefficient matrix (used in iterative refinement)
+ * @param[in] S Sparsifier input
+ * @param[in] params Control parameters, see @ref lhfSetDefaultParams
+ *
+ * This function serves similar to @ref lhfzCreate, except that @a A and @a S
+ * cannot be both @a NULL. This function is to defer the factorization from
+ * construction of HIF preconditioners.
+ *
+ * @sa lhfzCreate
+ */
+LhfStatus lhfzSetup(LhfzHifHdl hif, const LhfzMatrixHdl A,
+                    const LhfzMatrixHdl S, const double params[]);
+
+/*!
+ * @brief Update the @a A matrix in HIF
+ * @param[out] hif A HIF instance
+ * @param[in] A A new matrix
+ * @note This function will not call factorization on @a A.
+ * @sa lhfzRefactorize
+ */
+LhfStatus lhfzUpdate(LhfzHifHdl hif, const LhfzMatrixHdl A);
+
+/*!
+ * @brief Refactorize a HIF preconditioner
+ * @param[out] hif A HIF instance
+ * @param[in] S A new sparsifier
+ * @param[in] params Control parameters
+ * @note This function will not update @a A inside @a hif
+ * @note If @a params is @a NULL, then the default parameters will be used.
+ * @sa lhfzUpdate
+ */
+LhfStatus lhfzRefactorize(LhfzHifHdl hif, const LhfzMatrixHdl S,
+                          const double params[]);
+
+/*!
+ * @brief Apply a preconditioner with a certian operation mode
+ * @param[in] hif A HIF instance
+ * @param[in] op Operation tag
+ * @param[in] b The RHS vector
+ * @param[in] nirs Number of iterative refinements
+ * @param[in] betas Relative residual norm bounds for IR with op=solve
+ * @param[in] rank Numerical rank
+ * @param[out] x Computed solution vector
+ * @param[out] ir_status (optional) If IR and @a betas is provided, then this
+ *                        records the number of actual IR ( @a ir_status[0] )
+ *                        and the IR status ( @a ir_status[1] ).
+ *
+ * This is the core function of HIF. A HIF instance can be applied in four
+ * different modes, namely triangular solve and its Hermitian/tranpose variant,
+ * as well as matrix-vector multiplication and its Hermitian/tranpose variant.
+ * For the triangular solve modes, @a nirs can be greater than one, which means
+ * iterative refinement is enabled. With IR enabled, if @a betas is provided,
+ * i.e., not @a NULL, then we will iterative until (1) res<=betas[0], (2)
+ * res>betas[1], or (3) it=nirs, and the actual iteratoin steps and return
+ * status are stored in @a ir_status if provided (i.e., not @a NULL ). On the
+ * other side, if @a betas=NULL, then the a fixed amount of IR ( @a nirs ) are
+ * performed and @a ir_status is not accessed. Regarding @a rank, in general, it
+ * should use @a LHF_DEFAULT_RANK.
+ *
+ * @sa lhfzSolve
+ */
+LhfStatus lhfzApply(const LhfzHifHdl hif, const LhfOperationType op,
+                    const double _Complex* b, const int nirs,
+                    const double* betas, const int rank, double _Complex* x,
+                    int* ir_status);
+
+/*!
+ * @brief Triangular solve
+ *
+ * For the sake of convenience, we provide the following routine as it is the
+ * most commonly used interface. The following routine is equivalent to calling
+ * @ref lhfzApply with @a op=LHF_S, @a nirs=1, and @a rank=LHF_DEFAULT_RANK.
+ *
+ * @sa lhfzApply
+ */
+LhfStatus lhfzSolve(const LhfzHifHdl hif, const double _Complex* b,
+                    double _Complex* x);
+
+/*!
+ * @brief Get the statistics of a computed HIF instance
+ * @param[in] hif A HIF instance
+ * @param[out] stats A length-9 array stores certain useful information
+ *
+ * Regarding the output @a stats:
+ *  - stats[0]: Number of nonzeros of a preconditioner
+ *  - stats[1]: Total deferals
+ *  - stats[2]: Dynamic deferals (status[1]-status[2] are static deferals)
+ *  - stats[3]: Total droppings
+ *  - stats[4]: Droppings due to scalability-oriented strategy
+ *  - stats[5]: Number of levels
+ *  - stats[6]: Numerical rank of the whole preconditioner
+ *  - stats[7]: The numerical rank of the final Schur complement
+ *  - stats[8]: The size of the final Schur complement (status[7]<=status[8])
+ */
+LhfStatus lhfzGetStatus(const LhfzHifHdl hif, size_t stats[]);
+
+/*!
+ * @brief Get number of nonzeros of a HIF preconditioner
+ * @sa lhfzGetStatus
+ */
+size_t lhfzGetNnz(const LhfzHifHdl hif);
+
+/*!
+ * @brief Get number of levels
+ * @sa lhfzGetStatus
+ */
+size_t lhfzGetLevels(const LhfzHifHdl hif);
+
+/*!
+ * @brief Get the Schur complement size
+ * @sa lhfzGetStatus
+ */
+size_t lhfzGetSchurSize(const LhfzHifHdl hif);
+
+/*!
+ * @brief Get the Schur complement rank
+ * @sa lhfzGetStatus
+ */
+size_t lhfzGetSchurRank(const LhfzHifHdl hif);
+
+/*!
+ * @}
+ */
+
+/*!
+ * @addtogroup ccomplexsingle
+ * @{
+ */
+
+/*!
+ * @brief Create a single-precision complex HIF instance
+ * @param[in] A Input coefficient matrix (used in iterative refinement)
+ * @param[in] S Sparsifier input
+ * @param[in] params Control parameters, see @ref lhfSetDefaultParams
+ *
+ * This function create an instance of single-precision HIF (see @ref hif::HIF)
+ * preconditioner. Note that both @a A and @a S can be @a NULL, which then will
+ * create an empty instance. If both operators are provided, then the
+ * preconditioner will be factorized based on @a S. If only @a A is provided,
+ * then HIF is computed on @a A. If only @a S is provided, then @a A is set to
+ * be @a S besides computing the factorization on it. In addition, if @a params
+ * is @a NULL, then the default parameters will be used.
+ *
+ * @sa lhfcDestroy
+ */
+LhfcHifHdl lhfcCreate(const LhfcMatrixHdl A, const LhfcMatrixHdl S,
+                      const double params[]);
+
+/*!
+ * @brief Destroy a single-precision complex HIF instance
+ * @param[out] hif HIF preconditioner
+ * @sa lhfcCreate
+ */
+LhfStatus lhfcDestroy(LhfcHifHdl hif);
+
+/*!
+ * @brief Setup a single-precision complex HIF instance
+ * @param[out] hif A HIF instance
+ * @param[in] A Input coefficient matrix (used in iterative refinement)
+ * @param[in] S Sparsifier input
+ * @param[in] params Control parameters, see @ref lhfSetDefaultParams
+ *
+ * This function serves similar to @ref lhfcCreate, except that @a A and @a S
+ * cannot be both @a NULL. This function is to defer the factorization from
+ * construction of HIF preconditioners.
+ *
+ * @sa lhfcCreate
+ */
+LhfStatus lhfcSetup(LhfcHifHdl hif, const LhfcMatrixHdl A,
+                    const LhfcMatrixHdl S, const double params[]);
+
+/*!
+ * @brief Update the @a A matrix in HIF
+ * @param[out] hif A HIF instance
+ * @param[in] A A new matrix
+ * @note This function will not call factorization on @a A.
+ * @sa lhfcRefactorize
+ */
+LhfStatus lhfcUpdate(LhfcHifHdl hif, const LhfcMatrixHdl A);
+
+/*!
+ * @brief Refactorize a HIF preconditioner
+ * @param[out] hif A HIF instance
+ * @param[in] S A new sparsifier
+ * @param[in] params Control parameters
+ * @note This function will not update @a A inside @a hif
+ * @note If @a params is @a NULL, then the default parameters will be used.
+ * @sa lhfcUpdate
+ */
+LhfStatus lhfcRefactorize(LhfcHifHdl hif, const LhfcMatrixHdl S,
+                          const double params[]);
+
+/*!
+ * @brief Apply a preconditioner with a certian operation mode
+ * @param[in] hif A HIF instance
+ * @param[in] op Operation tag
+ * @param[in] b The RHS vector
+ * @param[in] nirs Number of iterative refinements
+ * @param[in] betas Relative residual norm bounds for IR with op=solve
+ * @param[in] rank Numerical rank
+ * @param[out] x Computed solution vector
+ * @param[out] ir_status (optional) If IR and @a betas is provided, then this
+ *                        records the number of actual IR ( @a ir_status[0] )
+ *                        and the IR status ( @a ir_status[1] ).
+ *
+ * This is the core function of HIF. A HIF instance can be applied in four
+ * different modes, namely triangular solve and its Hermitian/tranpose variant,
+ * as well as matrix-vector multiplication and its Hermitian/tranpose variant.
+ * For the triangular solve modes, @a nirs can be greater than one, which means
+ * iterative refinement is enabled. With IR enabled, if @a betas is provided,
+ * i.e., not @a NULL, then we will iterative until (1) res<=betas[0], (2)
+ * res>betas[1], or (3) it=nirs, and the actual iteratoin steps and return
+ * status are stored in @a ir_status if provided (i.e., not @a NULL ). On the
+ * other side, if @a betas=NULL, then the a fixed amount of IR ( @a nirs ) are
+ * performed and @a ir_status is not accessed. Regarding @a rank, in general, it
+ * should use @a LHF_DEFAULT_RANK.
+ *
+ * @sa lhfcSolve
+ */
+LhfStatus lhfcApply(const LhfcHifHdl hif, const LhfOperationType op,
+                    const float _Complex* b, const int nirs,
+                    const double* betas, const int rank, float _Complex* x,
+                    int* ir_status);
+
+/*!
+ * @brief Triangular solve
+ *
+ * For the sake of convenience, we provide the following routine as it is the
+ * most commonly used interface. The following routine is equivalent to calling
+ * @ref lhfcApply with @a op=LHF_S, @a nirs=1, and @a rank=LHF_DEFAULT_RANK.
+ *
+ * @sa lhfcApply
+ */
+LhfStatus lhfcSolve(const LhfcHifHdl hif, const float _Complex* b,
+                    float _Complex* x);
+
+/*!
+ * @brief Get the statistics of a computed HIF instance
+ * @param[in] hif A HIF instance
+ * @param[out] stats A length-9 array stores certain useful information
+ *
+ * Regarding the output @a stats:
+ *  - stats[0]: Number of nonzeros of a preconditioner
+ *  - stats[1]: Total deferals
+ *  - stats[2]: Dynamic deferals (status[1]-status[2] are static deferals)
+ *  - stats[3]: Total droppings
+ *  - stats[4]: Droppings due to scalability-oriented strategy
+ *  - stats[5]: Number of levels
+ *  - stats[6]: Numerical rank of the whole preconditioner
+ *  - stats[7]: The numerical rank of the final Schur complement
+ *  - stats[8]: The size of the final Schur complement (status[7]<=status[8])
+ */
+LhfStatus lhfcGetStatus(const LhfcHifHdl hif, size_t stats[]);
+
+/*!
+ * @brief Get number of nonzeros of a HIF preconditioner
+ * @sa lhfcGetStatus
+ */
+size_t lhfcGetNnz(const LhfcHifHdl hif);
+
+/*!
+ * @brief Get number of levels
+ * @sa lhfcGetStatus
+ */
+size_t lhfcGetLevels(const LhfcHifHdl hif);
+
+/*!
+ * @brief Get the Schur complement size
+ * @sa lhfcGetStatus
+ */
+size_t lhfcGetSchurSize(const LhfcHifHdl hif);
+
+/*!
+ * @brief Get the Schur complement rank
+ * @sa lhfcGetStatus
+ */
+size_t lhfcGetSchurRank(const LhfcHifHdl hif);
+
+/*!
+ * @}
+ */
+
+/*!
+ * @addtogroup cmixed
+ * @{
+ */
+
+/*!
+ * @brief Update the @a A matrix in HIF (double precision)
+ * @param[out] hif A HIF instance (single-precision)
+ * @param[in] A A new matrix (double-precision)
+ * @note This function will not call factorization on @a A.
+ * @note This function will update the double-precision operator in @a hif.
+ * @sa lhfsdApply
+ */
+LhfStatus lhfsdUpdate(LhfsHifHdl hif, LhfdMatrixHdl A);
+
+/*!
+ * @brief Apply a single preconditioner with a certian operation mode to obtain
+ *        double solutions
+ * @param[in] hif A single-precision HIF instance
+ * @param[in] op Operation tag
+ * @param[in] b The RHS vector
+ * @param[in] nirs Number of iterative refinements
+ * @param[in] betas Relative residual norm bounds for IR with op=solve
+ * @param[in] rank Numerical rank
+ * @param[out] x Computed solution vector
+ * @param[out] ir_status (optional) If IR and @a betas is provided, then this
+ *                        records the number of actual IR ( @a ir_status[0] )
+ *                        and the IR status ( @a ir_status[1] ).
+ *
+ * This is the core function of HIF. A HIF instance can be applied in four
+ * different modes, namely triangular solve and its Hermitian/tranpose variant,
+ * as well as matrix-vector multiplication and its Hermitian/tranpose variant.
+ * For the triangular solve modes, @a nirs can be greater than one, which means
+ * iterative refinement is enabled. With IR enabled, if @a betas is provided,
+ * i.e., not @a NULL, then we will iterative until (1) res<=betas[0], (2)
+ * res>betas[1], or (3) it=nirs, and the actual iteratoin steps and return
+ * status are stored in @a ir_status if provided (i.e., not @a NULL ). On the
+ * other side, if @a betas=NULL, then the a fixed amount of IR ( @a nirs ) are
+ * performed and @a ir_status is not accessed. Regarding @a rank, in general, it
+ * should use @a LHF_DEFAULT_RANK.
+ *
+ * In addition, this function is for mixed-precision computation, in that a
+ * single-precision HIF is used to obtain double-precision solutions. Note that
+ * if iterative refinement is on (i.e., @a nirs>1 and op=solve), then @a A must
+ * be passed in separately via @ref lhfsdUpdate, because we need a
+ * double-precision matrix for iterations.
+ *
+ * @sa lhfsdSolve, lhfdApply, lhfsApply, lhfsdUpdate
+ */
+LhfStatus lhfsdApply(const LhfsHifHdl hif, const LhfOperationType op,
+                     const double* b, const int nirs, const double* betas,
+                     const int rank, double* x, int* ir_status);
+
+/*!
+ * @brief Triangular solve with midex double- and single-precisoin
+ *
+ * For the sake of convenience, we provide the following routine as it is the
+ * most commonly used interface. The following routine is equivalent to calling
+ * @ref lhfsdApply with @a op=LHF_S, @a nirs=1, and @a rank=LHF_DEFAULT_RANK.
+ *
+ * @sa lhfsdApply
+ */
+LhfStatus lhfsdSolve(const LhfsHifHdl hif, const double* b, double* x);
+
+/*!
+ * @brief Update the @a A matrix in HIF (complex double precision)
+ * @param[out] hif A HIF instance (complex single-precision)
+ * @param[in] A A new matrix (complex double-precision)
+ * @note This function will not call factorization on @a A.
+ * @note This function will update the double-precision operator in @a hif.
+ * @sa lhfczApply
+ */
+LhfStatus lhfczUpdate(LhfcHifHdl hif, LhfzMatrixHdl A);
+
+/*!
+ * @brief Apply a single preconditioner with a certian operation mode to obtain
+ *        double solutions (complex arithmetic)
+ * @param[in] hif A complex single-precision HIF instance
+ * @param[in] op Operation tag
+ * @param[in] b The RHS vector
+ * @param[in] nirs Number of iterative refinements
+ * @param[in] betas Relative residual norm bounds for IR with op=solve
+ * @param[in] rank Numerical rank
+ * @param[out] x Computed solution vector
+ * @param[out] ir_status (optional) If IR and @a betas is provided, then this
+ *                        records the number of actual IR ( @a ir_status[0] )
+ *                        and the IR status ( @a ir_status[1] ).
+ *
+ * This is the core function of HIF. A HIF instance can be applied in four
+ * different modes, namely triangular solve and its Hermitian/tranpose variant,
+ * as well as matrix-vector multiplication and its Hermitian/tranpose variant.
+ * For the triangular solve modes, @a nirs can be greater than one, which means
+ * iterative refinement is enabled. With IR enabled, if @a betas is provided,
+ * i.e., not @a NULL, then we will iterative until (1) res<=betas[0], (2)
+ * res>betas[1], or (3) it=nirs, and the actual iteratoin steps and return
+ * status are stored in @a ir_status if provided (i.e., not @a NULL ). On the
+ * other side, if @a betas=NULL, then the a fixed amount of IR ( @a nirs ) are
+ * performed and @a ir_status is not accessed. Regarding @a rank, in general, it
+ * should use @a LHF_DEFAULT_RANK.
+ *
+ * In addition, this function is for mixed-precision computation, in that a
+ * single-precision HIF is used to obtain double-precision solutions. Note that
+ * if iterative refinement is on (i.e., @a nirs>1 and op=solve), then @a A must
+ * be passed in separately via @ref lhfczUpdate, because we need a
+ * double-precision matrix for iterations.
+ *
+ * @sa lhfczSolve, lhfzApply, lhfcApply, lhfczUpdate
+ */
+LhfStatus lhfczApply(const LhfcHifHdl hif, const LhfOperationType op,
+                     const double _Complex* b, const int nirs,
+                     const double* betas, const int rank, double _Complex* x,
+                     int* ir_status);
+
+/*!
+ * @brief Triangular solve with midex double- and single-precisoin (complex)
+ *
+ * For the sake of convenience, we provide the following routine as it is the
+ * most commonly used interface. The following routine is equivalent to calling
+ * @ref lhfczApply with @a op=LHF_S, @a nirs=1, and @a rank=LHF_DEFAULT_RANK.
+ *
+ * @sa lhfczApply
+ */
+LhfStatus lhfczSolve(const LhfcHifHdl hif, const double _Complex* b,
+                     double _Complex* x);
 
 /*!
  * @}
