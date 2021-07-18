@@ -34,35 +34,63 @@ endif
 
 default: libhifir.so
 
-lib: libhifir.so libhifir-debug.so
+lib: libhifir.so libhifir_i64.so
+
+libhifir-debug.so: libhifir-debug.so.0
+	ln -sf $< $@
+
+libhifir_i64-debug.so: libhifir_i64-debug.so.0
+	ln -sf $< $@
 
 libhifir.so: libhifir.so.0
-	ln -s $< $@
+	ln -sf $< $@
 
 libhifir.so.0: libhifir.so.0.1.0
-	ln -s $< $@
+	ln -sf $< $@
 
 libhifir.so.0.1.0: libhifir.o
 	$(CXX) -shared -fPIC -Wl,-soname,libhifir.so.0 -o $@ $< \
 		$(LIBHIFIR_LDFLAGS) $(LIBHIFIR_LIBS)
 	@chmod a-x $@
 
-libhifir-debug.so: libhifir-debug.so.0
-	ln -s $< $@
+libhifir_i64.so: libhifir_i64.so.0
+	ln -sf $< $@
+
+libhifir_i64.so.0: libhifir_i64.so.0.1.0
+	ln -sf $< $@
+
+libhifir_i64.so.0.1.0: libhifir_i64.o
+	$(CXX) -shared -fPIC -Wl,-soname,libhifir_i64.so.0 -o $@ $< \
+		$(LIBHIFIR_LDFLAGS) $(LIBHIFIR_LIBS)
+	@chmod a-x $@
 
 libhifir-debug.so.0: libhifir-debug.so.0.1.0
-	ln -s $< $@
+	ln -sf $< $@
 
 libhifir-debug.so.0.1.0: libhifir-debug.o
 	$(CXX) -shared -fPIC -Wl,-soname,libhifir-debug.so.0 -o $@ $< \
 		$(LIBHIFIR_LDFLAGS) $(LIBHIFIR_LIBS)
 	@chmod a-x $@
 
+libhifir_i64-debug.so.0: libhifir_i64-debug.so.0.1.0
+	ln -sf $< $@
+
+libhifir_i64-debug.so.0.1.0: libhifir_i64-debug.o
+	$(CXX) -shared -fPIC -Wl,-soname,libhifir_i64-debug.so.0 -o $@ $< \
+		$(LIBHIFIR_LDFLAGS) $(LIBHIFIR_LIBS)
+	@chmod a-x $@
+
 libhifir.o: libhifir.cpp libhifir.h
 	$(CXX) -c $(LIBHIFIR_OPT_FLAGS) $<
 
+libhifir_i64.o: libhifir.cpp libhifir.h
+	$(CXX) -c $(LIBHIFIR_OPT_FLAGS) -DLIBHIFIR_INT_SIZE=64 $< -o $@
+
 libhifir-debug.o: libhifir.cpp libhifir.h
 	$(CXX) -c $(LIBHIFIR_DBG_FLAGS) $< -o $@
+
+libhifir_i64-debug.o: libhifir.cpp libhifir.h
+	$(CXX) -c $(LIBHIFIR_DBG_FLAGS) -DLIBHIFIR_INT_SIZE=64 $< -o $@
 
 clean:
 	rm -f *.so* *.o
