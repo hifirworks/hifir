@@ -50,3 +50,20 @@
 
 /// \defgroup macros Preprocessor macros
 /// \ingroup itr
+
+/// \defgroup c LIBHIFIR C Interfaces
+
+/// \defgroup cdouble Double-Precision Routines in LIBHIFIR
+/// \ingroup c
+
+/// \defgroup csingle Single-Precision Routines in LIBHIFIR
+/// \ingroup c
+
+/// \defgroup ccomplexdouble Double-Precision Complex Routines in LIBHIFIR
+/// \ingroup c
+
+/// \defgroup ccomplexsingle Single-Precision Complex Routines in LIBHIFIR
+/// \ingroup c
+
+/// \defgroup cmixed Mixed-Precision Routines in LIBHIFIR
+/// \ingroup c
