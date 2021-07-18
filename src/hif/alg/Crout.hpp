@@ -302,12 +302,11 @@ class Crout {
             ++L_v_itr;
           }
           for (; L_i_itr != L_last; ++L_i_itr, ++L_v_itr) {
-            // convert to c index
             const auto idx = *L_i_itr;
-            hif_assert(idx > deferred_step(),
+            hif_assert((size_type)idx > deferred_step(),
                        "L index %zd in computing l should greater than step "
                        "%zd(defers:%zd)",
-                       idx, _step, _defers);
+                       (size_type)idx, _step, _defers);
             // compute this entry, if index does not exist, assign new value to
             // -L*d*u, else, -= L*d*u
             if (l.push_back(idx, _step))
@@ -386,12 +385,11 @@ class Crout {
           ++L_v_itr;
         }
         for (; L_i_itr != L_last; ++L_i_itr, ++L_v_itr) {
-          // convert to c index
           const auto idx = *L_i_itr;
-          hif_assert(idx > deferred_step(),
+          hif_assert((size_type)idx > deferred_step(),
                      "L index %zd in computing l should greater than step "
                      "%zd(defers:%zd)",
-                     idx, _step, _defers);
+                     (size_type)idx, _step, _defers);
           // compute this entry, if index does not exist, assign new value to
           // -L*d*L^T, else, -= L*d*L^T
           if (l.push_back(idx, _step))
