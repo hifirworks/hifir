@@ -5,10 +5,15 @@
 CXX = g++
 
 ifneq ($(HIFIR_HPP),)
-    CPPFLAGS = -I$(HIFIR_HPP)
+	HIFIR_HOME = $(HIFIR_HPP)
 else
-    CPPFLAGS = -I../src
+    HIFIR_HOME = ../src
 endif
+CPPFLAGS = -I$(HIFIR_HOME)
+
+GLOBAL_VERSION = $(shell grep -i "define hif_global" $(HIFIR_HOME)/hif/version.h|awk '{print $$3}')
+MAJOR_VERSION = $(shell grep -i "define hif_major" $(HIFIR_HOME)/hif/version.h|awk '{print $$3}')
+MINOR_VERSION = $(shell grep -i "define hif_minor" $(HIFIR_HOME)/hif/version.h|awk '{print $$3}')
 
 LIBHIFIR_CXXFLAGS = -g -fPIC -fopenmp -Wall -Wno-comment $(CXXFLAGS)
 LIBHIFIR_OPT_FLAGS = $(LIBHIFIR_CXXFLAGS) -O3 -march=native -ffast-math \
@@ -33,10 +38,10 @@ ifeq ($(PREFIX),)
 endif
 
 .PRECIOUS: \
-	libhifir.so.0.1 \
-	libhifir_i64.so.0.1 \
-	libhifir-debug.so.0.1 \
-	libhifir_i64-debug.so.0.1
+	libhifir.so.$(GLOBAL_VERSION).$(MAJOR_VERSION) \
+	libhifir_i64.so.$(GLOBAL_VERSION).$(MAJOR_VERSION) \
+	libhifir-debug.so.$(GLOBAL_VERSION).$(MAJOR_VERSION) \
+	libhifir_i64-debug.so.$(GLOBAL_VERSION).$(MAJOR_VERSION)
 
 default: libhifir.so
 
@@ -46,11 +51,11 @@ debug: libhifir-debug.so
 
 all-debug: libhifir-debug.so libhifir_i64-debug.so
 
-%.so: %.so.0.1
+%.so: %.so.$(GLOBAL_VERSION).$(MAJOR_VERSION)
 	ln -sf $< $@
 
-%.so.0.1: %.o
-	$(CXX) -shared -fPIC -Wl,-soname,$@ -o ${@}.0 $< \
+%.so.$(GLOBAL_VERSION).$(MAJOR_VERSION): %.o
+	$(CXX) -shared -fPIC -Wl,-soname,$@ -o ${@}.${MINOR_VERSION} $< \
 		$(LIBHIFIR_LDFLAGS) $(LIBHIFIR_LIBS)
 	@chmod a-x ${@}.0
 	ln -sf ${@}.0 $@
