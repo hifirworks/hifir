@@ -39,7 +39,7 @@ extern "C" {
 #endif
 
 /*!
- * @addtogroup
+ * @addtogroup c
  * @{
  */
 
