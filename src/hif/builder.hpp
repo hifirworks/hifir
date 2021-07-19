@@ -271,11 +271,9 @@ class HIF {
                  HIF_MINOR_VERSION);
         internal::introduced = true;
       }
-      hif_info("Params (control parameters) are:\n");
-      hif_info(opt_repr(params).c_str());
     }
     const bool revert_warn = warn_flag();
-    if (hif_verbose(NONE, params))
+    if (params.verbose == VERBOSE_NONE)
       (void)warn_flag(0);
     else
       warn_flag(1);

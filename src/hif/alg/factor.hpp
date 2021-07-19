@@ -1070,7 +1070,7 @@ inline CsType level_factorize(
   stats[5] += info_counter[3] + info_counter[4];  // space-based droppings
 
   // now we are done
-  if (hif_verbose(INFO, opts)) {
+  if (hif_verbose(INFO2, opts)) {
     hif_info(
         "finish Crout update...\n"
         "\ttotal deferrals=%zd\n"
@@ -1117,12 +1117,13 @@ inline CsType level_factorize(
                               [](const value_type l, const value_type r) {
                                 return std::abs(l) < std::abs(r);
                               })));
-    if (post_flag == 2)
-      hif_info("too many dynamic deferrals, resort to complete factorization");
-    hif_info("time: %gs", timer.time());
   }
 
   if (hif_verbose(INFO, opts)) {
+    if (post_flag == 2)
+      hif_info("too many dynamic deferrals, resort to complete factorization");
+    hif_info("time: %gs", timer.time());
+    // logging finished for factorization
     hif_info("computing Schur complement and assembling Prec...");
     internal::print_post_flag(post_flag);
   }
@@ -1144,7 +1145,7 @@ inline CsType level_factorize(
       L_B      = L.template split<false>(m, L_start);
       L.destroy();
       timer2.finish();
-      if (hif_verbose(INFO, opts))
+      if (hif_verbose(INFO2, opts))
         hif_info("splitting LB and freeing L took %gs.", timer2.time());
       crs_type U_F;
       do {
@@ -1153,7 +1154,7 @@ inline CsType level_factorize(
         U_B       = U.template split_ccs<false>(m, U_start);
         U.destroy();
         timer2.finish();
-        if (hif_verbose(INFO, opts))
+        if (hif_verbose(INFO2, opts))
           hif_info("splitting UB and freeing U took %gs.", timer2.time());
         timer2.start();
         const size_type nnz1 = L_E.nnz(), nnz2 = U_F2.nnz();
@@ -1163,7 +1164,7 @@ inline CsType level_factorize(
           a_L *= 2;
           a_U *= 2;
         }
-        if (hif_verbose(INFO, opts))
+        if (hif_verbose(INFO2, opts))
           hif_info("applying dropping on L_E and U_F with alpha_{L,U}=%g,%g...",
                    a_L, a_U);
         if (m < n) {
@@ -1184,7 +1185,7 @@ inline CsType level_factorize(
 #endif  // HIF_NO_DROP_LE_UF
         timer2.finish();
         U_F = crs_type(U_F2);
-        if (hif_verbose(INFO, opts))
+        if (hif_verbose(INFO2, opts))
           hif_info("nnz(L_E)=%zd/%zd, nnz(U_F)=%zd/%zd, time: %gs...", nnz1,
                    L_E.nnz(), nnz2, U_F.nnz(), timer2.time());
       } while (false);  // U_F2 got freed
@@ -1196,7 +1197,7 @@ inline CsType level_factorize(
       S = compute_Schur_simple(s, A_crs, t, p, q, m, L_E, d, U_F, l);
 #else
       if (hif_verbose(INFO, opts))
-        hif_info("using %d for Schur computation...", schur_threads);
+        hif_info("using %d threads for Schur computation...", schur_threads);
       S = mt::compute_Schur_simple(s, A_crs, t, p, q, m, L_E, d, U_F, l,
                                    schur_threads);
 #endif
@@ -1294,9 +1295,14 @@ inline CsType level_factorize(
     auto &last_level = precs.back().dense_solver;
     last_level.set_matrix(std::move(S_D));
     last_level.factorize(opts);
-    if (hif_verbose(INFO, opts))
-      hif_info("successfully factorized the dense component of size %zd...",
-               last_level.mat().nrows());
+    if (hif_verbose(INFO, opts)) {
+      hif_info(
+          "successfully factorized the dense component of "
+          "(size,rank)=(%zd,%zd)...",
+          last_level.mat().nrows(), last_level.rank());
+      hif_info("is the final Schur complement full-rank? %s",
+               (last_level.mat().nrows() == last_level.rank() ? "yes" : "no"));
+    }
   }
 
   timer.finish();  // profile post-processing
