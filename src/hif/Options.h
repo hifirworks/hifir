@@ -44,13 +44,13 @@ extern "C" {
  * \brief the verbose level for progress report
  */
 enum {
-  HIF_VERBOSE_NONE     = 0,                     /*!< mute */
-  HIF_VERBOSE_INFO     = 1,                     /*!< general information */
-  HIF_VERBOSE_PRE      = HIF_VERBOSE_INFO << 1, /*!< preprocessing */
-  HIF_VERBOSE_FAC      = HIF_VERBOSE_PRE << 1,  /*!< factorization update */
-  HIF_VERBOSE_PRE_TIME = HIF_VERBOSE_FAC << 1,  /*! pre time */
-  HIF_VERBOSE_MEM      = HIF_VERBOSE_PRE_TIME << 1,
-  /*!< memory debug */
+  HIF_VERBOSE_NONE     = 0,                         /*!< mute */
+  HIF_VERBOSE_INFO     = 1,                         /*!< general information */
+  HIF_VERBOSE_PRE      = HIF_VERBOSE_INFO << 1,     /*!< preprocessing */
+  HIF_VERBOSE_FAC      = HIF_VERBOSE_PRE << 1,      /*!< factorization update */
+  HIF_VERBOSE_PRE_TIME = HIF_VERBOSE_FAC << 1,      /*! pre time */
+  HIF_VERBOSE_MEM      = HIF_VERBOSE_PRE_TIME << 1, /*!< memory debug */
+  HIF_VERBOSE_INFO2    = HIF_VERBOSE_MEM << 1, /*!< more detailed than info */
 };
 
 /*!
@@ -239,6 +239,7 @@ enum : int {
   VERBOSE_FAC      = ::HIF_VERBOSE_FAC,      /*!< factorization update */
   VERBOSE_PRE_TIME = ::HIF_VERBOSE_PRE_TIME, /*!< pre time */
   VERBOSE_MEM      = ::HIF_VERBOSE_MEM,      /*!< memory debug */
+  VERBOSE_INFO2    = ::HIF_VERBOSE_INFO2,    /*!< more detailed than info */
 };
 
 /*!
