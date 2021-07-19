@@ -213,71 +213,6 @@ class CompressedStorage {
     }
   }
 
-  /// \brief filter out small values
-  /// \param[in] eps eliminating threshold, default is 0
-  /// \param[in] shrink if \a false (default), then do not shrink memory
-  /// \return total elminated entries
-  ///
-  /// All \a mag(values) that are <= eps * max(abs(local value)) will be
-  /// eliminated, and the resulting matrix will be compressed.
-  inline size_type eliminate(scalar_type eps = 0, const bool shrink = false) {
-    if (_psize) {
-      const size_type psize = _psize;
-      eps                   = eps < 0.0 ? 0.0 : eps;
-      const size_type nz    = nnz();
-      size_type       j(0);
-      auto            v_itr_first = _vals.cbegin();
-      auto            i_itr_first = _indices.cbegin();
-      size_type       pos(0);
-      for (size_type i(0); i < psize; ++i) {
-        const size_type j_bak(j);
-        auto            v_itr = v_itr_first + pos;
-        auto            i_itr = i_itr_first + pos;
-        const auto      lnnz  = _ind_start[i + 1] - pos;
-        if (lnnz) {
-          auto              last = v_itr + lnnz;
-          const scalar_type thres =
-              eps *
-              std::abs(*std::max_element(
-                  v_itr, last, [](const value_type l, const value_type r) {
-                    return std::abs(l) < std::abs(r);
-                  }));
-          auto i_itr2 = i_itr;
-          for (auto itr = v_itr; itr != last; ++itr, ++i_itr2)
-            if (std::abs(*itr) > thres) {
-              _indices[j] = *i_itr2;
-              _vals[j++]  = *itr;
-            }
-        }
-        // update position
-        pos               = _ind_start[i + 1];
-        _ind_start[i + 1] = _ind_start[i] + (j - j_bak);
-      }
-      const size_type elms = nz - j;
-      if (elms && shrink) {
-        do {
-          array_type vals2(nnz());
-          hif_error_if(nnz() && vals2.status() == DATA_UNDEF,
-                       "memory allocation failed");
-          std::copy_n(v_itr_first, nnz(), vals2.begin());
-          _vals.swap(vals2);
-        } while (false);
-        do {
-          iarray_type indices2(nnz());
-          hif_error_if(nnz() && indices2.status() == DATA_UNDEF,
-                       "memory allocation failed");
-          std::copy_n(i_itr_first, nnz(), indices2.begin());
-          _indices.swap(indices2);
-        } while (false);
-      } else if (elms) {
-        _vals.resize(nnz());
-        _indices.resize(nnz());
-      }
-      return elms;
-    } else
-      return 0;
-  }
-
  protected:
   /// \brief begin assemble rows
   /// \note HIF only requires pushing back operations
@@ -707,6 +642,79 @@ class CompressedStorage {
     iarray_type().swap(_indices);
     array_type().swap(_vals);
     _psize = 0;
+  }
+
+  /// \brief filter out small values
+  /// \param[in] n number of columns for CRS and ros for CCS
+  /// \param[in] eps eliminating threshold, default is 0
+  /// \param[in] shrink if \a false (default), then do not shrink memory
+  /// \return total elminated entries
+  inline size_type _prune(const size_type n, scalar_type eps = 0,
+                          const bool shrink = false) {
+    if (_psize) {
+      const size_type psize = _psize;
+      eps                   = eps < 0.0 ? 0.0 : eps;
+      const size_type nz    = nnz();
+      size_type       j(0);
+      auto            v_itr_first = _vals.cbegin();
+      auto            i_itr_first = _indices.cbegin();
+      size_type       pos(0);
+      // work space for determine thresholds for the orthogonal direction, i.e.,
+      // column for CRS and row for CCS. n+1 to potentially handle 1-based
+      // index since this maybe called by the user directly, and the user
+      // may use 1-based index.
+      Array<scalar_type> buf(n + 1);
+      std::fill_n(buf.begin(), n, scalar_type(0));
+      // determine the thresholds for the orthogonal direction
+      for (size_type i(0); i < nz; ++i)
+        buf[_indices[i]] = eps * std::max(buf[_indices[i]], std::abs(_vals[i]));
+      for (size_type i(0); i < psize; ++i) {
+        const size_type j_bak(j);
+        auto            v_itr = v_itr_first + pos;
+        auto            i_itr = i_itr_first + pos;
+        const auto      lnnz  = _ind_start[i + 1] - pos;
+        if (lnnz) {
+          auto              last = v_itr + lnnz;
+          const scalar_type thres =
+              eps *
+              std::abs(*std::max_element(
+                  v_itr, last, [](const value_type l, const value_type r) {
+                    return std::abs(l) < std::abs(r);
+                  }));
+          auto i_itr2 = i_itr;
+          for (auto itr = v_itr; itr != last; ++itr, ++i_itr2)
+            if (!(std::abs(*itr) <= std::min(thres, buf[*i_itr2]))) {
+              _indices[j] = *i_itr2;
+              _vals[j++]  = *itr;
+            }
+        }
+        // update position
+        pos               = _ind_start[i + 1];
+        _ind_start[i + 1] = _ind_start[i] + (j - j_bak);
+      }
+      const size_type elms = nz - j;
+      if (elms && shrink) {
+        do {
+          array_type vals2(nnz());
+          hif_error_if(nnz() && vals2.status() == DATA_UNDEF,
+                       "memory allocation failed");
+          std::copy_n(v_itr_first, nnz(), vals2.begin());
+          _vals.swap(vals2);
+        } while (false);
+        do {
+          iarray_type indices2(nnz());
+          hif_error_if(nnz() && indices2.status() == DATA_UNDEF,
+                       "memory allocation failed");
+          std::copy_n(i_itr_first, nnz(), indices2.begin());
+          _indices.swap(indices2);
+        } while (false);
+      } else if (elms) {
+        _vals.resize(nnz());
+        _indices.resize(nnz());
+      }
+      return elms;
+    } else
+      return 0;
   }
 
  protected:
@@ -1722,6 +1730,19 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
     _ncols = 0;
   }
 
+  /// \brief prune tiny values
+  /// \param[in] eps (optional) relative threshold for determining "tiny"
+  /// \param[in] shrink (optional) if \a true, then we shrink-to-fit the memory
+  /// \return total number of pruned entries
+  ///
+  /// An entry, say \f$ a_{ij}\f$ will be pruned if
+  /// \f$\vert a_{ij}\vert\le\epsilon\min{\max(\vert a_i^T\vert),\max(\vert
+  /// a_j\vert)}\f$
+  inline size_type prune(const typename _base::scalar_type eps    = 0.0,
+                         const bool                        shrink = false) {
+    return _base::_prune(_ncols, eps, shrink);
+  }
+
  protected:
   size_type _ncols;     ///< number of columns
   using _base::_psize;  ///< number of rows (primary entries)
@@ -2626,6 +2647,19 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   inline void destroy() {
     _base::_destroy();
     _nrows = 0;
+  }
+
+  /// \brief prune tiny values
+  /// \param[in] eps (optional) relative threshold for determining "tiny"
+  /// \param[in] shrink (optional) if \a true, then we shrink-to-fit the memory
+  /// \return total number of pruned entries
+  ///
+  /// An entry, say \f$ a_{ij}\f$ will be pruned if
+  /// \f$\vert a_{ij}\vert\le\epsilon\min{\max(\vert a_i^T\vert),\max(\vert
+  /// a_j\vert)}\f$
+  inline size_type prune(const typename _base::scalar_type eps    = 0.0,
+                         const bool                        shrink = false) {
+    return _base::_prune(_nrows, eps, shrink);
   }
 
  protected:
