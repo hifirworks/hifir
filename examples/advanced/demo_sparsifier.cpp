@@ -102,8 +102,7 @@ int main(int argc, char *argv[]) {
     params.kappa = params.kappa_d = 5.0;    // inverse-norm thres
   }
   if (verbose < 2) params.verbose = hif::VERBOSE_NONE;
-  // if verbose > 1, then the factorize function will print out all parameters
-  if (verbose == 1) {
+  if (verbose) {
     hif_info("droptols (tau_L/tau_U) are %g/%g", params.tau_L, params.tau_U);
     hif_info("fill factors (alpha_L/alpha_U) are %g/%g", params.alpha_L,
              params.alpha_U);
@@ -259,37 +258,34 @@ std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
 void print_help_message(std::ostream &ostr, const char *cmd) {
   ostr
       << "Usage:\n\n"
-      << "\t" << cmd << " [options] [flags]\n\n"
+      << "\t" << cmd << " [options]\n\n"
       << "Options:\n\n"
-      << " -m|--restart m\n"
-      << "    Restart in GMRES, default is m=30\n"
-      << " -t|--rtol rtol\n"
-      << "    Relative residual tolerance in GMRES, default is rtol=1e-6\n"
-      << " -n|--maxit maxit\n"
-      << "    Maximum iteration limit in GMRES, default is maxit=500\n"
-      << " -r|--robust\n"
+      << " -h, --help\n"
+      << "    Show this help message and exit\n"
+      << " -v, --verbose\n"
+      << "    Show more output\n"
+      << " -q, --quiet\n"
+      << "    Show less output\n"
+      << " -r, --robust\n"
       << "    Use robust parameters for HIF, default is false\n"
-      << " -Afile Afile\n"
+      << " -m, --restart <m>\n"
+      << "    Restart in GMRES, default is m=30\n"
+      << " -t, --rtol <rtol>\n"
+      << "    Relative residual tolerance in GMRES, default is rtol=1e-6\n"
+      << " -n, --maxit <maxit>\n"
+      << "    Maximum iteration limit in GMRES, default is maxit=500\n"
+      << " -Afile, --Afile <Afile>\n"
       << "    LHS matrix stored in Matrix Market format (coordinate), default\n"
       << "    is \'demo_inputs/A.mm\'\n"
-      << " -bfile bfile\n"
+      << " -bfile, --bfile <bfile>\n"
       << "    RHS vector stored in Matrix Market format (array), default is\n"
       << "    \'demo_inputs/b.mm\'. If \'Afile\' is provided by the \'bfile\'\n"
       << "    is missing, then b=A*1 will be used\n"
-      << " -Sfile Sfile\n"
+      << " -Sfile, --Sfile <Sfile>\n"
       << "    Sparsifier, on which we will compute the HIF preconditioner.\n"
       << "    If omitted, then (1) we will compute S by clipping tiny values\n"
       << "    in A if \'Afile\' is specified, or (2) we will load the 2nd\n"
-      << "    FDM operator, which is used as sparsifier\n"
-      << " -v|--verbose verbose\n"
-      << "    Verbose level for logging, default is 1. To run in complete\n"
-      << "    silent, use 0. For any values larger than 1, verbose logging\n"
-      << "    will be enabled for both factorization and solve stages.\n\n"
-      << "Flags:\n\n"
-      << " -r|--robust\n"
-      << "    Enable robust parameters, default is false\n"
-      << " -h|--help\n"
-      << "    Show this help message and exit\n";
+      << "    FDM operator, which is used as sparsifier\n\n";
 }
 
 std::tuple<system_t, matrix_t, int, double, int, int, bool> parse_args(
@@ -332,29 +328,25 @@ std::tuple<system_t, matrix_t, int, double, int, int, bool> parse_args(
       }
       maxit = std::atoi(argv[++i]);
       if (maxit <= 0) maxit = 500;
-    } else if (arg == "-v" || arg == "verbose") {
-      if (i + 1 >= argc) {
-        std::cerr << "Missing verbose level!\n\n";
-        print_help_message(std::cerr, argv[0]);
-        std::exit(1);
-      }
-      verbose = std::atoi(argv[++i]);
-      if (verbose < 0) verbose = 0;
-    } else if (arg == "-Afile") {
+    } else if (arg == "-v" || arg == "--verbose") {
+      verbose = 2;
+    } else if (arg == "-q" || arg == "--quiet") {
+      verbose = 0;
+    } else if (arg == "-Afile" || arg == "--Afile") {
       if (i + 1 >= argc) {
         std::cerr << "Missing Afile!\n\n";
         print_help_message(std::cerr, argv[0]);
         std::exit(1);
       }
       Afile = argv[++i];
-    } else if (arg == "-bfile") {
+    } else if (arg == "-bfile" || arg == "--bfile") {
       if (i + 1 >= argc) {
         std::cerr << "Missing bfile!\n\n";
         print_help_message(std::cerr, argv[0]);
         std::exit(1);
       }
       bfile = argv[++i];
-    } else if (arg == "-Sfile") {
+    } else if (arg == "-Sfile" || arg == "--Sfile") {
       if (i + 1 >= argc) {
         std::cerr << "Missing Sfile!\n\n";
         print_help_message(std::cerr, argv[0]);
