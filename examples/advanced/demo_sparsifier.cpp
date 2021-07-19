@@ -72,11 +72,10 @@ int main(int argc, char *argv[]) {
     // Note that by default, the constructor only performs shallow copies
     bool deep_copy = true;
     S              = matrix_t(prob.A, deep_copy);
-    // the following function eliminate will prune any values that close to
-    // machine precision. In particular, S.eliminate(tol) will eliminate any
-    // entries in the i-th row whose magnitude is not larger than
-    // tol*max(abs(i-th row of S)).
-    const auto pruned = S.eliminate(1e-15);
+    // the following functionwill prune any values that close to machine
+    // precision. In particular, S.prune(tol) will eliminate an entry a_ij
+    // whose mag is smaller than tol*min{max(abs(ith row)),max(abs(jth column)}
+    const auto pruned = S.prune(1e-15);
     if (verbose) hif_info("Eliminated %zd tiny entries in S.", pruned);
   }
 
