@@ -1016,8 +1016,8 @@ inline void mm_read_vector_data(std::FILE *f, const std::size_t n,
 }
 
 /// \brief Internal routine to parse the first line
-inline void mm_read_fistline(std::FILE *f, bool &is_sparse, bool &is_real,
-                             int &type_id) {
+inline void mm_read_firstline(std::FILE *f, bool &is_sparse, bool &is_real,
+                              int &type_id) {
   char line[1025];
   char banner[65];
   char mtx[65];
@@ -1187,7 +1187,7 @@ inline void read_mm_sparse(const char *filename, std::size_t &nrows,
   bool is_sparse, is_real;
   int  type_id;
   // parse the first line
-  internal::mm_read_fistline(f, is_sparse, is_real, type_id);
+  internal::mm_read_firstline(f, is_sparse, is_real, type_id);
   if (!is_sparse) {
     std::fclose(f);
     hif_error("must be sparse matrix");
@@ -1236,7 +1236,7 @@ inline void read_mm_vector(const char *filename, Array<ValueType> &v) {
   bool is_sparse, is_real;
   int  type_id;
   // parse the first line
-  internal::mm_read_fistline(f, is_sparse, is_real, type_id);
+  internal::mm_read_firstline(f, is_sparse, is_real, type_id);
   if (is_sparse) {
     std::fclose(f);
     hif_error("must be dense matrix");
