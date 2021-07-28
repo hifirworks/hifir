@@ -24,17 +24,17 @@ using prec_t = hif::HIF<double, int>;
 
 // parse command-line arguments for system, sparsifier restart, rtol, maxit,
 // verbose, and robust parameters
-std::tuple<system_t, matrix_t, int, double, int, int, bool, double> parse_args(
+std::tuple<system_t, matrix_t, int, double, int, int, bool, bool> parse_args(
     int argc, char *argv[]);
 
 int main(int argc, char *argv[]) {
   // parse options for gmres
   int      restart, maxit, verbose;
-  double   rtol, rrqr_cond;
-  double   robust;
+  double   rtol;
+  double   robust, full_rank;
   system_t prob;
   matrix_t S;
-  std::tie(prob, S, restart, rtol, maxit, verbose, robust, rrqr_cond) =
+  std::tie(prob, S, restart, rtol, maxit, verbose, robust, full_rank) =
       parse_args(argc, argv);
 
   if (S.nrows() == 0u) {
@@ -60,7 +60,6 @@ int main(int argc, char *argv[]) {
   // create HIF preconditioner, and factorize with default params
   auto M      = prec_t();
   auto params = hif::DEFAULT_PARAMS;
-  if (rrqr_cond > 0.0) params.rrqr_cond = rrqr_cond;
   // The following parameters are essential to a HIF preconditioner, namely
   // droptol, fill factor, and inverse-norm threshold. Note that the default
   // settings are for robustness. The following parameters are optimized for
@@ -79,10 +78,6 @@ int main(int argc, char *argv[]) {
              params.alpha_U);
     hif_info("inverse-norm thres (kappa/kappa_D) are %g/%g\n", params.kappa,
              params.kappa_d);
-    if (params.rrqr_cond <= 0.0)
-      hif_info("using default rrqr_cond\n");
-    else
-      hif_info("rrqr_cond is %g\n", params.rrqr_cond);
   }
   timer.start();
   M.factorize(S, params);  // we factorize S here not A
@@ -101,11 +96,11 @@ int main(int argc, char *argv[]) {
   timer.start();
   // NOTE: The input is A here not S
   std::tie(x, flag, iters, num_mv) =
-      fgmres_hifir(prob.A, prob.b, M, restart, rtol, maxit, verbose);
+      fgmres_hifir(prob.A, prob.b, M, restart, rtol, maxit, verbose, full_rank);
   timer.finish();
   if (verbose) {
     if (flag == SUCCESS) {
-      hif_info("Finished GMRES in %g seconds, %d iterations and %d MatVecs.",
+      hif_info("Finished GMRES in %g seconds, %d iterations, and %d MatVecs.",
                timer.time(), iters, num_mv);
       hif_info("Relative residual of ||b-Ax||/||b||=%e",
                compute_relres(prob.A, prob.b, x));
@@ -139,10 +134,10 @@ void print_help_message(std::ostream &ostr, const char *cmd) {
       << "    Show more output\n"
       << " -q, --quiet\n"
       << "    Show less output\n"
-      << " -c, --rrqr_cond <cond>\n"
-      << "    Condition number threshold for RRQR for the final Schur\n"
       << " -r, --robust\n"
       << "    Use robust parameters for HIF, default is false\n"
+      << " -f, --full-rank\n"
+      << "    Using full rank preconditioner (for singular M only)\n"
       << " -m, --restart <m>\n"
       << "    Restart in GMRES, default is m=30\n"
       << " -t, --rtol <rtol>\n"
@@ -163,13 +158,13 @@ void print_help_message(std::ostream &ostr, const char *cmd) {
       << "    FDM operator, which is used as sparsifier\n\n";
 }
 
-std::tuple<system_t, matrix_t, int, double, int, int, bool, double> parse_args(
+std::tuple<system_t, matrix_t, int, double, int, int, bool, bool> parse_args(
     int argc, char *argv[]) {
   using std::string;
 
   int    restart(30), maxit(500), verbose(1);
-  double rtol(1e-6), rrqr_cond(-1);
-  bool   robust(false);
+  double rtol(1e-6);
+  bool   robust(false), full_rank(false);
 
   string Afile, bfile, Sfile;
 
@@ -179,14 +174,7 @@ std::tuple<system_t, matrix_t, int, double, int, int, bool, double> parse_args(
       print_help_message(std::cout, argv[0]);
       std::exit(0);
     }
-    if (arg == "-c" || arg == "--rrqr_cond") {
-      if (i + 1 >= argc) {
-        std::cerr << "Missing rrqr_cond value!\n\n";
-        print_help_message(std::cerr, argv[0]);
-        std::exit(1);
-      }
-      rrqr_cond = std::atof(argv[++i]);
-    } else if (arg == "-m" || arg == "--restart") {
+    if (arg == "-m" || arg == "--restart") {
       if (i + 1 >= argc) {
         std::cerr << "Missing restart value!\n\n";
         print_help_message(std::cerr, argv[0]);
@@ -237,6 +225,8 @@ std::tuple<system_t, matrix_t, int, double, int, int, bool, double> parse_args(
       Sfile = argv[++i];
     } else if (arg == "-r" || arg == "--robust")
       robust = true;
+    else if (arg == "-f" || arg == "--full-rank")
+      full_rank = true;
   }
   // load 4th order FDM with A*1 as rhs
   if (Afile.empty()) {
@@ -252,7 +242,7 @@ std::tuple<system_t, matrix_t, int, double, int, int, bool, double> parse_args(
                  : get_input_data("demo_inputs/ad-fdm4.mm"),
         prev_dir ? matrix_t::from_mm("../demo_inputs/ad-fdm2.mm")
                  : matrix_t::from_mm("demo_inputs/ad-fdm2.mm"),
-        restart, rtol, maxit, verbose, robust, rrqr_cond);
+        restart, rtol, maxit, verbose, robust, full_rank);
   }
 
   const char *bfile_cstr = nullptr;
@@ -272,5 +262,5 @@ std::tuple<system_t, matrix_t, int, double, int, int, bool, double> parse_args(
       std::cout << "Sfile is \'" << Sfile << "\'\n\n";
   }
   return std::make_tuple(prob, S, restart, rtol, maxit, verbose, robust,
-                         rrqr_cond);
+                         full_rank);
 }

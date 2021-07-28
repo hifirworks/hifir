@@ -33,16 +33,16 @@ using prec_t = hif::HIF<double, int>;
 
 // parse command-line arguments for system, restart, rtol, maxit, verbose, and
 // robust parameter flag
-std::tuple<system_t, int, double, int, int, bool, double> parse_args(
+std::tuple<system_t, int, double, int, int, bool, bool> parse_args(
     int argc, char *argv[]);
 
 int main(int argc, char *argv[]) {
   // parse options for gmres
   int      restart, maxit, verbose;
-  double   rtol, rrqr_cond;
+  double   rtol;
   system_t prob;
-  bool     robust;
-  std::tie(prob, restart, rtol, maxit, verbose, robust, rrqr_cond) =
+  bool     robust, full_rank;
+  std::tie(prob, restart, rtol, maxit, verbose, robust, full_rank) =
       parse_args(argc, argv);
 
   // get timer
@@ -51,7 +51,6 @@ int main(int argc, char *argv[]) {
   // create HIF preconditioner, and factorize with default params
   auto M      = prec_t();
   auto params = hif::DEFAULT_PARAMS;
-  if (rrqr_cond > 0.0) params.rrqr_cond = rrqr_cond;
   // The following parameters are essential to a HIF preconditioner, namely
   // droptol, fill factor, and inverse-norm threshold. Note that the default
   // settings are for robustness. The following parameters are optimized for
@@ -70,10 +69,6 @@ int main(int argc, char *argv[]) {
              params.alpha_U);
     hif_info("inverse-norm thres (kappa/kappa_D) are %g/%g", params.kappa,
              params.kappa_d);
-    if (params.rrqr_cond <= 0.0)
-      hif_info("using default rrqr_cond\n");
-    else
-      hif_info("rrqr_cond is %g\n", params.rrqr_cond);
   }
   timer.start();
   M.factorize(prob.A, params);
@@ -91,7 +86,7 @@ int main(int argc, char *argv[]) {
   int     flag, iters;
   timer.start();
   std::tie(x, flag, iters) =
-      gmres_hif(prob.A, prob.b, M, restart, rtol, maxit, verbose);
+      gmres_hif(prob.A, prob.b, M, restart, rtol, maxit, verbose, full_rank);
   timer.finish();
   if (verbose) {
     if (flag == SUCCESS) {
@@ -131,8 +126,8 @@ void print_help_message(std::ostream &ostr, const char *cmd) {
       << "    Show less output\n"
       << " -r, --robust\n"
       << "    Enable robust parameters, default is false\n"
-      << " -c, --rrqr_cond <cond>\n"
-      << "    Condition number threshold for RRQR for the final Schur\n"
+      << " -f, --full-rank\n"
+      << "    Using full rank preconditioner (for singular M only)\n"
       << " -m, --restart <m>\n"
       << "    Restart in GMRES, default is m=30\n"
       << " -t, --rtol <rtol>\n"
@@ -148,13 +143,13 @@ void print_help_message(std::ostream &ostr, const char *cmd) {
       << "    is missing, then b=A*1 will be used\n\n";
 }
 
-std::tuple<system_t, int, double, int, int, bool, double> parse_args(
+std::tuple<system_t, int, double, int, int, bool, bool> parse_args(
     int argc, char *argv[]) {
   using std::string;
 
   int      restart(30), maxit(500), verbose(1);
-  double   rtol(1e-6), rrqr_cond(-1);
-  bool     robust(false);
+  double   rtol(1e-6);
+  bool     robust(false), full_rank(false);
   system_t prob;
 
   string Afile, bfile;
@@ -165,14 +160,7 @@ std::tuple<system_t, int, double, int, int, bool, double> parse_args(
       print_help_message(std::cerr, argv[0]);
       std::exit(0);
     }
-    if (arg == "-c" || arg == "--rrqr_cond") {
-      if (i + 1 >= argc) {
-        std::cerr << "Missing rrqr_cond value!\n\n";
-        print_help_message(std::cerr, argv[0]);
-        std::exit(1);
-      }
-      rrqr_cond = std::atof(argv[++i]);
-    } else if (arg == "-m" || arg == "--restart") {
+    if (arg == "-m" || arg == "--restart") {
       if (i + 1 >= argc) {
         std::cerr << "Missing restart value!\n\n";
         print_help_message(std::cerr, argv[0]);
@@ -216,6 +204,8 @@ std::tuple<system_t, int, double, int, int, bool, double> parse_args(
       bfile = argv[++i];
     } else if (arg == "-r" || arg == "--robust")
       robust = true;
+    else if (arg == "-f" || arg == "--full-rank")
+      full_rank = true;
   }
   if (Afile.empty()) {
     if (verbose) {
@@ -236,5 +226,5 @@ std::tuple<system_t, int, double, int, int, bool, double> parse_args(
     prob = get_input_data(Afile.c_str(), bfile_cstr);
   }
   return std::make_tuple(prob, restart, rtol, maxit, verbose, robust,
-                         rrqr_cond);
+                         full_rank);
 }

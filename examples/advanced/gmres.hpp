@@ -18,8 +18,11 @@
 template <class MatType, class ArrayType, class PrecType>
 inline std::tuple<ArrayType, int, int> gmres_hif(
     const MatType &A, const ArrayType &b, const PrecType &M, const int restart,
-    const double rtol, const int maxit, const int verbose) {
+    const double rtol, const int maxit, const int verbose,
+    const bool full_rank = false) {
   using size_type = typename ArrayType::size_type;
+
+  const int rr = full_rank ? -1 : 0;
 
   int             iter(0), flag(SUCCESS);
   const size_type n     = b.size();
@@ -52,8 +55,8 @@ inline std::tuple<ArrayType, int, int> gmres_hif(
     int j(0);  // inner counter
     for (;;) {
       std::copy(Q.col_cbegin(j), Q.col_cend(j), v.begin());
-      M.solve(v, w);     // multilevel triangular solve
-      A.multiply(w, v);  // matrix-vector
+      M.solve(v, w, false, size_type(rr));  // multilevel triangular solve
+      A.multiply(w, v);                     // matrix-vector
 
       // Perform Gram-Schmidt orthogonalization
       for (int k = 0u; k <= j; ++k) {
@@ -111,7 +114,7 @@ inline std::tuple<ArrayType, int, int> gmres_hif(
       for (size_type k = 0u; k < n; ++k) v[k] += tmp * Q(k, i);
     }
     // compute M solve
-    M.solve(v, w);
+    M.solve(v, w, false, size_type(rr));
     for (size_type k(0); k < n; ++k) x[k] += w[k];  // accumulate sol
     if (resid <= rtol || flag != SUCCESS) break;
   }
@@ -123,8 +126,11 @@ inline std::tuple<ArrayType, int, int> gmres_hif(
 template <class MatType, class ArrayType, class PrecType>
 inline std::tuple<ArrayType, int, int, int> fgmres_hifir(
     const MatType &A, const ArrayType &b, const PrecType &M, const int restart,
-    const double rtol, const int maxit, const int verbose) {
+    const double rtol, const int maxit, const int verbose,
+    const bool full_rank = false) {
   using size_type = typename ArrayType::size_type;
+
+  const int rr = full_rank ? -1 : 0;
 
   int             iter(0), flag(SUCCESS), num_mv(0);
   const size_type n     = b.size();
@@ -158,7 +164,7 @@ inline std::tuple<ArrayType, int, int, int> fgmres_hifir(
     const int nirs = 1 << (int)it_outer;
     for (;;) {
       std::copy(Q.col_cbegin(j), Q.col_cend(j), v.begin());
-      M.hifir(A, v, nirs, w, false, size_type(0));
+      M.hifir(A, v, nirs, w, false, size_type(rr));
       // stored the preconditioned vector
       num_mv += nirs;
       std::copy(w.cbegin(), w.cend(), Z.col_begin(j));
