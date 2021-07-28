@@ -5,7 +5,7 @@
 /*
 
   This file contains an example of using HIF as right-preconditioner for
-  GMRES(m), where HIF can be computed via a sparser matrix than the one used
+  GMRES(m), where HIF can be computed on a sparser matrix than the one used
   in the GMRES solver, i.e.,
           A*M^{g}*y=b then x=M^{g}*y,
   where M is computed on a sparser matrix (hence the name "sparsifier") S, s.t.
@@ -31,40 +31,24 @@
 #include <iostream>
 #include <tuple>
 
-#include "../demo_utils.hpp"
+#include "gmres.hpp"
 #include "hifir.hpp"
 
 using prec_t = hif::HIF<double, int>;
 
-#define SUCCESS 0
-#define STAGNATED 1
-#define DIVERGED 2
-
-// Right-preconditioned GMRES with HIF preconditioner for consistent system
-// using MGS for Arnoldi
-//
-// A, b. M: System (A, b) with HIF preconditioner (M)
-// restart, rtol, maxit: (30, 1e-6, 500) by default
-// return is the solution, i.e., $x \approx A^{-1}b$
-std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
-                                        const prec_t &M, const int restart = 30,
-                                        const double rtol    = 1e-6,
-                                        const int    maxit   = 500,
-                                        const int    verbose = 1);
-
 // parse command-line arguments for system, sparsifier restart, rtol, maxit,
 // verbose, and robust parameters
-std::tuple<system_t, matrix_t, int, double, int, int, bool> parse_args(
+std::tuple<system_t, matrix_t, int, double, int, int, bool, bool> parse_args(
     int argc, char *argv[]);
 
 int main(int argc, char *argv[]) {
   // parse options for gmres
   int      restart, maxit, verbose;
   double   rtol;
-  double   robust;
+  double   robust, full_rank;
   system_t prob;
   matrix_t S;
-  std::tie(prob, S, restart, rtol, maxit, verbose, robust) =
+  std::tie(prob, S, restart, rtol, maxit, verbose, robust, full_rank) =
       parse_args(argc, argv);
 
   if (S.nrows() == 0u) {
@@ -126,7 +110,7 @@ int main(int argc, char *argv[]) {
   timer.start();
   // NOTE: The input is A here not S
   std::tie(x, flag, iters) =
-      gmres_hif(prob.A, prob.b, M, restart, rtol, maxit, verbose);
+      gmres_hif(prob.A, prob.b, M, restart, rtol, maxit, verbose, full_rank);
   timer.finish();
   if (verbose) {
     if (flag == SUCCESS) {
@@ -153,108 +137,6 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
-std::tuple<array_t, int, int> gmres_hif(const matrix_t &A, const array_t &b,
-                                        const prec_t &M, const int restart,
-                                        const double rtol, const int maxit,
-                                        const int verbose) {
-  using size_type = array_t::size_type;
-
-  int             iter(0), flag(SUCCESS);
-  const size_type n     = b.size();
-  const auto      beta0 = hif::norm2(b);
-
-  // create solution vector, starting with all zeros
-  array_t x(n);
-  std::fill_n(x.begin(), n, 0.0);
-  // quick return if possible
-  if (beta0 == 0.0) return std::make_tuple(x, SUCCESS, iter);
-
-  // create local workspace
-  array_t                  v(n), w(n), y(restart + 1), w2(restart);
-  hif::DenseMatrix<double> Q(n, restart), R(restart, restart), J(restart, 2);
-
-  const int max_outer_iters = std::ceil((double)maxit / restart);
-  double    resid(1);  // residual norm
-  for (int it_outer = 0; it_outer < max_outer_iters; ++it_outer) {
-    if (verbose > 1) hif_info(" Enter outer iteration %d...", it_outer + 1);
-    // initial residual
-    if (iter) {
-      A.multiply(x, v);                                       // A*x
-      for (size_type i = 0u; i < n; ++i) v[i] = b[i] - v[i];  // b-A*x
-    } else
-      std::copy_n(b.cbegin(), n, v.begin());
-    const double beta = hif::norm2(v);
-    y[0]              = beta;
-    for (size_type i = 0u; i < n; ++i) Q(i, 0) = v[i] / beta;
-    int j(0);  // inner counter
-    for (;;) {
-      std::copy(Q.col_cbegin(j), Q.col_cend(j), v.begin());
-      M.solve(v, w);     // multilevel triangular solve
-      A.multiply(w, v);  // matrix-vector
-
-      // Perform Gram-Schmidt orthogonalization
-      for (int k = 0u; k <= j; ++k) {
-        w2[k] = hif::inner(v, Q.col_cbegin(k));
-        for (size_type i = 0u; i < n; ++i) v[i] -= w2[k] * Q(i, k);
-      }
-      const auto v_norm2 = hif::norm2_sq(v);
-      const auto v_norm  = std::sqrt(v_norm2);
-      if (j + 1 < restart)
-        for (size_type i = 0u; i < n; ++i) Q(i, j + 1) = v[i] / v_norm;
-
-      // Perform Given's rotation to w2
-      for (int colJ = 0; colJ + 1 <= j; ++colJ) {
-        const auto tmp = w2[colJ];
-        w2[colJ]       = hif::conjugate(J(colJ, 0)) * tmp +
-                   hif::conjugate(J(colJ, 1)) * w2[colJ + 1];
-        w2[colJ + 1] = -J(colJ, 1) * tmp + J(colJ, 0) * w2[colJ + 1];
-      }
-      const auto rho = std::sqrt(hif::conjugate(w2[j]) * w2[j] + v_norm2);
-      J(j, 0)        = w2[j] / rho;
-      J(j, 1)        = v_norm / rho;
-      y[j + 1]       = -J(j, 1) * y[j];
-      y[j]           = hif::conjugate(J(j, 0)) * y[j];
-      w2[j]          = rho;
-      std::copy_n(w2.cbegin(), j + 1, R.col_begin(j));
-
-      // get residual
-      const auto resid_prev = resid;
-      resid                 = hif::abs(y[j + 1]) / beta0;  // current residual
-      if (resid >= resid_prev * (1.0 - 1e-8)) {
-        if (verbose > 1) hif_info("  Solver stagnated!");
-        flag = STAGNATED;
-        break;
-      } else if (iter >= maxit) {
-        if (verbose > 1) hif_info("  Reached maxit iteration limit %d", maxit);
-        flag = DIVERGED;
-        break;
-      }
-      ++iter;
-      if (verbose > 1)
-        hif_info("  At iteration %d, relative residual is %g.", iter, resid);
-      if (resid <= rtol || j + 1 >= restart) break;
-      ++j;
-    }  // inf loop
-    // backsolve
-    for (int k = j; k > -1; --k) {
-      y[k] /= R(k, k);
-      const auto tmp = y[k];
-      for (int i = k - 1; i > -1; --i) y[i] -= tmp * R(i, k);
-    }
-    // compute Q*y
-    std::fill_n(v.begin(), n, 0);
-    for (int i = 0; i <= j; ++i) {
-      const auto tmp = y[i];
-      for (size_type k = 0u; k < n; ++k) v[k] += tmp * Q(k, i);
-    }
-    // compute M solve
-    M.solve(v, w);
-    for (size_type k(0); k < n; ++k) x[k] += w[k];  // accumulate sol
-    if (resid <= rtol || flag != SUCCESS) break;
-  }
-  return std::make_tuple(x, flag, iter);
-}
-
 void print_help_message(std::ostream &ostr, const char *cmd) {
   ostr
       << "Usage:\n\n"
@@ -268,6 +150,8 @@ void print_help_message(std::ostream &ostr, const char *cmd) {
       << "    Show less output\n"
       << " -r, --robust\n"
       << "    Use robust parameters for HIF, default is false\n"
+      << " -f, --full-rank\n"
+      << "    Using full rank preconditioner (for singular M only)\n"
       << " -m, --restart <m>\n"
       << "    Restart in GMRES, default is m=30\n"
       << " -t, --rtol <rtol>\n"
@@ -288,13 +172,13 @@ void print_help_message(std::ostream &ostr, const char *cmd) {
       << "    FDM operator, which is used as sparsifier\n\n";
 }
 
-std::tuple<system_t, matrix_t, int, double, int, int, bool> parse_args(
+std::tuple<system_t, matrix_t, int, double, int, int, bool, bool> parse_args(
     int argc, char *argv[]) {
   using std::string;
 
   int    restart(30), maxit(500), verbose(1);
   double rtol(1e-6);
-  bool   robust(false);
+  bool   robust(false), full_rank(false);
 
   string Afile, bfile, Sfile;
 
@@ -355,6 +239,8 @@ std::tuple<system_t, matrix_t, int, double, int, int, bool> parse_args(
       Sfile = argv[++i];
     } else if (arg == "-r" || arg == "--robust")
       robust = true;
+    else if (arg == "-f" || arg == "--full-rank")
+      full_rank = true;
   }
   // load 4th order FDM with A*1 as rhs
   if (Afile.empty()) {
@@ -370,7 +256,7 @@ std::tuple<system_t, matrix_t, int, double, int, int, bool> parse_args(
                  : get_input_data("demo_inputs/ad-fdm4.mm"),
         prev_dir ? matrix_t::from_mm("../demo_inputs/ad-fdm2.mm")
                  : matrix_t::from_mm("demo_inputs/ad-fdm2.mm"),
-        restart, rtol, maxit, verbose, robust);
+        restart, rtol, maxit, verbose, robust, full_rank);
   }
 
   const char *bfile_cstr = nullptr;
@@ -389,5 +275,6 @@ std::tuple<system_t, matrix_t, int, double, int, int, bool> parse_args(
     else
       std::cout << "Sfile is \'" << Sfile << "\'\n\n";
   }
-  return std::make_tuple(prob, S, restart, rtol, maxit, verbose, robust);
+  return std::make_tuple(prob, S, restart, rtol, maxit, verbose, robust,
+                         full_rank);
 }

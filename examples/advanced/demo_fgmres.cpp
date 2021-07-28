@@ -4,8 +4,8 @@
 
 /*
 
-  This file contains an example of using HIF as right-preconditioner for
-  GMRES(m). The example uses the testing system under "demo_inputs." The users
+  This file contains an example of using HIFIR as right-preconditioner for
+  FGMRES(m). The example uses the testing system under "demo_inputs." The users
   can use their systems by (1) calling hif::wrap_const_{crs,ccs} and
   hif::wrap_const_array to directly wrap their systems or (2) loading data in
   Matrix Market file format, e.g.,
@@ -83,15 +83,15 @@ int main(int argc, char *argv[]) {
   }
 
   array_t x;
-  int     flag, iters;
+  int     flag, iters, num_mv;
   timer.start();
-  std::tie(x, flag, iters) =
-      gmres_hif(prob.A, prob.b, M, restart, rtol, maxit, verbose, full_rank);
+  std::tie(x, flag, iters, num_mv) =
+      fgmres_hifir(prob.A, prob.b, M, restart, rtol, maxit, verbose, full_rank);
   timer.finish();
   if (verbose) {
     if (flag == SUCCESS) {
-      hif_info("Finished GMRES in %g seconds and %d iterations.", timer.time(),
-               iters);
+      hif_info("Finished GMRES in %g seconds, %d iterations, and %d MatVecs.",
+               timer.time(), iters, num_mv);
       hif_info("Relative residual of ||b-Ax||/||b||=%e",
                compute_relres(prob.A, prob.b, x));
       hif_info("Success!");
