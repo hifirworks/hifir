@@ -60,6 +60,7 @@ int main(int argc, char *argv[]) {
   // create HIF preconditioner, and factorize with default params
   auto M      = prec_t();
   auto params = hif::DEFAULT_PARAMS;
+  if (full_rank) params.rrqr_cond = hif::Const<double>::MAX;
   // The following parameters are essential to a HIF preconditioner, namely
   // droptol, fill factor, and inverse-norm threshold. Note that the default
   // settings are for robustness. The following parameters are optimized for
