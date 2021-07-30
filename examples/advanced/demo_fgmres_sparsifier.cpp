@@ -23,19 +23,19 @@
 using prec_t = hif::HIF<double, int>;
 
 // parse command-line arguments for system, sparsifier restart, rtol, maxit,
-// verbose, and robust parameters
-std::tuple<system_t, matrix_t, int, double, int, int, bool, bool> parse_args(
-    int argc, char *argv[]);
+// verbose, and robust parameters, full rank flag, dense thres
+std::tuple<system_t, matrix_t, int, double, int, int, bool, bool, int>
+parse_args(int argc, char *argv[]);
 
 int main(int argc, char *argv[]) {
   // parse options for gmres
-  int      restart, maxit, verbose;
+  int      restart, maxit, verbose, dense_thres;
   double   rtol;
   double   robust, full_rank;
   system_t prob;
   matrix_t S;
-  std::tie(prob, S, restart, rtol, maxit, verbose, robust, full_rank) =
-      parse_args(argc, argv);
+  std::tie(prob, S, restart, rtol, maxit, verbose, robust, full_rank,
+           dense_thres) = parse_args(argc, argv);
 
   if (S.nrows() == 0u) {
     // We will prune tiny values in A, and make a copy of the result in S.
@@ -61,6 +61,7 @@ int main(int argc, char *argv[]) {
   auto M      = prec_t();
   auto params = hif::DEFAULT_PARAMS;
   if (full_rank) params.rrqr_cond = hif::Const<double>::MAX;
+  if (dense_thres > 0) params.dense_thres = dense_thres;
   // The following parameters are essential to a HIF preconditioner, namely
   // droptol, fill factor, and inverse-norm threshold. Note that the default
   // settings are for robustness. The following parameters are optimized for
@@ -139,6 +140,8 @@ void print_help_message(std::ostream &ostr, const char *cmd) {
       << "    Use robust parameters for HIF, default is false\n"
       << " -f, --full-rank\n"
       << "    Using full rank preconditioner (for singular M only)\n"
+      << " -d, --dense-thres <dense-thres>\n"
+      << "    Dense threshold for final Schur complement (dense-thres=2000)\n"
       << " -m, --restart <m>\n"
       << "    Restart in GMRES, default is m=30\n"
       << " -t, --rtol <rtol>\n"
@@ -159,11 +162,11 @@ void print_help_message(std::ostream &ostr, const char *cmd) {
       << "    FDM operator, which is used as sparsifier\n\n";
 }
 
-std::tuple<system_t, matrix_t, int, double, int, int, bool, bool> parse_args(
-    int argc, char *argv[]) {
+std::tuple<system_t, matrix_t, int, double, int, int, bool, bool, int>
+parse_args(int argc, char *argv[]) {
   using std::string;
 
-  int    restart(30), maxit(500), verbose(1);
+  int    restart(30), maxit(500), verbose(1), dense_thres(-1);
   double rtol(1e-6);
   bool   robust(false), full_rank(false);
 
@@ -228,6 +231,14 @@ std::tuple<system_t, matrix_t, int, double, int, int, bool, bool> parse_args(
       robust = true;
     else if (arg == "-f" || arg == "--full-rank")
       full_rank = true;
+    else if (arg == "-d" || arg == "--dense-thres") {
+      if (i + 1 >= argc) {
+        std::cerr << "Missing dense-thres!\n\n";
+        print_help_message(std::cerr, argv[0]);
+        std::exit(1);
+      }
+      dense_thres = std::atoi(argv[++i]);
+    }
   }
   // load 4th order FDM with A*1 as rhs
   if (Afile.empty()) {
@@ -243,7 +254,7 @@ std::tuple<system_t, matrix_t, int, double, int, int, bool, bool> parse_args(
                  : get_input_data("demo_inputs/ad-fdm4.mm"),
         prev_dir ? matrix_t::from_mm("../demo_inputs/ad-fdm2.mm")
                  : matrix_t::from_mm("demo_inputs/ad-fdm2.mm"),
-        restart, rtol, maxit, verbose, robust, full_rank);
+        restart, rtol, maxit, verbose, robust, full_rank, dense_thres);
   }
 
   const char *bfile_cstr = nullptr;
@@ -263,5 +274,5 @@ std::tuple<system_t, matrix_t, int, double, int, int, bool, bool> parse_args(
       std::cout << "Sfile is \'" << Sfile << "\'\n\n";
   }
   return std::make_tuple(prob, S, restart, rtol, maxit, verbose, robust,
-                         full_rank);
+                         full_rank, dense_thres);
 }
