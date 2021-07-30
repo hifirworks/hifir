@@ -32,18 +32,18 @@
 using prec_t = hif::HIF<double, int>;
 
 // parse command-line arguments for system, restart, rtol, maxit, verbose, and
-// robust parameter flag
-std::tuple<system_t, int, double, int, int, bool, bool> parse_args(
+// robust parameter flag, full rank flag, dense thres
+std::tuple<system_t, int, double, int, int, bool, bool, int> parse_args(
     int argc, char *argv[]);
 
 int main(int argc, char *argv[]) {
   // parse options for gmres
-  int      restart, maxit, verbose;
+  int      restart, maxit, verbose, dense_thres;
   double   rtol;
   system_t prob;
   bool     robust, full_rank;
-  std::tie(prob, restart, rtol, maxit, verbose, robust, full_rank) =
-      parse_args(argc, argv);
+  std::tie(prob, restart, rtol, maxit, verbose, robust, full_rank,
+           dense_thres) = parse_args(argc, argv);
 
   // get timer
   hif::DefaultTimer timer;
@@ -52,6 +52,7 @@ int main(int argc, char *argv[]) {
   auto M      = prec_t();
   auto params = hif::DEFAULT_PARAMS;
   if (full_rank) params.rrqr_cond = hif::Const<double>::MAX;
+  if (dense_thres > 0) params.dense_thres = dense_thres;
   // The following parameters are essential to a HIF preconditioner, namely
   // droptol, fill factor, and inverse-norm threshold. Note that the default
   // settings are for robustness. The following parameters are optimized for
@@ -129,6 +130,8 @@ void print_help_message(std::ostream &ostr, const char *cmd) {
       << "    Enable robust parameters, default is false\n"
       << " -f, --full-rank\n"
       << "    Using full rank preconditioner (for singular M only)\n"
+      << " -d, --dense-thres <dense-thres>\n"
+      << "    Dense threshold for final Schur complement (dense-thres=2000)\n"
       << " -m, --restart <m>\n"
       << "    Restart in GMRES, default is m=30\n"
       << " -t, --rtol <rtol>\n"
@@ -144,11 +147,11 @@ void print_help_message(std::ostream &ostr, const char *cmd) {
       << "    is missing, then b=A*1 will be used\n\n";
 }
 
-std::tuple<system_t, int, double, int, int, bool, bool> parse_args(
+std::tuple<system_t, int, double, int, int, bool, bool, int> parse_args(
     int argc, char *argv[]) {
   using std::string;
 
-  int      restart(30), maxit(500), verbose(1);
+  int      restart(30), maxit(500), verbose(1), dense_thres(-1);
   double   rtol(1e-6);
   bool     robust(false), full_rank(false);
   system_t prob;
@@ -207,6 +210,14 @@ std::tuple<system_t, int, double, int, int, bool, bool> parse_args(
       robust = true;
     else if (arg == "-f" || arg == "--full-rank")
       full_rank = true;
+    else if (arg == "-d" || arg == "--dense-thres") {
+      if (i + 1 >= argc) {
+        std::cerr << "Missing dense-thres!\n\n";
+        print_help_message(std::cerr, argv[0]);
+        std::exit(1);
+      }
+      dense_thres = std::atoi(argv[++i]);
+    }
   }
   if (Afile.empty()) {
     if (verbose) {
@@ -226,6 +237,6 @@ std::tuple<system_t, int, double, int, int, bool, bool> parse_args(
       std::cout << "bfile is \'" << bfile_cstr << "\'\n\n";
     prob = get_input_data(Afile.c_str(), bfile_cstr);
   }
-  return std::make_tuple(prob, restart, rtol, maxit, verbose, robust,
-                         full_rank);
+  return std::make_tuple(prob, restart, rtol, maxit, verbose, robust, full_rank,
+                         dense_thres);
 }
