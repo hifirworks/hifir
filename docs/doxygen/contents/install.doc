@@ -12,10 +12,34 @@
 
 \section _install_cpp Installation of the C++ interface
 
-Installing the C++ interface can be easily done by copying \a hifir.hpp
-and folder \a hif to the destination. Thanks to the head-only design, one just
-needs to include \a hifir.hpp in his/her projects.
+The *HIFIR* package is written in C++, and it uses template-based and
+header-only programming. Hence, the installation of C++ interface is pretty
+straightforward.
 
-\section _install_c Installation of the C library (libhif)
+To download the latest version of the code, use the command
+
+\code{.sh}
+    git clone -–depth 1 https://github.com/hifirworks/hifir.git hifir
+    cd hifir
+\endcode
+
+Again, since the C++ interface of HIFIR is header-only. To install the code,
+you can simply do the following on a UNIX system
+
+\code{.sh}
+    sudo cp -r src/* /usr/local/include
+\endcode
+
+or copy the source files to any user-level directories, e.g.,
+
+\code{.sh}
+    cp -r src/* $HOME/.local/include
+\endcode
+
+and then add `-I$HOME/.local/include` to the command line of your C++ compiler.
+
+\section _install_c Installation of the C library (libhifir)
+
+Finish me...
 
 */
