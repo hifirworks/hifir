@@ -19,9 +19,15 @@ straightforward.
 To download the latest version of the code, use the command
 
 \code{.sh}
-    git clone -–depth 1 https://github.com/hifirworks/hifir.git hifir
+    git clone -b release -–depth 1 https://github.com/hifirworks/hifir.git hifir
     cd hifir
 \endcode
+
+Use `git pull` to download any new changes that have been added
+since `git clone` or last `git pull`. Alternatively,
+use `git checkout v[GLOBAL].[MAJOR].[MINOR]` to download a specific version.
+Another way is to download the current archive at
+<a href="https://github.com/hifirworks/hifir/releases/tag/v0.1.0">v0.1.0</a>.
 
 To install the code, you can simply do the following on a UNIX system
 
