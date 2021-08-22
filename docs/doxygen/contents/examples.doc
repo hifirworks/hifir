@@ -5,25 +5,25 @@
 //----------------------------------------------------------------------------
 //@HEADER
 
-/*! \page _examples Collection of Examples
+/*! \page eg_page Collection of Examples
 
 \addindex examples
 \tableofcontents
 
-\section _eg_beginner Beginner
+\section eg_beginner Beginner
 
 - \ref demo_simple.cpp
 - \ref demo_trans.cpp
 - \ref demo_verbose.cpp
 
-\section _eg_intermediate Intermediate
+\section eg_intermediate Intermediate
 
 - \ref demo_params.cpp
 - \ref demo_multiply.cpp
 - \ref demo_mixedprecision.cpp
 - \ref demo_complex.cpp
 
-\section _eg_advanced Advanced
+\section eg_advanced Advanced
 
 - \ref demo_hifir.cpp
 - \ref demo_gmreshif.cpp

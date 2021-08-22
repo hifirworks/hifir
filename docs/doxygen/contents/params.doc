@@ -5,7 +5,7 @@
 //----------------------------------------------------------------------------
 //@HEADER
 
-/*! \page _params Control Parameters
+/*! \page params Control Parameters
 
 \addindex parameters
 \tableofcontents
@@ -27,7 +27,7 @@ The instance \a params is a C++ structure whose fields are different control
 parameters for computing HIF preconditioners. In the following, we will address
 commonly-used parameters categorized in different groups.
 
-\section _params_basic Essential Parameters
+\section params_basic Essential Parameters
 
 We summary several essential control parameters used in HIF.
 
@@ -64,7 +64,7 @@ following settings
     params.dense_thres = 500;
 \endcode
 
-\section _params_system System Parameters
+\section params_system System Parameters
 
 - \ref hif::Params::verbose controls the verbose levels during factorizations.
   By default, \ref hif::VERBOSE_INFO is enabled. A new level can be enabled via
@@ -76,7 +76,7 @@ following settings
   system via envrionment variable `OMP_NUM_THREADS` or function
   `omp_get_max_threads`.
 
-\section _params_adv Advanced Parameters
+\section params_adv Advanced Parameters
 
 In this section, we address some advanced parameters, which may become useful.
 
@@ -92,7 +92,7 @@ In this section, we address some advanced parameters, which may become useful.
   To enforce using or disable rook pivoting, use \ref hif::PIVOTING_ON and
   \ref hif::PIVOTING_OFF, respectively.
 
-\section _params_pre Preprocessing Parameters
+\section params_pre Preprocessing Parameters
 
 - \ref hif::Params::reorder is for choosing different fill-reduction reordering
   schemes, and we use AMD (\ref hif::REORDER_AMD) by default for its robustness.
