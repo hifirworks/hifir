@@ -1,14 +1,18 @@
 # Welcome to *HIFIR* Project #
 
+|<!-- --> |<!-- --> |
+|:--- | ---:|
+| CI | ![HIFIR](https://github.com/hifirworks/hifir/actions/workflows/github-actions.yml/badge.svg?branch=main) |
+| Documentation | [![doc](https://img.shields.io/badge/%20doc-ready-blue)](https://hifirworks.github.io/hifir) |
+
 ## Introduction ##
 
 Welcome to the `HIFIR` package! `HIFIR` stands for `H`ybrid `I`ncomplete `F`actorization with `I`terative `R`efinement, which is a *multilevel* preconditioner for ill-conditioned and (nearly) singular systems. `HIFIR` has (near) linear time complexity in its factorization and solve and is robust due to its multilevel structure, scalability-oriented dropping, and careful control of the condition numbers of the triangular factors.
 
-![HIFIR](https://github.com/hifirworks/hifir/actions/workflows/github-actions.yml/badge.svg?branch=main)
-
 ## Installation ##
 
 To download the latest version of the code, use the command
+
 ```console
 git clone -–depth 1 https://github.com/hifirworks/hifir.git hifir
 ```
@@ -24,6 +28,7 @@ or copy `/path/to/hifir/src/*` to any user-level directory, for example,
 ```console
 cp -r /path/to/hifir/src/* $HOME/.local/include
 ```
+
 and then add `-I$HOME/.local/include` to the command line of your `C++` compiler.
 
 ## Copyright and Licenses ##
