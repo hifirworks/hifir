@@ -23,8 +23,7 @@ To download the latest version of the code, use the command
     cd hifir
 \endcode
 
-Again, since the C++ interface of HIFIR is header-only. To install the code,
-you can simply do the following on a UNIX system
+To install the code, you can simply do the following on a UNIX system
 
 \code{.sh}
     sudo cp -r src/* /usr/local/include
