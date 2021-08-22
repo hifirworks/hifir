@@ -1,0 +1,16 @@
+<map id="Options.h" name="Options.h">
+<area shape="rect" id="node2" href="$builder_8hpp.html" title="Top level user class for building HIF preconditioner. " alt="" coords="125,379,211,405"/>
+<area shape="rect" id="node5" href="$driver_8hpp.html" title="Top&#45;level driver routine to handle preprocessing. " alt="" coords="129,155,207,181"/>
+<area shape="rect" id="node9" href="$matching__scaling_8hpp.html" title="calling interface for matching and scaling " alt="" coords="94,80,242,107"/>
+<area shape="rect" id="node10" href="$reordering_8hpp.html" title="calling interface for reordering " alt="" coords="267,80,371,107"/>
+<area shape="rect" id="node11" href="$LUP_8hpp.html" title="Small scale solver with dense LU with partial pivoting. " alt="" coords="395,80,469,107"/>
+<area shape="rect" id="node14" href="$QRCP_8hpp.html" title="Small scale solver with dense QR with column pivoting. " alt="" coords="493,80,579,107"/>
+<area shape="rect" id="node15" href="$SYEIG_8hpp.html" title="Small scale solver with symmetric eigendecomposition. " alt="" coords="604,80,692,107"/>
+<area shape="rect" id="node3" href="$hifir_8hpp.html" title="top&#45;level user interface " alt="" coords="134,453,202,480"/>
+<area shape="rect" id="node4" href="$demo__utils_8hpp.html" title="demo_utils.hpp" alt="" coords="113,528,223,555"/>
+<area shape="rect" id="node6" href="$factor_8hpp.html" title="Kernels for deferred factorization. " alt="" coords="128,229,208,256"/>
+<area shape="rect" id="node7" href="$pivot__factor_8hpp.html" title="Kernels for deferred factorization with thresholding pivoting. " alt="" coords="111,304,225,331"/>
+<area shape="rect" id="node8" href="$symm__factor_8hpp.html" title="Kernels for deferred incomplete LDL&#39; factorization. " alt="" coords="249,304,372,331"/>
+<area shape="rect" id="node12" href="$solver_8hpp.html" title="Small scale solver main interface. " alt="" coords="443,155,525,181"/>
+<area shape="rect" id="node13" href="$Prec_8hpp.html" title="Multilevel preconditioner interface. " alt="" coords="388,229,463,256"/>
+</map>

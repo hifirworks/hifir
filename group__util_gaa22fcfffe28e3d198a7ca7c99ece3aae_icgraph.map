@@ -1,0 +1,15 @@
+<map id="hif::info" name="hif::info">
+<area shape="rect" id="node2" href="$group__pre.html#gabea4cba27b6abd9ebec59daf709f4671" title="compute the matching for preprocessing " alt="" coords="148,5,263,32"/>
+<area shape="rect" id="node3" href="$group__pre.html#gab1125ac4d4fc70e90dcdec972e494b65" title="routine to perform preprocessing for improving the quality of input " alt="" coords="132,56,279,83"/>
+<area shape="rect" id="node4" href="$classhif_1_1QRCP.html#ab64b58713b71d8caf7ec40fca79e679c" title="compute decomposition and determine the rank " alt="" coords="135,107,276,133"/>
+<area shape="rect" id="node6" href="$classhif_1_1SYEIG.html#a5f27002474d910771813274d8641d995" title="compute decomposition and determine the rank " alt="" coords="134,157,277,184"/>
+<area shape="rect" id="node8" href="$classhif_1_1HIF.html#a77f109f53d5b2fde156c258fd2ae5913" title="factorize the HIF preconditioner " alt="" coords="143,208,267,235"/>
+<area shape="rect" id="node9" href="$group__fac.html#ga5e85c4efc549f28f913faacc7a901d9b" title="perform partial incomplete LU for a level " alt="" coords="141,259,269,285"/>
+<area shape="rect" id="node10" href="$structhif_1_1internal_1_1StdoutStruct.html#a4057734f8f2e2eacdb12096228490256" title="hif::internal::StdoutStruct\l::operator()" alt="" coords="122,310,289,351"/>
+<area shape="rect" id="node11" href="$group__fac.html#gacf606dfc70540b8eff78f1e1102e7529" title="perform partial incomplete LU for a level with thresholding pivoting " alt="" coords="124,376,287,403"/>
+<area shape="rect" id="node12" href="$structhif_1_1Prec.html#a1f83bffcc42e6b1e3e44f510e8b49b17" title="Using SFINAE to report interval&#45;based information. " alt="" coords="119,427,292,453"/>
+<area shape="rect" id="node13" href="$structhif_1_1Prec.html#aee3d3e31ead43294149c9a1274d07202" title="report LU status with SFINAE " alt="" coords="119,477,291,504"/>
+<area shape="rect" id="node14" href="$group__fac.html#ga7f72580db4c9b6183bafd84427b8c17d" title="perform partial incomplete LU for a level " alt="" coords="120,528,291,555"/>
+<area shape="rect" id="node5" href="$classhif_1_1QRCP.html#ae1b9e2dae080e8bf71d8c3f4fb1f8bc2" title="refactorize the dense block " alt="" coords="341,107,493,133"/>
+<area shape="rect" id="node7" href="$classhif_1_1SYEIG.html#a97b686caf3b3e5340172f4539e445084" title="refactorize the dense block " alt="" coords="340,157,495,184"/>
+</map>

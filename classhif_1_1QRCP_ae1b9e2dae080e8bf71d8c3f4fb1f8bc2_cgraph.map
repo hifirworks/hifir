@@ -1,0 +1,7 @@
+<map id="hif::QRCP::refactorize" name="hif::QRCP::refactorize">
+<area shape="rect" id="node2" href="$classhif_1_1QRCP.html#ab64b58713b71d8caf7ec40fca79e679c" title="compute decomposition and determine the rank " alt="" coords="205,97,347,123"/>
+<area shape="rect" id="node3" href="$classhif_1_1QRCP.html#aae6dd12ff934d306a2e4bada4208d3f1" title="esimate rank based on 2&#45;norm condition numbers " alt="" coords="395,5,543,47"/>
+<area shape="rect" id="node4" href="$group__util.html#gaa22fcfffe28e3d198a7ca7c99ece3aae" title="common information streaming, dump msg to HIF_STDOUT " alt="" coords="436,71,501,98"/>
+<area shape="rect" id="node5" href="$classhif_1_1Array.html#aaff95a415c82a718d3ff606bd843c24a" title="resize an Array with new size " alt="" coords="409,122,528,149"/>
+<area shape="rect" id="node6" href="$group__util.html#ga1d4c2000af1b3a9f14ece0c026d1c39a" title="warning information streaming, dump to HIF_STDERR " alt="" coords="424,173,513,199"/>
+</map>

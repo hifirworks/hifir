@@ -1,0 +1,9 @@
+<map id="reordering.hpp" name="reordering.hpp">
+<area shape="rect" id="node2" href="$amd_8hpp.html" title="Kernel for approximated minimum degree ordering. " alt="" coords="219,80,331,107"/>
+<area shape="rect" id="node9" href="$rcm_8hpp.html" title="Kernel for reversed Cuthill&#45;Mckee ordering. " alt="" coords="408,155,517,181"/>
+<area shape="rect" id="node11" href="$Options_8h.html" title="HIF algorithm parameter controls. " alt="" coords="683,80,779,107"/>
+<area shape="rect" id="node16" href="$Array_8hpp.html" title="Array data structure, with functionality of wrapping external data. " alt="" coords="981,80,1096,107"/>
+<area shape="rect" id="node19" href="$log_8hpp.html" title="Logging interface, including info/warning/error. " alt="" coords="1166,155,1277,181"/>
+<area shape="rect" id="node23" href="$print_8hpp.html" title="Macros for &quot;stdout&quot; and &quot;stderr&quot; message printers. " alt="" coords="1458,229,1577,256"/>
+<area shape="rect" id="node25" href="$stacktrace_8hpp.html" title="Print stacktrace on error aborting. " alt="" coords="1009,229,1164,256"/>
+</map>

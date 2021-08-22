@@ -1,0 +1,8 @@
+<map id="hif::internal::CompressedStorage::_nnz" name="hif::internal::CompressedStorage::_nnz">
+<area shape="rect" id="node2" href="$classhif_1_1internal_1_1CompressedStorage.html#a8f8d502e611c2187bcf5326f81c5c5e4" title="construct permutated matrix " alt="" coords="221,5,403,61"/>
+<area shape="rect" id="node3" href="$classhif_1_1internal_1_1CompressedStorage.html#a47fa094b389b8cdbdd62b54790554fc6" title="hif::internal::Compressed\lStorage\&lt; value_type, index\l_type \&gt;::_ind_cend" alt="" coords="221,85,403,141"/>
+<area shape="rect" id="node4" href="$classhif_1_1internal_1_1CompressedStorage.html#a233681ea90b280e1d9f75c63a5ab5cfe" title="hif::internal::Compressed\lStorage\&lt; value_type, index\l_type \&gt;::_ind_end" alt="" coords="221,165,403,221"/>
+<area shape="rect" id="node5" href="$classhif_1_1internal_1_1CompressedStorage.html#aebc229c8b847bd9ee5dfbcc7ffe34613" title="hif::internal::Compressed\lStorage\&lt; value_type, index\l_type \&gt;::nnz_in_primary" alt="" coords="221,245,403,301"/>
+<area shape="rect" id="node6" href="$classhif_1_1internal_1_1CompressedStorage.html#a95fda5ca7eba1bf71cf873077216f724" title="hif::internal::Compressed\lStorage\&lt; value_type, index\l_type \&gt;::val_cend" alt="" coords="221,325,403,381"/>
+<area shape="rect" id="node7" href="$classhif_1_1internal_1_1CompressedStorage.html#a8f71bd5262e6c57ae742fc624b0f5ddc" title="hif::internal::Compressed\lStorage\&lt; value_type, index\l_type \&gt;::val_end" alt="" coords="221,405,403,461"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="hif::HIF::nnz" name="hif::HIF::nnz">
+<area shape="rect" id="node2" href="$classhif_1_1HIF.html#a77f109f53d5b2fde156c258fd2ae5913" title="factorize the HIF preconditioner " alt="" coords="148,5,272,32"/>
+<area shape="rect" id="node3" href="$classhif_1_1HIF.html#acdcf8fed0f4fbb05b9a223231f197044" title="compute the nnz in L, D, and U " alt="" coords="151,56,269,83"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="factor.hpp" name="factor.hpp">
+<area shape="rect" id="node2" href="$pivot__factor_8hpp.html" title="Kernels for deferred factorization with thresholding pivoting. " alt="" coords="5,80,120,107"/>
+<area shape="rect" id="node3" href="$builder_8hpp.html" title="Top level user class for building HIF preconditioner. " alt="" coords="115,155,200,181"/>
+<area shape="rect" id="node6" href="$symm__factor_8hpp.html" title="Kernels for deferred incomplete LDL&#39; factorization. " alt="" coords="195,80,317,107"/>
+<area shape="rect" id="node4" href="$hifir_8hpp.html" title="top&#45;level user interface " alt="" coords="123,229,191,256"/>
+<area shape="rect" id="node5" href="$demo__utils_8hpp.html" title="demo_utils.hpp" alt="" coords="102,304,213,331"/>
+</map>

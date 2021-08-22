@@ -1,0 +1,6 @@
+<map id="coo2compress.hpp" name="coo2compress.hpp">
+<area shape="rect" id="node3" href="$Array_8hpp.html" title="Array data structure, with functionality of wrapping external data. " alt="" coords="102,80,217,107"/>
+<area shape="rect" id="node6" href="$log_8hpp.html" title="Logging interface, including info/warning/error. " alt="" coords="287,155,397,181"/>
+<area shape="rect" id="node13" href="$print_8hpp.html" title="Macros for &quot;stdout&quot; and &quot;stderr&quot; message printers. " alt="" coords="521,229,640,256"/>
+<area shape="rect" id="node15" href="$stacktrace_8hpp.html" title="Print stacktrace on error aborting. " alt="" coords="663,229,818,256"/>
+</map>

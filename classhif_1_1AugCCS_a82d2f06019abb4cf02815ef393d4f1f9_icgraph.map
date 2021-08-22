@@ -1,0 +1,7 @@
+<map id="hif::AugCCS::col_idx" name="hif::AugCCS::col_idx">
+<area shape="rect" id="node2" href="$classhif_1_1AugCCS.html#aeeb29692770db145b29adea513c00056" title="defer a row to the end " alt="" coords="221,19,383,46"/>
+<area shape="rect" id="node4" href="$classhif_1_1AugCCS.html#af6550c39c4204e5f4ac498a755306287" title="interchange two rows " alt="" coords="199,74,405,101"/>
+<area shape="rect" id="node6" href="$classhif_1_1AugCCS.html#a3a10a791b641bc27b8f7e143b32d4820" title="unified interface for getting primary (col) index " alt="" coords="217,125,387,151"/>
+<area shape="rect" id="node3" href="$classhif_1_1AugCCS.html#a8d68bbd152db9f50f2e836dc2a80e5bf" title="unified interface for deferring " alt="" coords="472,5,605,47"/>
+<area shape="rect" id="node5" href="$classhif_1_1AugCCS.html#a6df3e521c450097a7773396bfa77c1a5" title="unified interface for interchanging " alt="" coords="453,71,624,112"/>
+</map>

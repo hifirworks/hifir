@@ -1,0 +1,10 @@
+<map id="hif::Array::resize" name="hif::Array::resize">
+<area shape="rect" id="node2" href="$classhif_1_1LUP.html#a8c2bef9ad4a5bcef602fdcd682c66683" title="perform LU with partial pivoting " alt="" coords="183,5,311,32"/>
+<area shape="rect" id="node4" href="$classhif_1_1SYEIG.html#a5f27002474d910771813274d8641d995" title="compute decomposition and determine the rank " alt="" coords="176,56,319,83"/>
+<area shape="rect" id="node6" href="$classhif_1_1QRCP.html#ab64b58713b71d8caf7ec40fca79e679c" title="compute decomposition and determine the rank " alt="" coords="177,107,318,133"/>
+<area shape="rect" id="node8" href="$classhif_1_1Array.html#a0e28b534643d7454ef390d1d340ca9b1" title="append a new value " alt="" coords="172,158,323,199"/>
+<area shape="rect" id="node9" href="$classhif_1_1Array.html#a1e223f4c80113d7d7db3585c73f8d325" title="append with leading position and known size " alt="" coords="172,223,323,265"/>
+<area shape="rect" id="node3" href="$classhif_1_1LUP.html#ad0da1e4ba9448e3c979af601d6301d83" title="refactorize the dense block " alt="" coords="379,5,517,32"/>
+<area shape="rect" id="node5" href="$classhif_1_1SYEIG.html#a97b686caf3b3e5340172f4539e445084" title="refactorize the dense block " alt="" coords="371,56,525,83"/>
+<area shape="rect" id="node7" href="$classhif_1_1QRCP.html#ae1b9e2dae080e8bf71d8c3f4fb1f8bc2" title="refactorize the dense block " alt="" coords="372,107,524,133"/>
+</map>

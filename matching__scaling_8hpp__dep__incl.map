@@ -1,0 +1,9 @@
+<map id="matching_scaling.hpp" name="matching_scaling.hpp">
+<area shape="rect" id="node2" href="$driver_8hpp.html" title="Top&#45;level driver routine to handle preprocessing. " alt="" coords="118,80,197,107"/>
+<area shape="rect" id="node3" href="$factor_8hpp.html" title="Kernels for deferred factorization. " alt="" coords="117,155,197,181"/>
+<area shape="rect" id="node4" href="$pivot__factor_8hpp.html" title="Kernels for deferred factorization with thresholding pivoting. " alt="" coords="5,229,120,256"/>
+<area shape="rect" id="node5" href="$builder_8hpp.html" title="Top level user class for building HIF preconditioner. " alt="" coords="115,304,200,331"/>
+<area shape="rect" id="node8" href="$symm__factor_8hpp.html" title="Kernels for deferred incomplete LDL&#39; factorization. " alt="" coords="195,229,317,256"/>
+<area shape="rect" id="node6" href="$hifir_8hpp.html" title="top&#45;level user interface " alt="" coords="123,379,191,405"/>
+<area shape="rect" id="node7" href="$demo__utils_8hpp.html" title="demo_utils.hpp" alt="" coords="102,453,213,480"/>
+</map>

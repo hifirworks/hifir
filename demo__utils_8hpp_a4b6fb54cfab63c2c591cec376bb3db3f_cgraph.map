@@ -1,0 +1,9 @@
+<map id="get_user_data" name="get_user_data">
+<area shape="rect" id="node2" href="$classhif_1_1Array.html#a098563f613c9f741796e91f8d59428c7" title="constructor with owned data " alt="" coords="169,5,284,32"/>
+<area shape="rect" id="node3" href="$classhif_1_1Array.html#a690183fd1d74456e68236f1386aa8cf8" title="hif::Array::begin" alt="" coords="169,56,284,83"/>
+<area shape="rect" id="node4" href="$classhif_1_1Array.html#afe16cadd4f6043c7875db37aa97fdf9d" title="hif::Array::end" alt="" coords="175,107,279,133"/>
+<area shape="rect" id="node5" href="$classhif_1_1Array.html#ab6844c7e9f883131b14cc17d361ec917" title="Read data from a MatrixMarket file. " alt="" coords="157,157,296,184"/>
+<area shape="rect" id="node6" href="$classhif_1_1CRS.html#ab950d88b148d1f186745fee2079839e7" title="Read a matrix from a MatrixMarket file. " alt="" coords="159,208,295,235"/>
+<area shape="rect" id="node7" href="$classhif_1_1CRS.html#a84950454d556072c1176145f0cda3e8d" title="get number of columns " alt="" coords="171,259,283,285"/>
+<area shape="rect" id="node8" href="$classhif_1_1CRS.html#a5b8b2986197eac78ca26ece1ed0ab292" title="get number of rows " alt="" coords="169,309,285,336"/>
+</map>

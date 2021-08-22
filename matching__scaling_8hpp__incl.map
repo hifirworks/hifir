@@ -1,0 +1,19 @@
+<map id="matching_scaling.hpp" name="matching_scaling.hpp">
+<area shape="rect" id="node4" href="$Options_8h.html" title="HIF algorithm parameter controls. " alt="" coords="235,304,331,331"/>
+<area shape="rect" id="node9" href="$CompressedStorage_8hpp.html" title="Core about CRS and CCS storage formats. " alt="" coords="1491,155,1693,181"/>
+<area shape="rect" id="node26" href="$common_8hpp.html" title="Utility/helper routines. " alt="" coords="2159,379,2302,405"/>
+<area shape="rect" id="node39" href="$EqlDriver_8hpp.html" title="Equilibrator driver interface. " alt="" coords="2041,80,2183,107"/>
+<area shape="rect" id="node42" href="$Timer_8hpp.html" title="A simple timer wrapping around C++ chrono. " alt="" coords="2743,80,2870,107"/>
+<area shape="rect" id="node14" href="$Array_8hpp.html" title="Array data structure, with functionality of wrapping external data. " alt="" coords="1121,379,1236,405"/>
+<area shape="rect" id="node29" href="$coo2compress_8hpp.html" title="Helper function to convert coordinate to compressed format. " alt="" coords="557,304,736,331"/>
+<area shape="rect" id="node30" href="$io_8hpp.html" title="Read and write native IO formats. " alt="" coords="1103,229,1206,256"/>
+<area shape="rect" id="node35" href="$math_8hpp.html" title="Some handy BLAS 1 vector routines. " alt="" coords="1835,304,1957,331"/>
+<area shape="rect" id="node37" href="$mt__mv_8hpp.html" title="Multithreaded matrix&#45;vector product for CRS. " alt="" coords="1525,304,1659,331"/>
+<area shape="rect" id="node17" href="$log_8hpp.html" title="Logging interface, including info/warning/error. " alt="" coords="1965,453,2075,480"/>
+<area shape="rect" id="node23" href="$print_8hpp.html" title="Macros for &quot;stdout&quot; and &quot;stderr&quot; message printers. " alt="" coords="1801,528,1919,555"/>
+<area shape="rect" id="node25" href="$stacktrace_8hpp.html" title="Print stacktrace on error aborting. " alt="" coords="1943,528,2097,555"/>
+<area shape="rect" id="node36" href="$version_8h.html" title="HIF version header. " alt="" coords="1256,304,1349,331"/>
+<area shape="rect" id="node38" href="$mt_8hpp.html" title="Multithreading helpers. " alt="" coords="1261,379,1369,405"/>
+<area shape="rect" id="node40" href="$a__priori__scaling_8hpp.html" title="a priori scaling before official matching/scaling and reordering " alt="" coords="2083,304,2261,331"/>
+<area shape="rect" id="node41" href="$equilibrate_8hpp.html" title="balancing systems to achieve better conditioning " alt="" coords="2488,304,2635,331"/>
+</map>

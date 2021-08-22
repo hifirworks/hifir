@@ -1,0 +1,7 @@
+<map id="hif::LUP::refactorize" name="hif::LUP::refactorize">
+<area shape="rect" id="node2" href="$classhif_1_1LUP.html#a8c2bef9ad4a5bcef602fdcd682c66683" title="perform LU with partial pivoting " alt="" coords="192,81,320,108"/>
+<area shape="rect" id="node3" href="$group__util.html#ga0a3c88ad06db9caf44d1a64d51ebb7b2" title="error information streaming, dump to HIF_STDERR " alt="" coords="403,5,474,32"/>
+<area shape="rect" id="node4" href="$classhif_1_1LUP.html#a5772b3b974679b5de484493c370f9751" title="hif::LUP::is_squared" alt="" coords="368,56,509,83"/>
+<area shape="rect" id="node5" href="$classhif_1_1Array.html#aaff95a415c82a718d3ff606bd843c24a" title="resize an Array with new size " alt="" coords="379,107,498,133"/>
+<area shape="rect" id="node6" href="$group__util.html#ga1d4c2000af1b3a9f14ece0c026d1c39a" title="warning information streaming, dump to HIF_STDERR " alt="" coords="394,157,483,184"/>
+</map>

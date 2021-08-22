@@ -1,0 +1,5 @@
+<map id="hif::read_mm_sparse" name="hif::read_mm_sparse">
+<area shape="rect" id="node2" href="$group__util.html#ga0a3c88ad06db9caf44d1a64d51ebb7b2" title="error information streaming, dump to HIF_STDERR " alt="" coords="393,5,464,32"/>
+<area shape="rect" id="node3" href="$group__io.html#gad40204849ab390db879fcef33ed34dc9" title="Internal routine to parse the first line. " alt="" coords="197,27,345,69"/>
+<area shape="rect" id="node4" href="$group__io.html#ga928563fb92417cbf2befd0771a7c80f6" title="Internal routine to read sizes. " alt="" coords="197,93,345,134"/>
+</map>

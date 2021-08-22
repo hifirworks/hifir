@@ -1,0 +1,8 @@
+<map id="hif::write_bin" name="hif::write_bin">
+<area shape="rect" id="node2" href="$group__util.html#ga0a3c88ad06db9caf44d1a64d51ebb7b2" title="error information streaming, dump to HIF_STDERR " alt="" coords="179,5,250,32"/>
+<area shape="rect" id="node3" href="$group__io.html#gac3ddf1dfb884fa78fdddb422eb0609f3" title="write general information " alt="" coords="153,57,276,98"/>
+<area shape="rect" id="node6" href="$group__io.html#gac6e3cc364db7eb3cbcd27668719d46ae" title="write matrix data attributes " alt="" coords="149,122,280,163"/>
+<area shape="rect" id="node7" href="$group__io.html#ga04c4449bfe44bfba72c9208110c6b32d" title="write matrix size information " alt="" coords="153,187,276,229"/>
+<area shape="rect" id="node4" href="$group__io.html#ga1caaca05c2c4b8f14478bff2c80bb67f" title="check if the os is litter endian " alt="" coords="328,25,463,66"/>
+<area shape="rect" id="node5" href="$group__io.html#ga4dfe3067d6fed134a6f1bd1061d65708" title="check the word size " alt="" coords="339,90,451,131"/>
+</map>

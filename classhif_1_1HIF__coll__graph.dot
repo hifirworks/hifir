@@ -1,0 +1,20 @@
+digraph "hif::HIF&lt; ValueType, IndexType, UserDenseFactor &gt;"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node7 [label="hif::HIF\< ValueType,\l IndexType, UserDenseFactor \>",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node8 -> Node7 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" _prec_work" ,fontname="Helvetica"];
+  Node8 [label="hif::Array\< boost_value\l_type \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classhif_1_1Array.html"];
+  Node9 -> Node8 [dir="back",color="orange",fontsize="10",style="dashed",label=" \< boost_value_type \>" ,fontname="Helvetica"];
+  Node9 [label="hif::Array\< T \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classhif_1_1Array.html",tooltip="Core data structure used in compressed storage. "];
+  Node10 -> Node9 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" _data" ,fontname="Helvetica"];
+  Node10 [label="T",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node11 -> Node7 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" _ir" ,fontname="Helvetica"];
+  Node11 [label="hif::IterRefine\< boost\l_value_type \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classhif_1_1IterRefine.html"];
+  Node12 -> Node11 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" _r\n_xk" ,fontname="Helvetica"];
+  Node12 [label="hif::Array\< value_type \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classhif_1_1Array.html"];
+  Node9 -> Node12 [dir="back",color="orange",fontsize="10",style="dashed",label=" \< value_type \>" ,fontname="Helvetica"];
+  Node13 -> Node11 [dir="back",color="orange",fontsize="10",style="dashed",label=" \< boost_value_type \>" ,fontname="Helvetica"];
+  Node13 [label="hif::IterRefine\< ValueType \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classhif_1_1IterRefine.html",tooltip="Iterative refinement operator. "];
+  Node12 -> Node13 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" _r\n_xk" ,fontname="Helvetica"];
+}

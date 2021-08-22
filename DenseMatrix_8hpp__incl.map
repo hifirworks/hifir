@@ -1,0 +1,7 @@
+<map id="DenseMatrix.hpp" name="DenseMatrix.hpp">
+<area shape="rect" id="node6" href="$Array_8hpp.html" title="Array data structure, with functionality of wrapping external data. " alt="" coords="468,80,583,107"/>
+<area shape="rect" id="node18" href="$common_8hpp.html" title="Utility/helper routines. " alt="" coords="658,80,801,107"/>
+<area shape="rect" id="node8" href="$log_8hpp.html" title="Logging interface, including info/warning/error. " alt="" coords="477,155,587,181"/>
+<area shape="rect" id="node15" href="$print_8hpp.html" title="Macros for &quot;stdout&quot; and &quot;stderr&quot; message printers. " alt="" coords="178,229,297,256"/>
+<area shape="rect" id="node17" href="$stacktrace_8hpp.html" title="Print stacktrace on error aborting. " alt="" coords="320,229,475,256"/>
+</map>

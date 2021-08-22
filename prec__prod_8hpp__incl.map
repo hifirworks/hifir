@@ -1,0 +1,9 @@
+<map id="prec_prod.hpp" name="prec_prod.hpp">
+<area shape="rect" id="node2" href="$prec__solve_8hpp.html" title="Multilevel preconditioner solver. " alt="" coords="319,80,469,107"/>
+<area shape="rect" id="node24" href="$math_8hpp.html" title="Some handy BLAS 1 vector routines. " alt="" coords="578,155,701,181"/>
+<area shape="rect" id="node8" href="$Array_8hpp.html" title="Array data structure, with functionality of wrapping external data. " alt="" coords="170,229,285,256"/>
+<area shape="rect" id="node21" href="$common_8hpp.html" title="Utility/helper routines. " alt="" coords="360,229,503,256"/>
+<area shape="rect" id="node11" href="$log_8hpp.html" title="Logging interface, including info/warning/error. " alt="" coords="507,304,617,331"/>
+<area shape="rect" id="node18" href="$print_8hpp.html" title="Macros for &quot;stdout&quot; and &quot;stderr&quot; message printers. " alt="" coords="503,379,621,405"/>
+<area shape="rect" id="node20" href="$stacktrace_8hpp.html" title="Print stacktrace on error aborting. " alt="" coords="645,379,799,405"/>
+</map>

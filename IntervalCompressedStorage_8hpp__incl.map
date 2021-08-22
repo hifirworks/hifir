@@ -1,0 +1,14 @@
+<map id="IntervalCompressedStorage.hpp" name="IntervalCompressedStorage.hpp">
+<area shape="rect" id="node4" href="$CompressedStorage_8hpp.html" title="Core about CRS and CCS storage formats. " alt="" coords="648,80,851,107"/>
+<area shape="rect" id="node10" href="$Array_8hpp.html" title="Array data structure, with functionality of wrapping external data. " alt="" coords="419,304,533,331"/>
+<area shape="rect" id="node23" href="$common_8hpp.html" title="Utility/helper routines. " alt="" coords="609,304,751,331"/>
+<area shape="rect" id="node26" href="$coo2compress_8hpp.html" title="Helper function to convert coordinate to compressed format. " alt="" coords="501,229,680,256"/>
+<area shape="rect" id="node27" href="$io_8hpp.html" title="Read and write native IO formats. " alt="" coords="1261,155,1363,181"/>
+<area shape="rect" id="node32" href="$math_8hpp.html" title="Some handy BLAS 1 vector routines. " alt="" coords="992,229,1115,256"/>
+<area shape="rect" id="node35" href="$mt__mv_8hpp.html" title="Multithreaded matrix&#45;vector product for CRS. " alt="" coords="237,229,371,256"/>
+<area shape="rect" id="node13" href="$log_8hpp.html" title="Logging interface, including info/warning/error. " alt="" coords="421,379,531,405"/>
+<area shape="rect" id="node20" href="$print_8hpp.html" title="Macros for &quot;stdout&quot; and &quot;stderr&quot; message printers. " alt="" coords="417,453,535,480"/>
+<area shape="rect" id="node22" href="$stacktrace_8hpp.html" title="Print stacktrace on error aborting. " alt="" coords="559,453,713,480"/>
+<area shape="rect" id="node34" href="$version_8h.html" title="HIF version header. " alt="" coords="1573,229,1667,256"/>
+<area shape="rect" id="node37" href="$mt_8hpp.html" title="Multithreading helpers. " alt="" coords="81,304,189,331"/>
+</map>

@@ -1,0 +1,11 @@
+<map id="hif::HIF::factorize" name="hif::HIF::factorize">
+<area shape="rect" id="node2" href="$classhif_1_1HIF.html#af4210585786d671faf450e78b5ce292f" title="check empty or not " alt="" coords="368,114,479,141"/>
+<area shape="rect" id="node3" href="$group__util.html#ga0a3c88ad06db9caf44d1a64d51ebb7b2" title="error information streaming, dump to HIF_STDERR " alt="" coords="213,38,284,65"/>
+<area shape="rect" id="node4" href="$classhif_1_1Timer.html#a40ddb5ec755809b41193505a35072b3f" title="finish timer " alt="" coords="191,89,307,116"/>
+<area shape="rect" id="node5" href="$group__mt.html#gac31f1b23e999bbf816b29377a500f70b" title="get number of threads " alt="" coords="177,140,320,166"/>
+<area shape="rect" id="node6" href="$group__util.html#gaa22fcfffe28e3d198a7ca7c99ece3aae" title="common information streaming, dump msg to HIF_STDOUT " alt="" coords="216,190,281,217"/>
+<area shape="rect" id="node7" href="$classhif_1_1HIF.html#aeed40315bcdbe524620d8cb59eca4506" title="compute the overall nnz of the multilevel preconditioners " alt="" coords="201,241,296,268"/>
+<area shape="rect" id="node8" href="$classhif_1_1Timer.html#ae8aed1e5ffc158a0987e255db30b0fc5" title="start timer " alt="" coords="193,292,304,318"/>
+<area shape="rect" id="node9" href="$classhif_1_1Timer.html#acf16542a63575b85fa24b47501af1611" title="get time report in seconds " alt="" coords="193,342,304,369"/>
+<area shape="rect" id="node10" href="$namespacehif.html#a6595f4818d060ae503a21213347bd4e6" title="set/get warning flag " alt="" coords="199,393,299,420"/>
+</map>

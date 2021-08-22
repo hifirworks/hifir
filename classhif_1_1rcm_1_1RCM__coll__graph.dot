@@ -1,0 +1,15 @@
+digraph "hif::rcm::RCM&lt; _Integer &gt;"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node5 [label="hif::rcm::RCM\< _Integer \>",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node6 -> Node5 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" _xls" ,fontname="Helvetica"];
+  Node6 [label="std::vector\< _Integer \>",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node7 -> Node6 [dir="back",color="orange",fontsize="10",style="dashed",label=" \< _Integer \>" ,fontname="Helvetica"];
+  Node7 [label="std::vector\< T \>",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled",tooltip="STL class. "];
+  Node8 -> Node7 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" elements" ,fontname="Helvetica"];
+  Node8 [label="T",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node9 -> Node5 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" _mask" ,fontname="Helvetica"];
+  Node9 [label="std::vector\< bool \>",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node7 -> Node9 [dir="back",color="orange",fontsize="10",style="dashed",label=" \< bool \>" ,fontname="Helvetica"];
+}

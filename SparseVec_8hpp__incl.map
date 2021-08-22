@@ -1,0 +1,7 @@
+<map id="SparseVec.hpp" name="SparseVec.hpp">
+<area shape="rect" id="node5" href="$common_8hpp.html" title="Utility/helper routines. " alt="" coords="268,155,411,181"/>
+<area shape="rect" id="node11" href="$log_8hpp.html" title="Logging interface, including info/warning/error. " alt="" coords="628,229,739,256"/>
+<area shape="rect" id="node20" href="$math_8hpp.html" title="Some handy BLAS 1 vector routines. " alt="" coords="388,80,510,107"/>
+<area shape="rect" id="node17" href="$print_8hpp.html" title="Macros for &quot;stdout&quot; and &quot;stderr&quot; message printers. " alt="" coords="464,304,583,331"/>
+<area shape="rect" id="node19" href="$stacktrace_8hpp.html" title="Print stacktrace on error aborting. " alt="" coords="606,304,761,331"/>
+</map>

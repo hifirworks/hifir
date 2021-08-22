@@ -1,0 +1,5 @@
+<map id="hif::AugCRS::defer_col" name="hif::AugCRS::defer_col">
+<area shape="rect" id="node2" href="$classhif_1_1AugCRS.html#a8c01fd4d3fc5dbe3a26f42e51d4af8ae" title="given a column handle, get its next location " alt="" coords="211,5,381,32"/>
+<area shape="rect" id="node3" href="$classhif_1_1AugCRS.html#ad230b3f094510e272fc0c92a859b6aa2" title="given a column handle/ID, get its corresponding row index " alt="" coords="221,56,371,83"/>
+<area shape="rect" id="node4" href="$classhif_1_1AugCRS.html#a006b32359c190acb772e68e8f44973b6" title="given column index, get the starting column handle " alt="" coords="231,107,361,149"/>
+</map>

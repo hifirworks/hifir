@@ -1,0 +1,5 @@
+<map id="hif::read_mm_vector" name="hif::read_mm_vector">
+<area shape="rect" id="node2" href="$group__util.html#ga0a3c88ad06db9caf44d1a64d51ebb7b2" title="error information streaming, dump to HIF_STDERR " alt="" coords="391,38,461,65"/>
+<area shape="rect" id="node3" href="$group__io.html#gac79beccd6668c627411e4d9ee4624bc9" title="hif::internal::mm_read\l_dense_size" alt="" coords="195,27,343,68"/>
+<area shape="rect" id="node4" href="$group__io.html#gad40204849ab390db879fcef33ed34dc9" title="Internal routine to parse the first line. " alt="" coords="195,92,343,133"/>
+</map>

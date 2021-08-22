@@ -1,0 +1,5 @@
+<map id="hif::IntervalCRS::nrows" name="hif::IntervalCRS::nrows">
+<area shape="rect" id="node2" href="$classhif_1_1IntervalCRS.html#a23d90129ef4036448fdb85f1b9f8702e" title="matrix vector multiplication for MT (CRS only) " alt="" coords="212,5,399,32"/>
+<area shape="rect" id="node3" href="$classhif_1_1IntervalCRS.html#a63f2e99dff7a8c015004cc49b8a452a5" title="matrix transpose vector multiplication " alt="" coords="215,56,395,83"/>
+<area shape="rect" id="node4" href="$classhif_1_1IntervalCRS.html#a89ff09314a22a3a3a9c5304ac35d8710" title="analyze storage ratio from interval to classical " alt="" coords="222,107,389,149"/>
+</map>

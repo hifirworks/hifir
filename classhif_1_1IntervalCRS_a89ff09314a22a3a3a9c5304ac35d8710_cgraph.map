@@ -1,0 +1,5 @@
+<map id="hif::IntervalCRS::storage_cost_ratio" name="hif::IntervalCRS::storage_cost_ratio">
+<area shape="rect" id="node2" href="$classhif_1_1IntervalCRS.html#a3a9c6c97ed38baa1a825699dc41307e0" title="get the number of intervals " alt="" coords="221,5,377,32"/>
+<area shape="rect" id="node3" href="$classhif_1_1IntervalCRS.html#a54a6e0877ed214d635dbe7a5222e7853" title="get the number of nnz " alt="" coords="227,56,372,83"/>
+<area shape="rect" id="node4" href="$classhif_1_1IntervalCRS.html#ac2ca58bc1f30459ebe546fd682cd6bd4" title="get number of rows " alt="" coords="220,107,379,133"/>
+</map>

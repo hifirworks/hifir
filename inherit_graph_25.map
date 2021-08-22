@@ -1,0 +1,5 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$classhif_1_1internal_1_1CompressedStorage.html" title="Core of the compressed storage, including data and interfaces. " alt="" coords="5,39,228,80"/>
+<area shape="rect" id="node2" href="$classhif_1_1CCS.html" title="Compressed Column Storage (CCS) format for sparse matrices. " alt="" coords="276,5,427,47"/>
+<area shape="rect" id="node3" href="$classhif_1_1CRS.html" title="Compressed Row Storage (CRS) format for sparse matrices. " alt="" coords="276,71,427,112"/>
+</map>

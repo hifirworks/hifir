@@ -1,0 +1,5 @@
+<map id="common.hpp" name="common.hpp">
+<area shape="rect" id="node9" href="$log_8hpp.html" title="Logging interface, including info/warning/error. " alt="" coords="677,80,787,107"/>
+<area shape="rect" id="node15" href="$print_8hpp.html" title="Macros for &quot;stdout&quot; and &quot;stderr&quot; message printers. " alt="" coords="959,155,1078,181"/>
+<area shape="rect" id="node17" href="$stacktrace_8hpp.html" title="Print stacktrace on error aborting. " alt="" coords="1101,155,1256,181"/>
+</map>

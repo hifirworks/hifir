@@ -1,0 +1,4 @@
+<map id="hif::internal::write_general_info" name="hif::internal::write_general_info">
+<area shape="rect" id="node2" href="$group__io.html#ga4dfe3067d6fed134a6f1bd1061d65708" title="check the word size " alt="" coords="187,5,299,47"/>
+<area shape="rect" id="node3" href="$group__io.html#ga1caaca05c2c4b8f14478bff2c80bb67f" title="check if the os is litter endian " alt="" coords="176,71,311,112"/>
+</map>

@@ -1,0 +1,84 @@
+\form#0:$\mathbf{U}$
+\form#1:\[ \mathbf{u}_{k}^{T}= \hat{\mathbf{A}}[p_{k},\mathbf{q}_{k+1:n}]- \mathbf{L}_{k,1:k-1}\mathbf{D}_{k-1} \mathbf{U}_{1:k-1,k+1:n} \]
+\form#2:$\mathbf{L}$
+\form#3:$\mathcal{O}(\textrm{nnz}(\mathbf{A}_{p_k,:}))$
+\form#4:$\mathbf{u}_k^T$
+\form#5:$\mathcal{O}(\cup_j \textrm{nnz}(\mathbf{U}_{j,:}))$
+\form#6:$l_{kj}\neq 0$
+\form#7:\[ \mathbf{\ell}_{k}= \hat{\mathbf{A}}[\mathbf{p}_{k+1:n},q_{k}]- \mathbf{L}_{k+1:n,1:k-1}\mathbf{D}_{k-1} \mathbf{U}_{1:k-1,k} \]
+\form#8:$\mathcal{O}(\textrm{nnz}(\mathbf{A}_{:,q_k}))$
+\form#9:$\mathbf{\ell}_k$
+\form#10:$\mathcal{O}(\cup_i \textrm{nnz}(\mathbf{L}_{:,i}))$
+\form#11:$u_{ik}\neq 0$
+\form#12:$LDL^{T}$
+\form#13:\[ \mathbf{\ell}_{k}= \hat{\mathbf{A}}[\mathbf{p}_{k+1:n},q_{k}]- \mathbf{L}_{k+1:n,1:k-1}\mathbf{D}_{k-1} \mathbf{L}_{k,1:k-1}^{T} \]
+\form#14:\[ \mathbf{D}_{k+1:m,k+1:m}=\mathbf{D}_{k+1:m,k+1:m}- \mathbf{D}_{k,k} \left(\mathbf{\ell}_k\otimes\mathbf{u}_k\right)_{k+1:m,k+1:m} \]
+\form#15:\[ \mathcal{O}(\min(\textrm{nnz}(\mathbf{\ell}_k), \textrm{nnz}(\mathbf{u}_k))) \]
+\form#16:\[ \mathcal{O}(\textrm{nnz}(\mathbf{u}_k)) \]
+\form#17:$\mathbf{v}=\mathbf{v}/d_k$
+\form#18:$d_k$
+\form#19:$\mathcal{O}(\textrm{nnz}(\mathbf{v}))$
+\form#20:\[ \mathbf{D}=\left(\mathbf{SAT}\right)_{\mathbf{p}_{1:m}, \mathbf{q}_{1:m}} \]
+\form#21:\[ \mathbf{E}=\left(\mathbf{SAT}\right)_{\mathbf{p}_{m+1:n}, \mathbf{q}_{1:m}} \]
+\form#22:\[ \mathbf{F}=\left(\mathbf{SAT}\right)_{\mathbf{p}_{1:m}, \mathbf{q}_{m+1:n}} \]
+\form#23:\begin{eqnarray*} \mathbf{Ax}&=&\mathbf{b} \\ (\mathbf{M+A-M})\mathbf{x}&=&\mathbf{b} \\ \mathbf{Mx}&=&\mathbf{b}-(\mathbf{A-M})\mathbf{x} \\ \mathbf{x}&=&\mathbf{M}^{-1}(\mathbf{r}+\mathbf{Mx}) \\ \mathbf{x}_{k+1}&=&\mathbf{M}^{-1}\mathbf{r}+\mathbf{x}_k \end{eqnarray*}
+\form#24:$\mathbf{D}$
+\form#25:\[ d_{k}=\hat{A}[p_{k},q_{k}]-\mathbf{L}_{k,1:k-1}\mathbf{D}_{k-1} \mathbf{U}_{1:k-1,k} \]
+\form#26:\[ \mathbf{y}=\mathbf{U}^{-1}\mathbf{D}^{-1}\mathbf{L}^{-1}\mathbf{y} \]
+\form#27:\[ \mathbf{y}=\mathbf{L}^{-T}\mathbf{D}^{-1}\mathbf{U}^{-T}\mathbf{y} \]
+\form#28:\[ \mathbf{S}_C=\mathbf{A}[\mathbf{p}_{m+1:n},\mathbf{q}_{m+1:n}] -\mathbf{L}_E\textrm{diag}(\mathbf{d_B})\mathbf{U}_F \]
+\form#29:$\mathbf{L}_E=\mathbf{L}_{m+1:n,:}$
+\form#30:$\mathbf{U}_F=\mathbf{U}_{:,m+1:n}$
+\form#31:$m<n$
+\form#32:$\mathbf{U}_{:,m+1:n}$
+\form#33:$\mathcal{O}(1)$
+\form#34:$\mathbf{x}=\mathbf{M}^{-1}\mathbf{b}$
+\form#35:$\mathbf{X}=\mathbf{M}^{-1}\mathbf{B}$
+\form#36:$\mathbf{y}=\mathbf{Mx}$
+\form#37:$\mathcal{O}(n)$
+\form#38:$ \textrm{diag}(\mathbf{s})\mathbf{A}$
+\form#39:$\mathcal{O}(nnz)$
+\form#40:$\mathbf{A} \textrm{diag}(\mathbf{t})$
+\form#41:$\textrm{diag}(\mathbf{s}) \mathbf{A} \textrm{diag}(\mathbf{t})$
+\form#42:$y=\mathbf{A}^Tx$
+\form#43:$ a_{ij}$
+\form#44:$\vert a_{ij}\vert\le\epsilon\min{\max(\vert a_i^T\vert),\max(\vert a_j\vert)}$
+\form#45:$\mathbf{A} \textrm{diag}(\mathbf{s})$
+\form#46:$\mathcal{O}(\textrm{lnnz}\log \textrm{lnnz}$
+\form#47:$\textrm{lnnz}$
+\form#48:$\mathcal{O}(n\log n)$
+\form#49:$n$
+\form#50:$\mathbf{A}_m^T+\mathbf{A}_m$
+\form#51:$\mathbf{LUx}=\mathbf{Px}$
+\form#52:$\mathbf{y}=\mathbf{P}^{T}\mathbf{LUx}$
+\form#53:$\mathbf{AP}=\mathbf{QR}$
+\form#54:$\mathbf{Ax}=\mathbf{b}$
+\form#55:\begin{eqnarray*} \mathbf{QRP}^T\mathbf{x}&=&\mathbf{b} \\ \hookrightarrow\mathbf{RP}^T\mathbf{x}&=&\mathbf{Q}^T\mathbf{b} \\ \hookrightarrow\mathbf{P}^T\mathbf{x}&=&\mathbf{R}^{-1} \mathbf{Q}^T\mathbf{b} \\ \hookrightarrow\mathbf{x}&=&\mathbf{PR}^{-1}\mathbf{Q}^T\mathbf{b} \end{eqnarray*}
+\form#56:$\mathbf{R}^{-1}\mathbf{Q}^T$
+\form#57:$\mathbf{AP}$
+\form#58:$\mathbf{Ax}=\mathbf{QRP}^{T}\mathbf{x}$
+\form#59:$\mathbf{R}^{T}$
+\form#60:$\mathbf{R}^T$
+\form#61:$\mathbf{R}^{-T}$
+\form#62:$\mathbf{Q\Lambda Q}^H\mathbf{x}=\mathbf{b}$
+\form#63:$\mathbf{Q\Lambda Q}^H\mathbf{x}$
+\form#64:$\tau$
+\form#65:$\tau\in [10^{-4},10^{-2}]$
+\form#66:$\alpha=3$
+\form#67:$\alpha=5$
+\form#68:$\alpha\in [2,20]$
+\form#69:$\kappa\in [3,5]$
+\form#70:$\epsilon_{\textrm{mach}}^{-2/3}$
+\form#71:$ T=\textrm{symm\_pre\_lvls}$
+\form#72:$ T\ge 0$
+\form#73:$ T$
+\form#74:$ T<0$
+\form#75:$\vert T\vert$
+\form#76:$ T=-2$
+\form#77:$\alpha$
+\form#78:$\kappa$
+\form#79:\[ AM^{g}y=b\quad\text{then}\quad x=M^{g}y, \]
+\form#80:$ M$
+\form#81:$ S$
+\form#82:$\text{nnz}(S)\le\text{nnz}(A)$
+\form#83:$ 64\times 64$

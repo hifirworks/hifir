@@ -1,0 +1,9 @@
+<map id="hif::CCS::nrows" name="hif::CCS::nrows">
+<area shape="rect" id="node2" href="$classhif_1_1CCS.html#a758c9649c4cd34221719e015716f4336" title="compute permutation CCS " alt="" coords="169,5,336,32"/>
+<area shape="rect" id="node3" href="$classhif_1_1CCS.html#aad003f8253777e35c608ed5013fce413" title="matrix vector multiplication " alt="" coords="189,57,316,98"/>
+<area shape="rect" id="node4" href="$classhif_1_1CCS.html#a7c40a444db1f0667f9f32a8c8059ff41" title="matrix vector multiplication with different value type " alt="" coords="189,122,316,163"/>
+<area shape="rect" id="node5" href="$classhif_1_1CCS.html#ac3863204d8d420482a293b852b521379" title="transpose matrix vector multiplication " alt="" coords="189,187,316,229"/>
+<area shape="rect" id="node6" href="$classhif_1_1CCS.html#a0dff6e974973fe3e90b6b25f20c299cd" title="matrix vector multiplication " alt="" coords="181,253,325,280"/>
+<area shape="rect" id="node7" href="$classhif_1_1CCS.html#af47f81cfee184228dcd754fb7275c192" title="matrix vector multiplication with different value type " alt="" coords="189,305,316,346"/>
+<area shape="rect" id="node8" href="$classhif_1_1CCS.html#afe21627019caca6ae7793ef5d5588d7d" title="matrix transpose vector multiplication " alt="" coords="184,371,321,397"/>
+</map>

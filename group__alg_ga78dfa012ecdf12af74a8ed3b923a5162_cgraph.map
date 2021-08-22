@@ -1,0 +1,4 @@
+<map id="hif::mt::multiply_nt_low" name="hif::mt::multiply_nt_low">
+<area shape="rect" id="node2" href="$group__mt.html#gac31f1b23e999bbf816b29377a500f70b" title="get number of threads " alt="" coords="211,5,353,32"/>
+<area shape="rect" id="node3" href="$group__mt.html#gafb354fe62e292bf297b01876fc9f1270" title="get &quot;my&quot; thread id " alt="" coords="218,56,346,83"/>
+</map>

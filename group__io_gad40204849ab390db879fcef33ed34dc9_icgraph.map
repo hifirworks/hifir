@@ -1,0 +1,4 @@
+<map id="hif::internal::mm_read_firstline" name="hif::internal::mm_read_firstline">
+<area shape="rect" id="node2" href="$group__io.html#gafb3eba3c5eeb67b0a41f593aa2ce6337" title="Read a sparse matrix form a MatrixMarket file. " alt="" coords="201,5,345,32"/>
+<area shape="rect" id="node3" href="$group__io.html#gab37317675352a438fa90ce0ca917f7d1" title="Read vector from a MatrixMarket file. " alt="" coords="203,56,344,83"/>
+</map>

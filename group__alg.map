@@ -1,0 +1,11 @@
+<map id="Algorithms" name="Algorithms">
+<area shape="rect" id="node1" href="$group__slv.html" title="Preconditioner Solver" alt="" coords="147,5,293,32"/>
+<area shape="rect" id="node2" href="$group__crout.html" title="Crout Update" alt="" coords="170,56,270,83"/>
+<area shape="rect" id="node3" href="$group__sss.html" title="Small Scale Solver" alt="" coords="153,107,287,133"/>
+<area shape="rect" id="node5" href="$group__inv.html" title="Inverse&#45;based Threshold" alt="" coords="137,157,303,184"/>
+<area shape="rect" id="node6" href="$group__fac.html" title="Multilevel Factorization" alt="" coords="142,208,298,235"/>
+<area shape="rect" id="node7" href="$group__schur.html" title="Schur Complements" alt="" coords="149,259,291,285"/>
+<area shape="rect" id="node8" href="$group__defer.html" title="Dynamic Deferring" alt="" coords="155,309,285,336"/>
+<area shape="rect" id="node9" href="$group__ir.html" title="Iterative Refinement" alt="" coords="150,360,290,387"/>
+<area shape="rect" id="node10" href="$group__scl.html" title="Scalability&#45;oriented\l Threshold" alt="" coords="154,411,286,453"/>
+</map>

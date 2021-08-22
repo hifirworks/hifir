@@ -1,0 +1,6 @@
+<map id="hif::AugCCS::defer_entry" name="hif::AugCCS::defer_entry">
+<area shape="rect" id="node2" href="$classhif_1_1AugCCS.html#aeeb29692770db145b29adea513c00056" title="defer a row to the end " alt="" coords="187,71,348,98"/>
+<area shape="rect" id="node3" href="$classhif_1_1AugCCS.html#a0147ded15994ee5a33653d410f49886b" title="given row index, get the starting row handle/ID " alt="" coords="418,5,549,47"/>
+<area shape="rect" id="node4" href="$classhif_1_1AugCCS.html#a82d2f06019abb4cf02815ef393d4f1f9" title="given a row handle/ID, get its corresponding column index " alt="" coords="411,71,556,98"/>
+<area shape="rect" id="node5" href="$classhif_1_1AugCCS.html#ac5db931982ad52dc4f39c291b3d9a840" title="given a row handle, get its next location " alt="" coords="396,122,571,149"/>
+</map>

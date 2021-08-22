@@ -1,0 +1,6 @@
+<map id="hif::query_info_bin" name="hif::query_info_bin">
+<area shape="rect" id="node2" href="$group__util.html#ga0a3c88ad06db9caf44d1a64d51ebb7b2" title="error information streaming, dump to HIF_STDERR " alt="" coords="213,5,284,32"/>
+<area shape="rect" id="node3" href="$group__io.html#ga1caaca05c2c4b8f14478bff2c80bb67f" title="check if the os is litter endian " alt="" coords="181,57,316,98"/>
+<area shape="rect" id="node4" href="$group__io.html#ga189b04f700d1d1232ba2342fedcda595" title="read the general information " alt="" coords="189,122,308,163"/>
+<area shape="rect" id="node5" href="$group__io.html#ga371b7839983aebe182ad641c70a3d4de" title="read the matrix size information " alt="" coords="189,187,308,229"/>
+</map>

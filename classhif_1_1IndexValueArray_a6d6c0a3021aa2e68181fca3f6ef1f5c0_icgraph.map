@@ -1,0 +1,7 @@
+<map id="hif::IndexValueArray::idx" name="hif::IndexValueArray::idx">
+<area shape="rect" id="node2" href="$classhif_1_1IndexValueArray.html#a7291cb77978c073dc327eada759b75dc" title="get the value " alt="" coords="219,78,384,105"/>
+<area shape="rect" id="node3" href="$classhif_1_1IndexValueArray.html#a9122bffc0b71616e2e2f6e3781a7466a" title="get the 1 norm of the vector " alt="" coords="432,5,572,47"/>
+<area shape="rect" id="node4" href="$classhif_1_1IndexValueArray.html#a669e755ae0b041986300f4e869f04b11" title="get the 2 norm squared of the vector " alt="" coords="432,71,572,112"/>
+<area shape="rect" id="node6" href="$classhif_1_1IndexValueArray.html#a7ed644d7107ce104b74014f741096093" title="get the maximum magnitude value, only works wit real number " alt="" coords="432,136,572,177"/>
+<area shape="rect" id="node5" href="$classhif_1_1IndexValueArray.html#ab8d98235a5d9cc242465eea41a58abb0" title="get the 2 norm of the vector " alt="" coords="620,71,760,112"/>
+</map>

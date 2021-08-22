@@ -1,0 +1,7 @@
+<map id="hif::do_preprocessing" name="hif::do_preprocessing">
+<area shape="rect" id="node2" href="$group__util.html#ga0a3c88ad06db9caf44d1a64d51ebb7b2" title="error information streaming, dump to HIF_STDERR " alt="" coords="223,5,293,32"/>
+<area shape="rect" id="node3" href="$classhif_1_1Timer.html#a40ddb5ec755809b41193505a35072b3f" title="finish timer " alt="" coords="200,56,316,83"/>
+<area shape="rect" id="node4" href="$group__util.html#gaa22fcfffe28e3d198a7ca7c99ece3aae" title="common information streaming, dump msg to HIF_STDOUT " alt="" coords="225,107,291,133"/>
+<area shape="rect" id="node5" href="$classhif_1_1Timer.html#ae8aed1e5ffc158a0987e255db30b0fc5" title="start timer " alt="" coords="203,157,313,184"/>
+<area shape="rect" id="node6" href="$classhif_1_1Timer.html#acf16542a63575b85fa24b47501af1611" title="get time report in seconds " alt="" coords="203,208,313,235"/>
+</map>

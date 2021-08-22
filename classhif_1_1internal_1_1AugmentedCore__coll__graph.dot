@@ -1,0 +1,12 @@
+digraph "hif::internal::AugmentedCore&lt; IndexType &gt;"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node4 [label="hif::internal::Augmented\lCore\< IndexType \>",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node5 -> Node4 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" _node_end\n_val_pos\n_node_next\n_node_start\n_node_counts\n_val_pos_inv\n_node_inds" ,fontname="Helvetica"];
+  Node5 [label="hif::Array\< index_type \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classhif_1_1Array.html"];
+  Node6 -> Node5 [dir="back",color="orange",fontsize="10",style="dashed",label=" \< index_type \>" ,fontname="Helvetica"];
+  Node6 [label="hif::Array\< T \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classhif_1_1Array.html",tooltip="Core data structure used in compressed storage. "];
+  Node7 -> Node6 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" _data" ,fontname="Helvetica"];
+  Node7 [label="T",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+}

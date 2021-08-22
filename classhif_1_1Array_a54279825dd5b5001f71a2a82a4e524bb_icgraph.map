@@ -1,0 +1,8 @@
+<map id="hif::Array::size" name="hif::Array::size">
+<area shape="rect" id="node2" href="$classhif_1_1QRCP.html#afe37caa94b0e7ed33b38d7ef77615256" title="Matrix&#45;vector with constant number of right&#45;hand sides. " alt="" coords="160,5,321,32"/>
+<area shape="rect" id="node3" href="$classhif_1_1QRCP.html#a4a6e5b865f28d4b8a3487c76302b61b4" title="Matrix&#45;vector with constant number of right&#45;hand sides (Hermitian) " alt="" coords="163,56,318,83"/>
+<area shape="rect" id="node4" href="$classhif_1_1QRCP.html#a76912a55e0b6c08861bc0f403435ec6c" title="Solve with constant number of right&#45;hand sides. " alt="" coords="167,107,314,133"/>
+<area shape="rect" id="node5" href="$classhif_1_1QRCP.html#a29ead0ce515431ad5a21c99b8e6665d1" title="Solve with constant number of right&#45;hand sides (Hermitian) " alt="" coords="171,157,311,184"/>
+<area shape="rect" id="node6" href="$demo__utils_8hpp.html#a8c808f9ef0efd277b6c1d2c0da85f3dc" title="compute_error" alt="" coords="188,208,293,235"/>
+<area shape="rect" id="node7" href="$demo__utils_8hpp.html#a099e60dff63b7e818d6cf39595e60e99" title="compute_relres" alt="" coords="185,259,296,285"/>
+</map>

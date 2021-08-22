@@ -1,0 +1,8 @@
+<map id="hif::Timer::start" name="hif::Timer::start">
+<area shape="rect" id="node2" href="$group__pre.html#gabea4cba27b6abd9ebec59daf709f4671" title="compute the matching for preprocessing " alt="" coords="192,5,307,32"/>
+<area shape="rect" id="node3" href="$group__pre.html#gab1125ac4d4fc70e90dcdec972e494b65" title="routine to perform preprocessing for improving the quality of input " alt="" coords="176,56,323,83"/>
+<area shape="rect" id="node4" href="$classhif_1_1HIF.html#a77f109f53d5b2fde156c258fd2ae5913" title="factorize the HIF preconditioner " alt="" coords="187,107,311,133"/>
+<area shape="rect" id="node5" href="$group__fac.html#ga5e85c4efc549f28f913faacc7a901d9b" title="perform partial incomplete LU for a level " alt="" coords="185,157,313,184"/>
+<area shape="rect" id="node6" href="$group__fac.html#gacf606dfc70540b8eff78f1e1102e7529" title="perform partial incomplete LU for a level with thresholding pivoting " alt="" coords="168,208,331,235"/>
+<area shape="rect" id="node7" href="$group__fac.html#ga7f72580db4c9b6183bafd84427b8c17d" title="perform partial incomplete LU for a level " alt="" coords="164,259,335,285"/>
+</map>

@@ -1,0 +1,26 @@
+var classhif_1_1BiPermMatrix =
+[
+    [ "_base", "classhif_1_1BiPermMatrix.html#a479a8c2fb22a0598bf3c5a9cb007a40b", null ],
+    [ "const_reference", "classhif_1_1BiPermMatrix.html#ae7f419c1850d99ac8f91f3a7aa88e9ce", null ],
+    [ "iarray_type", "classhif_1_1BiPermMatrix.html#a8ab1c4ee4d50cba9d7b7e4f33a117c05", null ],
+    [ "reference", "classhif_1_1BiPermMatrix.html#a3628482b7da54bb136fb23e34678a8e2", null ],
+    [ "size_type", "classhif_1_1BiPermMatrix.html#aa5703ee000b3798b374fb38ea8e40207", null ],
+    [ "BiPermMatrix", "classhif_1_1BiPermMatrix.html#ad72bc7c46b8e1bdf0fef4f73c922433d", null ],
+    [ "BiPermMatrix", "classhif_1_1BiPermMatrix.html#ae7a6c2e0fca450f284397d9aa0c8b860", null ],
+    [ "BiPermMatrix", "classhif_1_1BiPermMatrix.html#ac790de4f11a02db6ea4fe5add6325cbc", null ],
+    [ "BiPermMatrix", "classhif_1_1BiPermMatrix.html#a10847d3a71ffa1a02b94a0ab53fe55d4", null ],
+    [ "BiPermMatrix", "classhif_1_1BiPermMatrix.html#acc0452fddea403c28e91c0bafb217fa0", null ],
+    [ "BiPermMatrix", "classhif_1_1BiPermMatrix.html#a5df3e3eb7f4f31f54b36a7c286137945", null ],
+    [ "build_inv", "classhif_1_1BiPermMatrix.html#a71e7d81f1bce6f3f074e260050e59a4c", null ],
+    [ "interchange", "classhif_1_1BiPermMatrix.html#a080451032dd47701a4a0c5eb1927a75b", null ],
+    [ "interchange_inv", "classhif_1_1BiPermMatrix.html#aaefa5afb139095aff0ffe3fdd6acdb20", null ],
+    [ "inv", "classhif_1_1BiPermMatrix.html#ab7936e703e37c6647c4fc74ed860dc63", null ],
+    [ "inv", "classhif_1_1BiPermMatrix.html#a7fde67ec586c50292b63bb00cdd5e00e", null ],
+    [ "inv", "classhif_1_1BiPermMatrix.html#a5a6fe97f6723b18b94b3cf2fa590dbc1", null ],
+    [ "inv", "classhif_1_1BiPermMatrix.html#a312c56bdae2ea4e82b53cb57e712a320", null ],
+    [ "make_eye", "classhif_1_1BiPermMatrix.html#a35f308f61178b8fdd58748fa0528bfce", null ],
+    [ "operator=", "classhif_1_1BiPermMatrix.html#ab674d835a314b0df100c6d174423b21d", null ],
+    [ "operator=", "classhif_1_1BiPermMatrix.html#a06968257e9eee1f84c7c406b025da3ad", null ],
+    [ "resize", "classhif_1_1BiPermMatrix.html#a3db8e5abea06372091098df74266c014", null ],
+    [ "_p_inv", "classhif_1_1BiPermMatrix.html#a4d652389e9becc94e8382523f95fc910", null ]
+];

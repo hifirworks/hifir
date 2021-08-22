@@ -1,0 +1,9 @@
+<map id="hif::internal::CompressedStorage::_ind_cbegin" name="hif::internal::CompressedStorage::_ind_cbegin">
+<area shape="rect" id="node2" href="$classhif_1_1internal_1_1CompressedStorage.html#a8f8d502e611c2187bcf5326f81c5c5e4" title="construct permutated matrix " alt="" coords="221,5,403,61"/>
+<area shape="rect" id="node3" href="$classhif_1_1internal_1_1CompressedStorage.html#a47fa094b389b8cdbdd62b54790554fc6" title="hif::internal::Compressed\lStorage\&lt; value_type, index\l_type \&gt;::_ind_cend" alt="" coords="221,85,403,141"/>
+<area shape="rect" id="node4" href="$classhif_1_1internal_1_1CompressedStorage.html#a2df4a58206dc5a5347f737b06bf43c5b" title="split against secondary size " alt="" coords="221,165,403,221"/>
+<area shape="rect" id="node5" href="$classhif_1_1internal_1_1CompressedStorage.html#a2d8b0f690e4e8bb423c357583ba2f219" title="split and store to the counterpart type " alt="" coords="221,245,403,301"/>
+<area shape="rect" id="node6" href="$classhif_1_1internal_1_1CompressedStorage.html#adb83e48fbb7412e5c59c62664b6c8095" title="check the validity of a matrix " alt="" coords="221,325,403,381"/>
+<area shape="rect" id="node7" href="$classhif_1_1internal_1_1CompressedStorage.html#a6165638d615813666ca4b82216d995e0" title="hif::internal::Compressed\lStorage\&lt; value_type, index\l_type \&gt;::ind_begin" alt="" coords="221,405,403,461"/>
+<area shape="rect" id="node8" href="$classhif_1_1internal_1_1CompressedStorage.html#a99114c987d51d6e881f37ce239742e6b" title="hif::internal::Compressed\lStorage\&lt; value_type, index\l_type \&gt;::ind_cbegin" alt="" coords="221,485,403,541"/>
+</map>

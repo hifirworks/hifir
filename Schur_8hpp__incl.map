@@ -1,0 +1,10 @@
+<map id="Schur.hpp" name="Schur.hpp">
+<area shape="rect" id="node5" href="$Array_8hpp.html" title="Array data structure, with functionality of wrapping external data. " alt="" coords="239,229,354,256"/>
+<area shape="rect" id="node8" href="$log_8hpp.html" title="Logging interface, including info/warning/error. " alt="" coords="429,304,540,331"/>
+<area shape="rect" id="node18" href="$SparseVec_8hpp.html" title="Array used in factorization for work space. " alt="" coords="441,80,587,107"/>
+<area shape="rect" id="node20" href="$common_8hpp.html" title="Utility/helper routines. " alt="" coords="581,229,724,256"/>
+<area shape="rect" id="node25" href="$mt_8hpp.html" title="Multithreading helpers. " alt="" coords="5,229,113,256"/>
+<area shape="rect" id="node15" href="$print_8hpp.html" title="Macros for &quot;stdout&quot; and &quot;stderr&quot; message printers. " alt="" coords="565,379,684,405"/>
+<area shape="rect" id="node17" href="$stacktrace_8hpp.html" title="Print stacktrace on error aborting. " alt="" coords="707,379,862,405"/>
+<area shape="rect" id="node24" href="$math_8hpp.html" title="Some handy BLAS 1 vector routines. " alt="" coords="623,155,746,181"/>
+</map>

@@ -1,0 +1,12 @@
+<map id="hif::CRS::ncols" name="hif::CRS::ncols">
+<area shape="rect" id="node2" href="$classhif_1_1CRS.html#a90aa204c41b9a8fbc1fd6d2cbb9d2496" title="compute permutation CRS " alt="" coords="165,5,360,47"/>
+<area shape="rect" id="node3" href="$demo__utils_8hpp.html#a4b6fb54cfab63c2c591cec376bb3db3f" title="get_user_data" alt="" coords="211,71,315,98"/>
+<area shape="rect" id="node6" href="$classhif_1_1CRS.html#af07aa73fe42ac9d4fb77a895e41a20a0" title="matrix vector multiplication with multiple RHS " alt="" coords="185,122,340,178"/>
+<area shape="rect" id="node7" href="$classhif_1_1CRS.html#a1abaf35f98abc48aeabc8f13d301d762" title="matrix transpose vector multiplication " alt="" coords="185,202,340,258"/>
+<area shape="rect" id="node8" href="$classhif_1_1CRS.html#a9cf346a163e50dd58a1c52c9dedbd9f6" title="matrix transpose vector multiplication with different type " alt="" coords="185,282,340,338"/>
+<area shape="rect" id="node9" href="$classhif_1_1CRS.html#a44eef3d82b4e3546a0ab9fdd21693940" title="matrix vector multiplication " alt="" coords="177,363,349,404"/>
+<area shape="rect" id="node10" href="$classhif_1_1CRS.html#ae9bd73b1970549228fa5e7eea8224925" title="matrix transpose vector multiplication " alt="" coords="180,428,345,469"/>
+<area shape="rect" id="node11" href="$classhif_1_1CRS.html#a8f4955e70d6df5fd65b41c8e5f1aa155" title="matrix transpose vector multiplication with different type " alt="" coords="167,493,359,535"/>
+<area shape="rect" id="node4" href="$demo__utils_8hpp.html#ad7a355cc24ba50a1aabdc10e85f2ffd7" title="get_input_data" alt="" coords="408,71,515,98"/>
+<area shape="rect" id="node5" href="$demo__utils_8hpp.html#a6f15ee69c89cd3c9487861ac52cda6de" title="parse_cmd4input" alt="" coords="563,71,684,98"/>
+</map>

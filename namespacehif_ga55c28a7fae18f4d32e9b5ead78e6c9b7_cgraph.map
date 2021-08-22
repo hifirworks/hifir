@@ -1,0 +1,13 @@
+<map id="hif::read_bin" name="hif::read_bin">
+<area shape="rect" id="node2" href="$classhif_1_1Array.html#a098563f613c9f741796e91f8d59428c7" title="constructor with owned data " alt="" coords="157,5,271,32"/>
+<area shape="rect" id="node3" href="$classhif_1_1Array.html#a47fec6aa2ad9bef18d57c2b647b16e0d" title="hif::Array::cbegin" alt="" coords="153,56,275,83"/>
+<area shape="rect" id="node4" href="$classhif_1_1Array.html#a71c5cbe4cbec00bb459cf9098eee0d92" title="hif::Array::cend" alt="" coords="159,107,269,133"/>
+<area shape="rect" id="node5" href="$classhif_1_1Array.html#ab51be7811a22964bbf83741fa48ec0cf" title="hif::Array::data" alt="" coords="160,157,268,184"/>
+<area shape="rect" id="node6" href="$group__util.html#ga0a3c88ad06db9caf44d1a64d51ebb7b2" title="error information streaming, dump to HIF_STDERR " alt="" coords="179,208,249,235"/>
+<area shape="rect" id="node7" href="$group__io.html#ga1caaca05c2c4b8f14478bff2c80bb67f" title="check if the os is litter endian " alt="" coords="147,259,281,301"/>
+<area shape="rect" id="node8" href="$group__io.html#ga189b04f700d1d1232ba2342fedcda595" title="read the general information " alt="" coords="155,325,273,366"/>
+<area shape="rect" id="node9" href="$group__io.html#gaf013cbf9a3c60a750a817eb3c95da540" title="read matrix data attributes " alt="" coords="149,390,279,431"/>
+<area shape="rect" id="node10" href="$group__io.html#ga371b7839983aebe182ad641c70a3d4de" title="read the matrix size information " alt="" coords="155,455,273,497"/>
+<area shape="rect" id="node11" href="$classhif_1_1Array.html#a6a6f58b76a8afd1abe8dce73890a8934" title="hif::Array::status" alt="" coords="155,521,273,548"/>
+<area shape="rect" id="node12" href="$group__util.html#ga1d4c2000af1b3a9f14ece0c026d1c39a" title="warning information streaming, dump to HIF_STDERR " alt="" coords="169,572,259,599"/>
+</map>

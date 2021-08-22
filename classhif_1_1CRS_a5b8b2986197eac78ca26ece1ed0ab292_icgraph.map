@@ -1,0 +1,9 @@
+<map id="hif::CRS::nrows" name="hif::CRS::nrows">
+<area shape="rect" id="node2" href="$demo__utils_8hpp.html#a4b6fb54cfab63c2c591cec376bb3db3f" title="get_user_data" alt="" coords="203,5,307,32"/>
+<area shape="rect" id="node5" href="$classhif_1_1CRS.html#af07aa73fe42ac9d4fb77a895e41a20a0" title="matrix vector multiplication with multiple RHS " alt="" coords="178,56,333,112"/>
+<area shape="rect" id="node6" href="$classhif_1_1CRS.html#a1abaf35f98abc48aeabc8f13d301d762" title="matrix transpose vector multiplication " alt="" coords="178,136,333,192"/>
+<area shape="rect" id="node7" href="$classhif_1_1CRS.html#a44eef3d82b4e3546a0ab9fdd21693940" title="matrix vector multiplication " alt="" coords="169,217,341,258"/>
+<area shape="rect" id="node8" href="$classhif_1_1CRS.html#ae9bd73b1970549228fa5e7eea8224925" title="matrix transpose vector multiplication " alt="" coords="173,282,338,323"/>
+<area shape="rect" id="node3" href="$demo__utils_8hpp.html#ad7a355cc24ba50a1aabdc10e85f2ffd7" title="get_input_data" alt="" coords="389,5,496,32"/>
+<area shape="rect" id="node4" href="$demo__utils_8hpp.html#a6f15ee69c89cd3c9487861ac52cda6de" title="parse_cmd4input" alt="" coords="544,5,665,32"/>
+</map>
