@@ -1,9 +1,8 @@
 # Welcome to *HIFIR* Project #
 
-|<!-- --> |<!-- --> |
-|:--- | ---:|
-| CI | ![HIFIR](https://github.com/hifirworks/hifir/actions/workflows/github-actions.yml/badge.svg?branch=main) |
-| Documentation | [![doc](https://img.shields.io/badge/%20doc-ready-blue)](https://hifirworks.github.io/hifir) |
+|CI | Documentation |
+|:---: | :---:|
+| ![HIFIR](https://github.com/hifirworks/hifir/actions/workflows/github-actions.yml/badge.svg?branch=main) | [![doc](https://img.shields.io/badge/%20doc-ready-blue)](https://hifirworks.github.io/hifir) |
 
 ## Introduction ##
 
