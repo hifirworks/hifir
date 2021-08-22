@@ -5,7 +5,7 @@
 //----------------------------------------------------------------------------
 //@HEADER
 
-/*! \page _examples Collection of examples
+/*! \page _examples Collection of Examples
 
 \addindex examples
 \tableofcontents
@@ -28,6 +28,8 @@
 - \ref demo_hifir.cpp
 - \ref demo_gmreshif.cpp
 - \ref demo_sparsifier.cpp
+- \ref demo_fgmres.cpp
+- \ref demo_fgmres_sparsifier.cpp
 
 */
 
@@ -92,3 +94,13 @@
 /// the 2nd-order FDM as sparsifier to precondition the 4th-order coefficient
 /// matrix. Try to compare <em>./demo_sparsifier.exe</em> and
 /// <em>./demo_gmreshif.exe -Afile ../demo_inputs/ad-fdm4.mm</em>.
+
+/// \example demo_fgmres.cpp
+/// This example is similar to \ref demo_gmreshif.cpp but using FGMRES with
+/// HIFIR. In particular, the number of iterative refinement is doubled every
+/// restart cycling.
+
+/// \example demo_fgmres_sparsifier.cpp
+/// This example is similar to \ref demo_sparsifier.cpp but using FGMRES with
+/// HIFIR. In particular, the number of iterative refinement is doubled every
+/// restart cycling.

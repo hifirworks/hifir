@@ -4,23 +4,9 @@
 
 /*
 
-  This file contains an example of using HIF as right-preconditioner for
-  GMRES(m), where HIF can be computed on a sparser matrix than the one used
-  in the GMRES solver, i.e.,
-          A*M^{g}*y=b then x=M^{g}*y,
-  where M is computed on a sparser matrix (hence the name "sparsifier") S, s.t.
-  nnz(S) <= nnz(A). In this example, we solve the advection-diffusion (AD)
-  equation with FDM method on the unit square discretized by an equidistance
-  structured grid of 64x64. For the coefficient matrix, we use 4th order
-  FDM, whereas the sparsifier uses 2nd order FDM.
-
-  Try with
-
-    ./demo_sparsifier.exe [GMRES options]  # using sparsifier
-
-  and compare with
-
-    ./demo_gmreshif.exe -Afile ../demo_inputs/ad-fdm4.mm
+  This file contains an example of using HIFIR as right-preconditioner for
+  FGMRES(m), where HIF can be computed on a sparser matrix than the one used
+  in the GMRES solver.
 
   Author: Qiao Chen
   Level: Advanced
@@ -108,16 +94,16 @@ int main(int argc, char *argv[]) {
   }
 
   array_t x;
-  int     flag, iters;
+  int     flag, iters, num_mv;
   timer.start();
   // NOTE: The input is A here not S
-  std::tie(x, flag, iters) =
-      gmres_hif(prob.A, prob.b, M, restart, rtol, maxit, verbose, full_rank);
+  std::tie(x, flag, iters, num_mv) =
+      fgmres_hifir(prob.A, prob.b, M, restart, rtol, maxit, verbose, full_rank);
   timer.finish();
   if (verbose) {
     if (flag == SUCCESS) {
-      hif_info("Finished GMRES in %g seconds and %d iterations.", timer.time(),
-               iters);
+      hif_info("Finished GMRES in %g seconds, %d iterations, and %d MatVecs.",
+               timer.time(), iters, num_mv);
       hif_info("Relative residual of ||b-Ax||/||b||=%e",
                compute_relres(prob.A, prob.b, x));
       hif_info("Success!");

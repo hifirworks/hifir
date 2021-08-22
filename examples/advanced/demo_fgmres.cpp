@@ -4,23 +4,18 @@
 
 /*
 
-  This file contains an example of using HIF as right-preconditioner for
-  GMRES(m), where HIF can be computed on a sparser matrix than the one used
-  in the GMRES solver, i.e.,
-          A*M^{g}*y=b then x=M^{g}*y,
-  where M is computed on a sparser matrix (hence the name "sparsifier") S, s.t.
-  nnz(S) <= nnz(A). In this example, we solve the advection-diffusion (AD)
-  equation with FDM method on the unit square discretized by an equidistance
-  structured grid of 64x64. For the coefficient matrix, we use 4th order
-  FDM, whereas the sparsifier uses 2nd order FDM.
+  This file contains an example of using HIFIR as right-preconditioner for
+  FGMRES(m). The example uses the testing system under "demo_inputs." The users
+  can use their systems by (1) calling hif::wrap_const_{crs,ccs} and
+  hif::wrap_const_array to directly wrap their systems or (2) loading data in
+  Matrix Market file format, e.g.,
 
-  Try with
+      auto A = hif::CRS<double,int>::from_mm("/path/to/sparse-mm-file")
+      auto b = hif::Array<double>::from_mm("/path/to/dense-mm-file").
 
-    ./demo_sparsifier.exe [GMRES options]  # using sparsifier
-
-  and compare with
-
-    ./demo_gmreshif.exe -Afile ../demo_inputs/ad-fdm4.mm
+  Note that our GMRES implementation also works for complex arithmetic if
+  matrix_t, array_t, and prec_t are complex values (with some minor
+  modifications). See examples/intermediate/demo_complex.cpp.
 
   Author: Qiao Chen
   Level: Advanced
@@ -36,38 +31,20 @@
 
 using prec_t = hif::HIF<double, int>;
 
-// parse command-line arguments for system, sparsifier restart, rtol, maxit,
-// verbose, and robust parameters, full rank flag, dense thres
-std::tuple<system_t, matrix_t, int, double, int, int, bool, bool, int>
-parse_args(int argc, char *argv[]);
+// parse command-line arguments for system, restart, rtol, maxit, verbose, and
+// robust parameter flag, full rank flag, dense thres
+std::tuple<system_t, int, double, int, int, bool, bool, int> parse_args(
+    int argc, char *argv[]);
 
 int main(int argc, char *argv[]) {
   // parse options for gmres
   int      restart, maxit, verbose, dense_thres;
   double   rtol;
-  double   robust, full_rank;
   system_t prob;
-  matrix_t S;
-  std::tie(prob, S, restart, rtol, maxit, verbose, robust, full_rank,
+  bool     robust, full_rank;
+  std::tie(prob, restart, rtol, maxit, verbose, robust, full_rank,
            dense_thres) = parse_args(argc, argv);
 
-  if (S.nrows() == 0u) {
-    // We will prune tiny values in A, and make a copy of the result in S.
-    // Note that by default, the constructor only performs shallow copies
-    bool deep_copy = true;
-    S              = matrix_t(prob.A, deep_copy);
-    // the following functionwill prune any values that close to machine
-    // precision. In particular, S.prune(tol) will eliminate an entry a_ij
-    // whose mag is smaller than tol*min{max(abs(ith row)),max(abs(jth column)}
-    const auto pruned = S.prune(1e-15);
-    if (verbose) hif_info("Eliminated %zd tiny entries in S.", pruned);
-  }
-
-  // See if we have user-provide sparsifier
-  if (verbose) {
-    hif_info("Coefficient matrix and sparsifier have %zd and %zd nnz, resp.",
-             prob.A.nnz(), S.nnz());
-  }
   // get timer
   hif::DefaultTimer timer;
 
@@ -92,32 +69,31 @@ int main(int argc, char *argv[]) {
     hif_info("droptols (tau_L/tau_U) are %g/%g", params.tau_L, params.tau_U);
     hif_info("fill factors (alpha_L/alpha_U) are %g/%g", params.alpha_L,
              params.alpha_U);
-    hif_info("inverse-norm thres (kappa/kappa_D) are %g/%g\n", params.kappa,
+    hif_info("inverse-norm thres (kappa/kappa_D) are %g/%g", params.kappa,
              params.kappa_d);
   }
   timer.start();
-  M.factorize(S, params);  // we factorize S here not A
+  M.factorize(prob.A, params);
   timer.finish();
 
   if (verbose) {
     hif_info("HIF(lvls=%zd) finished in %g seconds with nnz ratio %.2f%%.\n",
-             M.levels(), timer.time(), 100.0 * M.nnz() / S.nnz());
+             M.levels(), timer.time(), 100.0 * M.nnz() / prob.A.nnz());
     // call HIF-preconditioned GMRES
     hif_info("Invoke HIF-preconditioned GMRES(%d) with rtol=%g and maxit=%d",
              restart, rtol, maxit);
   }
 
   array_t x;
-  int     flag, iters;
+  int     flag, iters, num_mv;
   timer.start();
-  // NOTE: The input is A here not S
-  std::tie(x, flag, iters) =
-      gmres_hif(prob.A, prob.b, M, restart, rtol, maxit, verbose, full_rank);
+  std::tie(x, flag, iters, num_mv) =
+      fgmres_hifir(prob.A, prob.b, M, restart, rtol, maxit, verbose, full_rank);
   timer.finish();
   if (verbose) {
     if (flag == SUCCESS) {
-      hif_info("Finished GMRES in %g seconds and %d iterations.", timer.time(),
-               iters);
+      hif_info("Finished GMRES in %g seconds, %d iterations, and %d MatVecs.",
+               timer.time(), iters, num_mv);
       hif_info("Relative residual of ||b-Ax||/||b||=%e",
                compute_relres(prob.A, prob.b, x));
       hif_info("Success!");
@@ -151,7 +127,7 @@ void print_help_message(std::ostream &ostr, const char *cmd) {
       << " -q, --quiet\n"
       << "    Show less output\n"
       << " -r, --robust\n"
-      << "    Use robust parameters for HIF, default is false\n"
+      << "    Enable robust parameters, default is false\n"
       << " -f, --full-rank\n"
       << "    Using full rank preconditioner (for singular M only)\n"
       << " -d, --dense-thres <dense-thres>\n"
@@ -168,28 +144,24 @@ void print_help_message(std::ostream &ostr, const char *cmd) {
       << " -bfile, --bfile <bfile>\n"
       << "    RHS vector stored in Matrix Market format (array), default is\n"
       << "    \'demo_inputs/b.mm\'. If \'Afile\' is provided by the \'bfile\'\n"
-      << "    is missing, then b=A*1 will be used\n"
-      << " -Sfile, --Sfile <Sfile>\n"
-      << "    Sparsifier, on which we will compute the HIF preconditioner.\n"
-      << "    If omitted, then (1) we will compute S by clipping tiny values\n"
-      << "    in A if \'Afile\' is specified, or (2) we will load the 2nd\n"
-      << "    FDM operator, which is used as sparsifier\n\n";
+      << "    is missing, then b=A*1 will be used\n\n";
 }
 
-std::tuple<system_t, matrix_t, int, double, int, int, bool, bool, int>
-parse_args(int argc, char *argv[]) {
+std::tuple<system_t, int, double, int, int, bool, bool, int> parse_args(
+    int argc, char *argv[]) {
   using std::string;
 
-  int    restart(30), maxit(500), verbose(1), dense_thres(-1);
-  double rtol(1e-6);
-  bool   robust(false), full_rank(false);
+  int      restart(30), maxit(500), verbose(1), dense_thres(-1);
+  double   rtol(1e-6);
+  bool     robust(false), full_rank(false);
+  system_t prob;
 
-  string Afile, bfile, Sfile;
+  string Afile, bfile;
 
   for (int i = 1; i < argc; ++i) {
     auto arg = string(argv[i]);
     if (arg == "-h" || arg == "--help") {
-      print_help_message(std::cout, argv[0]);
+      print_help_message(std::cerr, argv[0]);
       std::exit(0);
     }
     if (arg == "-m" || arg == "--restart") {
@@ -216,7 +188,7 @@ parse_args(int argc, char *argv[]) {
       }
       maxit = std::atoi(argv[++i]);
       if (maxit <= 0) maxit = 500;
-    } else if (arg == "-v" || arg == "--verbose") {
+    } else if (arg == "-v" || arg == "verbose") {
       verbose = 2;
     } else if (arg == "-q" || arg == "--quiet") {
       verbose = 0;
@@ -234,13 +206,6 @@ parse_args(int argc, char *argv[]) {
         std::exit(1);
       }
       bfile = argv[++i];
-    } else if (arg == "-Sfile" || arg == "--Sfile") {
-      if (i + 1 >= argc) {
-        std::cerr << "Missing Sfile!\n\n";
-        print_help_message(std::cerr, argv[0]);
-        std::exit(1);
-      }
-      Sfile = argv[++i];
     } else if (arg == "-r" || arg == "--robust")
       robust = true;
     else if (arg == "-f" || arg == "--full-rank")
@@ -254,39 +219,24 @@ parse_args(int argc, char *argv[]) {
       dense_thres = std::atoi(argv[++i]);
     }
   }
-  // load 4th order FDM with A*1 as rhs
   if (Afile.empty()) {
-    const bool prev_dir = std::ifstream("../demo_inputs/ad-fdm4.mm").is_open();
     if (verbose) {
-      const char *prefix = prev_dir ? "../" : "";
-      hif_info("Afile is \'%sdemo_inputs/ad-fdm4.mm\'", prefix);
-      hif_info("b=A*1");
-      hif_info("Sfile is \'%sdemo_inputs/ad-fdm2.mm\'\n", prefix);
+      const bool  dir_prev = std::ifstream("../demo_inputs/A.mm").is_open();
+      const char *prefix   = dir_prev ? "../" : "";
+      hif_info("Afile is \'%sdemo_inputs/A.mm\'", prefix);
+      hif_info("bfile is \'%sdemo_inputs/b.mm\'\n", prefix);
     }
-    return std::make_tuple(
-        prev_dir ? get_input_data("../demo_inputs/ad-fdm4.mm")
-                 : get_input_data("demo_inputs/ad-fdm4.mm"),
-        prev_dir ? matrix_t::from_mm("../demo_inputs/ad-fdm2.mm")
-                 : matrix_t::from_mm("demo_inputs/ad-fdm2.mm"),
-        restart, rtol, maxit, verbose, robust, full_rank, dense_thres);
-  }
-
-  const char *bfile_cstr = nullptr;
-  if (!bfile.empty()) bfile_cstr = bfile.c_str();
-  auto     prob = get_input_data(Afile.c_str(), bfile_cstr);
-  matrix_t S;
-  if (!Sfile.empty()) S = matrix_t::from_mm(Sfile.c_str());
-  if (verbose) {
+    prob = get_input_data();
+  } else {
+    const char *bfile_cstr = nullptr;
+    if (!bfile.empty()) bfile_cstr = bfile.c_str();
     std::cout << "Afile is \'" << Afile << "\'\n";
-    if (bfile_cstr)
-      std::cout << "bfile is \'" << bfile << "\'\n";
+    if (!bfile_cstr)
+      std::cout << "b=A*1\n\n";
     else
-      std::cout << "b=A*1\n";
-    if (Sfile.empty())
-      std::cout << "Sfile is omitted (will prune A as sparsifier)\n\n";
-    else
-      std::cout << "Sfile is \'" << Sfile << "\'\n\n";
+      std::cout << "bfile is \'" << bfile_cstr << "\'\n\n";
+    prob = get_input_data(Afile.c_str(), bfile_cstr);
   }
-  return std::make_tuple(prob, S, restart, rtol, maxit, verbose, robust,
-                         full_rank, dense_thres);
+  return std::make_tuple(prob, restart, rtol, maxit, verbose, robust, full_rank,
+                         dense_thres);
 }
