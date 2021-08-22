@@ -5,12 +5,12 @@
 //----------------------------------------------------------------------------
 //@HEADER
 
-/*! \page _install Installation
+/*! \page install Installation
 
 \addindex installation
 \tableofcontents
 
-\section _install_cpp Installation of the C++ interface
+\section install_cpp Installation of the C++ interface
 
 The *HIFIR* package is written in C++, and it uses template-based and
 header-only programming. Hence, the installation of C++ interface is pretty
@@ -43,7 +43,7 @@ or copy the source files to any user-level directories, e.g.,
 
 and then add `-I$HOME/.local/include` to the command line of your C++ compiler.
 
-\section _install_c Installation of the C library (libhifir)
+\section install_c Installation of the C library (libhifir)
 
 Finish me...
 
