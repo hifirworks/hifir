@@ -1,7 +1,5 @@
 var searchData=
 [
-  ['collection_20of_20examples',['Collection of Examples',['../_examples.html',1,'']]],
-  ['control_20parameters',['Control Parameters',['../_params.html',1,'']]],
   ['c_5fd',['c_d',['../structhif__Options.html#a3d16630e791baaac27d7d7aa63cea131',1,'hif_Options']]],
   ['c_5fh',['c_h',['../structhif__Options.html#a43ee21e3a3fc24ad7754cbf8c27a94d2',1,'hif_Options']]],
   ['capacity',['capacity',['../classhif_1_1Array.html#ab550b9db8f436499cd3656106719f2c3',1,'hif::Array']]],
@@ -81,5 +79,7 @@ var searchData=
   ['crs_5ftype',['crs_type',['../classhif_1_1internal_1_1CompressedTypeTrait.html#a58c5c660e563e0bb525fe9a5de3f7ff4',1,'hif::internal::CompressedTypeTrait::crs_type()'],['../structhif_1_1Prec.html#a8bda61e744b215e1e486e5342d4952f7',1,'hif::Prec::crs_type()'],['../classhif_1_1HIF.html#a60fec45cda2a3059fd0d4a090879f00b',1,'hif::HIF::crs_type()'],['../classhif_1_1AugCRS.html#a757e3cd8244e13d271d1409fdfd0899c',1,'hif::AugCRS::crs_type()'],['../classhif_1_1AugCCS.html#a19bf4ec9c50e894d54c188795fad3ca2',1,'hif::AugCCS::crs_type()'],['../classhif_1_1IntervalCRS.html#a7d81493b1892338a76c21ba7cddfa27c',1,'hif::IntervalCRS::crs_type()'],['../classhif_1_1IntervalCCS.html#a5e863115f3abec526be79c910beb08f4',1,'hif::IntervalCCS::crs_type()'],['../classhif_1_1EqlDriver.html#a6e61b647dc86aa59237b0bab77a5d871',1,'hif::EqlDriver::crs_type()']]],
   ['csc',['CSC',['../namespacehif.html#a5f77fa3869a40b3b53e8fe2668894643',1,'hif']]],
   ['csr',['CSR',['../namespacehif.html#a96c2a30c397f5cd10f22cfd75fd39bff',1,'hif']]],
-  ['changelog',['Changelog',['../md__home_qiao_Documents_git_hifir_CHANGELOG.html',1,'']]]
+  ['collection_20of_20examples',['Collection of Examples',['../eg_page.html',1,'']]],
+  ['changelog',['Changelog',['../md__home_qiao_Documents_git_hifir_CHANGELOG.html',1,'']]],
+  ['control_20parameters',['Control Parameters',['../params.html',1,'']]]
 ];

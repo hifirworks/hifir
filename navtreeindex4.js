@@ -1,17 +1,5 @@
 var NAVTREEINDEX4 =
 {
-"classhif_1_1Timer.html#acf16542a63575b85fa24b47501af1611":[4,1,10,6],
-"classhif_1_1Timer.html#ad90b9238d610aa53d3d710b52949ea38":[4,1,10,9],
-"classhif_1_1Timer.html#ae0b5df941187e2f1987a8247558396c9":[4,1,10,8],
-"classhif_1_1Timer.html#ae2708b589f809355ab0c7640f98a5609":[4,1,10,10],
-"classhif_1_1Timer.html#ae8aed1e5ffc158a0987e255db30b0fc5":[4,1,10,4],
-"classhif_1_1Timer.html#af2e4319cb85c53a1ddef57fa1e917404":[4,1,10,5],
-"classhif_1_1amd_1_1AMD.html":[4,2,0],
-"classhif_1_1amd_1_1AMD.html#a12c6e9e5bc4dce074ab05ae9ae1c6816":[4,2,0,12],
-"classhif_1_1amd_1_1AMD.html#a191697aca91a5595ca1afbda8b050372":[4,2,0,2],
-"classhif_1_1amd_1_1AMD.html#a23b9fb9cec97711fe702b1cacaaf2c22":[4,2,0,7],
-"classhif_1_1amd_1_1AMD.html#a25275af34ba460f494e6f54e05a09b6c":[4,2,0,3],
-"classhif_1_1amd_1_1AMD.html#a2bdcece30a680a12cd056ba1f393f07b":[4,2,0,1],
 "classhif_1_1amd_1_1AMD.html#a4e6028aebdd8ee6b93f647c179d9450d":[4,2,0,10],
 "classhif_1_1amd_1_1AMD.html#a54f82010bf87d469546ca04af481c2a3":[4,2,0,9],
 "classhif_1_1amd_1_1AMD.html#a555dc2fab15fa99688d01b9829aa71a7":[4,2,0,8],
@@ -235,6 +223,10 @@ var NAVTREEINDEX4 =
 "driver_8hpp.html":[7,0,12],
 "driver_8hpp.html#gab1125ac4d4fc70e90dcdec972e494b65":[7,0,12,0],
 "driver_8hpp_source.html":[7,0,12],
+"eg_page.html":[3],
+"eg_page.html#eg_advanced":[3,2],
+"eg_page.html#eg_beginner":[3,0],
+"eg_page.html#eg_intermediate":[3,1],
 "equilibrate_8hpp.html":[7,0,14],
 "equilibrate_8hpp.html#a0e2db1d7e33db00e2cdda96781a25e27":[7,0,14,0],
 "equilibrate_8hpp.html#a4794336f4c00531cfe2f5479ed024844":[7,0,14,1],
@@ -249,5 +241,13 @@ var NAVTREEINDEX4 =
 "examples.html":[8],
 "factor_8hpp.html":[7,0,15],
 "factor_8hpp.html#ga08d36915492f902c7e596ad444d79bc2":[7,0,15,1],
-"factor_8hpp.html#ga2de4414b1a21943afc69aa2bc33ec5d3":[7,0,15,2]
+"factor_8hpp.html#ga2de4414b1a21943afc69aa2bc33ec5d3":[7,0,15,2],
+"factor_8hpp.html#ga381ac634e2a06e74f363834c85c590ef":[7,0,15,0],
+"factor_8hpp.html#ga5e85c4efc549f28f913faacc7a901d9b":[7,0,15,6],
+"factor_8hpp.html#ga65226d63c5f627a700f4c27d9913fcd5":[7,0,15,7],
+"factor_8hpp.html#ga9ae2a2dd37f64dfcd1678ca6f8497dac":[7,0,15,3],
+"factor_8hpp.html#gab07972586727f4a96ebfccd86e755610":[7,0,15,5],
+"factor_8hpp.html#gabfa7d15200b25728021b91b690fb1fe7":[7,0,15,4],
+"factor_8hpp_source.html":[7,0,15],
+"fc__mangling_8hpp.html":[7,0,16]
 };

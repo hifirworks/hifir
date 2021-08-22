@@ -1,21 +1,21 @@
 var NAVTREE =
 [
   [ "HIFIR", "index.html", [
-    [ "Installation", "_install.html", [
-      [ "Installation of the C++ interface", "_install.html#_install_cpp", null ],
-      [ "Installation of the C library (libhifir)", "_install.html#_install_c", null ]
+    [ "Installation", "install.html", [
+      [ "Installation of the C++ interface", "install.html#install_cpp", null ],
+      [ "Installation of the C library (libhifir)", "install.html#install_c", null ]
     ] ],
     [ "Changelog", "md__home_qiao_Documents_git_hifir_CHANGELOG.html", null ],
-    [ "Control Parameters", "_params.html", [
-      [ "Essential Parameters", "_params.html#_params_basic", null ],
-      [ "System Parameters", "_params.html#_params_system", null ],
-      [ "Advanced Parameters", "_params.html#_params_adv", null ],
-      [ "Preprocessing Parameters", "_params.html#_params_pre", null ]
+    [ "Control Parameters", "params.html", [
+      [ "Essential Parameters", "params.html#params_basic", null ],
+      [ "System Parameters", "params.html#params_system", null ],
+      [ "Advanced Parameters", "params.html#params_adv", null ],
+      [ "Preprocessing Parameters", "params.html#params_pre", null ]
     ] ],
-    [ "Collection of Examples", "_examples.html", [
-      [ "Beginner", "_examples.html#_eg_beginner", null ],
-      [ "Intermediate", "_examples.html#_eg_intermediate", null ],
-      [ "Advanced", "_examples.html#_eg_advanced", null ]
+    [ "Collection of Examples", "eg_page.html", [
+      [ "Beginner", "eg_page.html#eg_beginner", null ],
+      [ "Intermediate", "eg_page.html#eg_intermediate", null ],
+      [ "Advanced", "eg_page.html#eg_advanced", null ]
     ] ],
     [ "Modules", "modules.html", "modules" ],
     [ "Namespaces", null, [
@@ -59,13 +59,13 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "Array_8hpp.html",
-"classhif_1_1AugCRS.html#a757e3cd8244e13d271d1409fdfd0899c",
-"classhif_1_1Crout.html#a4638e17d4ded44ef0cd4150446e7015b",
-"classhif_1_1IntervalCRS.html#ab32fb0be4f3a31a7bfaf9e1f1a69ebb0",
-"classhif_1_1Timer.html#acf16542a63575b85fa24b47501af1611",
-"factor_8hpp.html#ga381ac634e2a06e74f363834c85c590ef",
-"group__macros.html#gaba131019c1fe51cfc75c4451f57463b4",
-"mt__mv_8hpp.html#gaa8b6008ea09e61dfcdc09dce6b69cd00"
+"classhif_1_1AugCRS.html#ab5a1d953e8dab796e7c08afcc702e8c1",
+"classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c",
+"classhif_1_1IterRefine.html#a2f729edb5c95c67432588219c7607f47",
+"classhif_1_1amd_1_1AMD.html#a4e6028aebdd8ee6b93f647c179d9450d",
+"fc__mangling_8hpp.html#ac2834e98198621346a2e3200a572cf1c",
+"group__mt.html",
+"mv__helper_8hpp.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

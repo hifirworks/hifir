@@ -1,17 +1,5 @@
 var NAVTREEINDEX3 =
 {
-"classhif_1_1IntervalCRS.html#ab32fb0be4f3a31a7bfaf9e1f1a69ebb0":[4,0,1,0],
-"classhif_1_1IntervalCRS.html#abae135068fd2430ef077311aa88e9364":[4,0,1,19],
-"classhif_1_1IntervalCRS.html#ac0a5f97d183b0647b63e997c8d76d462":[4,0,1,11],
-"classhif_1_1IntervalCRS.html#ac2ca58bc1f30459ebe546fd682cd6bd4":[4,0,1,31],
-"classhif_1_1IntervalCRS.html#ac34f534d77266de3ac760a30866bffc1":[4,0,1,6],
-"classhif_1_1IntervalCRS.html#ad0e98d7e127ff22668e9ebc7dd5201f9":[4,0,1,18],
-"classhif_1_1IntervalCRS.html#ad5417a1cc2c325b4ac63e99d7c4a63fa":[4,0,1,33],
-"classhif_1_1IntervalCRS.html#ada3cee1617a2706993b208193ff32e5c":[4,0,1,46],
-"classhif_1_1IntervalCRS.html#ae498dc68de5104273fe6a184385ee90e":[4,0,1,38],
-"classhif_1_1IntervalCRS.html#aeff7acdf11cbdf472895f5336038dde7":[4,0,1,16],
-"classhif_1_1IterRefine.html":[4,3,8,0],
-"classhif_1_1IterRefine.html#a1b0c33f07f111f327028e02c66ea1be2":[4,3,8,0,2],
 "classhif_1_1IterRefine.html#a2f729edb5c95c67432588219c7607f47":[4,3,8,0,9],
 "classhif_1_1IterRefine.html#a4ef86b2183b02de757be3b09a4adaee3":[4,3,8,0,4],
 "classhif_1_1IterRefine.html#a6c7c0eb5ea4de7a5850b8a34c3bcbd85":[4,3,8,0,5],
@@ -249,5 +237,17 @@ var NAVTREEINDEX3 =
 "classhif_1_1Timer.html#a4285f4a72f2cb3792c5e64ac413b3eca":[4,1,10,7],
 "classhif_1_1Timer.html#a53fcd5c83a4033cf6bb54d5c99d2f2a3":[4,1,10,12],
 "classhif_1_1Timer.html#a8208a6d0b361339a8784ca5e2d00ce82":[4,1,10,0],
-"classhif_1_1Timer.html#a8ee4022060c1b9fe362b1206c48c83ef":[4,1,10,1]
+"classhif_1_1Timer.html#a8ee4022060c1b9fe362b1206c48c83ef":[4,1,10,1],
+"classhif_1_1Timer.html#acf16542a63575b85fa24b47501af1611":[4,1,10,6],
+"classhif_1_1Timer.html#ad90b9238d610aa53d3d710b52949ea38":[4,1,10,9],
+"classhif_1_1Timer.html#ae0b5df941187e2f1987a8247558396c9":[4,1,10,8],
+"classhif_1_1Timer.html#ae2708b589f809355ab0c7640f98a5609":[4,1,10,10],
+"classhif_1_1Timer.html#ae8aed1e5ffc158a0987e255db30b0fc5":[4,1,10,4],
+"classhif_1_1Timer.html#af2e4319cb85c53a1ddef57fa1e917404":[4,1,10,5],
+"classhif_1_1amd_1_1AMD.html":[4,2,0],
+"classhif_1_1amd_1_1AMD.html#a12c6e9e5bc4dce074ab05ae9ae1c6816":[4,2,0,12],
+"classhif_1_1amd_1_1AMD.html#a191697aca91a5595ca1afbda8b050372":[4,2,0,2],
+"classhif_1_1amd_1_1AMD.html#a23b9fb9cec97711fe702b1cacaaf2c22":[4,2,0,7],
+"classhif_1_1amd_1_1AMD.html#a25275af34ba460f494e6f54e05a09b6c":[4,2,0,3],
+"classhif_1_1amd_1_1AMD.html#a2bdcece30a680a12cd056ba1f393f07b":[4,2,0,1]
 };

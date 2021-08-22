@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>HIFIR: Related Pages</title>
+<title>HIFIR: Installation</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -65,7 +65,7 @@ $(function() {
   </div>
 </div>
 <script type="text/javascript">
-$(document).ready(function(){initNavTree('pages.html','');});
+$(document).ready(function(){initNavTree('install.html','');});
 </script>
 <div id="doc-content">
 <!-- window showing the filter options -->
@@ -84,18 +84,27 @@ $(document).ready(function(){initNavTree('pages.html','');});
 
 <div class="header">
   <div class="headertitle">
-<div class="title">Related Pages</div>  </div>
+<div class="title">Installation </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock">Here is a list of all related documentation pages:</div><div class="directory">
-<table class="directory">
-<tr id="row_0_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="install.html" target="_self">Installation</a></td><td class="desc"></td></tr>
-<tr id="row_1_"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="md__home_qiao_Documents_git_hifir_CHANGELOG.html" target="_self">Changelog</a></td><td class="desc"></td></tr>
-<tr id="row_2_" class="even"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="params.html" target="_self">Control Parameters</a></td><td class="desc"></td></tr>
-<tr id="row_3_"><td class="entry"><span style="width:16px;display:inline-block;">&#160;</span><a class="el" href="eg_page.html" target="_self">Collection of Examples</a></td><td class="desc"></td></tr>
-</table>
-</div><!-- directory -->
-</div><!-- contents -->
+<div class="toc"><h3>Table of Contents</h3>
+<ul><li class="level1"><a href="#install_cpp">Installation of the C++ interface</a></li>
+<li class="level1"><a href="#install_c">Installation of the C library (libhifir)</a></li>
+</ul>
+</div>
+<div class="textblock"><p><a name="ainstallation"></a></p>
+<h1><a class="anchor" id="install_cpp"></a>
+Installation of the C++ interface</h1>
+<p>The <em>HIFIR</em> package is written in C++, and it uses template-based and header-only programming. Hence, the installation of C++ interface is pretty straightforward.</p>
+<p>To download the latest version of the code, use the command</p>
+<div class="fragment"><div class="line">git clone -b release -–depth 1 https://github.com/hifirworks/hifir.git hifir</div><div class="line">cd hifir</div></div><!-- fragment --><p>Use <code>git pull</code> to download any new changes that have been added since <code>git clone</code> or last <code>git pull</code>. Alternatively, use <code>git checkout v[GLOBAL].[MAJOR].[MINOR]</code> to download a specific version. Another way is to download the current archive at <a href="https://github.com/hifirworks/hifir/releases/tag/v0.1.0">v0.1.0</a>.</p>
+<p>To install the code, you can simply do the following on a UNIX system</p>
+<div class="fragment"><div class="line">sudo cp -r src/* /usr/local/include</div></div><!-- fragment --><p>or copy the source files to any user-level directories, e.g.,</p>
+<div class="fragment"><div class="line">cp -r src/* $HOME/.local/include</div></div><!-- fragment --><p>and then add <code>-I$HOME/.local/include</code> to the command line of your C++ compiler.</p>
+<h1><a class="anchor" id="install_c"></a>
+Installation of the C library (libhifir)</h1>
+<p>Finish me... </p>
+</div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- HTML footer for doxygen 1.8.13-->
 <!-- start footer part -->
