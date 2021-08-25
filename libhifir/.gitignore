@@ -1,0 +1,15 @@
+*.cache
+.deps
+.libs
+*.lo
+*.la
+m4/*
+!m4/ax_*.m4
+Makefile
+Makefile.in
+aclocal.m4
+aux-dist
+config.log
+config.status
+configure
+libtool
