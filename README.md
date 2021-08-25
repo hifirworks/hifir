@@ -36,6 +36,25 @@ cp -r /path/to/hifir/src/* $HOME/.local/include
 
 and then add `-I$HOME/.local/include` to the command line of your `C++` compiler.
 
+### Installation of `libhifir` ###
+
+After obtaining the C++ interface, one can (optionally) install the C library `libhifir`. First, navigate to the subfolder libhifir
+
+```console
+cd libhifir
+```
+
+Then, follow the standard workflow of `autotools`
+
+```console
+autoreconf -vfi
+./configure --prefix=PREFIX --with-openmp
+make -j2
+make install
+```
+
+If you have customized installations of BLAS and/or LAPACK, use `--with-blas=<lib>` and `--with-lapack=<lib>` during `configure` stage. Also, if you don't have OpenMP (which is used in computing Schur complements), then set `--without-openmp`.
+
 ## Copyright and Licenses ##
 
 The `HIFIR` software suite (including `hifir4m` and `hifir4py`) are developed by the NumGeom Research Group at Stony Brook University.

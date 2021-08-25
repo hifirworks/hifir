@@ -45,6 +45,25 @@ and then add `-I$HOME/.local/include` to the command line of your C++ compiler.
 
 \section install_c Installation of the C library (libhifir)
 
-Finish me...
+After obtaining the C++ interface, one can (optionally) install the C
+library *libhifir*. First, navigate to the subfolder libhifir
+
+\code{.sh}
+    cd libhifir
+\endcode
+
+Then, follow the standard workflow of *autotools*
+
+\code{.sh}
+    autoreconf -vfi
+    ./configure --prefix=PREFIX --with-openmp
+    make -j2
+    make install
+\endcode
+
+If you have customized installations of BLAS and/or LAPACK,
+use `--with-blas=<lib>` and `--with-lapack=<lib>` during `configure` stage.
+Also, if you don't have OpenMP (which is used in computing Schur complements),
+then set `--without-openmp`.
 
 */
