@@ -1,5 +1,5 @@
 AC_PREREQ([2.61])
-AC_INIT([libhifir], [0.1.0], [], [], [https://github.com/hifirworks/hifir])
+AC_INIT([libhifir], [0.1.1], [], [], [https://github.com/hifirworks/hifir])
 AC_CONFIG_AUX_DIR(aux-dist)
 AM_INIT_AUTOMAKE([foreign 1.13])
 

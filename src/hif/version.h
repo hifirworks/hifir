@@ -45,6 +45,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define HIF_GLOBAL_VERSION 0
 #define HIF_MAJOR_VERSION 1
-#define HIF_MINOR_VERSION 0
+#define HIF_MINOR_VERSION 1
 
 #endif /* _HIF_VERSION_H */
