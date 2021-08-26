@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 - Added C library `libhifir`.
 - Updated documentation for the C interface.
+- Added MatrixMarket file readers for the C library.
 
 ## [v0.1.0](https://github.com/hifirworks/hifir/releases/tag/v0.1.0) (2021-08-22) ##
 
