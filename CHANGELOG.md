@@ -2,7 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
-## Release Candidate ##
+## v0.2.0-beta (TBD) ##
+
+Changes from [v0.1.0](https://github.com/hifirworks/hifir/releases/tag/v0.1.0) to v0.2.0-beta:
 
 - Added C library `libhifir`.
 - Updated documentation for the C interface.
