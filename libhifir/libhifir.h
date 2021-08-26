@@ -261,6 +261,24 @@ LhfStatus lhfSetAlpha(const double alpha, double params[]);
 LhfStatus lhfSetKappa(const double kappa, double params[]);
 
 /*!
+ * @brief Query information of a MatrixMarket file
+ * @param[in] fname File name of a matrix market file
+ * @param[out] is_sparse Sparse/dense tag
+ * @param[out] is_real Real/complex tag
+ * @param[out] nrows Number of rows
+ * @param[out] ncols Number of columns
+ * @param[out] nnz Number of nonzeros
+ *
+ * If the file stores a dense array, then \a nrows stores the length of the
+ * array, and both \a ncols and \a nnz are set to zero.
+ *
+ * @sa lhfdReadSparse, lhfdReadVector, lhfsReadSparse, lhfsReadVector,
+ *     lhfzReadSparse, lhfzReadVector, lhfcReadSparse, lhfcReadVector
+ */
+LhfStatus lhfQueryMmFile(const char* fname, int* is_sparse, int* is_real,
+                         size_t* nrows, size_t* ncols, size_t* nnz);
+
+/*!
  * @}
  */
 
@@ -302,6 +320,23 @@ size_t lhfdGetMatrixSize(const LhfdMatrixHdl mat);
 size_t lhfdGetMatrixNnz(const LhfdMatrixHdl mat);
 
 /*!
+ * @brief Read a sparse matrix
+ * @param[in] fname Filename of a matrix market file
+ * @param[out] mat Output sparse matrix that stores the data in \a fname
+ * @sa lhfQueryMmFile
+ */
+LhfStatus lhfdReadSparse(const char* fname, LhfdMatrixHdl mat);
+
+/*!
+ * @brief Read a vector
+ * @param[in] fname Filename of a matrix market file
+ * @param[in] n Vector size
+ * @param[out] v Vector data output
+ * @sa lhfQueryMmFile
+ */
+LhfStatus lhfdReadVector(const char* fname, const size_t n, double* v);
+
+/*!
  * @}
  */
 
@@ -339,6 +374,23 @@ size_t lhfsGetMatrixSize(const LhfsMatrixHdl mat);
  * @brief Get the matrix number of nonzeros
  */
 size_t lhfsGetMatrixNnz(const LhfsMatrixHdl mat);
+
+/*!
+ * @brief Read a sparse matrix
+ * @param[in] fname Filename of a matrix market file
+ * @param[out] mat Output sparse matrix that stores the data in \a fname
+ * @sa lhfQueryMmFile
+ */
+LhfStatus lhfsReadSparse(const char* fname, LhfsMatrixHdl mat);
+
+/*!
+ * @brief Read a vector
+ * @param[in] fname Filename of a matrix market file
+ * @param[in] n Vector size
+ * @param[out] v Vector data output
+ * @sa lhfQueryMmFile
+ */
+LhfStatus lhfsReadVector(const char* fname, const size_t n, float* v);
 
 /*!
  * @}
@@ -380,6 +432,23 @@ size_t lhfzGetMatrixSize(const LhfzMatrixHdl mat);
 size_t lhfzGetMatrixNnz(const LhfzMatrixHdl mat);
 
 /*!
+ * @brief Read a sparse matrix
+ * @param[in] fname Filename of a matrix market file
+ * @param[out] mat Output sparse matrix that stores the data in \a fname
+ * @sa lhfQueryMmFile
+ */
+LhfStatus lhfzReadSparse(const char* fname, LhfzMatrixHdl mat);
+
+/*!
+ * @brief Read a vector
+ * @param[in] fname Filename of a matrix market file
+ * @param[in] n Vector size
+ * @param[out] v Vector data output
+ * @sa lhfQueryMmFile
+ */
+LhfStatus lhfzReadVector(const char* fname, const size_t n, double _Complex* v);
+
+/*!
  * @}
  */
 
@@ -417,6 +486,23 @@ size_t lhfcGetMatrixSize(const LhfcMatrixHdl mat);
  * @brief Get the matrix number of nonzeros
  */
 size_t lhfcGetMatrixNnz(const LhfcMatrixHdl mat);
+
+/*!
+ * @brief Read a sparse matrix
+ * @param[in] fname Filename of a matrix market file
+ * @param[out] mat Output sparse matrix that stores the data in \a fname
+ * @sa lhfQueryMmFile
+ */
+LhfStatus lhfcReadSparse(const char* fname, LhfcMatrixHdl mat);
+
+/*!
+ * @brief Read a vector
+ * @param[in] fname Filename of a matrix market file
+ * @param[in] n Vector size
+ * @param[out] v Vector data output
+ * @sa lhfQueryMmFile
+ */
+LhfStatus lhfcReadVector(const char* fname, const size_t n, float _Complex* v);
 
 /*!
  * @}

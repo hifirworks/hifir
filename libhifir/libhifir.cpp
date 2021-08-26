@@ -93,6 +93,44 @@ static inline hif::Params create_params(const double params[]) {
   return p;
 }
 
+// read sparse matrix from matrix market file
+template <class ValueType, class MatHdlType>
+static inline LhfStatus mm_read_sparse(const char *fname, MatHdlType mat) {
+  _LHF_CANNOT_ACCEPT_NULL(mat);
+  if (mat->is_rowmajor) {
+    using matrix_t = hif::CRS<ValueType, LhfInt>;
+    matrix_t A;
+    try {
+      A = matrix_t::from_mm(fname);
+    } catch (const std::exception &e) {
+      _LHF_RETURN_FROM_HIFIR_ERROR(e);
+    }
+    if (A.nrows() != mat->n || A.ncols() != mat->n) return LHF_MISMATCHED_SIZES;
+    const size_t nnz = mat->indptr[mat->n] - mat->indptr[0];
+    if (nnz != A.nnz()) return LHF_MISMATCHED_SIZES;
+    mat->n = A.nrows();
+    std::copy(A.ind_start().cbegin(), A.ind_start().cend(), mat->indptr);
+    std::copy(A.inds().cbegin(), A.inds().cend(), mat->indices);
+    std::copy(A.vals().cbegin(), A.vals().cend(), mat->vals);
+  } else {
+    using matrix_t = hif::CCS<ValueType, LhfInt>;
+    matrix_t A;
+    try {
+      A = matrix_t::from_mm(fname);
+    } catch (const std::exception &e) {
+      _LHF_RETURN_FROM_HIFIR_ERROR(e);
+    }
+    if (A.nrows() != mat->n || A.ncols() != mat->n) return LHF_MISMATCHED_SIZES;
+    const size_t nnz = mat->indptr[mat->n] - mat->indptr[0];
+    if (nnz != A.nnz()) return LHF_MISMATCHED_SIZES;
+    mat->n = A.nrows();
+    std::copy(A.ind_start().cbegin(), A.ind_start().cend(), mat->indptr);
+    std::copy(A.inds().cbegin(), A.inds().cend(), mat->indices);
+    std::copy(A.vals().cbegin(), A.vals().cend(), mat->vals);
+  }
+  return LHF_SUCCESS;
+}
+
 // factorization implementation
 template <class PrecType, class MatHdlType>
 static inline void factorize(PrecType &M, const MatHdlType mat,
@@ -241,6 +279,29 @@ LhfStatus lhfSetKappa(const double kappa, double params[]) {
   return LHF_SUCCESS;
 }
 
+// query mm file information
+LhfStatus lhfQueryMmFile(const char *fname, int *is_sparse, int *is_real,
+                         size_t *nrows, size_t *ncols, size_t *nnz) {
+  // open the file
+  std::FILE *f = std::fopen(fname, "r");
+  if (!f) return LHF_NULL_OBJ;
+  bool is_sparse2, is_real2;
+  int  type_id;
+  // parse the first line
+  hif::internal::mm_read_firstline(f, is_sparse2, is_real2, type_id);
+  *is_sparse = is_sparse2;
+  *is_real   = is_real2;
+  (void)type_id;  // not used
+  if (is_sparse2)
+    hif::internal::mm_read_sparse_size(f, *nrows, *ncols, *nnz);
+  else {
+    *nnz = 0u;
+    hif::internal::mm_read_dense_size(f, *nrows, *ncols);
+  }
+  std::fclose(f);
+  return LHF_SUCCESS;
+}
+
 ///////////////////////////
 // double precision
 ///////////////////////////
@@ -301,6 +362,25 @@ LhfStatus lhfdWrapMatrix(LhfdMatrixHdl mat, const size_t n,
     return LHF_SUCCESS;
   }
   return LHF_NULL_OBJ;
+}
+
+// load sparse matrix
+LhfStatus lhfdReadSparse(const char *fname, LhfdMatrixHdl mat) {
+  return libhifir_impl::mm_read_sparse<double>(fname, mat);
+}
+
+// double vector mm io
+LhfStatus lhfdReadVector(const char *fname, const size_t n, double *v) {
+  using vector_t = hif::Array<double>;
+  vector_t vec;
+  try {
+    vec = vector_t::from_mm(fname);
+  } catch (const std::exception &e) {
+    _LHF_RETURN_FROM_HIFIR_ERROR(e);
+  }
+  if (n != vec.size()) return LHF_MISMATCHED_SIZES;
+  std::copy(vec.cbegin(), vec.cend(), v);
+  return LHF_SUCCESS;
 }
 
 // HIF structure
@@ -495,6 +575,25 @@ LhfStatus lhfsWrapMatrix(LhfsMatrixHdl mat, const size_t n,
   return LHF_NULL_OBJ;
 }
 
+// load sparse matrix
+LhfStatus lhfsReadSparse(const char *fname, LhfsMatrixHdl mat) {
+  return libhifir_impl::mm_read_sparse<float>(fname, mat);
+}
+
+// single vector mm io
+LhfStatus lhfsReadVector(const char *fname, const size_t n, float *v) {
+  using vector_t = hif::Array<float>;
+  vector_t vec;
+  try {
+    vec = vector_t::from_mm(fname);
+  } catch (const std::exception &e) {
+    _LHF_RETURN_FROM_HIFIR_ERROR(e);
+  }
+  if (n != vec.size()) return LHF_MISMATCHED_SIZES;
+  std::copy(vec.cbegin(), vec.cend(), v);
+  return LHF_SUCCESS;
+}
+
 // HIF structure
 struct LhfsHif {
   hif::HIF<float, LhfInt> M;
@@ -687,6 +786,26 @@ LhfStatus lhfzWrapMatrix(LhfzMatrixHdl mat, const size_t n,
     return LHF_SUCCESS;
   }
   return LHF_NULL_OBJ;
+}
+
+// load sparse matrix
+LhfStatus lhfzReadSparse(const char *fname, LhfzMatrixHdl mat) {
+  return libhifir_impl::mm_read_sparse<std::complex<double>>(fname, mat);
+}
+
+// double complex vector mm io
+LhfStatus lhfzReadVector(const char *fname, const size_t n,
+                         double _Complex *v) {
+  using vector_t = hif::Array<std::complex<double>>;
+  vector_t vec;
+  try {
+    vec = vector_t::from_mm(fname);
+  } catch (const std::exception &e) {
+    _LHF_RETURN_FROM_HIFIR_ERROR(e);
+  }
+  if (n != vec.size()) return LHF_MISMATCHED_SIZES;
+  std::copy(vec.cbegin(), vec.cend(), (std::complex<double> *)v);
+  return LHF_SUCCESS;
 }
 
 // HIF structure
@@ -885,6 +1004,25 @@ LhfStatus lhfcWrapMatrix(LhfcMatrixHdl mat, const size_t n,
     return LHF_SUCCESS;
   }
   return LHF_NULL_OBJ;
+}
+
+// load sparse matrix
+LhfStatus lhfcReadSparse(const char *fname, LhfcMatrixHdl mat) {
+  return libhifir_impl::mm_read_sparse<std::complex<float>>(fname, mat);
+}
+
+// double complex vector mm io
+LhfStatus lhfcReadVector(const char *fname, const size_t n, float _Complex *v) {
+  using vector_t = hif::Array<std::complex<float>>;
+  vector_t vec;
+  try {
+    vec = vector_t::from_mm(fname);
+  } catch (const std::exception &e) {
+    _LHF_RETURN_FROM_HIFIR_ERROR(e);
+  }
+  if (n != vec.size()) return LHF_MISMATCHED_SIZES;
+  std::copy(vec.cbegin(), vec.cend(), (std::complex<float> *)v);
+  return LHF_SUCCESS;
 }
 
 // HIF structure
