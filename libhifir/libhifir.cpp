@@ -106,9 +106,6 @@ static inline LhfStatus mm_read_sparse(const char *fname, MatHdlType mat) {
       _LHF_RETURN_FROM_HIFIR_ERROR(e);
     }
     if (A.nrows() != mat->n || A.ncols() != mat->n) return LHF_MISMATCHED_SIZES;
-    const size_t nnz = mat->indptr[mat->n] - mat->indptr[0];
-    if (nnz != A.nnz()) return LHF_MISMATCHED_SIZES;
-    mat->n = A.nrows();
     std::copy(A.ind_start().cbegin(), A.ind_start().cend(), mat->indptr);
     std::copy(A.inds().cbegin(), A.inds().cend(), mat->indices);
     std::copy(A.vals().cbegin(), A.vals().cend(), mat->vals);
@@ -121,9 +118,6 @@ static inline LhfStatus mm_read_sparse(const char *fname, MatHdlType mat) {
       _LHF_RETURN_FROM_HIFIR_ERROR(e);
     }
     if (A.nrows() != mat->n || A.ncols() != mat->n) return LHF_MISMATCHED_SIZES;
-    const size_t nnz = mat->indptr[mat->n] - mat->indptr[0];
-    if (nnz != A.nnz()) return LHF_MISMATCHED_SIZES;
-    mat->n = A.nrows();
     std::copy(A.ind_start().cbegin(), A.ind_start().cend(), mat->indptr);
     std::copy(A.inds().cbegin(), A.inds().cend(), mat->indices);
     std::copy(A.vals().cbegin(), A.vals().cend(), mat->vals);
