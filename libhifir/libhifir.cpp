@@ -129,7 +129,7 @@ static inline LhfStatus mm_read_sparse(const char *fname, MatHdlType mat) {
 template <class PrecType, class MatHdlType>
 static inline void factorize(PrecType &M, const MatHdlType mat,
                              const double params[]) {
-  if (params) {
+  if (!params) {
     if (mat->is_rowmajor)
       M.template factorize<true>(mat->n, mat->indptr, mat->indices, mat->vals);
     else
@@ -379,8 +379,8 @@ LhfStatus lhfdReadVector(const char *fname, const size_t n, double *v) {
 
 // HIF structure
 struct LhfdHif {
-  hif::HIF<double, LhfInt> M;
-  LhfdMatrixHdl            A;
+  hif::HIF<double, LhfInt> *M;
+  LhfdMatrixHdl             A;
 };
 
 // create function
@@ -388,6 +388,11 @@ LhfdHifHdl lhfdCreate(const LhfdMatrixHdl A, const LhfdMatrixHdl S,
                       const double params[]) {
   LhfdHifHdl M = (LhfdHifHdl)std::malloc(sizeof(LhfdHif));
   if (!M) return nullptr;
+  M->M = new (std::nothrow) hif::HIF<double, LhfInt>();
+  if (!M->M) {
+    std::free(M);
+    return nullptr;
+  }
   const auto status = lhfdSetup(M, A, S, params);
   if (status == LHF_HIFIR_ERROR) {
     lhfdDestroy(M);
@@ -399,7 +404,7 @@ LhfdHifHdl lhfdCreate(const LhfdMatrixHdl A, const LhfdMatrixHdl S,
 // destroy HIF
 LhfStatus lhfdDestroy(LhfdHifHdl hif) {
   if (hif) {
-    hif->M.~HIF<double, LhfInt>();
+    delete hif->M;
     std::free(hif);
   }
   return LHF_SUCCESS;
@@ -413,7 +418,7 @@ LhfStatus lhfdSetup(LhfdHifHdl hif, const LhfdMatrixHdl A,
   LhfdMatrixHdl facA = S ? S : A;
   _LHF_CANNOT_ACCEPT_NULL(facA);
   try {
-    libhifir_impl::factorize(hif->M, facA, params);
+    libhifir_impl::factorize(*hif->M, facA, params);
   } catch (const std::exception &e) {
     _LHF_RETURN_FROM_HIFIR_ERROR(e);
   }
@@ -424,8 +429,8 @@ LhfStatus lhfdSetup(LhfdHifHdl hif, const LhfdMatrixHdl A,
 LhfStatus lhfdUpdate(LhfdHifHdl hif, const LhfdMatrixHdl A) {
   _LHF_CANNOT_ACCEPT_NULL(hif);
   hif->A = A;
-  if (hif->A && !hif->M.empty())
-    if (hif->A->n != hif->M.nrows()) return LHF_MISMATCHED_SIZES;
+  if (hif->A && !hif->M->empty())
+    if (hif->A->n != hif->M->nrows()) return LHF_MISMATCHED_SIZES;
   return LHF_SUCCESS;
 }
 
@@ -435,7 +440,7 @@ LhfStatus lhfdRefactorize(LhfdHifHdl hif, const LhfdMatrixHdl S,
   _LHF_CANNOT_ACCEPT_NULL(hif);
   _LHF_CANNOT_ACCEPT_NULL(S);
   try {
-    libhifir_impl::factorize(hif->M, S, params);
+    libhifir_impl::factorize(*hif->M, S, params);
   } catch (const std::exception &e) {
     _LHF_RETURN_FROM_HIFIR_ERROR(e);
   }
@@ -455,13 +460,13 @@ LhfStatus lhfdApply(const LhfdHifHdl hif, const LhfOperationType op,
   try {
     if (nirs <= 1 || op == LHF_M || op == LHF_MH) {
       if (op == LHF_M || op == LHF_MH)
-        libhifir_impl::mmultiply(hif->M, b, x, trans);
+        libhifir_impl::mmultiply(*hif->M, b, x, trans);
       else
-        libhifir_impl::solve(hif->M, b, x, trans);
+        libhifir_impl::solve(*hif->M, b, x, trans);
     } else {
       _LHF_CANNOT_ACCEPT_NULL(hif->A);
-      if (hif->M.nrows() != hif->A->n) return LHF_MISMATCHED_SIZES;
-      libhifir_impl::hifir(hif->M, hif->A, b, nirs, betas, trans, rnk, x,
+      if (hif->M->nrows() != hif->A->n) return LHF_MISMATCHED_SIZES;
+      libhifir_impl::hifir(*hif->M, hif->A, b, nirs, betas, trans, rnk, x,
                            ir_status);
     }
   } catch (const std::exception &e) {
@@ -474,7 +479,7 @@ LhfStatus lhfdApply(const LhfdHifHdl hif, const LhfOperationType op,
 LhfStatus lhfdSolve(const LhfdHifHdl hif, const double *b, double *x) {
   _LHF_CANNOT_ACCEPT_NULL(hif);
   try {
-    libhifir_impl::solve(hif->M, b, x);
+    libhifir_impl::solve(*hif->M, b, x);
   } catch (const std::exception &e) {
     _LHF_RETURN_FROM_HIFIR_ERROR(e);
   }
@@ -486,25 +491,25 @@ LhfStatus lhfdGetStats(const LhfdHifHdl hif, size_t stats[]) {
   if (!hif)
     for (int i = 0; i < 9; ++i) stats[i] = 0;
   else
-    libhifir_impl::get_factor_stats(hif->M, stats);
+    libhifir_impl::get_factor_stats(*hif->M, stats);
   return LHF_SUCCESS;
 }
 
 // utilities
 size_t lhfdGetNnz(const LhfdHifHdl hif) {
-  return hif ? hif->M.nnz() : std::size_t(0);
+  return hif ? hif->M->nnz() : std::size_t(0);
 }
 
 size_t lhfdGetLevels(const LhfdHifHdl hif) {
-  return hif ? hif->M.levels() : std::size_t(0);
+  return hif ? hif->M->levels() : std::size_t(0);
 }
 
 size_t lhfdGetSchurSize(const LhfdHifHdl hif) {
-  return hif ? hif->M.schur_size() : std::size_t(0);
+  return hif ? hif->M->schur_size() : std::size_t(0);
 }
 
 size_t lhfdGetSchurRank(const LhfdHifHdl hif) {
-  return hif ? hif->M.schur_rank() : std::size_t(0);
+  return hif ? hif->M->schur_rank() : std::size_t(0);
 }
 
 ///////////////////////////
@@ -590,9 +595,9 @@ LhfStatus lhfsReadVector(const char *fname, const size_t n, float *v) {
 
 // HIF structure
 struct LhfsHif {
-  hif::HIF<float, LhfInt> M;
-  LhfsMatrixHdl           A;
-  LhfdMatrixHdl           Ad;
+  hif::HIF<float, LhfInt> *M;
+  LhfsMatrixHdl            A;
+  LhfdMatrixHdl            Ad;
 };
 
 // create function
@@ -600,6 +605,11 @@ LhfsHifHdl lhfsCreate(const LhfsMatrixHdl A, const LhfsMatrixHdl S,
                       const double params[]) {
   LhfsHifHdl M = (LhfsHifHdl)std::malloc(sizeof(LhfsHif));
   if (!M) return nullptr;
+  M->M = new (std::nothrow) hif::HIF<float, LhfInt>();
+  if (!M->M) {
+    std::free(M);
+    return nullptr;
+  }
   const auto status = lhfsSetup(M, A, S, params);
   if (status == LHF_HIFIR_ERROR) {
     lhfsDestroy(M);
@@ -611,7 +621,7 @@ LhfsHifHdl lhfsCreate(const LhfsMatrixHdl A, const LhfsMatrixHdl S,
 // destroy HIF
 LhfStatus lhfsDestroy(LhfsHifHdl hif) {
   if (hif) {
-    hif->M.~HIF<float, LhfInt>();
+    delete hif->M;
     std::free(hif);
   }
   return LHF_SUCCESS;
@@ -626,7 +636,7 @@ LhfStatus lhfsSetup(LhfsHifHdl hif, const LhfsMatrixHdl A,
   hif->Ad            = nullptr;
   _LHF_CANNOT_ACCEPT_NULL(facA);
   try {
-    libhifir_impl::factorize(hif->M, facA, params);
+    libhifir_impl::factorize(*hif->M, facA, params);
   } catch (const std::exception &e) {
     _LHF_RETURN_FROM_HIFIR_ERROR(e);
   }
@@ -637,8 +647,8 @@ LhfStatus lhfsSetup(LhfsHifHdl hif, const LhfsMatrixHdl A,
 LhfStatus lhfsUpdate(LhfsHifHdl hif, const LhfsMatrixHdl A) {
   _LHF_CANNOT_ACCEPT_NULL(hif);
   hif->A = A;
-  if (hif->A && !hif->M.empty())
-    if (hif->A->n != hif->M.nrows()) return LHF_MISMATCHED_SIZES;
+  if (hif->A && !hif->M->empty())
+    if (hif->A->n != hif->M->nrows()) return LHF_MISMATCHED_SIZES;
   return LHF_SUCCESS;
 }
 
@@ -648,7 +658,7 @@ LhfStatus lhfsRefactorize(LhfsHifHdl hif, const LhfsMatrixHdl S,
   _LHF_CANNOT_ACCEPT_NULL(hif);
   _LHF_CANNOT_ACCEPT_NULL(S);
   try {
-    libhifir_impl::factorize(hif->M, S, params);
+    libhifir_impl::factorize(*hif->M, S, params);
   } catch (const std::exception &e) {
     _LHF_RETURN_FROM_HIFIR_ERROR(e);
   }
@@ -668,13 +678,13 @@ LhfStatus lhfsApply(const LhfsHifHdl hif, const LhfOperationType op,
   try {
     if (nirs <= 1 || op == LHF_M || op == LHF_MH) {
       if (op == LHF_M || op == LHF_MH)
-        libhifir_impl::mmultiply(hif->M, b, x, trans);
+        libhifir_impl::mmultiply(*hif->M, b, x, trans);
       else
-        libhifir_impl::solve(hif->M, b, x, trans);
+        libhifir_impl::solve(*hif->M, b, x, trans);
     } else {
       _LHF_CANNOT_ACCEPT_NULL(hif->A);
-      if (hif->M.nrows() != hif->A->n) return LHF_MISMATCHED_SIZES;
-      libhifir_impl::hifir(hif->M, hif->A, b, nirs, betas, trans, rnk, x,
+      if (hif->M->nrows() != hif->A->n) return LHF_MISMATCHED_SIZES;
+      libhifir_impl::hifir(*hif->M, hif->A, b, nirs, betas, trans, rnk, x,
                            ir_status);
     }
   } catch (const std::exception &e) {
@@ -687,7 +697,7 @@ LhfStatus lhfsApply(const LhfsHifHdl hif, const LhfOperationType op,
 LhfStatus lhfsSolve(const LhfsHifHdl hif, const float *b, float *x) {
   _LHF_CANNOT_ACCEPT_NULL(hif);
   try {
-    libhifir_impl::solve(hif->M, b, x);
+    libhifir_impl::solve(*hif->M, b, x);
   } catch (const std::exception &e) {
     _LHF_RETURN_FROM_HIFIR_ERROR(e);
   }
@@ -699,25 +709,25 @@ LhfStatus lhfsGetStats(const LhfsHifHdl hif, size_t stats[]) {
   if (!hif)
     for (int i = 0; i < 9; ++i) stats[i] = 0;
   else
-    libhifir_impl::get_factor_stats(hif->M, stats);
+    libhifir_impl::get_factor_stats(*hif->M, stats);
   return LHF_SUCCESS;
 }
 
 // utilities
 size_t lhfsGetNnz(const LhfsHifHdl hif) {
-  return hif ? hif->M.nnz() : std::size_t(0);
+  return hif ? hif->M->nnz() : std::size_t(0);
 }
 
 size_t lhfsGetLevels(const LhfsHifHdl hif) {
-  return hif ? hif->M.levels() : std::size_t(0);
+  return hif ? hif->M->levels() : std::size_t(0);
 }
 
 size_t lhfsGetSchurSize(const LhfsHifHdl hif) {
-  return hif ? hif->M.schur_size() : std::size_t(0);
+  return hif ? hif->M->schur_size() : std::size_t(0);
 }
 
 size_t lhfsGetSchurRank(const LhfsHifHdl hif) {
-  return hif ? hif->M.schur_rank() : std::size_t(0);
+  return hif ? hif->M->schur_rank() : std::size_t(0);
 }
 
 ///////////////////////////
@@ -804,8 +814,8 @@ LhfStatus lhfzReadVector(const char *fname, const size_t n,
 
 // HIF structure
 struct LhfzHif {
-  hif::HIF<std::complex<double>, LhfInt> M;
-  LhfzMatrixHdl                          A;
+  hif::HIF<std::complex<double>, LhfInt> *M;
+  LhfzMatrixHdl                           A;
 };
 
 // create function
@@ -813,6 +823,11 @@ LhfzHifHdl lhfzCreate(const LhfzMatrixHdl A, const LhfzMatrixHdl S,
                       const double params[]) {
   LhfzHifHdl M = (LhfzHifHdl)std::malloc(sizeof(LhfzHif));
   if (!M) return nullptr;
+  M->M = new (std::nothrow) hif::HIF<std::complex<double>, LhfInt>();
+  if (!M->M) {
+    std::free(M);
+    return nullptr;
+  }
   const auto status = lhfzSetup(M, A, S, params);
   if (status == LHF_HIFIR_ERROR) {
     lhfzDestroy(M);
@@ -824,7 +839,7 @@ LhfzHifHdl lhfzCreate(const LhfzMatrixHdl A, const LhfzMatrixHdl S,
 // destroy HIF
 LhfStatus lhfzDestroy(LhfzHifHdl hif) {
   if (hif) {
-    hif->M.~HIF<std::complex<double>, LhfInt>();
+    delete hif->M;
     std::free(hif);
   }
   return LHF_SUCCESS;
@@ -838,7 +853,7 @@ LhfStatus lhfzSetup(LhfzHifHdl hif, const LhfzMatrixHdl A,
   LhfzMatrixHdl facA = S ? S : A;
   _LHF_CANNOT_ACCEPT_NULL(facA);
   try {
-    libhifir_impl::factorize(hif->M, facA, params);
+    libhifir_impl::factorize(*hif->M, facA, params);
   } catch (const std::exception &e) {
     _LHF_RETURN_FROM_HIFIR_ERROR(e);
   }
@@ -849,8 +864,8 @@ LhfStatus lhfzSetup(LhfzHifHdl hif, const LhfzMatrixHdl A,
 LhfStatus lhfzUpdate(LhfzHifHdl hif, const LhfzMatrixHdl A) {
   _LHF_CANNOT_ACCEPT_NULL(hif);
   hif->A = A;
-  if (hif->A && !hif->M.empty())
-    if (hif->A->n != hif->M.nrows()) return LHF_MISMATCHED_SIZES;
+  if (hif->A && !hif->M->empty())
+    if (hif->A->n != hif->M->nrows()) return LHF_MISMATCHED_SIZES;
   return LHF_SUCCESS;
 }
 
@@ -860,7 +875,7 @@ LhfStatus lhfzRefactorize(LhfzHifHdl hif, const LhfzMatrixHdl S,
   _LHF_CANNOT_ACCEPT_NULL(hif);
   _LHF_CANNOT_ACCEPT_NULL(S);
   try {
-    libhifir_impl::factorize(hif->M, S, params);
+    libhifir_impl::factorize(*hif->M, S, params);
   } catch (const std::exception &e) {
     _LHF_RETURN_FROM_HIFIR_ERROR(e);
   }
@@ -881,15 +896,15 @@ LhfStatus lhfzApply(const LhfzHifHdl hif, const LhfOperationType op,
   try {
     if (nirs <= 1 || op == LHF_M || op == LHF_MH) {
       if (op == LHF_M || op == LHF_MH)
-        libhifir_impl::mmultiply(hif->M, (const std::complex<double> *)b,
+        libhifir_impl::mmultiply(*hif->M, (const std::complex<double> *)b,
                                  (std::complex<double> *)x, trans);
       else
-        libhifir_impl::solve(hif->M, (const std::complex<double> *)b,
+        libhifir_impl::solve(*hif->M, (const std::complex<double> *)b,
                              (std::complex<double> *)x, trans);
     } else {
       _LHF_CANNOT_ACCEPT_NULL(hif->A);
-      if (hif->M.nrows() != hif->A->n) return LHF_MISMATCHED_SIZES;
-      libhifir_impl::hifir(hif->M, hif->A, (const std::complex<double> *)b,
+      if (hif->M->nrows() != hif->A->n) return LHF_MISMATCHED_SIZES;
+      libhifir_impl::hifir(*hif->M, hif->A, (const std::complex<double> *)b,
                            nirs, betas, trans, rnk, (std::complex<double> *)x,
                            ir_status);
     }
@@ -904,7 +919,7 @@ LhfStatus lhfzSolve(const LhfzHifHdl hif, const double _Complex *b,
                     double _Complex *x) {
   _LHF_CANNOT_ACCEPT_NULL(hif);
   try {
-    libhifir_impl::solve(hif->M, (const std::complex<double> *)b,
+    libhifir_impl::solve(*hif->M, (const std::complex<double> *)b,
                          (std::complex<double> *)x);
   } catch (const std::exception &e) {
     _LHF_RETURN_FROM_HIFIR_ERROR(e);
@@ -917,25 +932,25 @@ LhfStatus lhfzGetStats(const LhfzHifHdl hif, size_t stats[]) {
   if (!hif)
     for (int i = 0; i < 9; ++i) stats[i] = 0;
   else
-    libhifir_impl::get_factor_stats(hif->M, stats);
+    libhifir_impl::get_factor_stats(*hif->M, stats);
   return LHF_SUCCESS;
 }
 
 // utilities
 size_t lhfzGetNnz(const LhfzHifHdl hif) {
-  return hif ? hif->M.nnz() : std::size_t(0);
+  return hif ? hif->M->nnz() : std::size_t(0);
 }
 
 size_t lhfzGetLevels(const LhfzHifHdl hif) {
-  return hif ? hif->M.levels() : std::size_t(0);
+  return hif ? hif->M->levels() : std::size_t(0);
 }
 
 size_t lhfzGetSchurSize(const LhfzHifHdl hif) {
-  return hif ? hif->M.schur_size() : std::size_t(0);
+  return hif ? hif->M->schur_size() : std::size_t(0);
 }
 
 size_t lhfzGetSchurRank(const LhfzHifHdl hif) {
-  return hif ? hif->M.schur_rank() : std::size_t(0);
+  return hif ? hif->M->schur_rank() : std::size_t(0);
 }
 
 ///////////////////////////
@@ -1021,9 +1036,9 @@ LhfStatus lhfcReadVector(const char *fname, const size_t n, float _Complex *v) {
 
 // HIF structure
 struct LhfcHif {
-  hif::HIF<std::complex<float>, LhfInt> M;
-  LhfcMatrixHdl                         A;
-  LhfzMatrixHdl                         Az;
+  hif::HIF<std::complex<float>, LhfInt> *M;
+  LhfcMatrixHdl                          A;
+  LhfzMatrixHdl                          Az;
 };
 
 // create function
@@ -1031,6 +1046,7 @@ LhfcHifHdl lhfcCreate(const LhfcMatrixHdl A, const LhfcMatrixHdl S,
                       const double params[]) {
   LhfcHifHdl M = (LhfcHifHdl)std::malloc(sizeof(LhfcHif));
   if (!M) return nullptr;
+  M->M = new (std::nothrow) hif::HIF<std::complex<float>, LhfInt>();
   const auto status = lhfcSetup(M, A, S, params);
   if (status == LHF_HIFIR_ERROR) {
     lhfcDestroy(M);
@@ -1042,7 +1058,7 @@ LhfcHifHdl lhfcCreate(const LhfcMatrixHdl A, const LhfcMatrixHdl S,
 // destroy HIF
 LhfStatus lhfcDestroy(LhfcHifHdl hif) {
   if (hif) {
-    hif->M.~HIF<std::complex<float>, LhfInt>();
+    delete hif->M;
     std::free(hif);
   }
   return LHF_SUCCESS;
@@ -1057,7 +1073,7 @@ LhfStatus lhfcSetup(LhfcHifHdl hif, const LhfcMatrixHdl A,
   hif->Az            = nullptr;
   _LHF_CANNOT_ACCEPT_NULL(facA);
   try {
-    libhifir_impl::factorize(hif->M, facA, params);
+    libhifir_impl::factorize(*hif->M, facA, params);
   } catch (const std::exception &e) {
     _LHF_RETURN_FROM_HIFIR_ERROR(e);
   }
@@ -1068,8 +1084,8 @@ LhfStatus lhfcSetup(LhfcHifHdl hif, const LhfcMatrixHdl A,
 LhfStatus lhfcUpdate(LhfcHifHdl hif, const LhfcMatrixHdl A) {
   _LHF_CANNOT_ACCEPT_NULL(hif);
   hif->A = A;
-  if (hif->A && !hif->M.empty())
-    if (hif->A->n != hif->M.nrows()) return LHF_MISMATCHED_SIZES;
+  if (hif->A && !hif->M->empty())
+    if (hif->A->n != hif->M->nrows()) return LHF_MISMATCHED_SIZES;
   return LHF_SUCCESS;
 }
 
@@ -1079,7 +1095,7 @@ LhfStatus lhfcRefactorize(LhfcHifHdl hif, const LhfcMatrixHdl S,
   _LHF_CANNOT_ACCEPT_NULL(hif);
   _LHF_CANNOT_ACCEPT_NULL(S);
   try {
-    libhifir_impl::factorize(hif->M, S, params);
+    libhifir_impl::factorize(*hif->M, S, params);
   } catch (const std::exception &e) {
     _LHF_RETURN_FROM_HIFIR_ERROR(e);
   }
@@ -1100,16 +1116,16 @@ LhfStatus lhfcApply(const LhfcHifHdl hif, const LhfOperationType op,
   try {
     if (nirs <= 1 || op == LHF_M || op == LHF_MH) {
       if (op == LHF_M || op == LHF_MH)
-        libhifir_impl::mmultiply(hif->M, (const std::complex<float> *)b,
+        libhifir_impl::mmultiply(*hif->M, (const std::complex<float> *)b,
                                  (std::complex<float> *)x, trans);
       else
-        libhifir_impl::solve(hif->M, (const std::complex<float> *)b,
+        libhifir_impl::solve(*hif->M, (const std::complex<float> *)b,
                              (std::complex<float> *)x, trans);
     } else {
       _LHF_CANNOT_ACCEPT_NULL(hif->A);
-      if (hif->M.nrows() != hif->A->n) return LHF_MISMATCHED_SIZES;
-      libhifir_impl::hifir(hif->M, hif->A, (const std::complex<float> *)b, nirs,
-                           betas, trans, rnk, (std::complex<float> *)x,
+      if (hif->M->nrows() != hif->A->n) return LHF_MISMATCHED_SIZES;
+      libhifir_impl::hifir(*hif->M, hif->A, (const std::complex<float> *)b,
+                           nirs, betas, trans, rnk, (std::complex<float> *)x,
                            ir_status);
     }
   } catch (const std::exception &e) {
@@ -1123,7 +1139,7 @@ LhfStatus lhfcSolve(const LhfcHifHdl hif, const float _Complex *b,
                     float _Complex *x) {
   _LHF_CANNOT_ACCEPT_NULL(hif);
   try {
-    libhifir_impl::solve(hif->M, (const std::complex<float> *)b,
+    libhifir_impl::solve(*hif->M, (const std::complex<float> *)b,
                          (std::complex<float> *)x);
   } catch (const std::exception &e) {
     _LHF_RETURN_FROM_HIFIR_ERROR(e);
@@ -1136,25 +1152,25 @@ LhfStatus lhfcGetStats(const LhfcHifHdl hif, size_t stats[]) {
   if (!hif)
     for (int i = 0; i < 9; ++i) stats[i] = 0;
   else
-    libhifir_impl::get_factor_stats(hif->M, stats);
+    libhifir_impl::get_factor_stats(*hif->M, stats);
   return LHF_SUCCESS;
 }
 
 // utilities
 size_t lhfcGetNnz(const LhfcHifHdl hif) {
-  return hif ? hif->M.nnz() : std::size_t(0);
+  return hif ? hif->M->nnz() : std::size_t(0);
 }
 
 size_t lhfcGetLevels(const LhfcHifHdl hif) {
-  return hif ? hif->M.levels() : std::size_t(0);
+  return hif ? hif->M->levels() : std::size_t(0);
 }
 
 size_t lhfcGetSchurSize(const LhfcHifHdl hif) {
-  return hif ? hif->M.schur_size() : std::size_t(0);
+  return hif ? hif->M->schur_size() : std::size_t(0);
 }
 
 size_t lhfcGetSchurRank(const LhfcHifHdl hif) {
-  return hif ? hif->M.schur_rank() : std::size_t(0);
+  return hif ? hif->M->schur_rank() : std::size_t(0);
 }
 
 /////////////////////////
@@ -1165,8 +1181,8 @@ size_t lhfcGetSchurRank(const LhfcHifHdl hif) {
 LhfStatus lhfsdUpdate(LhfsHifHdl hif, LhfdMatrixHdl A) {
   _LHF_CANNOT_ACCEPT_NULL(hif);
   hif->Ad = A;
-  if (hif->Ad && !hif->M.empty())
-    if (hif->Ad->n != hif->M.nrows()) return LHF_MISMATCHED_SIZES;
+  if (hif->Ad && !hif->M->empty())
+    if (hif->Ad->n != hif->M->nrows()) return LHF_MISMATCHED_SIZES;
   return LHF_SUCCESS;
 }
 
@@ -1183,14 +1199,14 @@ LhfStatus lhfsdApply(const LhfsHifHdl hif, const LhfOperationType op,
   try {
     if (nirs <= 1 || op == LHF_M || op == LHF_MH) {
       if (op == LHF_M || op == LHF_MH)
-        libhifir_impl::mmultiply(hif->M, b, x, trans);
+        libhifir_impl::mmultiply(*hif->M, b, x, trans);
       else
-        libhifir_impl::solve(hif->M, b, x, trans);
+        libhifir_impl::solve(*hif->M, b, x, trans);
     } else {
       // Ad not A
       _LHF_CANNOT_ACCEPT_NULL(hif->Ad);
-      if (hif->M.nrows() != hif->Ad->n) return LHF_MISMATCHED_SIZES;
-      libhifir_impl::hifir(hif->M, hif->Ad, b, nirs, betas, trans, rnk, x,
+      if (hif->M->nrows() != hif->Ad->n) return LHF_MISMATCHED_SIZES;
+      libhifir_impl::hifir(*hif->M, hif->Ad, b, nirs, betas, trans, rnk, x,
                            ir_status);
     }
   } catch (const std::exception &e) {
@@ -1203,7 +1219,7 @@ LhfStatus lhfsdApply(const LhfsHifHdl hif, const LhfOperationType op,
 LhfStatus lhfsdSolve(const LhfsHifHdl hif, const double *b, double *x) {
   _LHF_CANNOT_ACCEPT_NULL(hif);
   try {
-    libhifir_impl::solve(hif->M, b, x);
+    libhifir_impl::solve(*hif->M, b, x);
   } catch (const std::exception &e) {
     _LHF_RETURN_FROM_HIFIR_ERROR(e);
   }
@@ -1214,8 +1230,8 @@ LhfStatus lhfsdSolve(const LhfsHifHdl hif, const double *b, double *x) {
 LhfStatus lhfczUpdate(LhfcHifHdl hif, LhfzMatrixHdl A) {
   _LHF_CANNOT_ACCEPT_NULL(hif);
   hif->Az = A;
-  if (hif->Az && !hif->M.empty())
-    if (hif->Az->n != hif->M.nrows()) return LHF_MISMATCHED_SIZES;
+  if (hif->Az && !hif->M->empty())
+    if (hif->Az->n != hif->M->nrows()) return LHF_MISMATCHED_SIZES;
   return LHF_SUCCESS;
 }
 
@@ -1233,16 +1249,16 @@ LhfStatus lhfczApply(const LhfcHifHdl hif, const LhfOperationType op,
   try {
     if (nirs <= 1 || op == LHF_M || op == LHF_MH) {
       if (op == LHF_M || op == LHF_MH)
-        libhifir_impl::mmultiply(hif->M, (const std::complex<double> *)b,
+        libhifir_impl::mmultiply(*hif->M, (const std::complex<double> *)b,
                                  (std::complex<double> *)x, trans);
       else
-        libhifir_impl::solve(hif->M, (const std::complex<double> *)b,
+        libhifir_impl::solve(*hif->M, (const std::complex<double> *)b,
                              (std::complex<double> *)x, trans);
     } else {
       // Az not A
       _LHF_CANNOT_ACCEPT_NULL(hif->Az);
-      if (hif->M.nrows() != hif->Az->n) return LHF_MISMATCHED_SIZES;
-      libhifir_impl::hifir(hif->M, hif->Az, (const std::complex<double> *)b,
+      if (hif->M->nrows() != hif->Az->n) return LHF_MISMATCHED_SIZES;
+      libhifir_impl::hifir(*hif->M, hif->Az, (const std::complex<double> *)b,
                            nirs, betas, trans, rnk, (std::complex<double> *)x,
                            ir_status);
     }
@@ -1257,7 +1273,7 @@ LhfStatus lhfczSolve(const LhfcHifHdl hif, const double _Complex *b,
                      double _Complex *x) {
   _LHF_CANNOT_ACCEPT_NULL(hif);
   try {
-    libhifir_impl::solve(hif->M, (const std::complex<double> *)b,
+    libhifir_impl::solve(*hif->M, (const std::complex<double> *)b,
                          (std::complex<double> *)x);
   } catch (const std::exception &e) {
     _LHF_RETURN_FROM_HIFIR_ERROR(e);
