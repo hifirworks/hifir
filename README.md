@@ -36,6 +36,8 @@ cp -r /path/to/hifir/src/* $HOME/.local/include
 
 and then add `-I$HOME/.local/include` to the command line of your `C++` compiler.
 
+For Windows users, the simplest and cleanest way is to use [Windows Subsystem for Linux (WSL)](https://docs.microsoft.com/en-us/windows/wsl/) or [Cygwin](https://www.cygwin.com/).
+
 Optionally, one can consider using the runtime library `libhifir`; see the [README](./libhifir/README.md) therein for more details.
 
 ### Installation of LAPACK ###
