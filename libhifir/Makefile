@@ -23,28 +23,21 @@ ifeq (${LAPACK_LIBS},)
 	LAPACK_LIBS = -llapack -lblas
 endif
 
-lib: libhifir_i32.a libhifir_i32.so libhifir_i64.a libhifir_i64.so
+lib: libhifir_i32.a libhifir_i64.a libhifir_i32.so libhifir_i64.so
 
-libhifir_i32.a: libhifir_i32.o
+.SUFFIXES: .o .a .so
+
+.o.a:
 	${AR} ${ARFLAGS} $@ $<
 	${RANLIB} $@
 
-libhifir_i32.so: libhifir_i32.o
+.o.so:
 	${CXX} -shared -Wl,-soname,${@}.${SO_MAJOR} -o ${@}.${SO_SUFFIX} $< ${LAPACK_LIBS} ${OPENMP_CXXFLAGS} ${LDFLAGS}
 	ln -sf ${@}.${SO_SUFFIX} ${@}.${SO_MAJOR}
 	ln -sf ${@}.${SO_MAJOR} $@
 
 libhifir_i32.o: libhifir.cpp libhifir.h
 	${CXX} -c ${LIBHIFIR_CXXFLAGS} ${CPPFLAGS} $< -o $@
-
-libhifir_i64.a: libhifir_i64.o
-	${AR} ${ARFLAGS} $@ $<
-	${RANLIB} $@
-
-libhifir_i64.so: libhifir_i64.o
-	${CXX} -shared -Wl,-soname,${@}.${SO_MAJOR} -o ${@}.${SO_SUFFIX} $< ${LAPACK_LIBS} ${OPENMP_CXXFLAGS} ${LDFLAGS}
-	ln -sf ${@}.${SO_SUFFIX} ${@}.${SO_MAJOR}
-	ln -sf ${@}.${SO_MAJOR} $@
 
 libhifir_i64.o: libhifir.cpp libhifir.h
 	${CXX} -c ${LIBHIFIR_CXXFLAGS} ${CPPFLAGS} -DLIBHIFIR_INT_SIZE=64 $< -o $@
