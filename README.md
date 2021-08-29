@@ -40,7 +40,7 @@ Optionally, one can consider using the runtime library `libhifir`; see the [READ
 
 ### Installation of LAPACK ###
 
-HIFIR uses LAPACK for its dense level factorization and solve. For system admininstors, we recommend using [OpenBLAS](https://www.openblas.net/) and Intel MKL. To install OpenBLAS using APT repository
+HIFIR uses LAPACK for its dense level factorization and solve. For system administrators, we recommend using [OpenBLAS](https://www.openblas.net/) and Intel MKL. To install OpenBLAS using APT repository
 
 ```console
 sudo apt install libopenblas-dev
