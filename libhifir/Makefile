@@ -19,16 +19,16 @@ ifeq (${LAPACK_LIBS},)
 	LAPACK_LIBS = -llapack -lblas
 endif
 
-lib: libhifir.a libhifir.so libhifir_i64.a libhifir_i64.so
+lib: libhifir_i32.a libhifir_i32.so libhifir_i64.a libhifir_i64.so
 
-libhifir.a: libhifir.o
+libhifir_i32.a: libhifir_i32.o
 	${AR} ${ARFLAGS} $@ $<
 	${RANLIB} $@
 
-libhifir.so: libhifir.o
+libhifir_i32.so: libhifir_i32.o
 	${CXX} -shared -o $@ $< ${LAPACK_LIBS} ${OPENMP_CXXFLAGS} ${LDFLAGS}
 
-libhifir.o: libhifir.cpp libhifir.h
+libhifir_i32.o: libhifir.cpp libhifir.h
 	${CXX} -c ${LIBHIFIR_CXXFLAGS} ${CPPFLAGS} $< -o $@
 
 libhifir_i64.a: libhifir_i64.o
