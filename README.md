@@ -44,16 +44,22 @@ After obtaining the C++ interface, one can (optionally) install the C library `l
 cd libhifir
 ```
 
-Then, follow the standard workflow of `autotools`
+Then, install the package using the following procedure
 
 ```console
-autoreconf -vfi
-./configure --prefix=PREFIX --with-openmp
 make -j2
-make install
+make PREFIX=/path/to/destination install
 ```
 
-If you have customized installations of BLAS and/or LAPACK, use `--with-blas=<lib>` and `--with-lapack=<lib>` during `configure` stage. Also, if you don't have OpenMP (which is used in computing Schur complements), then set `--without-openmp`.
+By default, `PREFIX=/usr/local`. In addition, set USE_OPENMP=0 to disable OpenMP, i.e., `make USE_OPENMP=0 -j2`, and modify `LAPACK_LIBS` if you have customized installation of LAPACK, i.e., `make LAPACK_LIBS="-L/path/to/openblas/lib -lopenblas" -j2`; it is also preferable to set `LDFLAGS=-Wl,-rpath,/path/to/openblas/lib` before compilation. Note that `LAPACK_LIBS="-llapack -lblas"` by default.
+
+Once the installation is finished, we have
+
+- `${PREFIX}/include/libhifir.h`: This is the header file.
+- `${PREFIX}/lib/libhifir.{so,a}`: These are shared and static libraries for 32-bit integer builds.
+- `${PREFIX}/lib/libhifir_i64.{so,a}`: These are shared and static libraries for 64-bit integer builds.
+
+In order to use 64bit library, set `-DLIBHIFIR_INT_SIZE=64` while compiling your program, i.e., `cc -DLIBHIFIR_INT_SIZE=64 my_prog.c -lhifir_i64`.
 
 ## Copyright and Licenses ##
 
