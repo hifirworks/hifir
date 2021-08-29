@@ -36,31 +36,25 @@ cp -r /path/to/hifir/src/* $HOME/.local/include
 
 and then add `-I$HOME/.local/include` to the command line of your `C++` compiler.
 
-### Installation of `libhifir` ###
+Optionally, one can consider using the runtime library `libhifir`; see [README](./libhifir/README.md) for more details.
 
-After obtaining the C++ interface, one can (optionally) install the C library `libhifir`. First, navigate to the subfolder libhifir
+### Installation of LAPACK ###
 
-```console
-cd libhifir
-```
-
-Then, install the package using the following procedure
+HIFIR uses LAPACK for its dense level factorization and solve. For system admininstors, we recommend using [OpenBLAS](https://www.openblas.net/) and Intel MKL. To install OpenBLAS using APT repository
 
 ```console
-make -j
-make PREFIX=/path/to/destination install
+sudo apt install libopenblas-dev
 ```
 
-`-j` can benefit the build process, as it allows building both 32-bit integer
-and 64-bit integer verions as the same time. By default, `PREFIX=/usr/local`. In addition, set USE_OPENMP=0 to disable OpenMP, i.e., `make USE_OPENMP=0 -j`, and modify `LAPACK_LIBS` if you have customized installation of LAPACK, i.e., `make LAPACK_LIBS="-L/path/to/openblas/lib -lopenblas" -j`; it is also preferable to set `LDFLAGS=-Wl,-rpath,/path/to/openblas/lib` before compilation. Note that `LAPACK_LIBS="-llapack -lblas"` by default.
+and
 
-Once the installation is finished, we have
+```console
+sudo yum install libopenblas-devel
+```
 
-- `${PREFIX}/include/libhifir.h`: This is the header file.
-- `${PREFIX}/lib/libhifir_i32.{so,a}`: These are shared and static libraries for 32-bit integer builds.
-- `${PREFIX}/lib/libhifir_i64.{so,a}`: These are shared and static libraries for 64-bit integer builds.
+for YUM repository. For MKL, we refer readers to [https://software.intel.com/content/www/us/en/develop/articles/installing-intel-free-libs-and-python-apt-repo.html](https://software.intel.com/content/www/us/en/develop/articles/installing-intel-free-libs-and-python-apt-repo.html) and [https://software.intel.com/content/www/us/en/develop/articles/installing-intel-free-libs-and-python-yum-repo.html](https://software.intel.com/content/www/us/en/develop/articles/installing-intel-free-libs-and-python-yum-repo.html) for installation using APT and YUM repositories, respectively.
 
-In order to use 64bit library, set `-DLIBHIFIR_INT_SIZE=64` while compiling your program, i.e., `cc -DLIBHIFIR_INT_SIZE=64 my_prog.c -lhifir_i64`.
+For other platforms (including non-Linux systems and different hardware architectures), we recommend installing OpenBLAS from the source; see [[installation guide](https://github.com/xianyi/OpenBLAS/wiki/Installation-Guide](https://github.com/xianyi/OpenBLAS/wiki/Installation-Guide) and [https://github.com/xianyi/OpenBLAS/wiki/Installation-Guide](https://github.com/xianyi/OpenBLAS/wiki/Installation-Guide).
 
 ## Copyright and Licenses ##
 
