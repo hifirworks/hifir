@@ -36,7 +36,7 @@ cp -r /path/to/hifir/src/* $HOME/.local/include
 
 and then add `-I$HOME/.local/include` to the command line of your `C++` compiler.
 
-Optionally, one can consider using the runtime library `libhifir`; see [README](./libhifir/README.md) for more details.
+Optionally, one can consider using the runtime library `libhifir`; see the [README](./libhifir/README.md) therein for more details.
 
 ### Installation of LAPACK ###
 
