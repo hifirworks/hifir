@@ -54,7 +54,7 @@ sudo yum install libopenblas-devel
 
 for YUM repository. For MKL, we refer readers to [https://software.intel.com/content/www/us/en/develop/articles/installing-intel-free-libs-and-python-apt-repo.html](https://software.intel.com/content/www/us/en/develop/articles/installing-intel-free-libs-and-python-apt-repo.html) and [https://software.intel.com/content/www/us/en/develop/articles/installing-intel-free-libs-and-python-yum-repo.html](https://software.intel.com/content/www/us/en/develop/articles/installing-intel-free-libs-and-python-yum-repo.html) for installation using APT and YUM repositories, respectively.
 
-For other platforms (including non-Linux systems and different hardware architectures), we recommend installing OpenBLAS from the source; see [https://github.com/xianyi/OpenBLAS/wiki/Installation-Guide](https://github.com/xianyi/OpenBLAS/wiki/Installation-Guide) and [https://github.com/xianyi/OpenBLAS/wiki/Installation-Guide](https://github.com/xianyi/OpenBLAS/wiki/Installation-Guide).
+For other platforms (including non-Linux systems and different hardware architectures), we recommend installing OpenBLAS from the source; see [https://github.com/xianyi/OpenBLAS/wiki/Installation-Guide](https://github.com/xianyi/OpenBLAS/wiki/Installation-Guide) and [https://github.com/xianyi/OpenBLAS#installation-from-source](https://github.com/xianyi/OpenBLAS#installation-from-source).
 
 ## Copyright and Licenses ##
 
