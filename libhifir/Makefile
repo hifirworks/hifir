@@ -6,7 +6,8 @@ RANLIB = ranlib
 
 # Options
 USE_OPENMP = 1
-PREFIX = /usr/local
+PREFIX =
+INSTALL_PREFIX = $(or $(PREFIX),/usr/local)
 
 HIFIR_HOME = ../src
 SO_MAJOR = $(shell grep -i "define hif_global" ${HIFIR_HOME}/hif/version.h|awk '{print $$3}')
@@ -46,11 +47,11 @@ libhifir_i64.o: src/libhifir.cpp include/libhifir.h
 	${CXX} -Iinclude -c ${LIBHIFIR_CXXFLAGS} ${CPPFLAGS} -DLIBHIFIR_INT_SIZE=64 $< -o $@
 
 install: libs
-	@mkdir -p ${PREFIX}/include
-	@mkdir -p ${PREFIX}/lib
-	cp -d lib/*.so* ${PREFIX}/lib
-	cp -d lib/*.a ${PREFIX}/lib
-	cp -d include/libhifir.h ${PREFIX}/include
+	@mkdir -p ${INSTALL_PREFIX}/include
+	@mkdir -p ${INSTALL_PREFIX}/lib
+	cp -d lib/*.so* ${INSTALL_PREFIX}/lib
+	cp -d lib/*.a ${INSTALL_PREFIX}/lib
+	cp -d include/libhifir.h ${INSTALL_PREFIX}/include
 
 .PHONY: install clean test libs
 
