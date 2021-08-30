@@ -1,6 +1,6 @@
-# Examples of `libhifir` #
+# Examples/Tests of `libhifir` #
 
-This directory contains some simple examples of using the C library `libhifir`. For comprehensive examples, we refer the readers to the C++ examples.
+This directory contains some simple examples/tests of using the C library `libhifir`. For comprehensive examples, we refer the readers to the C++ examples.
 
 ## Compilation ##
 
@@ -12,6 +12,6 @@ make PREFIX=/path/to/libhifir
 
 Note that if `PREFIX` is specified, then we assume  that `libhifir.h` and `libhifir.so` locate at `PREFIX/include` and `PREFIX/lib`, respectively.
 
-## Running Examples ##
+## Running Examples/Tests ##
 
-Simply execute the compiled programs to run different examples.
+Simply execute the compiled programs to run different examples/tests.
