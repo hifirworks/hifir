@@ -34,7 +34,7 @@ lib/%.a: %.o
 
 lib/%.so: %.o
 	mkdir -p lib
-	${CXX} -shared -Wl,-soname,${@}.${SO_MAJOR} -o ${@}.${SO_SUFFIX} $< ${LAPACK_LIBS} ${OPENMP_CXXFLAGS} ${LDFLAGS}
+	${CXX} -shared -Wl,-soname,$*.so.${SO_MAJOR} -o ${@}.${SO_SUFFIX} $< ${LAPACK_LIBS} ${OPENMP_CXXFLAGS} ${LDFLAGS}
 	ln -sf $*.so.${SO_SUFFIX} ${@}.${SO_MAJOR}
 	ln -sf $*.so.${SO_MAJOR} $@
 
@@ -60,3 +60,4 @@ test: libs
 
 clean:
 	rm -f lib/*.* *.o
+	make -C tests clean
