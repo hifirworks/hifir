@@ -16,6 +16,7 @@ Then, compile and install the package using the following commands:
 make -j
 make PREFIX=/path/to/destination install
 ```
+For a quick check, you may also want to run `make test` before `make install` or `make PREFIX=/path/to/destination test` after install.
 
 The `-j` options allows building both 32-bit-integer
 and 64-bit-integer verions at the same time. By default, `PREFIX=/usr/local`. In addition, set the `LAPACK_LIBS` variable if you have customized installation of LAPACK, such as 
@@ -25,6 +26,7 @@ make LAPACK_LIBS="-L/path/to/openblas/lib -lopenblas" -j
 which is also preferable to set `LDFLAGS=-Wl,-rpath,/path/to/openblas/lib`. Note that `LAPACK_LIBS="-llapack -lblas"` by default.
 Note that HIFIR uses OpenMP for computing the Schur complement. You can
 disable OpenMP by setting `USE_OPENMP=0`, i.e., `make USE_OPENMP=0 -j`.
+
 
 Note that to install to a system directory, you may need to add `sudo` in front of the `make install` command.
 

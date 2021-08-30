@@ -54,7 +54,7 @@ install: libs
 .PHONY: install clean test libs
 
 test: libs
-	make -C tests PREFIX=$(PWD)
+	make -C tests PREFIX=$(or $(PREFIX),$(PWD))
 	(cd tests; ./test_real.exe)
 	(cd tests; ./test_complex.exe)
 
