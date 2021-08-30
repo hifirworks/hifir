@@ -13,20 +13,20 @@ endif
 
 .PHONY: clean
 
-all: demo_real.exe demo_complex.exe
+all: test_real.exe test_complex.exe
 
-all_ext: demo_real.exe demo_complex.exe demo_real_i64.exe demo_complex_i64.exe
+all_ext: test_real.exe test_complex.exe test_real_i64.exe test_complex_i64.exe
 
-demo_real.exe: demo_real.c
+test_real.exe: test_real.c
 	$(CC) -g -O2 $(CPPFLAGS) $< -o $@ -lm $(LIB_PATH) -lhifir_i32 $(LDFLAGS)
 
-demo_real_i64.exe: demo_real.c
+test_real_i64.exe: test_real.c
 	$(CC) -g -O2 -DLIBHIFIR_INT_SIZE=64 $(CPPFLAGS) $< -o $@ -lm $(LIB_PATH) -lhifir_i64 $(LDFLAGS)
 
-demo_complex.exe: demo_complex.c
+test_complex.exe: test_complex.c
 	$(CC) -g -O2 $(CPPFLAGS) $< -o $@ -lm $(LIB_PATH) -lhifir_i32 $(LDFLAGS)
 
-demo_complex_i64.exe: demo_complex.c
+test_complex_i64.exe: test_complex.c
 	$(CC) -g -O2 -DLIBHIFIR_INT_SIZE=64 $(CPPFLAGS) $< -o $@ -lm $(LIB_PATH) -lhifir_i64 $(LDFLAGS)
 
 clean:

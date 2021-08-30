@@ -16,6 +16,7 @@
 
 */
 
+#include <assert.h>
 #include <complex.h>
 #include <math.h>
 #include <stdio.h>
@@ -49,11 +50,11 @@ int main() {
   params[LHF_VERBOSE] = LHF_VERBOSE_NULL;
 
   /* create matrix */
-  if (lhfQueryMmFile("../demo_inputs/young1c.mtx", &is_sparse, &is_real, &nrows,
-                     &ncols, &nnz) != LHF_SUCCESS) {
-    fprintf(
-        stderr,
-        "Failed querying information from \"../demo_inputs/young1c.mtx\".\n");
+  if (lhfQueryMmFile("../../examples/demo_inputs/young1c.mtx", &is_sparse,
+                     &is_real, &nrows, &ncols, &nnz) != LHF_SUCCESS) {
+    fprintf(stderr,
+            "Failed querying information from "
+            "\"../../examples/demo_inputs/young1c.mtx\".\n");
     return (1);
   }
   if (nrows != ncols || !is_sparse || is_real) {
@@ -73,11 +74,11 @@ int main() {
   }
   lhfzWrapMatrix(A, nrows, rowptr, colind, vals);
   /* loading matrix */
-  info = lhfzReadSparse("../demo_inputs/young1c.mtx", A);
+  info = lhfzReadSparse("../../examples/demo_inputs/young1c.mtx", A);
   if (info != LHF_SUCCESS) {
-    fprintf(
-        stderr,
-        "Failed to read sparse data from \"../demo_inputs/young1c.mtx\".\n");
+    fprintf(stderr,
+            "Failed to read sparse data from "
+            "\"../../examples/demo_inputs/young1c.mtx\".\n");
     if (info == LHF_HIFIR_ERROR) fprintf(stderr, "%s", lhfGetErrorMsg());
     return (1);
   }
@@ -134,6 +135,8 @@ int main() {
   free(x);
   free(b2);
   printf("And done!\n");
+
+  assert((err <= 1e-10) && "Relative error is too large!");
 
   return (0);
 }
