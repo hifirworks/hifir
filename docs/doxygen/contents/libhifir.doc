@@ -74,22 +74,4 @@ It is also possible to enable mixed-precision computation in \a libhifir.
 Note that replace "sd" by "cz" for mixed-precision computations for complex
 arithemtic.
 
-\section libhifir_eg Examples
-
-We recommend the readers to the C++ examples for detailed discussions about
-the usage of the HIFIR package. Here, we provide two simple illustrations for
-using \a libhifir.
-
-- \ref demo_real.c
-- \ref demo_complex.c
-
 */
-
-/// \example demo_real.c
-/// This example shows how to use multilevel triangular solve and matrix-vector
-/// multiplication for the double-precision real APIs in \a libhifir.
-
-/// \example demo_complex.c
-/// Similar to \ref demo_real.c, this example illustrates how to use multilevel
-/// triangular solve and matrix-vector multiplication for the double-precision
-/// complex APIs in \a libhifir.
