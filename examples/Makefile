@@ -34,4 +34,3 @@ runall: $(DEMOS_EXE)
 
 clean:
 	@rm -f $(DEMOS_EXE) *.dSYM $(DEMOS_SRC:%.cpp=%.d) *.exe
-

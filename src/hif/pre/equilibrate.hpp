@@ -389,7 +389,7 @@ inline void kernel(const _Integer n, const _Integer *ip, const _Integer *irn,
   _Real    dq0;
   _Integer kk1;
   _Real    csp;
-  _Integer isp, jsp, low;
+  _Integer isp(0), jsp(0), low;
   _Real    dmin_, dnew;
   _Integer jord, qlen;
   _Real    rinf;

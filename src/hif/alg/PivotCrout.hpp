@@ -231,10 +231,10 @@ class PivotCrout : public Crout {
         // for loop to go thru all entries in U
         for (; U_i_itr != U_i_last; ++U_i_itr, ++U_v_itr) {
           const auto idx = *U_i_itr;
-          hif_assert(idx > deferred_step(),
+          hif_assert((size_type)idx > deferred_step(),
                      "U index %zd in computing ut should greater than step "
                      "%zd(defers:%zd)",
-                     idx, _step, _defers);
+                     (size_type)idx, _step, _defers);
           if (ut.push_back(idx, _step))
             ut.vals()[idx] = -ld * *U_v_itr;
           else
@@ -329,12 +329,11 @@ class PivotCrout : public Crout {
           ++L_v_itr;
         }
         for (; L_i_itr != L_i_last; ++L_i_itr, ++L_v_itr) {
-          // convert to c index
           const auto idx = *L_i_itr;
-          hif_assert(idx > deferred_step(),
+          hif_assert((size_type)idx > deferred_step(),
                      "L index %zd in computing l should greater than step "
                      "%zd(defers:%zd)",
-                     idx, _step, _defers);
+                     (size_type)idx, _step, _defers);
           // compute this entry, if index does not exist, assign new value to
           // -L*d*u, else, -= L*d*u
           if (l.push_back(idx, _step))

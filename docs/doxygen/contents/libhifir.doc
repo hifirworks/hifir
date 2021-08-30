@@ -1,0 +1,77 @@
+// -*-C++-*-
+//@HEADER
+//----------------------------------------------------------------------------
+//                Copyright (C) 2021 NumGeom Group at Stony Brook University
+//----------------------------------------------------------------------------
+//@HEADER
+
+/*! \page libhifir The C Library libhifir
+
+\addindex libhifir
+\tableofcontents
+
+The C library \a libhifir is designed to have prefix "lhf" for all interfaces.
+For constant variables, prefix "LHF_" is used; for types, prefix "Lhf" is used;
+for functions, lower case prefix "lhf" is used. For some types and functions,
+data types are put after prefix, and the data type conventions are the same as
+those used in BLAS/LAPACK. In summary, for most types and functions, we have
+the convection of "lhf[dszc]DoSomething" where d, s, z, and c stand for double
+real, single real, double complex, and single complex values.
+
+\section common Common Interfaces
+
+- \ref LHF_NUMBER_PARAMS Length of control parameter array, i.e., construct a
+  parameter array with `double params[LHF_NUMBER_PARAMS]`.
+- \ref LhfInt This is the integer type used in \a libhifir. It is 32-bit
+  integer if linking to `libhifir.so`; it is 64-bit integer if linking to the
+  64-bit library `libhifir_i64.so`.
+- \ref LhfStatus
+- \ref LhfOperationType
+- \ref lhfGetVersions
+- \ref lhfEnableWarning
+- \ref lhfDisableWarning
+- \ref lhfGetErrorMsg If the return status is \ref LHF_HIFIR_ERROR, then call
+  this function to get the detailed message about the error.
+- \ref lhfSetDefaultParams
+- \ref lhfSetDroptol Set drop tolerance for both L and U factors.
+- \ref lhfSetAlpha Set fill-in factors for both L and U factors.
+- \ref lhfSetKappa Set conditioning thresholds for both D and L/U.
+
+\section c_api Standard APIs
+
+Note that we only list APIs for double-precision real arithmetic. Everything
+in this section is applicable to other data types by replacing d (double real)
+by s (single real), z (double complex), and c (single complex).
+
+- \ref LhfdMatrixHdl Matrix handle
+- \ref LhfdHifHdl HIF handle
+- \ref lhfdCreateMatrix Construct \ref LhfdMatrixHdl
+- \ref lhfdDestroyMatrix
+- \ref lhfdGetMatrixSize and \ref lhfdGetMatrixNnz
+- \ref lhfdWrapMatrix Wrap external matrix data
+- \ref lhfdCreate Construct a HIF instance of type \ref LhfdHifHdl
+- \ref lhfdDestroy
+- \ref lhfdSetup Set up a HIF handle
+- \ref lhfdUpdate Update the coefficient matrix
+- \ref lhfdRefactorize Factorize a new preconditioner given a sparsifer
+- \ref lhfdApply Apply a preconditioner with different operations, see
+  \ref LhfOperationType.
+- \ref lhfdSolve Triangular solve, which is equivalent to calling \ref lhfdApply
+  with operation \ref LHF_S where "S" stands for "Solve."
+- \ref lhfdGetStats, \ref lhfdGetNnz, \ref lhfdGetLevels, \ref lhfdGetSchurSize,
+  and \ref lhfdGetSchurRank
+
+\section mixed_api Mixed APIs
+
+It is also possible to enable mixed-precision computation in \a libhifir.
+
+- \ref lhfsdUpdate This function updates a single HIF handle with double
+  precision coefficient matrix \ref LhfdMatrixHdl.
+- \ref lhfsdApply This function applies a single HIF to double-precision
+  arrays for both input and output.
+- \ref lhfsdSolve
+
+Note that replace "sd" by "cz" for mixed-precision computations for complex
+arithemtic.
+
+*/
