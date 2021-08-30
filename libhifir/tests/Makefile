@@ -3,12 +3,12 @@
 #-----------------------------------------------------------------------------#
 
 CC = cc
-PREFIX =
+PREFIX = $(realpath ..)
 
 ifneq ($(PREFIX),)
 	CPPFLAGS = -I$(PREFIX)/include
 	LIB_PATH = -L$(PREFIX)/lib
-	LDFLAGS = -Wl,-rpath,$(PREFIX)/lib
+	LDFLAGS = -Wl,--enable-new-dtags,-rpath,$(PREFIX)/lib
 endif
 
 .PHONY: clean

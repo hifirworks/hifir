@@ -8,8 +8,8 @@ RANLIB = ranlib
 USE_OPENMP = 1
 PREFIX = /usr/local
 
-SO_MAJOR = 1
-SO_IMPL_AGE = 0.0
+SO_MAJOR = 0
+SO_IMPL_AGE = 2.0
 SO_SUFFIX = ${SO_MAJOR}.${SO_IMPL_AGE}
 
 HIFIR_HOME = ../src
@@ -23,33 +23,40 @@ ifeq (${LAPACK_LIBS},)
 	LAPACK_LIBS = -llapack -lblas
 endif
 
-lib: libhifir_i32.a libhifir_i64.a libhifir_i32.so libhifir_i64.so
+libs: lib/libhifir_i32.a lib/libhifir_i64.a lib/libhifir_i32.so lib/libhifir_i64.so
 
 .SUFFIXES: .o .a .so
 
-.o.a:
+lib/%.a: %.o
+	mkdir -p lib
 	${AR} ${ARFLAGS} $@ $<
 	${RANLIB} $@
 
-.o.so:
+lib/%.so: %.o
+	mkdir -p lib
 	${CXX} -shared -Wl,-soname,${@}.${SO_MAJOR} -o ${@}.${SO_SUFFIX} $< ${LAPACK_LIBS} ${OPENMP_CXXFLAGS} ${LDFLAGS}
-	ln -sf ${@}.${SO_SUFFIX} ${@}.${SO_MAJOR}
-	ln -sf ${@}.${SO_MAJOR} $@
+	ln -sf $*.so.${SO_SUFFIX} ${@}.${SO_MAJOR}
+	ln -sf $*.so.${SO_MAJOR} $@
 
-libhifir_i32.o: libhifir.cpp libhifir.h
-	${CXX} -c ${LIBHIFIR_CXXFLAGS} ${CPPFLAGS} $< -o $@
+libhifir_i32.o: src/libhifir.cpp include/libhifir.h
+	${CXX} -Iinclude -c ${LIBHIFIR_CXXFLAGS} ${CPPFLAGS} $< -o $@
 
-libhifir_i64.o: libhifir.cpp libhifir.h
-	${CXX} -c ${LIBHIFIR_CXXFLAGS} ${CPPFLAGS} -DLIBHIFIR_INT_SIZE=64 $< -o $@
+libhifir_i64.o: src/libhifir.cpp include/libhifir.h
+	${CXX} -Iinclude -c ${LIBHIFIR_CXXFLAGS} ${CPPFLAGS} -DLIBHIFIR_INT_SIZE=64 $< -o $@
 
-install:
+install: libs
 	@mkdir -p ${PREFIX}/include
 	@mkdir -p ${PREFIX}/lib
-	cp -a *.so* ${PREFIX}/lib
-	cp -a *.a ${PREFIX}/lib
-	cp -a libhifir.h ${PREFIX}/include
+	cp -d lib/*.so* ${PREFIX}/lib
+	cp -d lib/*.a ${PREFIX}/lib
+	cp -d include/libhifir.h ${PREFIX}/include
 
-.PHONY: clean
+.PHONY: install clean test libs
+
+test: libs
+	make -C tests PREFIX=$(PWD)
+	(cd tests; ./test_real.exe)
+	(cd tests; ./test_complex.exe)
 
 clean:
-	rm -f *.so* *.a *.o
+	rm -f lib/*.* *.o

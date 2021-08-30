@@ -26,6 +26,8 @@ which is also preferable to set `LDFLAGS=-Wl,-rpath,/path/to/openblas/lib`. Note
 Note that HIFIR uses OpenMP for computing the Schur complement. You can
 disable OpenMP by setting `USE_OPENMP=0`, i.e., `make USE_OPENMP=0 -j`.
 
+Note that to install to a system directory, you may need to add `sudo` in front of the `make install` command.
+
 Once the installation is complete, we will have
 
 - `${PREFIX}/include/libhifir.h`: This is the header file.
@@ -40,4 +42,4 @@ cc -DLIBHIFIR_INT_SIZE=64 my_prog.c -lhifir_i64
 
 ## Examples ##
 
-`libhifir/tests` contains some simple testing programs, which illustrate how to call multilevel triangular solve and matrix-vector multiplication in `libhifir` with both real and complex arithmetics. For comprehensive examples, it is recommended to check the `examples` directory.
+`libhifir/tests` contains some simple testing programs, which illustrate how to call multilevel triangular solve and matrix-vector multiplication in `libhifir` with both real and complex arithmetics. For comprehensive examples, please refer to the C++ demos under the `../examples` directory and adapt them to C by referring to HIFIR's documentation.
