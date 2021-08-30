@@ -52,22 +52,27 @@ library *libhifir*. First, navigate to the subfolder libhifir
     cd libhifir
 \endcode
 
-TheThen, install the package using the following procedure
+Then, compile and install the package using the following commands:
 
 \code{.sh}
     make -j
     make PREFIX=/path/to/destination install
 \endcode
 
-`-j` can benefit the build process, as it allows building both 32-bit integer
-and 64-bit integer verions as the same time. By default, `PREFIX=/usr/local`.
-In addition, set USE_OPENMP=0 to disable OpenMP, i.e., `make USE_OPENMP=0 -j`,
-and modify `LAPACK_LIBS` if you have customized installation of LAPACK, i.e.,
-`make LAPACK_LIBS="-L/path/to/openblas/lib -lopenblas" -j`; it is also
-preferable to set `LDFLAGS=-Wl,-rpath,/path/to/openblas/lib` before compilation.
-Note that `LAPACK_LIBS="-llapack -lblas"` by default.
+The `-j` options allows building both 32-bit-integer and 64-bit-integer verions
+at the same time. By default, `PREFIX=/usr/local`. In addition, set the
+`LAPACK_LIBS` variable if you have customized installation of LAPACK, such as
 
-Once the installation is finished, we have
+\code{.sh}
+    make LAPACK_LIBS="-L/path/to/openblas/lib -lopenblas" -j
+\endcode
+
+which is also preferable to set `LDFLAGS=-Wl,-rpath,/path/to/openblas/lib`.
+Note that `LAPACK_LIBS="-llapack -lblas"` by default.
+Note that HIFIR uses OpenMP for computing the Schur complement. You can
+disable OpenMP by setting `USE_OPENMP=0`, i.e., `make USE_OPENMP=0 -j`.
+
+Once the installation is finished, we will have
 
 - `${PREFIX}/include/libhifir.h`: This is the header file.
 - `${PREFIX}/lib/libhifir_i32.{so,a}`: These are shared and static libraries for
@@ -75,7 +80,49 @@ Once the installation is finished, we have
 - `${PREFIX}/lib/libhifir_i64.{so,a}`: These are shared and static libraries
   for 64-bit integer builds.
 
-In order to use 64bit library, set `-DLIBHIFIR_INT_SIZE=64` while compiling your
-program, i.e., `cc -DLIBHIFIR_INT_SIZE=64 my_prog.c -lhifir_i64`.
+To use 64bit library, set `-DLIBHIFIR_INT_SIZE=64` while compiling your
+program, such as
+
+\code{.sh}
+    cc -DLIBHIFIR_INT_SIZE=64 my_prog.c -lhifir_i64
+\endcode
+
+\section install_lapack Installation of Third-Party Dependency: LAPACK
+
+The only third-party dependency of HIFIR is LAPACK, which HIFIR uses for its
+dense-level factorization and solve. We recommend using
+<a href="https://www.openblas.net/">OpenBLAS</a>,
+<a href="http://math-atlas.sourceforge.net/">ATLAS</a>, or
+<a href="https://software.intel.com/content/www/us/en/develop/tools/oneapi/components/onemkl.html">Intel oneAPI Math Kernel Library</a>.
+Assuming you have system-administrator permussions, you can install OpenBLAS
+using the `apt` and `yum` command on Debian and RedHat-based Linux systems,
+such as
+
+\code{.sh}
+    sudo apt install libopenblas-dev
+\endcode
+
+and
+
+\code{.sh}
+    sudo yum install libopenblas-devel
+\endcode
+
+If you prefer to use ATLAS, the corresponding libraries are `libatlas-dev` and
+`libatlas-devel` on Debian and RedHat-based systems, respectively. Note that if
+you have multiple versions of BLAS and LAPACK installed, you may need to use
+the `update-alternatives --config` or `alternatives --config` command to config
+your system for the proper versions of BLAS and LAPACK; see
+https://wiki.debian.org/DebianScience/LinearAlgebraLibraries and
+https://www.redhat.com/sysadmin/alternatives-command for more detail.
+
+For Intel MKL, please refer to https://software.intel.com/content/www/us/en/develop/articles/installing-intel-free-libs-and-python-apt-repo.html
+and https://software.intel.com/content/www/us/en/develop/articles/installing-intel-free-libs-and-python-yum-repo.html
+for installation on Debian and RedHat-based systems, respectively.
+
+For other platforms, please refer to the official documentation of <a href="https://www.openblas.net/">OpenBLAS</a>,
+<a href="http://math-atlas.sourceforge.net/faq.html#doc">ATLAS</a>,
+<a href="https://software.intel.com/content/www/us/en/develop/tools/oneapi/components/onemkl.html">Intel MKL</a>,
+or the vendor-provided LAPACK for your platform, respectively.
 
 */
