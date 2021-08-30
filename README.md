@@ -57,7 +57,7 @@ If you prefer to use ATLAS, the corresponding libraries are `libatlas-dev` and `
 
 For Intel MKL, please refer to https://software.intel.com/content/www/us/en/develop/articles/installing-intel-free-libs-and-python-apt-repo.html and https://software.intel.com/content/www/us/en/develop/articles/installing-intel-free-libs-and-python-yum-repo.html for installation on Debian and RedHat-based systems, respectively.
 
-For other platforms, please refer to the official documentation of [OpenBLAS](https://www.openblas.net), [ATLAS](http://math-atlas.sourceforge.net/faq.html#doc), [Intel MKL](https://software.intel.com/content/www/us/en/develop/tools/oneapi/components/onemkl.htm), or the vendor-provided LAPACK for your platform, respectively.
+For other platforms, please refer to the official documentation of [OpenBLAS](https://www.openblas.net), [ATLAS](http://math-atlas.sourceforge.net/faq.html#doc), [Intel MKL](https://software.intel.com/content/www/us/en/develop/tools/oneapi/components/onemkl.html), or the vendor-provided LAPACK for your platform, respectively.
 
 ## Copyright and Licenses ##
 
