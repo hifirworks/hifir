@@ -8,11 +8,12 @@ RANLIB = ranlib
 USE_OPENMP = 1
 PREFIX = /usr/local
 
-SO_MAJOR = 0
-SO_IMPL_AGE = 2.0
-SO_SUFFIX = ${SO_MAJOR}.${SO_IMPL_AGE}
-
 HIFIR_HOME = ../src
+SO_MAJOR = $(shell grep -i "define hif_global" ${HIFIR_HOME}/hif/version.h|awk '{print $$3}')
+SO_MINOR = $(shell grep -i "define hif_major" ${HIFIR_HOME}/hif/version.h|awk '{print $$3}')
+SO_PATCH = $(shell grep -i "define hif_minor" ${HIFIR_HOME}/hif/version.h|awk '{print $$3}')
+SO_IMPL_AGE = ${SO_MINOR}.${SO_PATCH}
+SO_SUFFIX = ${SO_MAJOR}.${SO_IMPL_AGE}
 CPPFLAGS = -I${HIFIR_HOME}
 ifeq (${USE_OPENMP},1)
 	OPENMP_CXXFLAGS = -fopenmp
