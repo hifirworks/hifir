@@ -36,12 +36,15 @@ If you plan to use HIFIR in solving for nonsingular systems, then please cite
 the following paper.
 
 \verbatim
-@article{chen2021hilucsi,
+@Article{chen2021hilucsi,
   author  = {Chen, Qiao and Ghai, Aditi and Jiao, Xiangmin},
   title   = {{HILUCSI}: Simple, robust, and fast multilevel {ILU} for
              large-scale saddle-point problems from {PDE}s},
   journal = {Numer. Linear Algebra Appl.},
   year    = {2021},
+  number  = {6},
+  pages   = {e2400},
+  volume  = {28},
   doi     = {10.1002/nla.2400}
 }
 \endverbatim
@@ -50,18 +53,18 @@ If you plan to use HIFIR in solving singular and ill-conditioned systems, then
 please cite the following papers.
 
 \verbatim
-@article{jiao2020approximate,
+@Article{jiao2021approximate,
   author  = {Xiangmin Jiao and Qiao Chen},
-  journal = {arXiv},
+  journal = {SIAM J. Matrix Anal. Appl.},
   title   = {Approximate generalized inverses with iterative refinement for
              $\epsilon$-accurate preconditioning of singular systems},
-  year    = {2020},
-  note    = {arXiv:2009.01673}
+  year    = {2021},
+  note    = {To appear}
 }
 \endverbatim
 
 \verbatim
-@article{chen2021hifir,
+@Article{chen2021hifir,
   author  = {Chen, Qiao and Jiao, Xiangmin},
   title   = {{HIFIR}: Hybrid incomplete factorization with iterative refinement
              for preconditioning ill-conditioned and singular systems},

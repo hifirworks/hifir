@@ -76,6 +76,9 @@ If you use `HIFIR` in your research for nonsingular systems, please cite the `HI
              large-scale saddle-point problems from {PDE}s},
   journal = {Numer. Linear Algebra Appl.},
   year    = {2021},
+  number  = {6},
+  pages   = {e2400},
+  volume  = {28},
   doi     = {10.1002/nla.2400}
 }
 ```
@@ -83,7 +86,7 @@ If you use `HIFIR` in your research for nonsingular systems, please cite the `HI
 If you plan to use HIFIR in solving singular and ill-conditioned systems, please cite the following papers.
 
 ```bibtex
-@article{jiao2021approximate,
+@Article{jiao2021approximate,
   author  = {Xiangmin Jiao and Qiao Chen},
   journal = {SIAM J. Matrix Anal. Appl},
   title   = {Approximate generalized inverses with iterative refinement for
@@ -94,7 +97,7 @@ If you plan to use HIFIR in solving singular and ill-conditioned systems, please
 ```
 
 ```bibtex
-@article{chen2021hifir,
+@Article{chen2021hifir,
   author  = {Chen, Qiao and Jiao, Xiangmin},
   title   = {{HIFIR}: Hybrid incomplete factorization with iterative refinement
              for preconditioning ill-conditioned and singular systems},
