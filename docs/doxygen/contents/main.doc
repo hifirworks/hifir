@@ -53,13 +53,16 @@ If you plan to use HIFIR in solving singular and ill-conditioned systems, then
 please cite the following papers.
 
 \verbatim
-@Article{jiao2021approximate,
+@Article{jiao2022approximate,
   author  = {Xiangmin Jiao and Qiao Chen},
-  journal = {SIAM J. Matrix Anal. Appl.},
+  journal = {SIAM J. Matrix Anal. Appl},
   title   = {Approximate generalized inverses with iterative refinement for
              $\epsilon$-accurate preconditioning of singular systems},
-  year    = {2021},
-  note    = {To appear}
+  year    = {2022},
+  number  = {1},
+  pages   = {40--67},
+  volume  = {43},
+  doi     = {10.1137/20M1364126}
 }
 \endverbatim
 

@@ -86,13 +86,16 @@ If you use `HIFIR` in your research for nonsingular systems, please cite the `HI
 If you plan to use HIFIR in solving singular and ill-conditioned systems, please cite the following papers.
 
 ```bibtex
-@Article{jiao2021approximate,
+@Article{jiao2022approximate,
   author  = {Xiangmin Jiao and Qiao Chen},
   journal = {SIAM J. Matrix Anal. Appl},
   title   = {Approximate generalized inverses with iterative refinement for
              $\epsilon$-accurate preconditioning of singular systems},
-  year    = {2021},
-  note    = {To appear}
+  year    = {2022},
+  number  = {1},
+  pages   = {40--67},
+  volume  = {43},
+  doi     = {10.1137/20M1364126}
 }
 ```
 
