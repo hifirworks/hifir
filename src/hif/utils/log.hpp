@@ -46,27 +46,19 @@ namespace hif {
 namespace internal {
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
-// NOTE for serial version, we use a global static buffer
-static std::vector<char> msg_buf;
-
-/// \brief estimate and allocate space for \a msg_buf
-/// \param[in] msg message without va args
-/// \note We allocate twice as length of \a msg, this should be okay.
-/// \ingroup util
-inline void alloc_buf(const std::string &msg) {
-  // NOTE that we allocate twice more space for va_list
-  const auto n = std::max(msg_buf.size(), 2u * msg.size() + 1u);
-  if (n > msg_buf.size()) msg_buf.resize(n);
-}
 
 // Wrap everything into a single macro
-#  define _PARSE_VA(msg)                                              \
-    hif::internal::alloc_buf(msg);                                    \
-    va_list aptr;                                                     \
-    va_start(aptr, msg);                                              \
-    std::vsnprintf(hif::internal::msg_buf.data(),                     \
-                   hif::internal::msg_buf.size(), msg.c_str(), aptr); \
-    va_end(aptr)
+#  define _PARSE_VA(__buf, msg)                                         \
+    do {                                                                \
+      va_list aptr1;                                                    \
+      va_start(aptr1, msg);                                             \
+      va_list aptr2;                                                    \
+      va_copy(aptr2, aptr1);                                            \
+      __buf.resize(1 + std::vsnprintf(nullptr, 0, msg.c_str(), aptr1)); \
+      va_end(aptr1);                                                    \
+      std::vsnprintf(__buf.data(), __buf.size(), msg.c_str(), aptr2);   \
+      va_end(aptr2);                                                    \
+    } while (false)
 
 #endif  // DOXYGEN_SHOULD_SKIP_THIS
 
@@ -77,8 +69,10 @@ inline void alloc_buf(const std::string &msg) {
 /// \sa hif_info top level macro wrapper
 /// \ingroup util
 inline void info(std::string msg, ...) {
-  _PARSE_VA(msg);
-  HIF_STDOUT(internal::msg_buf.data());
+  static std::vector<char> msg_buf;  // shared message buffer
+
+  _PARSE_VA(msg_buf, msg);
+  HIF_STDOUT(msg_buf.data());
 }
 
 /// \brief warning information streaming, dump to \ref HIF_STDERR
@@ -91,8 +85,10 @@ inline void info(std::string msg, ...) {
 /// \ingroup util
 inline void warning(const char *prefix, const char *file, const char *func,
                     const unsigned line, std::string msg, ...) {
+  static std::vector<char> msg_buf;  // shared message buffer
+
   const bool print_pre = prefix;
-  _PARSE_VA(msg);
+  _PARSE_VA(msg_buf, msg);
   std::stringstream ss;
 #ifndef HIF_LOG_PLAIN_PREFIX
   ss << "\033[1;33mWARNING!\033[0m ";
@@ -101,7 +97,7 @@ inline void warning(const char *prefix, const char *file, const char *func,
 #endif  // HIF_LOG_PLAIN_PREFIX
   if (print_pre) ss << prefix << ", ";
   ss << "function " << func << ", at " << file << ':' << line
-     << "\nmessage: " << internal::msg_buf.data();
+     << "\nmessage: " << msg_buf.data();
   HIF_STDERR(ss.str().c_str());
 }
 
@@ -124,8 +120,10 @@ inline bool warn_flag(const int flag = -1) {
 /// \ingroup util
 inline void error(const char *prefix, const char *file, const char *func,
                   const unsigned line, std::string msg, ...) {
+  static std::vector<char> msg_buf;  // shared message buffer
+
   const bool print_pre = prefix;
-  _PARSE_VA(msg);
+  _PARSE_VA(msg_buf, msg);
   std::stringstream ss;
 #ifndef HIF_LOG_PLAIN_PREFIX
   ss << "\033[1;31mERROR!\033[0m ";
@@ -134,7 +132,7 @@ inline void error(const char *prefix, const char *file, const char *func,
 #endif  // HIF_LOG_PLAIN_PREFIX
   if (print_pre) ss << prefix << ", ";
   ss << "function " << func << ", at " << file << ':' << line
-     << "\nmessage: " << internal::msg_buf.data() << "\n\n";
+     << "\nmessage: " << msg_buf.data() << "\n\n";
   LOAD_STACKTRACE(ss, 63);
 #ifdef HIF_THROW
   throw std::runtime_error(ss.str());
