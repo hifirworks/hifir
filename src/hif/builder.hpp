@@ -269,14 +269,16 @@ class HIF {
       if (!internal::introduced) {
         hif_info(internal::intro, HIF_GLOBAL_VERSION, HIF_MAJOR_VERSION,
                  HIF_MINOR_VERSION);
-        internal::introduced = true;
+#pragma omp single nowait
+        { internal::introduced = true; }
       }
     }
-    const bool revert_warn = warn_flag();
-    if (params.verbose == VERBOSE_NONE)
-      (void)warn_flag(0);
-    else
-      warn_flag(1);
+    // NOTE: Global warning flag should be set manually by the users
+    // const bool revert_warn = warn_flag();
+    // if (params.verbose == VERBOSE_NONE)
+    //   (void)warn_flag(0);
+    // else
+    //   warn_flag(1);
 
     _nrows = A.nrows();
     _ncols = A.ncols();
@@ -350,7 +352,7 @@ class HIF {
                (double)Nnz / A.nnz());
       hif_info("\nmultilevel precs building time (overall) is %gs", t.time());
     }
-    if (revert_warn) (void)warn_flag(1);
+    // if (revert_warn) (void)warn_flag(1);
   }
 
   /// \brief factorize the HIF preconditioner with generic interface
