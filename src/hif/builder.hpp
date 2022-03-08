@@ -267,10 +267,14 @@ class HIF {
     // print introduction
     if (hif_verbose(INFO, params)) {
       if (!internal::introduced) {
-        hif_info(internal::intro, HIF_GLOBAL_VERSION, HIF_MAJOR_VERSION,
-                 HIF_MINOR_VERSION);
-#pragma omp single nowait
-        { internal::introduced = true; }
+#pragma omp master
+        do {
+          // for better interact with other systems (e.g., MATLAB), only
+          // print out the intro on thread=0
+          hif_info(internal::intro, HIF_GLOBAL_VERSION, HIF_MAJOR_VERSION,
+                   HIF_MINOR_VERSION);
+          internal::introduced = true;
+        } while (false);
       }
     }
     // NOTE: Global warning flag should be set manually by the users
