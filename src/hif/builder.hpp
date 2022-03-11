@@ -307,8 +307,10 @@ class HIF {
     if (A.nrows()) {
       if (A.ind_start()[0] == index_type(0)) {
         // 0-based, shallow copy
-        AA.ind_start() = A.ind_start();
-        AA.inds()      = A.inds();
+        AA.ind_start() = iarray_type(A.ind_start().size(),
+                                     (index_type *)A.ind_start().data(), true);
+        AA.inds() =
+            iarray_type(A.inds().size(), (index_type *)A.inds().data(), true);
       } else if (A.ind_start()[0] == index_type(1)) {
         // 1-based
         if (hif_verbose(INFO, params))
@@ -341,6 +343,9 @@ class HIF {
         hif_info("perform input matrix validity checking");
       AA.check_validity();
     }
+
+    hif_info("%d, %zd, %zd, %p:%p", omp_get_thread_num(), AA.nrows(), AA.ncols(), AA.ind_start().data(), A.ind_start().data());
+    
     // create size references for dropping
     iarray_type row_sizes, col_sizes;
     if (hif_verbose(FAC, params))
