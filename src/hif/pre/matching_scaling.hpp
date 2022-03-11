@@ -425,11 +425,11 @@ do_maching(const CcsType &A, const CrsType &A_crs,
     t[i] = 1;
   }
 
-  // // revert indices
-  // if (m0 == M) {
-  //   for (auto &v : B.row_start()) --v;
-  //   for (auto &v : B.col_ind()) --v;
-  // }
+  // revert indices
+  if (m0 == M && level > 1u) {
+    for (auto &v : B.row_start()) --v;
+    for (auto &v : B.col_ind()) --v;
+  }
 
   // fix potentially poorly scaled row and column weights
   internal::fix_poor_scaling(m0, level, p, q, s, t, opts.beta);
