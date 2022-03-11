@@ -343,8 +343,6 @@ class HIF {
         hif_info("perform input matrix validity checking");
       AA.check_validity();
     }
-
-    hif_info("%d, %zd, %zd, %p:%p", omp_get_thread_num(), AA.nrows(), AA.ncols(), AA.ind_start().data(), A.ind_start().data());
     
     // create size references for dropping
     iarray_type row_sizes, col_sizes;
