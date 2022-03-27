@@ -378,12 +378,27 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   if (m0 == M) {
     // NOTE, A_crs is the input, if C index order, then the indices will be
     // temporarily shifted to Fortran order!
-    if (!opts.pre_scale)
-      B = CrsType(A_crs);  // shallow!
-    else {
+    if (!opts.pre_scale) {
+      if (level > 1u)
+        B = CrsType(A_crs);  // shallow!
+      else {
+        // NOTE this is user-data, we make copy of indices
+        B.resize(M, M);
+        B.vals() = A_crs.vals();
+        // the following are deep copies
+        B.row_start() = typename CrsType::iarray_type(A_crs.row_start(), true);
+        B.col_ind()   = typename CrsType::iarray_type(A_crs.col_ind(), true);
+      }
+    } else {
       B.resize(M, M);
-      B.row_start() = A_crs.row_start();
-      B.col_ind()   = A_crs.col_ind();
+      if (level > 1u) {
+        B.row_start() = A_crs.row_start();
+        B.col_ind()   = A_crs.col_ind();
+      } else {
+        // the following are deep copies
+        B.row_start() = typename CrsType::iarray_type(A_crs.row_start(), true);
+        B.col_ind()   = typename CrsType::iarray_type(A_crs.col_ind(), true);
+      }
       B.vals().resize(A_crs.nnz());
       hif_error_if(B.vals().status() == DATA_UNDEF, "memory allocation failed");
       std::copy(A_crs.vals().cbegin(), A_crs.vals().cend(), B.vals().begin());
@@ -411,7 +426,7 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   }
 
   // revert indices
-  if (m0 == M) {
+  if (m0 == M && level > 1u) {
     for (auto &v : B.row_start()) --v;
     for (auto &v : B.col_ind()) --v;
   }

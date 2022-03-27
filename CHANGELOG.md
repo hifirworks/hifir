@@ -12,6 +12,8 @@ We follow the [Semantic Versioning](https://semver.org/) policy, which uses `MAJ
 
 Changes from [v0.1.0](https://github.com/hifirworks/hifir/releases/tag/v0.1.0) to v0.2.0:
 
+- Fixed the issue regarding modifying user-input data in preprocessing calling equilibration.
+- Changed I/O to use local buffers instead of shared ones and removed writing to `warn_flag` at the beginning of factorizations.
 - Made logging system more complete.
 - Added C library `libhifir`.
 - Updated documentation for the C interface.

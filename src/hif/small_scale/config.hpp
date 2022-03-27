@@ -33,6 +33,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "hif/utils/fc_mangling.hpp"
 
+#ifdef MATLAB_MEX_FILE
+#  ifdef HIF_LAPACK_INT
+#    warning "undefine pre-defined HIF_LAPACK_INT in mexFunction builds"
+#    undef HIF_LAPACK_INT
+#  endif
+#  include <stddef.h>
+#  define HIF_LAPACK_INT ptrdiff_t
+#endif
+
 #ifndef HIF_LAPACK_INT
 #  ifdef MKL_INT
 #    define HIF_LAPACK_INT MKL_INT

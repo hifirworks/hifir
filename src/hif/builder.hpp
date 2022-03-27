@@ -267,16 +267,22 @@ class HIF {
     // print introduction
     if (hif_verbose(INFO, params)) {
       if (!internal::introduced) {
-        hif_info(internal::intro, HIF_GLOBAL_VERSION, HIF_MAJOR_VERSION,
-                 HIF_MINOR_VERSION);
-        internal::introduced = true;
+#pragma omp master
+        do {
+          // for better interact with other systems (e.g., MATLAB), only
+          // print out the intro on thread=0
+          hif_info(internal::intro, HIF_GLOBAL_VERSION, HIF_MAJOR_VERSION,
+                   HIF_MINOR_VERSION);
+          internal::introduced = true;
+        } while (false);
       }
     }
-    const bool revert_warn = warn_flag();
-    if (params.verbose == VERBOSE_NONE)
-      (void)warn_flag(0);
-    else
-      warn_flag(1);
+    // NOTE: Global warning flag should be set manually by the users
+    // const bool revert_warn = warn_flag();
+    // if (params.verbose == VERBOSE_NONE)
+    //   (void)warn_flag(0);
+    // else
+    //   warn_flag(1);
 
     _nrows = A.nrows();
     _ncols = A.ncols();
@@ -301,8 +307,10 @@ class HIF {
     if (A.nrows()) {
       if (A.ind_start()[0] == index_type(0)) {
         // 0-based, shallow copy
-        AA.ind_start() = A.ind_start();
-        AA.inds()      = A.inds();
+        AA.ind_start() = iarray_type(A.ind_start().size(),
+                                     (index_type *)A.ind_start().data(), true);
+        AA.inds() =
+            iarray_type(A.inds().size(), (index_type *)A.inds().data(), true);
       } else if (A.ind_start()[0] == index_type(1)) {
         // 1-based
         if (hif_verbose(INFO, params))
@@ -335,6 +343,7 @@ class HIF {
         hif_info("perform input matrix validity checking");
       AA.check_validity();
     }
+    
     // create size references for dropping
     iarray_type row_sizes, col_sizes;
     if (hif_verbose(FAC, params))
@@ -350,7 +359,7 @@ class HIF {
                (double)Nnz / A.nnz());
       hif_info("\nmultilevel precs building time (overall) is %gs", t.time());
     }
-    if (revert_warn) (void)warn_flag(1);
+    // if (revert_warn) (void)warn_flag(1);
   }
 
   /// \brief factorize the HIF preconditioner with generic interface

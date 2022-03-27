@@ -69,8 +69,7 @@ namespace internal {
 /// \sa hif_info top level macro wrapper
 /// \ingroup util
 inline void info(std::string msg, ...) {
-  static std::vector<char> msg_buf;  // shared message buffer
-
+  std::vector<char> msg_buf;
   _PARSE_VA(msg_buf, msg);
   HIF_STDOUT(msg_buf.data());
 }
@@ -85,9 +84,8 @@ inline void info(std::string msg, ...) {
 /// \ingroup util
 inline void warning(const char *prefix, const char *file, const char *func,
                     const unsigned line, std::string msg, ...) {
-  static std::vector<char> msg_buf;  // shared message buffer
-
-  const bool print_pre = prefix;
+  std::vector<char> msg_buf;
+  const bool        print_pre = prefix;
   _PARSE_VA(msg_buf, msg);
   std::stringstream ss;
 #ifndef HIF_LOG_PLAIN_PREFIX
@@ -120,9 +118,8 @@ inline bool warn_flag(const int flag = -1) {
 /// \ingroup util
 inline void error(const char *prefix, const char *file, const char *func,
                   const unsigned line, std::string msg, ...) {
-  static std::vector<char> msg_buf;  // shared message buffer
-
-  const bool print_pre = prefix;
+  std::vector<char> msg_buf;
+  const bool        print_pre = prefix;
   _PARSE_VA(msg_buf, msg);
   std::stringstream ss;
 #ifndef HIF_LOG_PLAIN_PREFIX

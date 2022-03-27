@@ -39,21 +39,34 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //  5: UPPER_
 //  6: UPPER__
 
+// check with MEX file
+#ifdef MATLAB_MEX_FILE
+#  ifdef HIF_FC
+#    warning "undefine pre-defined HIF_FC in mexFunction builds"
+#    undef HIF_FC
+#  endif
+#  if defined(_WIN32) || defined(__hpux)
+#    define HIF_FC 1
+#  else
+#    define HIF_FC 2
+#  endif
+#endif
+
 #ifndef HIF_FC
 /*
  * if neither upper nor lower is defined, we first check some defines from
  * common blas and lapack implementations
  */
-#    ifdef F77_GLOBAL /* cblas */
-#      define HIF_FC F77_GLOBAL
-#    elif defined(LAPACK_GLOBAL) /* lapacke */
-#      define HIF_FC LAPACK_GLOBAL
-#    elif defined(OPENBLAS_NEEDBUNDERSCORE) /* openblas configuration */
-#      define HIF_FC(l, U) l##_
-#    else
+#  ifdef F77_GLOBAL /* cblas */
+#    define HIF_FC F77_GLOBAL
+#  elif defined(LAPACK_GLOBAL) /* lapacke */
+#    define HIF_FC LAPACK_GLOBAL
+#  elif defined(OPENBLAS_NEEDBUNDERSCORE) /* openblas configuration */
+#    define HIF_FC(l, U) l##_
+#  else
 /* fallback to lower case with single _ */
-#      define HIF_FC(l, U) l##_
-#    endif
+#    define HIF_FC(l, U) l##_
+#  endif
 
 #elif HIF_FC == 1
 #  undef HIF_FC
