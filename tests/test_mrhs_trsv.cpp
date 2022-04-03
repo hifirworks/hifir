@@ -5,7 +5,7 @@
 #include "common.hpp"
 // line break to avoid sorting
 #include "hif/ds/Array.hpp"
-#include "hif/ds/IntervalCompressedStorage.hpp"
+#include "hif/ds/CompressedStorage.hpp"
 
 #include <gtest/gtest.h>
 
