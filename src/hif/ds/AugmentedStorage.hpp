@@ -41,6 +41,7 @@ namespace internal {
 /// \class AugmentedCore
 /// \brief A group of forward link lists for CompressedStorage
 /// \tparam IndexType index type
+/// \tparam IndPtrType index_pointer type
 /// \sa CompressedStorage
 /// \ingroup ds
 ///
@@ -57,17 +58,19 @@ namespace internal {
 /// can be efficient in memory usage. The drawback is that this will make the
 /// augmented data structure only suitable for Crout update, which is less a
 /// concern for this project.
-template <class IndexType>
+template <class IndexType, class IndPtrType = std::ptrdiff_t>
 class AugmentedCore {
  public:
-  typedef IndexType                       index_type;   ///< index
-  typedef Array<index_type>               iarray_type;  ///< container
-  typedef typename iarray_type::size_type size_type;    ///< size
-  typedef AugmentedCore                   this_type;    ///< this
-  typedef typename iarray_type::iterator  iterator;     ///< iterator type
+  typedef IndexType                       index_type;    ///< index
+  typedef Array<index_type>               iarray_type;   ///< container
+  typedef IndPtrType                      indptr_type;   ///< index_pointer type
+  typedef Array<indptr_type>              iparray_type;  ///< indptr array
+  typedef typename iarray_type::size_type size_type;     ///< size
+  typedef AugmentedCore                   this_type;     ///< this
+  typedef typename iarray_type::iterator  iterator;      ///< iterator type
 
  protected:
-  constexpr static index_type _NIL = std::numeric_limits<index_type>::max();
+  constexpr static indptr_type _NIL = std::numeric_limits<indptr_type>::max();
 
  public:
   /// \brief default constructor
@@ -119,18 +122,18 @@ class AugmentedCore {
 
   /// \brief check if a given node handle is NIL or not
   /// \return if \a true, then the node is nil
-  inline constexpr static bool is_nil(const index_type i) { return i == _NIL; }
+  inline constexpr static bool is_nil(const indptr_type i) { return i == _NIL; }
 
   /// \brief given a node handle, query its value position (index)
   /// \note The index is in C-based system
-  inline index_type val_pos_idx(const size_type nid) const {
+  inline indptr_type val_pos_idx(const size_type nid) const {
     hif_assert(!is_nil((index_type)nid), "NIL node detected");
     hif_assert(nid < _val_pos.size(), "invalid nid %zd", nid);
     return _val_pos[nid];
   }
 
-  inline iarray_type &      val_pos() { return _val_pos; }
-  inline const iarray_type &val_pos() const { return _val_pos; }
+  inline iparray_type &      val_pos() { return _val_pos; }
+  inline const iparray_type &val_pos() const { return _val_pos; }
 
   /// \brief reserve spaces for nnz arrays
   /// \param[in] nnz total number of nonzeros
@@ -142,18 +145,18 @@ class AugmentedCore {
     _val_pos_inv.reserve(nnz);
   }
 
-  inline iarray_type &      secondary_start() { return _node_start; }
-  inline const iarray_type &secondary_start() const { return _node_start; }
-  inline iarray_type &      secondary_end() { return _node_end; }
-  inline const iarray_type &secondary_end() const { return _node_end; }
-  inline iarray_type &      secondary_counts() { return _node_counts; }
-  inline const iarray_type &secondary_counts() const { return _node_counts; }
+  inline iparray_type &      secondary_start() { return _node_start; }
+  inline const iparray_type &secondary_start() const { return _node_start; }
+  inline iparray_type &      secondary_end() { return _node_end; }
+  inline const iparray_type &secondary_end() const { return _node_end; }
+  inline iarray_type &       secondary_counts() { return _node_counts; }
+  inline const iarray_type & secondary_counts() const { return _node_counts; }
 
  protected:
   /// \brief begin assemble nodes
   /// \param[in] nlist number of lists
   inline void _begin_assemble_nodes(const size_type nlist) {
-    const static index_type nil = _NIL;
+    const static indptr_type nil = _NIL;
     _node_start.resize(nlist);
     _node_end.resize(nlist);
     _node_counts.resize(nlist);
@@ -209,7 +212,7 @@ class AugmentedCore {
 
   /// \brief get starting node ID
   /// \param[in] lid linked list ID (C-based)
-  inline index_type _start_node(const size_type lid) const {
+  inline indptr_type _start_node(const size_type lid) const {
     hif_assert(lid < _node_start.size(), "%zd exceeds the node start array",
                lid);
     return _node_start[lid];
@@ -217,8 +220,8 @@ class AugmentedCore {
 
   /// \brief get the next node ID
   /// \param[in] nid node ID
-  inline index_type _next_node(const size_type nid) const {
-    hif_assert(!is_nil((index_type)nid), "NIL node detected");
+  inline indptr_type _next_node(const size_type nid) const {
+    hif_assert(!is_nil((indptr_type)nid), "NIL node detected");
     hif_assert(nid < _node_inds.size(), "invalid nid %zd", nid);
     return _node_next[nid];
   }
@@ -226,7 +229,7 @@ class AugmentedCore {
   /// \brief get node item ({col-,row-}index in aug-{ccx,crs}, correspondingly)
   /// \param[in] nid node ID
   inline index_type _node_ind(const size_type nid) const {
-    hif_assert(!is_nil((index_type)nid), "NIL node detected");
+    hif_assert(!is_nil((indptr_type)nid), "NIL node detected");
     hif_assert(nid < _node_inds.size(), "invalid nid %zd", nid);
     return _node_inds[nid];
   }
@@ -318,7 +321,7 @@ class AugmentedCore {
   /// \param[in] ind_start starting indices
   /// \param[in] indices array storing the indices
   /// \warning Advanced usaged
-  inline void _build_aug(const size_type nlist, const iarray_type &ind_start,
+  inline void _build_aug(const size_type nlist, const iparray_type &ind_start,
                          const iarray_type &indices) {
     typedef typename iarray_type::const_iterator const_iterator;
     hif_assert(
@@ -346,13 +349,13 @@ class AugmentedCore {
   }
 
  protected:
-  iarray_type _node_inds;    ///< indices (values) of each node
-  iarray_type _node_start;   ///< head nodes
-  iarray_type _node_next;    ///< next nodes
-  iarray_type _node_end;     ///< ending positions
-  iarray_type _val_pos;      ///< value positions
-  iarray_type _val_pos_inv;  ///< value position inverse, i.e. inv(_val_pos)
-  iarray_type _node_counts;  ///< number of nodes per list
+  iarray_type  _node_inds;    ///< indices (values) of each node
+  iparray_type _node_start;   ///< head nodes
+  iparray_type _node_next;    ///< next nodes
+  iparray_type _node_end;     ///< ending positions
+  iparray_type _val_pos;      ///< value positions
+  iparray_type _val_pos_inv;  ///< value position inverse, i.e. inv(_val_pos)
+  iarray_type  _node_counts;  ///< number of nodes per list
 
   // TODO do we need to use size_type for storing the positions? This will
   // almost double the memory usage for if index_type is just 32bit,
@@ -368,8 +371,11 @@ class AugmentedCore {
 /// \ingroup ds
 template <class CrsType>
 class AugCRS : public CrsType,
-               public internal::AugmentedCore<typename CrsType::index_type> {
-  typedef internal::AugmentedCore<typename CrsType::index_type> _base;
+               public internal::AugmentedCore<typename CrsType::index_type,
+                                              typename CrsType::indptr_type> {
+  typedef internal::AugmentedCore<typename CrsType::index_type,
+                                  typename CrsType::indptr_type>
+      _base;
 
  public:
   typedef AugCRS                           this_type;         ///< aug crs type
@@ -378,11 +384,13 @@ class AugCRS : public CrsType,
   typedef typename crs_type::size_type     size_type;         ///< size
   typedef typename _base::iarray_type      iarray_type;       ///< index array
   typedef typename iarray_type::value_type index_type;        ///< index type
+  typedef typename _base::indptr_type      indptr_type;       ///< index_pointer
+  typedef typename _base::iparray_type     iparray_type;      ///< indptr array
   typedef typename crs_type::value_type    value_type;        ///< value
   constexpr static bool                    ROW_MAJOR = true;  ///< crs flag
 
  private:
-  constexpr static index_type _NIL = _base::_NIL;
+  constexpr static indptr_type _NIL = _base::_NIL;
 
  public:
   /// \brief default constructor
@@ -451,24 +459,24 @@ class AugCRS : public CrsType,
   /// \brief given column index, get the starting column handle
   /// \param[in] col column index
   /// \return first column handle in the augmented data structure
-  inline index_type start_col_id(const size_type col) const {
+  inline indptr_type start_col_id(const size_type col) const {
     return _base::_start_node(col);
   }
 
   /// \brief unified interface to get starting augmented ID
-  inline index_type start_aug_id(const size_type col) const {
+  inline indptr_type start_aug_id(const size_type col) const {
     return start_col_id(col);
   }
 
   /// \brief given a column handle, get its next location
   /// \param[in] col_id column handle/ID
-  inline index_type next_col_id(const size_type col_id) const {
+  inline indptr_type next_col_id(const size_type col_id) const {
     return _base::_next_node(col_id);
   }
 
   /// \brief unified interface for advancing augmented ID
   /// \param[in] aug_id augmented ID
-  inline index_type next_aug_id(const size_type aug_id) const {
+  inline indptr_type next_aug_id(const size_type aug_id) const {
     return next_col_id(aug_id);
   }
 
@@ -535,7 +543,7 @@ class AugCRS : public CrsType,
     hif_assert(k < ncols(), "%zd exceeds max ncols", k);
     if (i == k) return;  // fast return if possible
     // get the starting handles/IDs
-    index_type i_col_id = start_col_id(i), k_col_id = start_col_id(k);
+    indptr_type i_col_id = start_col_id(i), k_col_id = start_col_id(k);
     for (;;) {
       // determine current statuses
       const bool i_empty = is_nil(i_col_id), k_empty = is_nil(k_col_id);
@@ -543,10 +551,10 @@ class AugCRS : public CrsType,
       if (i_empty && k_empty) break;
       // get the row indices for i and k, as well as the value positions, which
       // are needed to locate the corresponding locations of the vals array
-      const index_type i_row = !i_empty ? row_idx(i_col_id) : _NIL;
-      const index_type k_row = !k_empty ? row_idx(k_col_id) : _NIL;
-      const index_type i_vp  = !i_empty ? val_pos_idx(i_col_id) : _NIL;
-      const index_type k_vp  = !k_empty ? val_pos_idx(k_col_id) : _NIL;
+      const indptr_type i_row = !i_empty ? row_idx(i_col_id) : _NIL;
+      const indptr_type k_row = !k_empty ? row_idx(k_col_id) : _NIL;
+      const indptr_type i_vp  = !i_empty ? val_pos_idx(i_col_id) : _NIL;
+      const indptr_type k_vp  = !k_empty ? val_pos_idx(k_col_id) : _NIL;
       if (i_row == k_row) {
         // both rows exists
         // first, swap value array in CRS
@@ -663,7 +671,7 @@ class AugCRS : public CrsType,
     hif_assert(from < to, "from (%zd) should strictly less than to (%zd)", from,
                to);
     hif_assert(is_nil(start_col_id(to)), "destination must be empty!");
-    index_type col_id = start_col_id(from);
+    indptr_type col_id = start_col_id(from);
     while (!is_nil(col_id)) {
       const auto row = row_idx(col_id);
       const auto vp  = val_pos_idx(col_id);
@@ -689,16 +697,16 @@ class AugCRS : public CrsType,
   }
 
   // utilities
-  inline iarray_type &      row_ind() { return _base::_node_inds; }
-  inline const iarray_type &row_ind() const { return _base::_node_inds; }
-  inline iarray_type &      col_start() { return _base::_node_start; }
-  inline const iarray_type &col_start() const { return _base::_node_start; }
-  inline iarray_type &      col_end() { return _base::_node_end; }
-  inline const iarray_type &col_end() const { return _base::_node_end; }
-  inline iarray_type &      col_next() { return _base::_node_next; }
-  inline const iarray_type &col_next() const { return _base::_node_next; }
-  inline iarray_type &      col_counts() { return _base::_node_counts; }
-  inline const iarray_type &col_counts() const { return _base::_node_counts; }
+  inline iarray_type &       row_ind() { return _base::_node_inds; }
+  inline const iarray_type & row_ind() const { return _base::_node_inds; }
+  inline iparray_type &      col_start() { return _base::_node_start; }
+  inline const iparray_type &col_start() const { return _base::_node_start; }
+  inline iparray_type &      col_end() { return _base::_node_end; }
+  inline const iparray_type &col_end() const { return _base::_node_end; }
+  inline iparray_type &      col_next() { return _base::_node_next; }
+  inline const iparray_type &col_next() const { return _base::_node_next; }
+  inline iarray_type &       col_counts() { return _base::_node_counts; }
+  inline const iarray_type & col_counts() const { return _base::_node_counts; }
 
   /// \brief begin to assemble rows
   inline void begin_assemble_rows() {
@@ -750,21 +758,26 @@ class AugCRS : public CrsType,
 /// \ingroup ds
 template <class CcsType>
 class AugCCS : public CcsType,
-               public internal::AugmentedCore<typename CcsType::index_type> {
-  typedef internal::AugmentedCore<typename CcsType::index_type> _base;
+               public internal::AugmentedCore<typename CcsType::index_type,
+                                              typename CcsType::indptr_type> {
+  typedef internal::AugmentedCore<typename CcsType::index_type,
+                                  typename CcsType::indptr_type>
+      _base;
 
  public:
-  typedef AugCCS                           this_type;    ///< this
-  typedef CcsType                          ccs_type;     ///< ccs type
-  typedef typename ccs_type::other_type    crs_type;     ///< crs
-  typedef typename ccs_type::size_type     size_type;    ///< size
-  typedef typename _base::iarray_type      iarray_type;  ///< index array
-  typedef typename iarray_type::value_type index_type;   ///< index type
-  typedef typename ccs_type::value_type    value_type;   ///< value
-  constexpr static bool ROW_MAJOR = false;               ///< row major flag
+  typedef AugCCS                           this_type;     ///< this
+  typedef CcsType                          ccs_type;      ///< ccs type
+  typedef typename ccs_type::other_type    crs_type;      ///< crs
+  typedef typename ccs_type::size_type     size_type;     ///< size
+  typedef typename _base::iarray_type      iarray_type;   ///< index array
+  typedef typename iarray_type::value_type index_type;    ///< index type
+  typedef typename _base::indptr_type      indptr_type;   ///< index_pointer
+  typedef typename _base::iparray_type     iparray_type;  ///< indptr array
+  typedef typename ccs_type::value_type    value_type;    ///< value
+  constexpr static bool ROW_MAJOR = false;                ///< row major flag
 
  private:
-  constexpr static index_type _NIL = _base::_NIL;
+  constexpr static indptr_type _NIL = _base::_NIL;
 
  public:
   /// \brief default constructor
@@ -836,24 +849,24 @@ class AugCCS : public CcsType,
   /// \brief given row index, get the starting row handle/ID
   /// \param[in] row row index
   /// \return first row handle in the augmented data structure
-  inline index_type start_row_id(const size_type row) const {
+  inline indptr_type start_row_id(const size_type row) const {
     return _base::_start_node(row);
   }
 
   /// \brief unified interface for getting starting augmented ID
-  inline index_type start_aug_id(const size_type row) const {
+  inline indptr_type start_aug_id(const size_type row) const {
     return start_row_id(row);
   }
 
   /// \brief given a row handle, get its next location
   /// \param[in] row_id row handle/ID
-  inline index_type next_row_id(const size_type row_id) const {
+  inline indptr_type next_row_id(const size_type row_id) const {
     return _base::_next_node(row_id);
   }
 
   /// \brief unified interface for advancing to next augmented ID
   /// \param[in] aug_id augmented ID
-  inline index_type next_aug_id(const size_type aug_id) const {
+  inline indptr_type next_aug_id(const size_type aug_id) const {
     return next_row_id(aug_id);
   }
 
@@ -919,7 +932,7 @@ class AugCCS : public CcsType,
     hif_assert(k < nrows(), "%zd exceeds max nrows", k);
     if (i == k) return;  // fast return
     // get the starting handles/IDs
-    index_type i_row_id = start_row_id(i), k_row_id = start_row_id(k);
+    indptr_type i_row_id = start_row_id(i), k_row_id = start_row_id(k);
     for (;;) {
       // determine the emptyness
       const bool i_empty = is_nil(i_row_id), k_empty = is_nil(k_row_id);
@@ -928,10 +941,10 @@ class AugCCS : public CcsType,
       // get the column indices of i and k, as well as the value positions,
       // which are needed to locate the corresponding locations of the vals
       // array
-      const index_type i_col = !i_empty ? col_idx(i_row_id) : _NIL;
-      const index_type k_col = !k_empty ? col_idx(k_row_id) : _NIL;
-      const index_type i_vp  = !i_empty ? val_pos_idx(i_row_id) : _NIL;
-      const index_type k_vp  = !k_empty ? val_pos_idx(k_row_id) : _NIL;
+      const indptr_type i_col = !i_empty ? col_idx(i_row_id) : _NIL;
+      const indptr_type k_col = !k_empty ? col_idx(k_row_id) : _NIL;
+      const indptr_type i_vp  = !i_empty ? val_pos_idx(i_row_id) : _NIL;
+      const indptr_type k_vp  = !k_empty ? val_pos_idx(k_row_id) : _NIL;
       if (i_col == k_col) {
         // both columns exist
         // simplest case
@@ -1036,7 +1049,7 @@ class AugCCS : public CcsType,
     hif_assert(from < to, "from (%zd) should strictly less than to (%zd)", from,
                to);
     hif_assert(is_nil(start_row_id(to)), "destination must be empty!");
-    index_type row_id = start_row_id(from);
+    indptr_type row_id = start_row_id(from);
     while (!is_nil(row_id)) {
       const auto col = col_idx(row_id);
       const auto vp  = val_pos_idx(row_id);
@@ -1062,16 +1075,16 @@ class AugCCS : public CcsType,
   }
 
   // utilities
-  inline iarray_type &      col_ind() { return _base::_node_inds; }
-  inline const iarray_type &col_ind() const { return _base::_node_inds; }
-  inline iarray_type &      row_start() { return _base::_node_start; }
-  inline const iarray_type &row_start() const { return _base::_node_start; }
-  inline iarray_type &      row_end() { return _base::_node_end; }
-  inline const iarray_type *row_end() const { return _base::_node_end; }
-  inline iarray_type &      row_next() { return _base::_node_next; }
-  inline const iarray_type &row_next() const { return _base::_node_next; }
-  inline iarray_type &      row_counts() { return _base::_node_counts; }
-  inline const iarray_type &row_counts() const { return _base::_node_counts; }
+  inline iarray_type &       col_ind() { return _base::_node_inds; }
+  inline const iarray_type & col_ind() const { return _base::_node_inds; }
+  inline iparray_type &      row_start() { return _base::_node_start; }
+  inline const iparray_type &row_start() const { return _base::_node_start; }
+  inline iparray_type &      row_end() { return _base::_node_end; }
+  inline const iparray_type *row_end() const { return _base::_node_end; }
+  inline iparray_type &      row_next() { return _base::_node_next; }
+  inline const iparray_type &row_next() const { return _base::_node_next; }
+  inline iarray_type &       row_counts() { return _base::_node_counts; }
+  inline const iarray_type & row_counts() const { return _base::_node_counts; }
 
   /// \brief begin to assemble columns
   inline void begin_assemble_cols() {
