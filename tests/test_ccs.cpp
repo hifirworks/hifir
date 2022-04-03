@@ -64,8 +64,9 @@ TEST(CCS_api, test_core) {
   ASSERT_EQ(ccs2.nrows(), ccs1.nrows());
   ASSERT_EQ(ccs2.ncols(), ccs1.ncols());
   // test wrap
-  std::vector<int> colptr(ccs1.col_start().cbegin(), ccs1.col_start().cend()),
-      rowind(ccs1.row_ind().cbegin(), ccs1.row_ind().cend());
+  std::vector<std::ptrdiff_t> colptr(ccs1.col_start().cbegin(),
+                                     ccs1.col_start().cend());
+  std::vector<int>    rowind(ccs1.row_ind().cbegin(), ccs1.row_ind().cend());
   std::vector<double> vals(ccs1.vals().cbegin(), ccs1.vals().cend());
   ccs_t ccs3(nrows, ncols, colptr.data(), rowind.data(), vals.data(), true);
   ASSERT_EQ(ccs3.status(), DATA_WRAP);
