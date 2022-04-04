@@ -122,7 +122,8 @@ class Crout {
   /// \tparam ScaleArray row scaling diagonal matrix type, see \ref Array
   /// \tparam CrsType crs format, see \ref CRS
   /// \tparam PermType permutation matrix type, see \ref Array
-  /// \tparam PosArray position array type, see \ref Array
+  /// \tparam ListArray "linked-list" array type, see \ref Array
+  /// \tparam IndPtrArray index pointer array, see \ref Array
   /// \tparam DiagType diagonal matrix type, see \ref Array
   /// \tparam CcsType ccs format, see \ref CCS
   /// \tparam SpVecType work array for current row vector, see \ref SparseVector
@@ -163,16 +164,16 @@ class Crout {
   /// row of A to \f$\mathbf{u}_k^T\f$, and takes
   /// \f$\mathcal{O}(\cup_j \textrm{nnz}(\mathbf{U}_{j,:}))\f$, where
   /// \f$l_{kj}\neq 0\f$ for computing the vector matrix operation.
-  template <class ScaleArray, class CrsType, class PermType, class PosArray,
-            class DiagType, class CcsType, class SpVecType>
+  template <class ScaleArray, class CrsType, class PermType, class ListArray,
+            class IndPtrArray, class DiagType, class CcsType, class SpVecType>
   void compute_ut(const ScaleArray &s, const CrsType &crs_A,
                   const ScaleArray &t, const size_type pk, const PermType &q,
-                  const CcsType &L, const PosArray &L_start,
-                  const PosArray &L_list, const DiagType &d, const CrsType &U,
-                  const PosArray &U_start, SpVecType &ut) const {
+                  const CcsType &L, const IndPtrArray &L_start,
+                  const ListArray &L_list, const DiagType &d, const CrsType &U,
+                  const IndPtrArray &U_start, SpVecType &ut) const {
     // compilation checking
     static_assert(CrsType::ROW_MAJOR, "input A must be CRS for loading ut");
-    using index_type                = typename PosArray::value_type;
+    using index_type                = typename ListArray::value_type;
     constexpr static index_type nil = static_cast<index_type>(-1);
 
     // reset sparse buffer
@@ -222,7 +223,8 @@ class Crout {
   /// \tparam ScaleArray row/column scaling diagonal matrix type, see \ref Array
   /// \tparam CcsType ccs format, see \ref CCS
   /// \tparam PermType permutation matrix type, see \ref Array
-  /// \tparam PosArray position array type, see \ref Array
+  /// \tparam ListArray "linked-list" array type, see \ref Array
+  /// \tparam IndPtrArray index pointer array type, see \ref Array
   /// \tparam DiagType array used for storing diagonal array, see \ref Array
   /// \tparam CrsType crs format, see \ref CRS
   /// \tparam SpVecType sparse vector for storing l, see \ref SparseVector
@@ -233,9 +235,8 @@ class Crout {
   /// \param[in] qk permutated column index
   /// \param[in] m leading block size
   /// \param[in] L lower part of decomposition
-  /// \param[in] L_start position array storing the starting locations of \a L
-  /// \param[in] d diagonal entries
-  /// \param[in] U augmented U matrix
+  /// \param[in] L_start "linked-list" array storing the starting locations of
+  /// \a L \param[in] d diagonal entries \param[in] U augmented U matrix
   /// \param[in] U_start starting positions of U
   /// \param[in] U_list linked list of row indices of current step in U
   /// \param[out] l column vector of L at current \ref _step
@@ -265,15 +266,17 @@ class Crout {
   /// \f$\mathcal{O}(\cup_i \textrm{nnz}(\mathbf{L}_{:,i}))\f$, where
   /// \f$u_{ik}\neq 0\f$ for computing the matrix vector operation.
   template <bool IsSymm, class ScaleArray, class CcsType, class PermType,
-            class PosArray, class DiagType, class CrsType, class SpVecType>
+            class ListArray, class IndPtrArray, class DiagType, class CrsType,
+            class SpVecType>
   void compute_l(const ScaleArray &s, const CcsType &ccs_A, const ScaleArray &t,
                  const PermType &p, const size_type qk, const size_type m,
-                 const CcsType &L, const PosArray &L_start, const DiagType &d,
-                 const CrsType &U, const PosArray &U_start,
-                 const PosArray &U_list, SpVecType &l) const {
+                 const CcsType &L, const IndPtrArray &L_start,
+                 const DiagType &d, const CrsType &U,
+                 const IndPtrArray &U_start, const ListArray &U_list,
+                 SpVecType &l) const {
     // compilation checking
     static_assert(!CcsType::ROW_MAJOR, "input A must be CCS for loading l");
-    using index_type                = typename PosArray::value_type;
+    using index_type                = typename ListArray::value_type;
     constexpr static index_type nil = static_cast<index_type>(-1);
 
     // clear sparse counter
@@ -325,7 +328,8 @@ class Crout {
   /// \tparam ScaleArray row/column scaling diagonal matrix type, see \ref Array
   /// \tparam CcsType ccs format, see \ref CCS
   /// \tparam PermType permutation matrix type, see \ref Array
-  /// \tparam PosArray position array type, see \ref Array
+  /// \tparam ListArray "linked-list" array type, see \ref Array
+  /// \tparam IndPtrArray index pointer array type, see \ref Array
   /// \tparam DiagType array used for storing diagonal array, see \ref Array
   /// \tparam SpVecType sparse vector for storing l, see \ref SparseVector
   /// \param[in] s row scaling matrix from preprocessing
@@ -350,16 +354,16 @@ class Crout {
   ///     \mathbf{L}_{k+1:n,1:k-1}\mathbf{D}_{k-1}
   ///       \mathbf{L}_{k,1:k-1}^{T}
   /// \f]
-  template <class ScaleArray, class CcsType, class PermType, class PosArray,
-            class DiagType, class SpVecType>
+  template <class ScaleArray, class CcsType, class PermType, class ListArray,
+            class IndPtrArray, class DiagType, class SpVecType>
   void compute_symm(const ScaleArray &s, const CcsType &ccs_A,
                     const ScaleArray &t, const PermType &p, const size_type qk,
                     const size_type m, const CcsType &L,
-                    const PosArray &L_start, const PosArray &L_list,
+                    const IndPtrArray &L_start, const ListArray &L_list,
                     const DiagType &d, SpVecType &l) const {
     // compilation checking
     static_assert(!CcsType::ROW_MAJOR, "input A must be CCS for loading l");
-    using index_type                = typename PosArray::value_type;
+    using index_type                = typename ListArray::value_type;
     constexpr static index_type nil = static_cast<index_type>(-1);
 
     // clear sparse counter
@@ -406,7 +410,8 @@ class Crout {
   /// \brief compress L and U and update their corresponding starting positions
   ///        and linked lists
   /// \tparam CsType either \ref CRS or \ref CCS
-  /// \tparam PosArray position array type, see \ref Array
+  /// \tparam ListArray "linked-list" array type, see \ref Array
+  /// \tparam IndPtrArray index pointer array, see \ref Array
   /// \param[in,out] T strictly lower (L) or upper (U) matrices
   /// \param[in,out] list linked list of current step with primary indices
   /// \param[in,out] start local positions
@@ -419,10 +424,10 @@ class Crout {
   /// starting position and update the linked list accordingly.
   ///
   /// Clearly, all these steps must be done concurrently with in a single loop.
-  template <class CsType, class PosArray>
-  inline void update_compress(CsType &T, PosArray &list,
-                              PosArray &start) const {
-    using index_type                = typename PosArray::value_type;
+  template <class CsType, class ListArray, class IndPtrArray>
+  inline void update_compress(CsType &T, ListArray &list,
+                              IndPtrArray &start) const {
+    using index_type                = typename ListArray::value_type;
     constexpr static index_type nil = static_cast<index_type>(-1);
 
     // now update k
@@ -454,14 +459,14 @@ class Crout {
   /// \brief another starting array needed in symmetric computation to get
   ///        the offsets
   /// \tparam CcsType ccs type for L, see \ref CCS
-  /// \tparam PosArray position array, see \ref Array
+  /// \tparam IndPtrArray index pointer array, see \ref Array
   /// \param[in] L lower factor
   /// \param[in] m leading block size
   /// \param[out] L_start offset starting positions
-  template <class CcsType, class PosArray>
+  template <class CcsType, class IndPtrArray>
   inline void symm_update_lstart(const CcsType &                   L,
                                  const typename CcsType::size_type m,
-                                 PosArray &L_start) const {
+                                 IndPtrArray &L_start) const {
     static_assert(!CcsType::ROW_MAJOR, "must be CCS");
 
     auto info = find_sorted(L.row_ind_cbegin(_step), L.row_ind_cend(_step), m);
@@ -470,17 +475,18 @@ class Crout {
 
   /// \brief estimate the inverse norm
   /// \tparam CsType either \ref CRS (U) or \ref CCS (L)
-  /// \tparam PosArray position array type, see \ref Array
+  /// \tparam ListArray "linked-list" array type, see \ref Array
+  /// \tparam IndPtrArray index pointer array
   /// \tparam KappaArray array type for storing inverse norms, see \ref Array
   /// \param[in] T lower or upper factors
   /// \param[in] list linked list of primary indices of current step
   /// \param[in] start starting positions in index and value arrays
   /// \param[in,out] kappa inverse norm solutions
-  template <class CsType, class PosArray, class KappaArray>
-  inline bool update_kappa(const CsType &T, const PosArray &list,
-                           const PosArray &start, KappaArray &kappa) const {
+  template <class CsType, class ListArray, class IndPtrArray, class KappaArray>
+  inline bool update_kappa(const CsType &T, const ListArray &list,
+                           const IndPtrArray &start, KappaArray &kappa) const {
     using value_type                = typename CsType::value_type;
-    using index_type                = typename PosArray::value_type;
+    using index_type                = typename ListArray::value_type;
     constexpr static index_type nil = static_cast<index_type>(-1);
     constexpr static bool       one = true, neg_one = false;
     if (!_step) {
@@ -664,16 +670,17 @@ class Crout {
 
   /// \brief defer an secondary entry
   /// \tparam CsType either \ref CRS (U) or \ref CCS (L)
-  /// \tparam PosArray position array, see \ref Array
+  /// \tparam IndPtrArray index pointer array
+  /// \tparam ListArray "linked-list" array, see \ref Array
   /// \param[in] to_idx deferred destination
   /// \param[in] start starting positions
   /// \param[in,out] T lower or upper factors
   /// \param[in,out] list linked list of primary indices
   /// \ingroup defer
-  template <class CsType, class PosArray>
-  inline void defer_entry(const size_type to_idx, const PosArray &start,
-                          CsType &T, PosArray &list) const {
-    using index_type                = typename PosArray::value_type;
+  template <class CsType, class IndPtrArray, class ListArray>
+  inline void defer_entry(const size_type to_idx, const IndPtrArray &start,
+                          CsType &T, ListArray &list) const {
+    using index_type                = typename ListArray::value_type;
     constexpr static index_type nil = static_cast<index_type>(-1);
 
     hif_assert(list[to_idx] == nil, "deferred location %zd must be nil",
@@ -702,19 +709,20 @@ class Crout {
   /// \brief for symmetric leading block, we need to fix the offset positions
   ///        while we do deferring
   /// \tparam CcsType CCS storage type for L
-  /// \tparam PosArray position array, see \ref Array
+  /// \tparam IndPtrArray index pointer array
+  /// \tparam ListArray "linked-list" array, see \ref Array
   /// \param[in] to_idx deferred destination
   /// \param[in] L_start starting positions
   /// \param[in,out] L lower factor L
   /// \param[in,out] L_list linked list of column indices
   /// \param[out] L_offsets offsets of asymmetric potions
   /// \ingroup defer
-  template <class CcsType, class PosArray>
-  inline void symm_defer_l(const size_type to_idx, const PosArray &L_start,
-                           CcsType &L, PosArray &L_list,
-                           PosArray &L_offsets) const {
+  template <class CcsType, class IndPtrArray, class ListArray>
+  inline void symm_defer_l(const size_type to_idx, const IndPtrArray &L_start,
+                           CcsType &L, ListArray &L_list,
+                           IndPtrArray &L_offsets) const {
     static_assert(!CcsType::ROW_MAJOR, "must be CCS");
-    using index_type                = typename PosArray::value_type;
+    using index_type                = typename ListArray::value_type;
     constexpr static index_type nil = static_cast<index_type>(-1);
 
     index_type idx = L_list[deferred_step()];

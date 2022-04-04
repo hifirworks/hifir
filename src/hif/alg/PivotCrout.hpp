@@ -66,7 +66,7 @@ class PivotCrout : public Crout {
   /// \tparam CcsType ccs format, see \ref CCS
   /// \tparam PermType permutation matrix type, see \ref Array
   /// \tparam AugCcsType ccs format, see \ref AugCCS
-  /// \tparam PosArray position array type, see \ref Array
+  /// \tparam IndPtrArray position array type, see \ref Array
   /// \tparam DiagType array used for storing diagonal array, see \ref Array
   /// \tparam AugCrsType crs format, see \ref AugCRS
   /// \param[in] s row scaling matrix from preprocessing
@@ -89,13 +89,14 @@ class PivotCrout : public Crout {
   ///       \mathbf{U}_{1:k-1,k}
   /// \f]
   template <class ScaleArray, class CcsType, class PermType, class AugCcsType,
-            class PosArray, class DiagType, class AugCrsType>
+            class IndPtrArray, class DiagType, class AugCrsType>
   inline typename DiagType::value_type compute_dk(
       const ScaleArray &s, const CcsType &ccs_A, const ScaleArray &t,
       const PermType &p_inv, const size_type qk, const AugCcsType &L,
-      const PosArray &L_start, const DiagType &d, const AugCrsType &U) const {
-    using value_type = typename DiagType::value_type;
-    using index_type = typename AugCrsType::index_type;
+      const IndPtrArray &L_start, const DiagType &d,
+      const AugCrsType &U) const {
+    using value_type  = typename DiagType::value_type;
+    using indptr_type = typename AugCrsType::indptr_type;
 
     value_type dk(0);
     // load diagonal from the coefficient matrix A
@@ -120,7 +121,7 @@ class PivotCrout : public Crout {
     // compute the LDU part
     if (_step) {
       // get the deferred column handle
-      index_type aug_id = U.start_col_id(deferred_step());
+      indptr_type aug_id = U.start_col_id(deferred_step());
       while (!U.is_nil(aug_id)) {
         // get the row index
         const size_type row_idx = U.row_idx(aug_id);
@@ -151,7 +152,7 @@ class PivotCrout : public Crout {
   /// \tparam AugCcsType ccs format, see \ref AugCCS
   /// \tparam DiagType diagonal matrix type, see \ref Array
   /// \tparam AugCrsType crs format, see \ref AugCRS
-  /// \tparam PosArray position array type, see \ref Array
+  /// \tparam IndPtrArray position array type, see \ref Array
   /// \tparam SpVecType work array for current row vector, see \ref SparseVector
   /// \param[in] s row scaling matrix from preprocessing
   /// \param[in] crs_A input matrix in crs format
@@ -189,14 +190,15 @@ class PivotCrout : public Crout {
   /// \f$\mathcal{O}(\cup_j \textrm{nnz}(\mathbf{U}_{j,:}))\f$, where
   /// \f$l_{kj}\neq 0\f$ for computing the vector matrix operation.
   template <class ScaleArray, class CrsType, class PermType, class AugCcsType,
-            class DiagType, class AugCrsType, class PosArray, class SpVecType>
+            class DiagType, class AugCrsType, class IndPtrArray,
+            class SpVecType>
   void compute_ut(const ScaleArray &s, const CrsType &crs_A,
                   const ScaleArray &t, const size_type pk,
                   const PermType &q_inv, const AugCcsType &L, const DiagType &d,
-                  const AugCrsType &U, const PosArray &U_start,
+                  const AugCrsType &U, const IndPtrArray &U_start,
                   SpVecType &ut) const {
     // compilation checking
-    using index_type = typename PosArray::value_type;
+    using indptr_type = typename IndPtrArray::value_type;
 
     // reset sparse buffer
     ut.reset_counter();
@@ -207,7 +209,7 @@ class PivotCrout : public Crout {
     // if not first step
     if (_step) {
       // get the starting row ID with deferring
-      index_type aug_id = L.start_row_id(deferred_step());
+      indptr_type aug_id = L.start_row_id(deferred_step());
       while (!L.is_nil(aug_id)) {
         // get the column index
         const size_type col_idx = L.col_idx(aug_id);
@@ -251,7 +253,7 @@ class PivotCrout : public Crout {
   /// \tparam CcsType ccs format, see \ref CCS
   /// \tparam PermType permutation matrix type, see \ref Array
   /// \tparam AugCcsType ccs format, see \ref AugCCS
-  /// \tparam PosArray position array type, see \ref Array
+  /// \tparam IndPtrArray position array type, see \ref Array
   /// \tparam DiagType array used for storing diagonal array, see \ref Array
   /// \tparam AugCrsType crs format, see \ref AugCRS
   /// \tparam SpVecType sparse vector for storing l, see \ref SparseVector
@@ -291,13 +293,14 @@ class PivotCrout : public Crout {
   /// \f$\mathcal{O}(\cup_i \textrm{nnz}(\mathbf{L}_{:,i}))\f$, where
   /// \f$u_{ik}\neq 0\f$ for computing the matrix vector operation.
   template <class ScaleArray, class CcsType, class PermType, class AugCcsType,
-            class PosArray, class DiagType, class AugCrsType, class SpVecType>
+            class IndPtrArray, class DiagType, class AugCrsType,
+            class SpVecType>
   void compute_l(const ScaleArray &s, const CcsType &ccs_A, const ScaleArray &t,
                  const PermType &p_inv, const size_type qk, const AugCcsType &L,
-                 const PosArray &L_start, const DiagType &d,
+                 const IndPtrArray &L_start, const DiagType &d,
                  const AugCrsType &U, SpVecType &l) const {
     // compilation checking
-    using index_type              = typename PosArray::value_type;
+    using indptr_type             = typename IndPtrArray::value_type;
     static constexpr bool IS_SYMM = false;  // never symmetric for pivoting code
 
     // clear sparse counter
@@ -309,7 +312,7 @@ class PivotCrout : public Crout {
     // if not first step
     if (_step) {
       // get the deferred column handle
-      index_type aug_id = U.start_col_id(deferred_step());
+      indptr_type aug_id = U.start_col_id(deferred_step());
       while (!U.is_nil(aug_id)) {
         // get the row index
         const size_type row_idx = U.row_idx(aug_id);
@@ -349,23 +352,23 @@ class PivotCrout : public Crout {
 
   /// \brief compress L and U and update their corresponding starting positions
   /// \tparam CsType either \ref AugCRS or \ref AugCCS
-  /// \tparam PosArray position array type, see \ref Array
+  /// \tparam IndPtrArray position array type, see \ref Array
   /// \param[in,out] T strictly lower (L) or upper (U) matrices
   /// \param[in,out] start local positions
   /// \note This routine essentially compresses deferred_step to _step
   /// \note All other routines should be called before this one, and
   ///       deferred_step therein are conceptually the current Crout step
-  template <class CsType, class PosArray>
-  inline void update_compress(CsType &T, PosArray &start) const {
-    using index_type = typename PosArray::value_type;
+  template <class CsType, class IndPtrArray>
+  inline void update_compress(CsType &T, IndPtrArray &start) const {
+    using indptr_type = typename IndPtrArray::value_type;
 
     // get the starting augmented ID
-    index_type aug_id = T.start_aug_id(deferred_step());
+    indptr_type aug_id = T.start_aug_id(deferred_step());
     while (!T.is_nil(aug_id)) {
       // get corresponding primary index, i.e., row index in CRS while column
       // index for CCS
-      const index_type primary_idx = T.primary_idx(aug_id);
-      auto             itr = T.ind_begin(primary_idx) + start[primary_idx];
+      const auto primary_idx = T.primary_idx(aug_id);
+      auto       itr         = T.ind_begin(primary_idx) + start[primary_idx];
       *itr -= _defers;       // compress
       ++start[primary_idx];  // increment next position
       // advance augment handle
@@ -391,7 +394,7 @@ class PivotCrout : public Crout {
   inline bool update_kappa(const AugCsType &T, KappaArray &kappa,
                            const size_type entry = 0u) {
     using value_type          = typename AugCsType::value_type;
-    using index_type          = typename AugCsType::index_type;
+    using indptr_type         = typename AugCsType::indptr_type;
     constexpr static bool one = true, neg_one = false;
 
     if (!_step) {
@@ -403,9 +406,9 @@ class PivotCrout : public Crout {
     value_type sum(0);
 
     // start augmented ID
-    index_type aug_id = T.start_aug_id(entry ? entry : deferred_step());
+    indptr_type aug_id = T.start_aug_id(entry ? entry : deferred_step());
     while (!T.is_nil(aug_id)) {
-      const index_type primary_idx = T.primary_idx(aug_id);
+      const auto primary_idx = T.primary_idx(aug_id);
       hif_assert((size_type)primary_idx < kappa.size(),
                  "%zd exceeds the solution size", (size_type)primary_idx);
       hif_assert((size_type)primary_idx < _step,
@@ -467,7 +470,7 @@ class PivotCrout : public Crout {
   /// \tparam CcsType Ccs storage type, see \ref CCS
   /// \tparam CrsType Crs storage type, see \ref CRS
   /// \tparam CroutInfoStreamer Crout update information streamer
-  /// \tparam PosArray Integer array type for storing position information
+  /// \tparam IndPtrType Integer array type for storing position information
   /// \tparam PivotUnaryOpL Unary predictor for finding pivot in L
   /// \tparam PivotUnaryOpU Unary predictor for finding pivot in U
   /// \tparam AugCcsType Augmented ccs storage type, see \ref AugCCS
@@ -501,14 +504,14 @@ class PivotCrout : public Crout {
   /// Regarding \a op_l and \a op_u, we find a pivot in L if and only if it
   /// satisfies op_l condition, i.e., op_l(pivot_l)==true.
   template <class ScaleArray, class PermType, class PermType2, class CcsType,
-            class CrsType, class CroutInfoStreamer, class PosArray,
+            class CrsType, class CroutInfoStreamer, class IndPtrType,
             class PivotUnaryOpL, class PivotUnaryOpU, class AugCcsType,
             class DiagType, class AugCrsType, class SpVecType>
   inline std::pair<int, int> apply_thres_pivot(
       const ScaleArray &s, const ScaleArray &t, const CcsType &A_ccs,
       const CrsType &A_crs, const size_type m, const double gamma,
       const int max_steps, const CroutInfoStreamer &Crout_info,
-      const PosArray &L_start, const PosArray &U_start,
+      const IndPtrType &L_start, const IndPtrType &U_start,
       const PivotUnaryOpL &op_l, const PivotUnaryOpU &op_ut, PermType &p,
       PermType2 &p_inv, PermType &q, PermType2 &q_inv, AugCcsType &L,
       DiagType &d, AugCrsType &U, SpVecType &l, SpVecType &ut) const {
