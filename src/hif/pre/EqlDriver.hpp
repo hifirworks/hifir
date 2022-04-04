@@ -48,19 +48,21 @@ namespace hif {
 /// \brief driver class wrapped around \ref eql::Equilibrator
 /// \tparam ValueType value type
 /// \tparam IndexType index type, e.g. \a int
+/// \tparam IndPtrType index pointer type, defaut is \a std::ptrdiff_t
 /// \ingroup pre
-template <class ValueType, class IndexType>
+template <class ValueType, class IndexType, class IndPtrType = std::ptrdiff_t>
 class EqlDriver {
  public:
-  using value_type  = ValueType;                      ///< value type
-  using index_type  = IndexType;                      ///< index type
-  using ccs_type    = CCS<value_type, index_type>;    ///< ccs type
-  using crs_type    = typename ccs_type::other_type;  ///< crs type
-  using size_type   = typename ccs_type::size_type;   ///< size type
+  using value_type  = ValueType;   ///< value type
+  using index_type  = IndexType;   ///< index type
+  using indptr_type = IndPtrType;  ///< index pointer type
+  using ccs_type    = CCS<value_type, index_type, indptr_type>;  ///< ccs type
+  using crs_type    = typename ccs_type::other_type;             ///< crs type
+  using size_type   = typename ccs_type::size_type;              ///< size type
   using scalar_type = typename ValueTypeTrait<value_type>::value_type;
   ///< scalar type
-  using kernel_type =
-      eql::Equilibrator<index_type, value_type, scalar_type, Array>;
+  using kernel_type = eql::Equilibrator<indptr_type, index_type, value_type,
+                                        scalar_type, Array>;
   ///< kernel type
 
   template <bool IsSymm>

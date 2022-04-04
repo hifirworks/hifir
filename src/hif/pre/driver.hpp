@@ -71,8 +71,8 @@ inline typename CcsType::size_type do_preprocessing(
     const typename CcsType::size_type level, const Options &opt,
     ScalingArray &s, ScalingArray &t, PermType &p, PermType &q) {
   static_assert(!CcsType::ROW_MAJOR, "must be CCS");
-  using index_type = typename CcsType::index_type;
-  using size_type  = typename CcsType::size_type;
+  using indptr_type = typename CcsType::indptr_type;
+  using size_type   = typename CcsType::size_type;
 
   if (opt.reorder < 0 || opt.reorder >= REORDER_NULL)
     hif_error("invalid reorder flag %d", opt.reorder);
@@ -96,8 +96,8 @@ inline typename CcsType::size_type do_preprocessing(
 
     std::string reorder_name = "AMD";
 
-    auto &            B = match_res.first;
-    Array<index_type> P;
+    auto &             B = match_res.first;
+    Array<indptr_type> P;
     if (opt.reorder == REORDER_AUTO) {
       // for auto reordering, we use rcm only if first level symmetry and
       // have static deferrals

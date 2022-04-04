@@ -30,7 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 /* Reference: Iain S Duff and Jacko Koster, "On algorithms for permuting large
  * entries to the diagonal of a sparse matrix", SIAM J. Matrix Anal. Appl.
  * 22(4) (2001), pp. 973--996.
-*/
+ */
 
 #ifndef _HIF_PRE_EQUILIBRATE_HPP
 #define _HIF_PRE_EQUILIBRATE_HPP
@@ -57,15 +57,15 @@ inline void set_default_pars(_Integer *pars) {
   for (int i = 3; i < _PAR_NUM; ++i) pars[i] = 0;
 }
 
-template <typename _Integer, typename _Real>
-inline void kernel(_Integer, const _Integer *, const _Integer *, const _Real *,
-                   _Integer *, _Integer *, _Integer *, _Integer *, _Integer *,
+template <typename _Integer, typename _Index, typename _Real>
+inline void kernel(_Integer, const _Integer *, const _Index *, const _Real *,
+                   _Index *, _Integer *, _Integer *, _Integer *, _Integer *,
                    _Integer *, _Integer *, _Real *, _Real *);
 
-template <typename _Integer, typename _ValReal, typename _Real>
+template <typename _Integer, typename _Index, typename _ValReal, typename _Real>
 inline void compute(const _Integer n, const _Integer ne, const _Integer *indptr,
-                    const _Integer *indices, const _ValReal *vals, _Integer *no,
-                    _Integer *cperm, _Integer liwork, _Integer *iwork,
+                    const _Index *indices, const _ValReal *vals, _Integer *no,
+                    _Index *cperm, _Integer liwork, _Integer *iwork,
                     _Integer lwork, _Real *work, const _Integer *pars,
                     _Integer *info) {
   _Integer j, k;
@@ -338,9 +338,9 @@ inline void kernel___(_Integer *pos_, _Integer *qlen, const _Integer n,
 }
 
 // clean up function to be used in the kernel
-template <typename _Integer, typename _Real>
-void cleanup(const _Integer n, _Integer *num, _Integer *iperm, _Integer *jperm,
-             const _Integer *irn, _Integer *out, const _Real *a, _Real *d__,
+template <typename _Integer, typename _Index, typename _Real>
+void cleanup(const _Integer n, _Integer *num, _Index *iperm, _Integer *jperm,
+             const _Index *irn, _Integer *out, const _Real *a, _Real *d__,
              _Real *u) {
   _Integer i__, j, k;
 
@@ -376,9 +376,9 @@ void cleanup(const _Integer n, _Integer *num, _Integer *iperm, _Integer *jperm,
 }
 
 // main loop
-template <typename _Integer, typename _Real>
-inline void kernel(const _Integer n, const _Integer *ip, const _Integer *irn,
-                   const _Real *a, _Integer *iperm, _Integer *num,
+template <typename _Integer, typename _Index, typename _Real>
+inline void kernel(const _Integer n, const _Integer *ip, const _Index *irn,
+                   const _Real *a, _Index *iperm, _Integer *num,
                    _Integer *jperm, _Integer *out, _Integer *pr, _Integer *q,
                    _Integer *l, _Real *u, _Real *d__) {
   _Integer i__, j, k, i0, k0, k1;
@@ -689,7 +689,8 @@ using std_vector = std::vector<V>;
 }
 
 /// \class Equilibrator
-/// \tparam _Integer integer type
+/// \tparam _Integer integer type for indptr
+/// \tparam _Index index type
 /// \tparam _Value value type
 /// \tparam _Real real value type
 /// \tparam _Container container metatype, default is \a std::vector
@@ -705,16 +706,19 @@ using std_vector = std::vector<V>;
 /// - \a size, query the length of the container
 /// - \a swap, used for \ref destroy memory space
 /// - \a operator[], only constant version is needed for accessing entries
-template <typename _Integer, typename _Value, typename _Real = _Value,
+template <typename _Integer, typename _Index, typename _Value,
+          typename _Real                    = _Value,
           template <class> class _Container = internal::std_vector>
 class Equilibrator {
  public:
-  using index_type  = _Integer;                ///< index type
-  using value_type  = _Value;                  ///< scalar type
-  using real_type   = _Real;                   ///< real type
-  using iarray_type = _Container<index_type>;  ///< index array
-  using array_type  = _Container<real_type>;   ///< real array
-  using varray_type = _Container<value_type>;  ///< value array
+  using indptr_type  = _Integer;                 ///< index_pointer type
+  using index_type   = _Index;                   ///< index type
+  using value_type   = _Value;                   ///< scalar type
+  using real_type    = _Real;                    ///< real type
+  using iparray_type = _Container<indptr_type>;  ///< indptr array
+  using iarray_type  = _Container<index_type>;   ///< index array
+  using array_type   = _Container<real_type>;    ///< real array
+  using varray_type  = _Container<value_type>;   ///< value array
 
   /// \brief equilibrate a CRS/CCS matrix
   /// \param[in] n number of nodes
@@ -724,20 +728,20 @@ class Equilibrator {
   /// \param[in] vals value array
   /// \param[out] perm permutation result
   /// \return information
-  inline index_type compute(index_type n, index_type nnz,
-                            const index_type *indptr, const index_type *indices,
-                            const value_type *vals, index_type *perm) const {
-    index_type pars[_PAR_NUM];
+  inline index_type compute(indptr_type n, indptr_type nnz,
+                            const indptr_type *indptr,
+                            const index_type *indices, const value_type *vals,
+                            index_type *perm) const {
+    indptr_type pars[_PAR_NUM];
     detail::set_default_pars(pars);
 #ifndef HIF_DEBUG
     pars[3] = 1;
 #endif
     _init(n, nnz);
-    index_type info[_PAR_NUM], num, liwork = _iwork.size(),
-                                    lwork = _work.size();
-    detail::compute(n, nnz, (index_type *)indptr, (index_type *)indices,
-                    (value_type *)vals, &num, perm, liwork,
-                    (index_type *)_iwork.data(), lwork,
+    indptr_type info[_PAR_NUM], num, liwork = _iwork.size(),
+                                     lwork = _work.size();
+    detail::compute(n, nnz, indptr, indices, vals, &num, perm, liwork,
+                    (indptr_type *)_iwork.data(), lwork,
                     (real_type *)_work.data(), pars, info);
     return info[0];
   }
@@ -748,7 +752,7 @@ class Equilibrator {
   /// \param[in] vals value array
   /// \param[out] perm permutation result
   /// \return information
-  inline index_type compute(const iarray_type &indptr,
+  inline index_type compute(const iparray_type &indptr,
                             const iarray_type &indices, const varray_type &vals,
                             iarray_type &perm) const {
     if (indptr.size() > 1u) {
@@ -768,13 +772,13 @@ class Equilibrator {
 
   /// \brief destroy internal workspace
   inline void destroy() {
-    iarray_type().swap(_iwork);
+    iparray_type().swap(_iwork);
     array_type().swap(_work);
     _s = _t = nullptr;
   }
 
  protected:
-  mutable iarray_type      _iwork;  ///< integer work space
+  mutable iparray_type     _iwork;  ///< integer work space
   mutable array_type       _work;   ///< real work space
   mutable const real_type *_s;      ///< left scaling
   mutable const real_type *_t;      ///< right scaling
@@ -783,9 +787,9 @@ class Equilibrator {
   /// \brief initialize work spaces
   /// \param[in] n number of nodes
   /// \param[in] nnz number of nonzeros
-  inline void _init(const index_type n, const index_type nnz) const {
+  inline void _init(const index_type n, const std::size_t nnz) const {
     _iwork.resize(n * 5);
-    _work.resize(n * 3 + nnz);
+    _work.resize(nnz + std::size_t(n * 3));
     _s = _work.data();
     _t = _s + n;
   }

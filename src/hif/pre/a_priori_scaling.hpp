@@ -56,14 +56,15 @@ namespace hif {
 template <class CrsType, class ScalingType>
 inline void scale_eye(CrsType &B, ScalingType &rs, ScalingType &cs,
                       const bool ensure_fortran_index = true) {
-  using size_type  = typename CrsType::size_type;
-  using index_type = typename CrsType::index_type;
+  using size_type   = typename CrsType::size_type;
+  using index_type  = typename CrsType::index_type;
+  using indptr_type = typename CrsType::indptr_type;
 
   const size_type n = B.nrows();
   for (size_type i(0); i < n; ++i) rs[i] = cs[i] = 1;
   if (ensure_fortran_index) {
     std::for_each(B.row_start().begin(), B.row_start().end(),
-                  [](index_type &i) { ++i; });
+                  [](indptr_type &i) { ++i; });
     std::for_each(B.col_ind().begin(), B.col_ind().end(),
                   [](index_type &i) { ++i; });
   }
@@ -132,9 +133,10 @@ inline void scale_extreme_values(CrsType &B, ScalingType &rs, ScalingType &cs,
   for (size_type i(0); i < nz; ++i) B.vals()[i] *= cs[B.col_ind()[i]];
 
   if (ensure_fortran_index) {
-    using index_type = typename CrsType::index_type;
+    using index_type  = typename CrsType::index_type;
+    using indptr_type = typename CrsType::indptr_type;
     std::for_each(B.row_start().begin(), B.row_start().end(),
-                  [](index_type &i) { ++i; });
+                  [](indptr_type &i) { ++i; });
     std::for_each(B.col_ind().begin(), B.col_ind().end(),
                   [](index_type &i) { ++i; });
   }
@@ -244,9 +246,10 @@ inline void iterative_scale_p(const PermType &p, CrsType &A, ScalingType &rs,
   if (IsSymm) std::copy_n(rs.cbegin(), m, cs.begin());
 
   if (ensure_fortran_index) {
-    using index_type = typename CrsType::index_type;
+    using index_type  = typename CrsType::index_type;
+    using indptr_type = typename CrsType::indptr_type;
     std::for_each(A.row_start().begin(), A.row_start().end(),
-                  [](index_type &i) { ++i; });
+                  [](indptr_type &i) { ++i; });
     std::for_each(A.col_ind().begin(), A.col_ind().end(),
                   [](index_type &i) { ++i; });
   }
