@@ -98,7 +98,7 @@ template <class ValueType, class MatHdlType>
 static inline LhfStatus mm_read_sparse(const char *fname, MatHdlType mat) {
   _LHF_CANNOT_ACCEPT_NULL(mat);
   if (mat->is_rowmajor) {
-    using matrix_t = hif::CRS<ValueType, LhfInt>;
+    using matrix_t = hif::CRS<ValueType, LhfInt, LhfIndPtr>;
     matrix_t A;
     try {
       A = matrix_t::from_mm(fname);
@@ -110,7 +110,7 @@ static inline LhfStatus mm_read_sparse(const char *fname, MatHdlType mat) {
     std::copy(A.inds().cbegin(), A.inds().cend(), mat->indices);
     std::copy(A.vals().cbegin(), A.vals().cend(), mat->vals);
   } else {
-    using matrix_t = hif::CCS<ValueType, LhfInt>;
+    using matrix_t = hif::CCS<ValueType, LhfInt, LhfIndPtr>;
     matrix_t A;
     try {
       A = matrix_t::from_mm(fname);
@@ -301,7 +301,8 @@ LhfStatus lhfQueryMmFile(const char *fname, int *is_sparse, int *is_real,
 ///////////////////////////
 
 struct LhfdMatrix {
-  LhfInt *    indptr, *indices;
+  LhfIndPtr * indptr;
+  LhfInt *    indices;
   double *    vals;
   std::size_t n;
   bool        is_rowmajor;
@@ -309,16 +310,17 @@ struct LhfdMatrix {
 
 // create matrix
 LhfdMatrixHdl lhfdCreateMatrix(const int is_rowmajor, const size_t n,
-                               const LhfInt *indptr, const LhfInt *indices,
+                               const LhfIndPtr *indptr, const LhfInt *indices,
                                const double *vals) {
   LhfdMatrixHdl mat = (LhfdMatrixHdl)std::malloc(sizeof(LhfdMatrix));
   if (!mat) return nullptr;
   mat->is_rowmajor = is_rowmajor;
-  mat->indptr = mat->indices = nullptr;
-  mat->vals                  = nullptr;
-  mat->n                     = 0;
+  mat->indptr      = nullptr;
+  mat->indices     = nullptr;
+  mat->vals        = nullptr;
+  mat->n           = 0;
   if (n && indptr && indices && vals) {
-    mat->indptr  = (LhfInt *)indptr;
+    mat->indptr  = (LhfIndPtr *)indptr;
     mat->indices = (LhfInt *)indices;
     mat->vals    = (double *)vals;
     mat->n       = n;
@@ -345,11 +347,11 @@ size_t lhfdGetMatrixNnz(const LhfdMatrixHdl mat) {
 
 // wrap external matrix
 LhfStatus lhfdWrapMatrix(LhfdMatrixHdl mat, const size_t n,
-                         const LhfInt *indptr, const LhfInt *indices,
+                         const LhfIndPtr *indptr, const LhfInt *indices,
                          const double *vals) {
   _LHF_CANNOT_ACCEPT_NULL(mat);
   if (n && indptr && indices && vals) {
-    mat->indptr  = (LhfInt *)indptr;
+    mat->indptr  = (LhfIndPtr *)indptr;
     mat->indices = (LhfInt *)indices;
     mat->vals    = (double *)vals;
     mat->n       = n;
@@ -379,8 +381,8 @@ LhfStatus lhfdReadVector(const char *fname, const size_t n, double *v) {
 
 // HIF structure
 struct LhfdHif {
-  hif::HIF<double, LhfInt> *M;
-  LhfdMatrixHdl             A;
+  hif::HIF<double, LhfInt, LhfIndPtr> *M;
+  LhfdMatrixHdl                        A;
 };
 
 // create function
@@ -388,7 +390,7 @@ LhfdHifHdl lhfdCreate(const LhfdMatrixHdl A, const LhfdMatrixHdl S,
                       const double params[]) {
   LhfdHifHdl M = (LhfdHifHdl)std::malloc(sizeof(LhfdHif));
   if (!M) return nullptr;
-  M->M = new (std::nothrow) hif::HIF<double, LhfInt>();
+  M->M = new (std::nothrow) hif::HIF<double, LhfInt, LhfIndPtr>();
   if (!M->M) {
     std::free(M);
     return nullptr;
@@ -517,7 +519,8 @@ size_t lhfdGetSchurRank(const LhfdHifHdl hif) {
 ///////////////////////////
 
 struct LhfsMatrix {
-  LhfInt *    indptr, *indices;
+  LhfIndPtr * indptr;
+  LhfInt *    indices;
   float *     vals;
   std::size_t n;
   bool        is_rowmajor;
@@ -525,16 +528,17 @@ struct LhfsMatrix {
 
 // create matrix
 LhfsMatrixHdl lhfsCreateMatrix(const int is_rowmajor, const size_t n,
-                               const LhfInt *indptr, const LhfInt *indices,
+                               const LhfIndPtr *indptr, const LhfInt *indices,
                                const float *vals) {
   LhfsMatrixHdl mat = (LhfsMatrixHdl)std::malloc(sizeof(LhfsMatrix));
   if (!mat) return nullptr;
   mat->is_rowmajor = is_rowmajor;
-  mat->indptr = mat->indices = nullptr;
-  mat->vals                  = nullptr;
-  mat->n                     = 0;
+  mat->indptr      = nullptr;
+  mat->indices     = nullptr;
+  mat->vals        = nullptr;
+  mat->n           = 0;
   if (n && indptr && indices && vals) {
-    mat->indptr  = (LhfInt *)indptr;
+    mat->indptr  = (LhfIndPtr *)indptr;
     mat->indices = (LhfInt *)indices;
     mat->vals    = (float *)vals;
     mat->n       = n;
@@ -561,11 +565,11 @@ size_t lhfsGetMatrixNnz(const LhfsMatrixHdl mat) {
 
 // wrap external matrix
 LhfStatus lhfsWrapMatrix(LhfsMatrixHdl mat, const size_t n,
-                         const LhfInt *indptr, const LhfInt *indices,
+                         const LhfIndPtr *indptr, const LhfInt *indices,
                          const float *vals) {
   _LHF_CANNOT_ACCEPT_NULL(mat);
   if (n && indptr && indices && vals) {
-    mat->indptr  = (LhfInt *)indptr;
+    mat->indptr  = (LhfIndPtr *)indptr;
     mat->indices = (LhfInt *)indices;
     mat->vals    = (float *)vals;
     mat->n       = n;
@@ -595,9 +599,9 @@ LhfStatus lhfsReadVector(const char *fname, const size_t n, float *v) {
 
 // HIF structure
 struct LhfsHif {
-  hif::HIF<float, LhfInt> *M;
-  LhfsMatrixHdl            A;
-  LhfdMatrixHdl            Ad;
+  hif::HIF<float, LhfInt, LhfIndPtr> *M;
+  LhfsMatrixHdl                       A;
+  LhfdMatrixHdl                       Ad;
 };
 
 // create function
@@ -605,7 +609,7 @@ LhfsHifHdl lhfsCreate(const LhfsMatrixHdl A, const LhfsMatrixHdl S,
                       const double params[]) {
   LhfsHifHdl M = (LhfsHifHdl)std::malloc(sizeof(LhfsHif));
   if (!M) return nullptr;
-  M->M = new (std::nothrow) hif::HIF<float, LhfInt>();
+  M->M = new (std::nothrow) hif::HIF<float, LhfInt, LhfIndPtr>();
   if (!M->M) {
     std::free(M);
     return nullptr;
@@ -735,7 +739,8 @@ size_t lhfsGetSchurRank(const LhfsHifHdl hif) {
 ///////////////////////////
 
 struct LhfzMatrix {
-  LhfInt *              indptr, *indices;
+  LhfIndPtr *           indptr;
+  LhfInt *              indices;
   std::complex<double> *vals;
   std::size_t           n;
   bool                  is_rowmajor;
@@ -743,16 +748,17 @@ struct LhfzMatrix {
 
 // create matrix
 LhfzMatrixHdl lhfzCreateMatrix(const int is_rowmajor, const size_t n,
-                               const LhfInt *indptr, const LhfInt *indices,
+                               const LhfIndPtr *indptr, const LhfInt *indices,
                                const double _Complex *vals) {
   LhfzMatrixHdl mat = (LhfzMatrixHdl)std::malloc(sizeof(LhfzMatrix));
   if (!mat) return nullptr;
   mat->is_rowmajor = is_rowmajor;
-  mat->indptr = mat->indices = nullptr;
-  mat->vals                  = nullptr;
-  mat->n                     = 0;
+  mat->indptr      = nullptr;
+  mat->indices     = nullptr;
+  mat->vals        = nullptr;
+  mat->n           = 0;
   if (n && indptr && indices && vals) {
-    mat->indptr  = (LhfInt *)indptr;
+    mat->indptr  = (LhfIndPtr *)indptr;
     mat->indices = (LhfInt *)indices;
     mat->vals    = (std::complex<double> *)vals;
     mat->n       = n;
@@ -779,11 +785,11 @@ size_t lhfzGetMatrixNnz(const LhfzMatrixHdl mat) {
 
 // wrap external matrix
 LhfStatus lhfzWrapMatrix(LhfzMatrixHdl mat, const size_t n,
-                         const LhfInt *indptr, const LhfInt *indices,
+                         const LhfIndPtr *indptr, const LhfInt *indices,
                          const double _Complex *vals) {
   _LHF_CANNOT_ACCEPT_NULL(mat);
   if (n && indptr && indices && vals) {
-    mat->indptr  = (LhfInt *)indptr;
+    mat->indptr  = (LhfIndPtr *)indptr;
     mat->indices = (LhfInt *)indices;
     mat->vals    = (std::complex<double> *)vals;
     mat->n       = n;
@@ -814,8 +820,8 @@ LhfStatus lhfzReadVector(const char *fname, const size_t n,
 
 // HIF structure
 struct LhfzHif {
-  hif::HIF<std::complex<double>, LhfInt> *M;
-  LhfzMatrixHdl                           A;
+  hif::HIF<std::complex<double>, LhfInt, LhfIndPtr> *M;
+  LhfzMatrixHdl                                      A;
 };
 
 // create function
@@ -823,7 +829,7 @@ LhfzHifHdl lhfzCreate(const LhfzMatrixHdl A, const LhfzMatrixHdl S,
                       const double params[]) {
   LhfzHifHdl M = (LhfzHifHdl)std::malloc(sizeof(LhfzHif));
   if (!M) return nullptr;
-  M->M = new (std::nothrow) hif::HIF<std::complex<double>, LhfInt>();
+  M->M = new (std::nothrow) hif::HIF<std::complex<double>, LhfInt, LhfIndPtr>();
   if (!M->M) {
     std::free(M);
     return nullptr;
@@ -958,7 +964,8 @@ size_t lhfzGetSchurRank(const LhfzHifHdl hif) {
 ///////////////////////////
 
 struct LhfcMatrix {
-  LhfInt *             indptr, *indices;
+  LhfIndPtr *          indptr;
+  LhfInt *             indices;
   std::complex<float> *vals;
   std::size_t          n;
   bool                 is_rowmajor;
@@ -966,16 +973,17 @@ struct LhfcMatrix {
 
 // create matrix
 LhfcMatrixHdl lhfcCreateMatrix(const int is_rowmajor, const size_t n,
-                               const LhfInt *indptr, const LhfInt *indices,
+                               const LhfIndPtr *indptr, const LhfInt *indices,
                                const float _Complex *vals) {
   LhfcMatrixHdl mat = (LhfcMatrixHdl)std::malloc(sizeof(LhfcMatrix));
   if (!mat) return nullptr;
   mat->is_rowmajor = is_rowmajor;
-  mat->indptr = mat->indices = nullptr;
-  mat->vals                  = nullptr;
-  mat->n                     = 0;
+  mat->indptr      = nullptr;
+  mat->indices     = nullptr;
+  mat->vals        = nullptr;
+  mat->n           = 0;
   if (n && indptr && indices && vals) {
-    mat->indptr  = (LhfInt *)indptr;
+    mat->indptr  = (LhfIndPtr *)indptr;
     mat->indices = (LhfInt *)indices;
     mat->vals    = (std::complex<float> *)vals;
     mat->n       = n;
@@ -1002,11 +1010,11 @@ size_t lhfcGetMatrixNnz(const LhfcMatrixHdl mat) {
 
 // wrap external matrix
 LhfStatus lhfcWrapMatrix(LhfcMatrixHdl mat, const size_t n,
-                         const LhfInt *indptr, const LhfInt *indices,
+                         const LhfIndPtr *indptr, const LhfInt *indices,
                          const float _Complex *vals) {
   _LHF_CANNOT_ACCEPT_NULL(mat);
   if (n && indptr && indices && vals) {
-    mat->indptr  = (LhfInt *)indptr;
+    mat->indptr  = (LhfIndPtr *)indptr;
     mat->indices = (LhfInt *)indices;
     mat->vals    = (std::complex<float> *)vals;
     mat->n       = n;
@@ -1036,9 +1044,9 @@ LhfStatus lhfcReadVector(const char *fname, const size_t n, float _Complex *v) {
 
 // HIF structure
 struct LhfcHif {
-  hif::HIF<std::complex<float>, LhfInt> *M;
-  LhfcMatrixHdl                          A;
-  LhfzMatrixHdl                          Az;
+  hif::HIF<std::complex<float>, LhfInt, LhfIndPtr> *M;
+  LhfcMatrixHdl                                     A;
+  LhfzMatrixHdl                                     Az;
 };
 
 // create function
@@ -1046,7 +1054,7 @@ LhfcHifHdl lhfcCreate(const LhfcMatrixHdl A, const LhfcMatrixHdl S,
                       const double params[]) {
   LhfcHifHdl M = (LhfcHifHdl)std::malloc(sizeof(LhfcHif));
   if (!M) return nullptr;
-  M->M = new (std::nothrow) hif::HIF<std::complex<float>, LhfInt>();
+  M->M = new (std::nothrow) hif::HIF<std::complex<float>, LhfInt, LhfIndPtr>();
   const auto status = lhfcSetup(M, A, S, params);
   if (status == LHF_HIFIR_ERROR) {
     lhfcDestroy(M);

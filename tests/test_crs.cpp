@@ -62,8 +62,9 @@ TEST(CRS_api, test_core) {
   ASSERT_EQ(crs2.nrows(), nrows);
   ASSERT_EQ(crs2.ncols(), ncols);
   // test wrap
-  std::vector<int> rowptr(crs1.row_start().cbegin(), crs1.row_start().cend()),
-      colind(crs1.col_ind().cbegin(), crs1.col_ind().cend());
+  std::vector<std::ptrdiff_t> rowptr(crs1.row_start().cbegin(),
+                                     crs1.row_start().cend());
+  std::vector<int>    colind(crs1.col_ind().cbegin(), crs1.col_ind().cend());
   std::vector<double> vals(crs1.vals().cbegin(), crs1.vals().cend());
   crs_t crs3(nrows, ncols, rowptr.data(), colind.data(), vals.data(), true);
   ASSERT_EQ(crs3.status(), DATA_WRAP);

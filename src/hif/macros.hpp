@@ -70,6 +70,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ///          mechanism except this one.
 #  define HIF_DISABLE_SPACE_DROP
 
+/// \def HIF_HAS_HDF5
+/// \brief enable sparse matrix IO with HDF5 (C++ interface)
+#  define HIF_HAS_HDF5
+
 #endif  // ONLY_FOR_DOXYGEN
 
 /// \def HIF_RESERVE_FAC

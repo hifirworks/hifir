@@ -79,6 +79,7 @@ static bool introduced = false;
 /// \class HIF
 /// \tparam ValueType numerical value type, e.g. \a double
 /// \tparam IndexType index type, e.g. \a int
+/// \tparam IndPtrType index pionter type, default is \a std::ptrdiff_t
 /// \tparam UserDenseFactor Potential user customized dense factor
 ///
 /// This is top user interface (C++); it is designed as a preconditioner that
@@ -103,18 +104,21 @@ static bool introduced = false;
 ///     builder.solve(...);
 ///   }
 /// \endcode
-template <class ValueType, class IndexType,
+template <class ValueType, class IndexType, class IndPtrType = std::ptrdiff_t,
           template <class> class UserDenseFactor = DefaultDenseSolver>
 class HIF {
  public:
-  typedef ValueType                     value_type;   ///< value type
-  typedef Array<value_type>             array_type;   ///< array type
-  typedef IndexType                     index_type;   ///< index type
-  typedef Array<index_type>             iarray_type;  ///< index array
-  typedef CRS<value_type, index_type>   crs_type;     ///< crs type
-  typedef typename crs_type::other_type ccs_type;     ///< ccs type
+  typedef ValueType          value_type;                      ///< value type
+  typedef Array<value_type>  array_type;                      ///< array type
+  typedef IndexType          index_type;                      ///< index type
+  typedef IndPtrType         indptr_type;                     ///< index pointer
+  typedef Array<index_type>  iarray_type;                     ///< index array
+  typedef Array<indptr_type> iparray_type;                    ///< indptr array
+  typedef CRS<value_type, index_type, indptr_type> crs_type;  ///< crs type
+  typedef typename crs_type::other_type            ccs_type;  ///< ccs type
   // constexpr static SmallScaleType sss_type = SSSType;  ///< small scale type
-  typedef Precs<value_type, index_type, UserDenseFactor> precs_type;
+  typedef Precs<value_type, index_type, indptr_type, UserDenseFactor>
+      precs_type;
   ///< multilevel preconditioner type
   typedef typename precs_type::value_type prec_type;  ///< single level prec
   typedef typename prec_type::size_type   size_type;  ///< size type
@@ -125,6 +129,9 @@ class HIF {
 #endif
   ///< high-precision value type
   typedef Array<boost_value_type> work_array_type;  ///< work array type
+
+  static_assert(sizeof(indptr_type) >= sizeof(index_type),
+                "indptr type size must be larger than that of index type");
 
   /// \brief check empty or not
   inline bool empty() const { return _precs.empty(); }
@@ -263,6 +270,9 @@ class HIF {
 
     static_assert(std::is_same<index_type, typename CsType::index_type>::value,
                   "inconsistent index types");
+    static_assert(
+        std::is_same<indptr_type, typename CsType::indptr_type>::value,
+        "inconsistent indptr types");
 
     // print introduction
     if (hif_verbose(INFO, params)) {
@@ -305,13 +315,13 @@ class HIF {
     AA.resize(A.nrows(), A.ncols());
     // check index base
     if (A.nrows()) {
-      if (A.ind_start()[0] == index_type(0)) {
+      if (A.ind_start()[0] == indptr_type(0)) {
         // 0-based, shallow copy
-        AA.ind_start() = iarray_type(A.ind_start().size(),
-                                     (index_type *)A.ind_start().data(), true);
+        AA.ind_start() = iparray_type(
+            A.ind_start().size(), (indptr_type *)A.ind_start().data(), true);
         AA.inds() =
             iarray_type(A.inds().size(), (index_type *)A.inds().data(), true);
-      } else if (A.ind_start()[0] == index_type(1)) {
+      } else if (A.ind_start()[0] == indptr_type(1)) {
         // 1-based
         if (hif_verbose(INFO, params))
           hif_info("converting to 0-based compressed matrix...");
@@ -343,7 +353,7 @@ class HIF {
         hif_info("perform input matrix validity checking");
       AA.check_validity();
     }
-    
+
     // create size references for dropping
     iarray_type row_sizes, col_sizes;
     if (hif_verbose(FAC, params))
@@ -367,6 +377,7 @@ class HIF {
   ///               assumed to be \ref CRS format
   /// \tparam IndexType_ integer data type, e.g., \a int
   /// \tparam ValueType_ value data type, e.g., \a double
+  /// \tparam IndPtrType_ index pointer type, default is \a std::ptrdiff_t
   /// \param[in] n size of system
   /// \param[in] indptr index starting position array, must be length of \a n+1
   /// \param[in] indices index value array, must be length of \a indptr[n]
@@ -379,16 +390,17 @@ class HIF {
   /// types as input thus flexible. Notice that the integer and floating data
   /// types don't need to align with \ref index_type and \ref value_type, which
   /// aims for mixed-precision computation.
-  template <bool IsCrs, class IndexType_, class ValueType_>
-  inline void factorize(const size_type n, const IndexType_ *indptr,
+  template <bool IsCrs, class IndexType_, class ValueType_,
+            class IndPtrType_ = std::ptrdiff_t>
+  inline void factorize(const size_type n, const IndPtrType_ *indptr,
                         const IndexType_ *indices, const ValueType_ *vals,
                         const Params &  params = DEFAULT_PARAMS,
                         const size_type m0     = 0u) {
-    using foreign_crs_type = CRS<ValueType_, IndexType_>;
+    using foreign_crs_type = CRS<ValueType_, IndexType_, IndPtrType_>;
     using foreign_ccs_type = typename foreign_crs_type::other_type;
     using foreign_cs_type  = typename std::conditional<IsCrs, foreign_crs_type,
                                                       foreign_ccs_type>::type;
-    const foreign_cs_type A(n, (IndexType_ *)indptr, (IndexType_ *)indices,
+    const foreign_cs_type A(n, (IndPtrType_ *)indptr, (IndexType_ *)indices,
                             (ValueType_ *)vals, true);
     factorize(A, params, m0);
   }

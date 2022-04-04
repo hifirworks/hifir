@@ -76,6 +76,7 @@ inline CsType pivot_level_factorize(
   typedef AugCRS<crs_type>                                aug_crs_type;
   typedef AugCCS<ccs_type>                                aug_ccs_type;
   typedef typename CsType::index_type                     index_type;
+  typedef typename CsType::indptr_type                    indptr_type;
   typedef typename CsType::size_type                      size_type;
   typedef typename CsType::value_type                     value_type;
   typedef typename ValueTypeTrait<value_type>::value_type scalar_type;
@@ -172,25 +173,6 @@ inline CsType pivot_level_factorize(
     hif_info("time: %gs", timer.time());
   }
 
-#ifdef HIF_SAVE_FIRST_LEVEL_PERM_A
-  if (cur_level == 1u) {
-    std::mt19937                       eng(std::time(0));
-    std::uniform_int_distribution<int> d(1000, 1000000);
-    const std::string fname  = "Perm_A_" + std::to_string(d(eng)) + ".hif";
-    auto              A_perm = A_crs.compute_perm(p(), q.inv(), m);
-    Array<value_type> s2(m), t2(m);
-    for (size_type i = 0; i < m; ++i) {
-      s2[i] = s[p[i]];
-      t2[i] = t[q[i]];
-    }
-    A_perm.scale_diag_left(s2);
-    A_perm.scale_diag_right(t2);
-    hif_info("\nsaving first level permutated matrix to file %s\n",
-             fname.c_str());
-    A_perm.write_bin(fname.c_str(), IsSymm ? m : size_type(0));
-  }
-#endif
-
   if (hif_verbose(INFO, opts)) hif_info("preparing data variables...");
 
   timer.start();
@@ -233,7 +215,7 @@ inline CsType pivot_level_factorize(
   SparseVector<value_type, index_type> l(A.nrows() * 2), ut(A.ncols() * 2);
 
   // create buffer for L and U starts
-  Array<index_type> L_start(m), U_start(m);
+  Array<indptr_type> L_start(m), U_start(m);
   hif_error_if(
       L_start.status() == DATA_UNDEF || U_start.status() == DATA_UNDEF,
       "memory allocation failed for L_start and/or U_start at level %zd.",
@@ -265,7 +247,7 @@ inline CsType pivot_level_factorize(
   const size_type m2(m), n(A.nrows());
 
   // deferred permutations
-  Array<index_type> P(n * 2), Q(n * 2);
+  Array<indptr_type> P(n * 2), Q(n * 2);
   hif_error_if(P.status() == DATA_UNDEF || Q.status() == DATA_UNDEF,
                "memory allocation failed for P and/or Q at level %zd",
                cur_level);

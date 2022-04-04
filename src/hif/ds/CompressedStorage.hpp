@@ -49,24 +49,31 @@ namespace internal {
 /// \brief Core of the compressed storage, including data and interfaces
 /// \tparam ValueType value type, e.g. \a double, \a float, etc
 /// \tparam IndexType index used, e.g. \a int, \a long, etc
+/// \tparam IndPtrType index pointer used, default is \a std::ptrdiff_t
 /// \ingroup ds
-template <class ValueType, class IndexType>
+template <class ValueType, class IndexType, class IndPtrType = std::ptrdiff_t>
 class CompressedStorage {
  public:
-  typedef ValueType                            value_type;   ///< value type
-  typedef value_type *                         pointer;      ///< pointer type
-  typedef IndexType                            index_type;   ///< index type
-  typedef index_type *                         ipointer;     ///< index pointer
-  typedef CompressedStorage                    this_type;    ///< this
-  typedef Array<ValueType>                     array_type;   ///< value array
-  typedef Array<IndexType>                     iarray_type;  ///< index array
-  typedef typename array_type::size_type       size_type;    ///< size type
-  typedef typename array_type::iterator        v_iterator;   ///< value iterator
+  typedef ValueType                      value_type;   ///< value type
+  typedef value_type *                   pointer;      ///< pointer type
+  typedef IndexType                      index_type;   ///< index type
+  typedef index_type *                   ipointer;     ///< index pointer
+  typedef IndPtrType                     indptr_type;  ///< index_pointer type
+  typedef indptr_type *                  ippointer;   ///< index_pointer pointer
+  typedef CompressedStorage              this_type;   ///< this
+  typedef Array<ValueType>               array_type;  ///< value array
+  typedef Array<IndexType>               iarray_type;   ///< index array
+  typedef Array<IndPtrType>              iparray_type;  ///< index pointer array
+  typedef typename array_type::size_type size_type;     ///< size type
+  typedef typename array_type::iterator  v_iterator;    ///< value iterator
   typedef typename array_type::const_iterator  const_v_iterator;  ///< constant
   typedef typename iarray_type::iterator       i_iterator;  ///< index iterator
   typedef typename iarray_type::const_iterator const_i_iterator;  ///< constant
   typedef typename ValueTypeTrait<value_type>::value_type scalar_type;
   ///< scalar (real) type
+
+  static_assert(sizeof(indptr_type) >= sizeof(index_type),
+                "indptr type size must be larger than that of index type");
 
  public:
   /// \brief default constructor
@@ -78,7 +85,7 @@ class CompressedStorage {
   /// \param[in] indices index array
   /// \param[in] vals value array
   /// \param[in] wrap if \a false (default), then do copy
-  CompressedStorage(const size_type n, ipointer ind_start, ipointer indices,
+  CompressedStorage(const size_type n, ippointer ind_start, ipointer indices,
                     pointer vals, bool wrap = false)
       : _ind_start(n + 1, ind_start, wrap),
         _indices(ind_start[n] - ind_start[0], indices, wrap),
@@ -102,7 +109,7 @@ class CompressedStorage {
         _vals.resize(nnz);
       }
     }
-    std::fill(_ind_start.begin(), _ind_start.end(), index_type(0));
+    std::fill(_ind_start.begin(), _ind_start.end(), indptr_type(0));
     _psize = n;
   }
 
@@ -164,11 +171,11 @@ class CompressedStorage {
   inline const_i_iterator ind_cend(const size_type i) const {
     return _ind_cend(i);
   }
-  inline iarray_type &      inds() { return _indices; }
-  inline const iarray_type &inds() const { return _indices; }
-  inline iarray_type &      ind_start() { return _ind_start; }
-  inline const iarray_type &ind_start() const { return _ind_start; }
-  inline const size_type    primary_size() const { return _psize; }
+  inline iarray_type &       inds() { return _indices; }
+  inline const iarray_type & inds() const { return _indices; }
+  inline iparray_type &      ind_start() { return _ind_start; }
+  inline const iparray_type &ind_start() const { return _ind_start; }
+  inline const size_type     primary_size() const { return _psize; }
 
   /// \brief reserve space for nnz
   /// \param[in] nnz total number of nonzeros
@@ -366,8 +373,8 @@ class CompressedStorage {
   /// \param[out] indices index value array
   /// \param[out] vals values
   template <bool IsSecond>
-  inline void _split(const size_type m, const index_type *start,
-                     iarray_type &indptr, iarray_type &indices,
+  inline void _split(const size_type m, const indptr_type *start,
+                     iparray_type &indptr, iarray_type &indices,
                      array_type &vals) const {
     if (!_ind_start.size()) return;
     indptr.resize(_ind_start.size());
@@ -380,7 +387,7 @@ class CompressedStorage {
     }
     // if we have an empty matrix
     if (!nnz) {
-      std::fill(indptr.begin(), indptr.end(), index_type(0));
+      std::fill(indptr.begin(), indptr.end(), indptr_type(0));
       return;
     }
     indices.resize(nnz);
@@ -419,7 +426,7 @@ class CompressedStorage {
   /// \param[out] indices index value array
   /// \param[out] vals values
   template <bool IsSecond>
-  inline void _split(const size_type m, iarray_type &indptr,
+  inline void _split(const size_type m, iparray_type &indptr,
                      iarray_type &indices, array_type &vals) const {
     if (!_ind_start.size()) return;
     indptr.resize(_ind_start.size());
@@ -446,13 +453,13 @@ class CompressedStorage {
   /// \param[out] vals values
   template <bool IsSecond>
   inline void _split_dual(const size_type m, const size_type n,
-                          const index_type *start, iarray_type &indptr,
+                          const indptr_type *start, iparray_type &indptr,
                           iarray_type &indices, array_type &vals) const {
     if (!_ind_start.size()) return;
     indptr.resize((IsSecond ? n - m : m) + 1);
     hif_error_if(indptr.status() == DATA_UNDEF, "memory allocation failed");
     // initialize as zeros
-    std::fill(indptr.begin(), indptr.end(), index_type(0));
+    std::fill(indptr.begin(), indptr.end(), indptr_type(0));
     auto ind_first = _indices.cbegin();
     for (size_type i(0); i < _psize; ++i) {
       // store the position first
@@ -468,7 +475,7 @@ class CompressedStorage {
     for (size_type i(0); i < N2; ++i) indptr[i + 1] += indptr[i];
 
     if (!indptr[N2]) {
-      std::fill(indptr.begin(), indptr.end(), index_type(0));
+      std::fill(indptr.begin(), indptr.end(), indptr_type(0));
       return;
     }
 
@@ -503,7 +510,7 @@ class CompressedStorage {
 
     hif_assert(indptr[N2] == indptr[N2 - 1], "fatal");
 
-    index_type tmp(0);
+    indptr_type tmp(0);
     for (size_type i(0); i < N2; ++i) std::swap(indptr[i], tmp);
   }
 
@@ -516,11 +523,11 @@ class CompressedStorage {
   /// \param[out] vals values
   template <bool IsSecond>
   inline void _split_dual(const size_type m, const size_type n,
-                          iarray_type &indptr, iarray_type &indices,
+                          iparray_type &indptr, iarray_type &indices,
                           array_type &vals) const {
     if (!_ind_start.size()) return;
-    iarray_type buf(_psize);
-    auto        ind_first = _indices.cbegin();
+    iparray_type buf(_psize);
+    auto         ind_first = _indices.cbegin();
     hif_error_if(buf.status() == DATA_UNDEF, "memory allocation failed");
     for (size_type i = 0; i < _psize; ++i)
       buf[i] = find_sorted(_ind_cbegin(i), _ind_cend(i), m).second - ind_first;
@@ -538,7 +545,7 @@ class CompressedStorage {
   /// \param[out] vals numerical value array
   template <bool DoValue, bool OnlyLeading>
   inline void _compute_perm(const iarray_type &p, const iarray_type &qt,
-                            const size_type leading, iarray_type &indptr,
+                            const size_type leading, iparray_type &indptr,
                             iarray_type &indices, array_type &vals) const {
     const size_type m(p.size()), n(qt.size());
     hif_error_if(m != _psize, "permutation out of bound");
@@ -554,7 +561,7 @@ class CompressedStorage {
     size_type nnz(0);
     for (size_type i(0); i < psize; ++i) nnz += _nnz(p[i]);
     if (!nnz) {
-      std::fill(indptr.begin(), indptr.end(), index_type(0));
+      std::fill(indptr.begin(), indptr.end(), indptr_type(0));
       return;
     }
     indptr.front() = 0;
@@ -597,7 +604,7 @@ class CompressedStorage {
   /// \param[in] m leading block size
   /// \param[out] indptr index pointer array
   /// \param[out] indices index array
-  inline void _extract_leading_struct(const size_type m, iarray_type &indptr,
+  inline void _extract_leading_struct(const size_type m, iparray_type &indptr,
                                       iarray_type &indices) const {
     indptr.resize(m + 1);
     hif_error_if(indptr.status() == DATA_UNDEF, "memory allocation failed");
@@ -626,7 +633,7 @@ class CompressedStorage {
   /// \param[out] indptr index pointer array
   /// \param[out] indices index array
   /// \param[out] vals numerical value array
-  inline void _extract_leading(const size_type m, iarray_type &indptr,
+  inline void _extract_leading(const size_type m, iparray_type &indptr,
                                iarray_type &indices, array_type &vals) const {
     _extract_leading_struct(m, indptr, indices);
     vals.resize(indices.size());
@@ -638,7 +645,7 @@ class CompressedStorage {
 
   /// \brief destroy the memory explicitly
   inline void _destroy() {
-    iarray_type().swap(_ind_start);
+    iparray_type().swap(_ind_start);
     iarray_type().swap(_indices);
     array_type().swap(_vals);
     _psize = 0;
@@ -718,15 +725,16 @@ class CompressedStorage {
   }
 
  protected:
-  iarray_type _ind_start;  ///< index pointer array, size of n+1
-  iarray_type _indices;    ///< index array, size of nnz
-  array_type  _vals;       ///< numerical data array, size of nnz
-  size_type   _psize;      ///< primary size
+  iparray_type _ind_start;  ///< index pointer array, size of n+1
+  iarray_type  _indices;    ///< index array, size of nnz
+  array_type   _vals;       ///< numerical data array, size of nnz
+  size_type    _psize;      ///< primary size
 };
 
 /// \brief convert from one type to another type, e.g. ccs->crs
 /// \tparam ValueArray numerical value array type
 /// \tparam IndexArray index array type
+/// \tparam IndPtrArray index pointer array
 /// \param[in] i_ind_start input index start array
 /// \param[in] i_indices input index array
 /// \param[in] i_vals input value array
@@ -737,13 +745,13 @@ class CompressedStorage {
 /// \warning Both o_{indices,vals} should be allocated properly
 /// \note Work with both Array and \a std::vector
 /// \ingroup ds
-template <class ValueArray, class IndexArray>
-inline void convert_storage(const IndexArray &i_ind_start,
-                            const IndexArray &i_indices,
-                            const ValueArray &i_vals, IndexArray &o_ind_start,
+template <class ValueArray, class IndexArray, class IndPtrArray>
+inline void convert_storage(const IndPtrArray &i_ind_start,
+                            const IndexArray & i_indices,
+                            const ValueArray &i_vals, IndPtrArray &o_ind_start,
                             IndexArray &o_indices, ValueArray &o_vals) {
-  typedef typename ValueArray::size_type  size_type;
-  typedef typename IndexArray::value_type index_type;
+  typedef typename ValueArray::size_type   size_type;
+  typedef typename IndPtrArray::value_type indptr_type;
 
   // both o_{indices,vals} are uninitialized arrays with size of input nnz
   hif_error_if(i_indices.size() != (size_type)i_ind_start.back(),
@@ -792,7 +800,7 @@ inline void convert_storage(const IndexArray &i_ind_start,
   hif_assert(o_ind_start[o_n] == o_ind_start[o_n - 1], "fatal issue");
 
   // final step, revert back to previous stage for output index start, O(n)
-  index_type temp(0);
+  indptr_type temp(0);
   for (size_type i = 0u; i < o_n; ++i) std::swap(temp, o_ind_start[i]);
 
   // NOTE we can create a buffer of size n, so that the last step will become
@@ -802,29 +810,34 @@ inline void convert_storage(const IndexArray &i_ind_start,
 }  // namespace internal
 
 // forward decl
-template <class ValueType, class IndexType>
+template <class ValueType, class IndexType, class IndPtrType = std::ptrdiff_t>
 class CCS;
 
 /// \class CRS
 /// \brief Compressed Row Storage (CRS) format for sparse matrices
 /// \tparam ValueType numerical value type, e.g. \a double, \a float, etc
 /// \tparam IndexType index type, e.g. \a int, \a long, etc
+/// \tparam IndPtrType index pointer type, default is \a std::ptrdiff_t
 /// \ingroup ds
-template <class ValueType, class IndexType>
-class CRS : public internal::CompressedStorage<ValueType, IndexType> {
-  typedef internal::CompressedStorage<ValueType, IndexType> _base;
+template <class ValueType, class IndexType, class IndPtrType = std::ptrdiff_t>
+class CRS
+    : public internal::CompressedStorage<ValueType, IndexType, IndPtrType> {
+  typedef internal::CompressedStorage<ValueType, IndexType, IndPtrType> _base;
 
  public:
-  typedef ValueType                        value_type;   ///< value type
-  typedef IndexType                        index_type;   ///< index type
-  typedef typename _base::array_type       array_type;   ///< value array
-  typedef typename _base::iarray_type      iarray_type;  ///< index array
-  typedef typename _base::size_type        size_type;    ///< size type
-  typedef typename _base::pointer          pointer;      ///< value pointer
-  typedef typename _base::ipointer         ipointer;     ///< index pointer
-  typedef CCS<ValueType, IndexType>        other_type;   ///< ccs type
-  typedef typename _base::i_iterator       i_iterator;   ///< index iterator
-  typedef typename _base::const_i_iterator const_i_iterator;
+  typedef ValueType                    value_type;    ///< value type
+  typedef IndexType                    index_type;    ///< index type
+  typedef IndPtrType                   indptr_type;   ///< index_pointer type
+  typedef typename _base::array_type   array_type;    ///< value array
+  typedef typename _base::iarray_type  iarray_type;   ///< index array
+  typedef typename _base::iparray_type iparray_type;  ///< indptr array
+  typedef typename _base::size_type    size_type;     ///< size type
+  typedef typename _base::pointer      pointer;       ///< value pointer
+  typedef typename _base::ipointer     ipointer;      ///< index pointer
+  typedef typename _base::ippointer    ippointer;     ///< index_pointer pointer
+  typedef CCS<ValueType, IndexType, IndPtrType> other_type;  ///< ccs type
+  typedef typename _base::i_iterator            i_iterator;  ///< index iterator
+  typedef typename _base::const_i_iterator      const_i_iterator;
   ///< const index iterator
   typedef typename _base::v_iterator       v_iterator;  ///< value iterator
   typedef typename _base::const_v_iterator const_v_iterator;
@@ -837,17 +850,6 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   inline static CRS from_bin(const char *filename, size_type *m = nullptr) {
     CRS        crs;
     const auto b_size = crs.read_bin(filename);
-    if (m) *m = b_size;
-    return crs;
-  }
-
-  /// \brief read a matrix from HIF native ASCII file
-  /// \param[in] filename file name
-  /// \param[out] m if given, the leading block size is also returned
-  /// \return A CRS matrix
-  inline static CRS from_ascii(const char *filename, size_type *m = nullptr) {
-    CRS        crs;
-    const auto b_size = crs.read_ascii(filename);
     if (m) *m = b_size;
     return crs;
   }
@@ -871,7 +873,7 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] col_ind column indices
   /// \param[in] vals value data
   /// \param[in] wrap if \a false (default), then do copy
-  CRS(const size_type nrows, const size_type ncols, ipointer row_start,
+  CRS(const size_type nrows, const size_type ncols, ippointer row_start,
       ipointer col_ind, pointer vals, bool wrap = false)
       : _base(nrows, row_start, col_ind, vals, wrap), _ncols(ncols) {}
 
@@ -881,7 +883,7 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] col_ind column indices
   /// \param[in] vals value data
   /// \param[in] wrap if \a false (default), then do copy
-  CRS(const size_type n, ipointer row_start, ipointer col_ind, pointer vals,
+  CRS(const size_type n, ippointer row_start, ipointer col_ind, pointer vals,
       bool wrap = false)
       : CRS(n, n, row_start, col_ind, vals, wrap) {}
 
@@ -907,7 +909,7 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
     // NOTE that the constructor will allocate memory for each of the
     // three arrays before calling the following routine
     if (ccs.nnz())
-      internal::convert_storage<array_type, iarray_type>(
+      internal::convert_storage<array_type, iarray_type, iparray_type>(
           ccs.col_start(), ccs.row_ind(), ccs.vals(), row_start(), col_ind(),
           vals());
   }
@@ -919,12 +921,12 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   CRS &operator=(const CRS &) = default;
 
   // interface directly to internal database
-  inline iarray_type &      row_start() { return _base::_ind_start; }
-  inline iarray_type &      col_ind() { return _base::_indices; }
-  inline array_type &       vals() { return _base::_vals; }
-  inline const iarray_type &row_start() const { return _base::_ind_start; }
-  inline const iarray_type &col_ind() const { return _base::_indices; }
-  inline const array_type & vals() const { return _base::_vals; }
+  inline iparray_type &      row_start() { return _base::_ind_start; }
+  inline iarray_type &       col_ind() { return _base::_indices; }
+  inline array_type &        vals() { return _base::_vals; }
+  inline const iparray_type &row_start() const { return _base::_ind_start; }
+  inline const iarray_type & col_ind() const { return _base::_indices; }
+  inline const array_type &  vals() const { return _base::_vals; }
 
   /// \brief get number of rows
   inline size_type nrows() const { return _psize; }
@@ -1527,45 +1529,31 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] fname file name
   /// \return leading symmetric block size
   inline size_type read_bin(const char *fname) {
-    return hif::read_bin(fname, *this);
+    iparray_type  indptr;
+    iarray_type   indices;
+    array_type    values;
+    std::uint64_t info[4];
+    hif::read_bin(fname, info, indptr, indices, values);
+    resize(info[0], info[1]);
+    if (info[2] == 1u) {
+      row_start() = indptr;
+      col_ind()   = indices;
+      vals()      = values;
+    } else {
+      other_type A;
+      A.resize(info[0], info[1]);
+      A.col_start() = indptr;
+      A.row_ind()   = indices;
+      A.vals()      = values;
+      *this         = CRS(A);
+    }
+    return std::min(info[0], info[1]);
   }
 
   /// \brief write a native binary file
   /// \param[in] fname file name
-  /// \param[in] m leading block size
-  inline void write_bin(const char *fname, const size_type m = 0) const {
-    hif::write_bin(fname, *this, m);
-  }
-
-  /// \brief write a native ASCII file
-  /// \param[in] fname file name
-  /// \param[in] m leading block size
-  inline void write_ascii(const char *fname, const size_type m = 0) const {
-    hif::write_ascii<true>(fname, row_start(), _ncols, col_ind(), vals(), m);
-  }
-
-  /// \brief read data from an ASCII file
-  /// \param[in] fname file name
-  /// \return the leading symmetric block size
-  inline size_type read_ascii(const char *fname) {
-    bool        is_row, is_c;
-    char        dtype;
-    size_type   row, col, Nnz, m;
-    iarray_type i_start, is;
-    array_type  vs;
-    std::tie(is_row, is_c, dtype, row, col, Nnz, m) =
-        hif::read_ascii(fname, i_start, is, vs);
-    if (is_row) {
-      row_start() = std::move(i_start);
-      col_ind()   = std::move(is);
-      vals()      = std::move(vs);
-      _ncols      = col;
-      _psize      = row;
-    } else
-      *this =
-          CRS(other_type(row, col, i_start.data(), is.data(), vs.data(), true));
-
-    return m;
+  inline void write_bin(const char *fname, const size_type = 0) const {
+    hif::write_bin(fname, *this);
   }
 
   /// \brief Read data from a MatrixMarket file
@@ -1612,7 +1600,7 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// If \a IsSecond is \a true, then the result matrix is \a A[:,m:]; otherwise
   /// the result matrix is \a A[:,0:m]
   template <bool IsSecond>
-  inline CRS split(const size_type m, const iarray_type &start) const {
+  inline CRS split(const size_type m, const iparray_type &start) const {
     hif_error_if(m > _ncols, "invalid split threshold");
     hif_error_if(start.size() < _psize, "invalid starting position size");
     CRS B;
@@ -1631,8 +1619,8 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \brief split the matrix against column
   /// \param[in] m column size
   /// \param[in] start starting position array, at least size of \a m
-  inline std::pair<CRS, CRS> split(const size_type    m,
-                                   const iarray_type &start) const {
+  inline std::pair<CRS, CRS> split(const size_type     m,
+                                   const iparray_type &start) const {
     return std::make_pair(split<false>(m, start), split<true>(m, start));
   }
 
@@ -1654,8 +1642,8 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] m column size
   /// \param[in] start starting position array, at least size of nrows()
   template <bool IsSecond>
-  inline other_type split_ccs(const size_type    m,
-                              const iarray_type &start) const {
+  inline other_type split_ccs(const size_type     m,
+                              const iparray_type &start) const {
     hif_error_if(m > _ncols, "invalid split threshold");
     hif_error_if(start.size() < _psize, "invalid starting position size");
     other_type B;
@@ -1749,12 +1737,13 @@ class CRS : public internal::CompressedStorage<ValueType, IndexType> {
 };
 
 /// \brief Alias of \ref CRS
-template <class ValueType, class IndexType>
-using CSR = CRS<ValueType, IndexType>;
+template <class ValueType, class IndexType, class IndPtrType = std::ptrdiff_t>
+using CSR = CRS<ValueType, IndexType, IndPtrType>;
 
 /// \brief wrap user data for \ref CRS
 /// \tparam ValueType value type, e.g. \a double
 /// \tparam IndexType index type, e.g. \a int
+/// \tparam IndPtrType index pointer type, default is \a std::ptrdiff_t
 /// \param[in] nrows number of rows
 /// \param[in] ncols number of columns
 /// \param[in] row_start data for row pointer, size of \a nrows + 1
@@ -1764,27 +1753,27 @@ using CSR = CRS<ValueType, IndexType>;
 /// \return a \ref CRS matrix wrapped around user data.
 /// \warning It's the user's responsibility to maintain the external data
 /// \ingroup ds
-template <class ValueType, class IndexType>
+template <class ValueType, class IndexType, class IndPtrType>
 inline CRS<ValueType, IndexType> wrap_const_crs(
-    const typename CRS<ValueType, IndexType>::size_type nrows,
-    const typename CRS<ValueType, IndexType>::size_type ncols,
-    const IndexType *row_start, const IndexType *col_ind, const ValueType *vals,
-    bool check = true) {
-  using return_type          = CRS<ValueType, IndexType>;
-  using size_type            = typename CRS<ValueType, IndexType>::size_type;
+    const typename CRS<ValueType, IndexType, IndPtrType>::size_type nrows,
+    const typename CRS<ValueType, IndexType, IndPtrType>::size_type ncols,
+    const IndPtrType *row_start, const IndexType *col_ind,
+    const ValueType *vals, bool check = true) {
+  using return_type = CRS<ValueType, IndexType, IndPtrType>;
+  using size_type   = typename CRS<ValueType, IndexType, IndPtrType>::size_type;
   constexpr static bool WRAP = true;
   static_assert(std::is_integral<IndexType>::value, "must be integer");
+  static_assert(std::is_integral<IndPtrType>::value, "must be integer");
 
   // run time
 
-  return_type mat(nrows, ncols, const_cast<IndexType *>(row_start),
+  return_type mat(nrows, ncols, const_cast<IndPtrType *>(row_start),
                   const_cast<IndexType *>(col_ind),
                   const_cast<ValueType *>(vals), WRAP);
 
   if (check) {
     if (row_start[0] != 0)
       hif_error("first entry of row_start does not agree with 0.");
-    Array<ValueType> buf;
     for (size_type i = 0u; i < nrows; ++i) {
       if (!mat.nnz_in_row(i)) {
         hif_warning("row %zd is empty!", i);
@@ -1811,21 +1800,25 @@ inline CRS<ValueType, IndexType> wrap_const_crs(
 /// \tparam ValueType numerical value type, e.g. \a double, \a float, etc
 /// \tparam IndexType index type, e.g. \a int, \a long, etc
 /// \ingroup ds
-template <class ValueType, class IndexType>
-class CCS : public internal::CompressedStorage<ValueType, IndexType> {
-  typedef internal::CompressedStorage<ValueType, IndexType> _base;
+template <class ValueType, class IndexType, class IndPtrType>
+class CCS
+    : public internal::CompressedStorage<ValueType, IndexType, IndPtrType> {
+  typedef internal::CompressedStorage<ValueType, IndexType, IndPtrType> _base;
 
  public:
-  typedef ValueType                        value_type;   ///< value type
-  typedef IndexType                        index_type;   ///< index type
-  typedef typename _base::array_type       array_type;   ///< value array
-  typedef typename _base::iarray_type      iarray_type;  ///< index array
-  typedef typename _base::size_type        size_type;    ///< size type
-  typedef typename _base::pointer          pointer;      ///< value pointer
-  typedef typename _base::ipointer         ipointer;     ///< index pointer
-  typedef CRS<ValueType, IndexType>        other_type;   ///< crs type
-  typedef typename _base::i_iterator       i_iterator;   ///< index iterator
-  typedef typename _base::const_i_iterator const_i_iterator;
+  typedef ValueType                    value_type;    ///< value type
+  typedef IndexType                    index_type;    ///< index type
+  typedef IndPtrType                   indptr_type;   ///< index_pointer type
+  typedef typename _base::array_type   array_type;    ///< value array
+  typedef typename _base::iarray_type  iarray_type;   ///< index array
+  typedef typename _base::iparray_type iparray_type;  ///< indptr array
+  typedef typename _base::size_type    size_type;     ///< size type
+  typedef typename _base::pointer      pointer;       ///< value pointer
+  typedef typename _base::ipointer     ipointer;      ///< index pointer
+  typedef typename _base::ippointer    ippointer;     ///< index_pointer pointer
+  typedef CRS<ValueType, IndexType, IndPtrType> other_type;  ///< crs type
+  typedef typename _base::i_iterator            i_iterator;  ///< index iterator
+  typedef typename _base::const_i_iterator      const_i_iterator;
   ///< const index iterator
   typedef typename _base::v_iterator       v_iterator;  ///< value iterator
   typedef typename _base::const_v_iterator const_v_iterator;
@@ -1839,17 +1832,6 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   inline static CCS from_bin(const char *filename, size_type *m = nullptr) {
     CCS        ccs;
     const auto b_size = ccs.read_bin(filename);
-    if (m) *m = b_size;
-    return ccs;
-  }
-
-  /// \brief read from a native HIF ASCII file
-  /// \param[in] filename file name
-  /// \param[out] m if given, then it will store the leading symmetric size
-  /// \return A CCS matrix
-  inline static CCS from_ascii(const char *filename, size_type *m = nullptr) {
-    CCS        ccs;
-    const auto b_size = ccs.read_ascii(filename);
     if (m) *m = b_size;
     return ccs;
   }
@@ -1873,7 +1855,7 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] row_ind row indices
   /// \param[in] vals value data
   /// \param[in] wrap if \a false (default), then do copy
-  CCS(const size_type nrows, const size_type ncols, ipointer col_start,
+  CCS(const size_type nrows, const size_type ncols, ippointer col_start,
       ipointer row_ind, pointer vals, bool wrap = false)
       : _base(ncols, col_start, row_ind, vals, wrap), _nrows(nrows) {}
 
@@ -1883,7 +1865,7 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] row_ind row indices
   /// \param[in] vals value data
   /// \param[in] wrap if \a false (default), then do copy
-  CCS(const size_type n, ipointer col_start, ipointer row_ind, pointer vals,
+  CCS(const size_type n, ippointer col_start, ipointer row_ind, pointer vals,
       bool wrap = false)
       : CCS(n, n, col_start, row_ind, vals, wrap) {}
 
@@ -1907,7 +1889,7 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   explicit CCS(const other_type &crs)
       : CCS(crs.nrows(), crs.ncols(), crs.nnz(), false) {
     if (crs.nnz())
-      internal::convert_storage<array_type, iarray_type>(
+      internal::convert_storage<array_type, iarray_type, iparray_type>(
           crs.row_start(), crs.col_ind(), crs.vals(), col_start(), row_ind(),
           vals());
   }
@@ -1919,12 +1901,12 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   CCS &operator=(const CCS &) = default;
 
   // interface directly touch to internal database
-  inline iarray_type &      col_start() { return _base::_ind_start; }
-  inline iarray_type &      row_ind() { return _base::_indices; }
-  inline array_type &       vals() { return _base::_vals; }
-  inline const iarray_type &col_start() const { return _base::_ind_start; }
-  inline const iarray_type &row_ind() const { return _base::_indices; }
-  inline const array_type & vals() const { return _base::_vals; }
+  inline iparray_type &      col_start() { return _base::_ind_start; }
+  inline iarray_type &       row_ind() { return _base::_indices; }
+  inline array_type &        vals() { return _base::_vals; }
+  inline const iparray_type &col_start() const { return _base::_ind_start; }
+  inline const iarray_type & row_ind() const { return _base::_indices; }
+  inline const array_type &  vals() const { return _base::_vals; }
 
   /// \brief get number of rows
   inline size_type nrows() const { return _nrows; }
@@ -2453,45 +2435,31 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] fname file name
   /// \return leading symmetric block size
   inline size_type read_bin(const char *fname) {
-    return hif::read_bin(fname, *this);
+    iparray_type  indptr;
+    iarray_type   indices;
+    array_type    values;
+    std::uint64_t info[4];
+    hif::read_bin(fname, info, indptr, indices, values);
+    resize(info[0], info[1]);
+    if (info[2] == 0u) {
+      col_start() = indptr;
+      row_ind()   = indices;
+      vals()      = values;
+    } else {
+      other_type A;
+      A.resize(info[0], info[1]);
+      A.row_start() = indptr;
+      A.col_ind()   = indices;
+      A.vals()      = values;
+      *this         = CCS(A);
+    }
+    return std::min(info[0], info[1]);
   }
 
   /// \brief write to a native HIF binary file
   /// \param[in] fname file name
-  /// \param[in] m leading block size
-  inline void write_bin(const char *fname, const size_type m = 0) const {
-    hif::write_bin(fname, *this, m);
-  }
-
-  /// \brief write a native ASCII file
-  /// \param[in] fname file name
-  /// \param[in] m leading block size
-  inline void write_ascii(const char *fname, const size_type m = 0) const {
-    hif::write_ascii<false>(fname, col_start(), _nrows, row_ind(), vals(), m);
-  }
-
-  /// \brief read data from an ASCII file
-  /// \param[in] fname file name
-  /// \return the leading symmetric block size
-  inline size_type read_ascii(const char *fname) {
-    bool        is_row, is_c;
-    char        dtype;
-    size_type   row, col, Nnz, m;
-    iarray_type i_start, is;
-    array_type  vs;
-    std::tie(is_row, is_c, dtype, row, col, Nnz, m) =
-        hif::read_ascii(fname, i_start, is, vs);
-    if (!is_row) {
-      col_start() = std::move(i_start);
-      row_ind()   = std::move(is);
-      vals()      = std::move(vs);
-      _nrows      = row;
-      _psize      = col;
-    } else
-      *this =
-          CCS(other_type(row, col, i_start.data(), is.data(), vs.data(), true));
-
-    return m;
+  inline void write_bin(const char *fname, const size_type = 0) const {
+    hif::write_bin(fname, *this);
   }
 
   /// \brief Read data from a MatrixMarket file
@@ -2532,7 +2500,7 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] m splitted row size
   /// \param[in] start starting position array
   template <bool IsSecond>
-  inline CCS split(const size_type m, const iarray_type &start) const {
+  inline CCS split(const size_type m, const iparray_type &start) const {
     hif_error_if(m > _nrows, "invalid row size");
     hif_error_if(start.size() < _psize, "invalid starting position array");
     CCS B;
@@ -2551,8 +2519,8 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \brief split against row
   /// \param[in] m splitted row size
   /// \param[in] start starting position array
-  inline std::pair<CCS, CCS> split(const size_type    m,
-                                   const iarray_type &start) const {
+  inline std::pair<CCS, CCS> split(const size_type     m,
+                                   const iparray_type &start) const {
     return std::make_pair(split<false>(m, start), split<true>(m, start));
   }
 
@@ -2574,8 +2542,8 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] m splitted row size
   /// \param[in] start starting position array
   template <bool IsSecond>
-  inline other_type split_crs(const size_type    m,
-                              const iarray_type &start) const {
+  inline other_type split_crs(const size_type     m,
+                              const iparray_type &start) const {
     hif_error_if(m > _nrows, "invalid row size");
     hif_error_if(start.size() < _psize, "invalid starting position array");
     other_type B;
@@ -2595,7 +2563,7 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
   /// \param[in] m splitted row size
   /// \param[in] start starting position array
   inline std::pair<other_type, other_type> split_crs(
-      const size_type m, const iarray_type &start) const {
+      const size_type m, const iparray_type &start) const {
     return std::make_pair(split_crs<false>(m, start),
                           split_crs<true>(m, start));
   }
@@ -2668,12 +2636,13 @@ class CCS : public internal::CompressedStorage<ValueType, IndexType> {
 };
 
 /// \brief Alias of \ref CCS
-template <class ValueType, class IndexType>
-using CSC = CCS<ValueType, IndexType>;
+template <class ValueType, class IndexType, class IndPtrType = std::ptrdiff_t>
+using CSC = CCS<ValueType, IndexType, IndPtrType>;
 
 /// \brief wrap user data for \ref CCS
 /// \tparam ValueType value type, e.g. \a double
 /// \tparam IndexType index type, e.g. \a int
+/// \tparam IndPtrType index pointer type, default is \a std::ptrdiff_t
 /// \param[in] nrows number of rows
 /// \param[in] ncols number of columns
 /// \param[in] col_start data for column pointer, size of \a ncols + 1
@@ -2683,20 +2652,21 @@ using CSC = CCS<ValueType, IndexType>;
 /// \return a \ref CRS matrix wrapped around user data.
 /// \warning It's the user's responsibility to maintain the external data
 /// \ingroup ds
-template <class ValueType, class IndexType>
-inline CCS<ValueType, IndexType> wrap_const_ccs(
-    const typename CCS<ValueType, IndexType>::size_type nrows,
-    const typename CCS<ValueType, IndexType>::size_type ncols,
-    const IndexType *col_start, const IndexType *row_ind, const ValueType *vals,
-    bool check = true) {
-  using return_type          = CCS<ValueType, IndexType>;
-  using size_type            = typename CCS<ValueType, IndexType>::size_type;
+template <class ValueType, class IndexType, class IndPtrType>
+inline CCS<ValueType, IndexType, IndPtrType> wrap_const_ccs(
+    const typename CCS<ValueType, IndexType, IndPtrType>::size_type nrows,
+    const typename CCS<ValueType, IndexType, IndPtrType>::size_type ncols,
+    const IndPtrType *col_start, const IndexType *row_ind,
+    const ValueType *vals, bool check = true) {
+  using return_type = CCS<ValueType, IndexType, IndPtrType>;
+  using size_type   = typename CCS<ValueType, IndexType, IndPtrType>::size_type;
   constexpr static bool WRAP = true;
   static_assert(std::is_integral<IndexType>::value, "must be integer");
+  static_assert(std::is_integral<IndPtrType>::value, "must be integer");
 
   // run time
 
-  return_type mat(nrows, ncols, const_cast<IndexType *>(col_start),
+  return_type mat(nrows, ncols, const_cast<IndPtrType *>(col_start),
                   const_cast<IndexType *>(row_ind),
                   const_cast<ValueType *>(vals), WRAP);
 
@@ -2735,10 +2705,10 @@ inline CCS<ValueType, IndexType> wrap_const_ccs(
 /// \warning The user must query the sizes and allocate the buffers beforehand
 /// \ingroup ds
 template <class ExportCSType, class CSCopiedType>
-inline void export_compressed_data(const CSCopiedType &            A,
-                                   typename ExportCSType::ipointer ind_start,
-                                   typename ExportCSType::ipointer indices,
-                                   typename ExportCSType::pointer  vals) {
+inline void export_compressed_data(const CSCopiedType &             A,
+                                   typename ExportCSType::ippointer ind_start,
+                                   typename ExportCSType::ipointer  indices,
+                                   typename ExportCSType::pointer   vals) {
   // if export is same as copied, then this is shallow copy
   const ExportCSType AA(A);
   std::copy_n(AA.ind_start().cbegin(), AA.primary_size() + 1, ind_start);

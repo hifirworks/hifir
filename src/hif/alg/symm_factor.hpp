@@ -37,16 +37,16 @@ namespace internal {
 
 /// \brief compress offsets to have a compact L
 /// \tparam L_Type storage for \a L, see \ref CCS
-/// \tparam PosArray array for storing starting positions, see \ref Array
+/// \tparam IndPtrType array for storing starting positions, see \ref Array
 /// \param[in,out] L uncompressed \a L part
 /// \param[in] L_start starting positions of the offset of \a L
 /// \param[in] m leading block size
 /// \param[in] dfrs total number of deferrals
-template <class L_Type, class PosArray>
-inline void compress_tail(L_Type &L, const PosArray &L_start,
-                          const typename PosArray::size_type m,
-                          const typename PosArray::size_type dfrs) {
-  using size_type  = typename PosArray::size_type;
+template <class L_Type, class IndPtrType>
+inline void compress_tail(L_Type &L, const IndPtrType &L_start,
+                          const typename IndPtrType::size_type m,
+                          const typename IndPtrType::size_type dfrs) {
+  using size_type  = typename IndPtrType::size_type;
   using index_type = typename L_Type::index_type;
 
   if (dfrs) {
@@ -134,6 +134,7 @@ inline CsType symm_level_factorize(
   typedef typename cs_trait::crs_type                     crs_type;
   typedef typename cs_trait::ccs_type                     ccs_type;
   typedef typename CsType::index_type                     index_type;
+  typedef typename CsType::indptr_type                    indptr_type;
   typedef typename CsType::size_type                      size_type;
   typedef typename CsType::value_type                     value_type;
   typedef DenseMatrix<value_type>                         dense_type;
@@ -256,7 +257,7 @@ inline CsType symm_level_factorize(
   SparseVector<value_type, index_type> l(A.nrows() * 2);
 
   // create buffer for L start
-  Array<index_type> L_start(m);
+  Array<indptr_type> L_start(m);
   hif_error_if(L_start.status() == DATA_UNDEF,
                "memory allocation failed for L_start at level %zd.", cur_level);
 
@@ -291,7 +292,7 @@ inline CsType symm_level_factorize(
   const size_type m2(m), n(A.nrows());
 
   // deferred permutations
-  Array<index_type> P(n * 2);
+  Array<indptr_type> P(n * 2);
   hif_error_if(P.status() == DATA_UNDEF,
                "memory allocation failed for P at level %zd", cur_level);
   std::copy_n(p().cbegin(), n, P.begin());

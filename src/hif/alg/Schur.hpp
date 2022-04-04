@@ -43,6 +43,7 @@ namespace hif {
 namespace internal {
 
 /// \brief drop \a L_E matrix or \a U_F matrix
+/// \tparam IndPtrArray index pointer array
 /// \tparam IntArray integer array, see \ref Array
 /// \tparam ValueArray value array, see \ref Array
 /// \tparam BufArray value buffer array type
@@ -55,11 +56,12 @@ namespace internal {
 /// \param[out] buf work space
 /// \param[out] ibuf integer work space
 /// \ingroup schur
-template <class IntArray, class ValueArray, class BufArray, class IntBufArray>
-inline void drop_offsets_kernel(const IntArray &ref_indptr, const double alpha,
-                                IntArray &indptr, IntArray &indices,
-                                ValueArray &vals, BufArray &buf,
-                                IntBufArray &ibuf) {
+template <class IndPtrArray, class IntArray, class ValueArray, class BufArray,
+          class IntBufArray>
+inline void drop_offsets_kernel(const IndPtrArray &ref_indptr,
+                                const double alpha, IndPtrArray &indptr,
+                                IntArray &indices, ValueArray &vals,
+                                BufArray &buf, IntBufArray &ibuf) {
   using size_type  = typename IntArray::size_type;
   using index_type = typename IntArray::value_type;
 
@@ -130,7 +132,7 @@ inline void drop_offsets_kernel(const IntArray &ref_indptr, const double alpha,
 /// \note buffers can be got from Crout work spaces
 /// \sa drop_U_F
 template <class CrsType, class BufArray, class IntBufArray>
-inline void drop_L_E(const typename CrsType::iarray_type &ref_indptr,
+inline void drop_L_E(const typename CrsType::iparray_type &ref_indptr,
                      const double alpha, CrsType &L_E, BufArray &buf,
                      IntBufArray &ibuf) {
   static_assert(CrsType::ROW_MAJOR, "must be CRS");
@@ -157,7 +159,7 @@ inline void drop_L_E(const typename CrsType::iarray_type &ref_indptr,
 /// \note buffers can be got from Crout work spaces
 /// \sa drop_L_E
 template <class CcsType, class BufArray, class IntBufArray>
-inline void drop_U_F(const typename CcsType::iarray_type &ref_indptr,
+inline void drop_U_F(const typename CcsType::iparray_type &ref_indptr,
                      const double alpha, CcsType &U_F, BufArray &buf,
                      IntBufArray &ibuf) {
   static_assert(!CcsType::ROW_MAJOR, "must be CCS");
@@ -417,9 +419,9 @@ namespace mt {
 /// \param[in] nthreads total threads used, must be at least 1, not alerted
 /// \note buffers can be got from Crout work spaces
 template <class CrsType, class CcsType, class BufArray, class IntBufArray>
-inline void drop_L_E_and_U_F(const typename CrsType::iarray_type &ref_indptr_L,
-                             const double                         alpha_L,
-                             const typename CcsType::iarray_type &ref_indptr_U,
+inline void drop_L_E_and_U_F(const typename CrsType::iparray_type &ref_indptr_L,
+                             const double                          alpha_L,
+                             const typename CcsType::iparray_type &ref_indptr_U,
                              const double alpha_U, CrsType &L_E, CcsType &U_F,
                              BufArray &buf_L, IntBufArray &ibuf_L,
                              BufArray &buf_U, IntBufArray &ibuf_U,

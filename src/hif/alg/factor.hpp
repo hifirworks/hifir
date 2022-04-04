@@ -187,9 +187,9 @@ inline typename CrsType::other_type extract_E(
     const typename CrsType::size_type m, const PermType &p, const PermType &q) {
   // it's efficient to extract E from CRS
   static_assert(CrsType::ROW_MAJOR, "input A must be CRS!");
-  using ccs_type   = typename CrsType::other_type;
-  using size_type  = typename CrsType::size_type;
-  using index_type = typename CrsType::index_type;
+  using ccs_type    = typename CrsType::other_type;
+  using size_type   = typename CrsType::size_type;
+  using indptr_type = typename CrsType::indptr_type;
 
   const size_type n = A.nrows();
 
@@ -251,7 +251,7 @@ inline typename CrsType::other_type extract_E(
   }
 
   // revert
-  index_type tmp(0);
+  indptr_type tmp(0);
   for (size_type i = 0u; i < m; ++i) std::swap(col_start[i], tmp);
 
   return E;
@@ -424,19 +424,19 @@ class CompressedTypeTrait {
 /// \brief compress offsets to have a compact L and U
 /// \tparam L_Type storage for \a L, see \ref CCS
 /// \tparam U_Type storage for \a U, see \ref CRS
-/// \tparam PosArray array for storing starting positions, see \ref Array
+/// \tparam IndPtrArray array for storing starting positions, see \ref Array
 /// \param[in,out] U uncompressed \a U part
 /// \param[in,out] L uncompressed \a L part
 /// \param[in] U_start starting positions of the offset of \a U
 /// \param[in] L_start starting positions of the offset of \a L
 /// \param[in] m leading block size
 /// \param[in] dfrs total number of deferrals
-template <class L_Type, class U_Type, class PosArray>
-inline void compress_tails(U_Type &U, L_Type &L, const PosArray &U_start,
-                           const PosArray &                   L_start,
-                           const typename PosArray::size_type m,
-                           const typename PosArray::size_type dfrs) {
-  using size_type  = typename PosArray::size_type;
+template <class L_Type, class U_Type, class IndPtrArray>
+inline void compress_tails(U_Type &U, L_Type &L, const IndPtrArray &U_start,
+                           const IndPtrArray &                   L_start,
+                           const typename IndPtrArray::size_type m,
+                           const typename IndPtrArray::size_type dfrs) {
+  using size_type  = typename IndPtrArray::size_type;
   using index_type = typename L_Type::index_type;
 
   if (dfrs) {
@@ -564,6 +564,7 @@ inline CsType level_factorize(
   typedef typename CsType::index_type                     index_type;
   typedef typename CsType::size_type                      size_type;
   typedef typename CsType::value_type                     value_type;
+  typedef typename CsType::indptr_type                    indptr_type;
   typedef typename ValueTypeTrait<value_type>::value_type scalar_type;
   typedef DenseMatrix<value_type>                         dense_type;
 
@@ -689,25 +690,6 @@ inline CsType level_factorize(
     hif_info("time: %gs", timer.time());
   }
 
-#ifdef HIF_SAVE_FIRST_LEVEL_PERM_A
-  if (cur_level == 1u) {
-    std::mt19937                       eng(std::time(0));
-    std::uniform_int_distribution<int> d(1000, 1000000);
-    const std::string fname  = "Perm_A_" + std::to_string(d(eng)) + ".hif";
-    auto              A_perm = A_crs.compute_perm(p(), q.inv(), m);
-    Array<value_type> s2(m), t2(m);
-    for (size_type i = 0; i < m; ++i) {
-      s2[i] = s[p[i]];
-      t2[i] = t[q[i]];
-    }
-    A_perm.scale_diag_left(s2);
-    A_perm.scale_diag_right(t2);
-    hif_info("\nsaving first level permutated matrix to file %s\n",
-             fname.c_str());
-    A_perm.write_bin(fname.c_str(), IsSymm ? m : size_type(0));
-  }
-#endif
-
   if (hif_verbose(INFO, opts)) hif_info("preparing data variables...");
 
   timer.start();
@@ -747,13 +729,13 @@ inline CsType level_factorize(
   SparseVector<value_type, index_type> l(A.nrows() * 2), ut(A.ncols() * 2);
 
   // create buffer for L and U starts
-  Array<index_type> L_start(m), U_start(m);
+  Array<indptr_type> L_start(m), U_start(m);
   hif_error_if(
       L_start.status() == DATA_UNDEF || U_start.status() == DATA_UNDEF,
       "memory allocation failed for L_start and/or U_start at level %zd.",
       cur_level);
 
-  Array<index_type> L_offsets;
+  Array<indptr_type> L_offsets;
   if (IsSymm) {
     L_offsets.resize(m);
     hif_error_if(L_offsets.status() == DATA_UNDEF,
@@ -761,7 +743,7 @@ inline CsType level_factorize(
                  cur_level);
   }
 
-  const Array<index_type> &Crout_L_start = !IsSymm ? L_start : L_offsets;
+  const Array<indptr_type> &Crout_L_start = !IsSymm ? L_start : L_offsets;
 
   // create buffer for L and U lists
   Array<index_type> L_list(A.nrows() * 2), U_list(A.ncols() * 2);
@@ -797,7 +779,7 @@ inline CsType level_factorize(
   const size_type m2(m), n(A.nrows());
 
   // deferred permutations
-  Array<index_type> P(n * 2), Q(n * 2);
+  Array<indptr_type> P(n * 2), Q(n * 2);
   hif_error_if(P.status() == DATA_UNDEF || Q.status() == DATA_UNDEF,
                "memory allocation failed for P and/or Q at level %zd",
                cur_level);

@@ -26,7 +26,7 @@
 
 #define ROW_MAJOR 1
 
-static void compute_A1(const size_t n, const LhfInt *rowptr,
+static void compute_A1(const size_t n, const LhfIndPtr *rowptr,
                        const double _Complex *vals, double _Complex *b);
 
 static double compute_error(const size_t n, const double _Complex *ref,
@@ -34,7 +34,8 @@ static double compute_error(const size_t n, const double _Complex *ref,
 
 int main() {
   /* variables */
-  LhfInt *         rowptr, *colind;
+  LhfIndPtr *      rowptr;
+  LhfInt *         colind;
   double _Complex *vals, *b, *x, *b2;
   int              is_sparse, is_real;
   double           err;
@@ -63,7 +64,7 @@ int main() {
   }
 
   /* allocate data */
-  rowptr = (LhfInt *)malloc((nrows + 1) * sizeof(LhfInt));
+  rowptr = (LhfIndPtr *)malloc((nrows + 1) * sizeof(LhfIndPtr));
   colind = (LhfInt *)malloc(nnz * sizeof(LhfInt));
   vals   = (double _Complex *)malloc(nnz * sizeof(double _Complex));
   printf("Successfully created data arrays for the input matrix.\n");
@@ -141,7 +142,7 @@ int main() {
   return (0);
 }
 
-static void compute_A1(const size_t n, const LhfInt *rowptr,
+static void compute_A1(const size_t n, const LhfIndPtr *rowptr,
                        const double _Complex *vals, double _Complex *b) {
   /* compute b = A*1 */
   double _Complex v;

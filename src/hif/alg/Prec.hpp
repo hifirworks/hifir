@@ -34,7 +34,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <utility>
 
 #include "hif/ds/CompressedStorage.hpp"
-#include "hif/ds/IntervalCompressedStorage.hpp"
 #include "hif/small_scale/solver.hpp"
 #include "hif/utils/common.hpp"
 
@@ -59,6 +58,7 @@ struct DefaultDenseSolver {
 /// \brief A single level preconditioner
 /// \tparam ValueType value data type, e.g. \a double
 /// \tparam IndexType index data type, e.g. \a int
+/// \tparam IndPtrType index_pointer type, default is \a std::ptrdiff_t
 /// \tparam UserDenseFactor Potential user customized dense factory for the
 ///                         final Schur complement, if it is
 ///                         \a DefaultDenseSolver (default), the code then uses
@@ -77,17 +77,17 @@ struct DefaultDenseSolver {
 ///   hif::HIF<double, int, MyDenseSolver> my_fac;
 /// \endcode
 /// \ingroup slv
-template <class ValueType, class IndexType,
+template <class ValueType, class IndexType, class IndPtrType = std::ptrdiff_t,
           template <class> class UserDenseFactor = DefaultDenseSolver>
 struct Prec {
-  typedef ValueType                     value_type;  ///< value type
-  typedef IndexType                     index_type;  ///< index type
-  typedef CRS<value_type, index_type>   crs_type;    ///< crs type
-  typedef CCS<value_type, index_type>   ccs_type;    ///< ccs type
-  typedef Array<index_type>             perm_type;   ///< permutation
-  typedef typename ccs_type::size_type  size_type;   ///< size
-  typedef typename ccs_type::array_type array_type;  ///< array
-  typedef ccs_type                      mat_type;    ///< interface type
+  typedef ValueType                               value_type;  ///< value type
+  typedef IndexType                               index_type;  ///< index type
+  typedef CRS<value_type, index_type, IndPtrType> crs_type;    ///< crs type
+  typedef CCS<value_type, index_type, IndPtrType> ccs_type;    ///< ccs type
+  typedef Array<index_type>                       perm_type;   ///< permutation
+  typedef typename ccs_type::size_type            size_type;   ///< size
+  typedef typename ccs_type::array_type           array_type;  ///< array
+  typedef ccs_type                                mat_type;  ///< interface type
   typedef typename std::conditional<
       std::is_same<typename ValueTypeTrait<value_type>::value_type,
                    long double>::value,
@@ -97,11 +97,8 @@ struct Prec {
   ///< scalar type
   typedef Array<scalar_type>
                         sarray_type;  ///< scalar array type // HIF_ENABLE_MUMPS
-  static constexpr char EMPTY_PREC     = '\0';   ///< empty prec
-  static constexpr bool INTERVAL_BASED = false;  ///< interval
-  using data_mat_type                  = typename std::conditional<
-      INTERVAL_BASED, typename using_interval_from_classical<mat_type>::type,
-      mat_type>::type;  ///< data matrix type
+  static constexpr char EMPTY_PREC = '\0';      ///< empty prec
+  using data_mat_type              = mat_type;  ///< data matrix type
 
  private:
   typedef SmallScaleSolverTrait<HIF_DENSE_MODE> _sss_trait;
@@ -184,65 +181,11 @@ struct Prec {
     return 0;
   }
 
-  /// \brief Using SFINAE to report interval-based information
-  template <typename T = void>
-  inline typename std::enable_if<INTERVAL_BASED, T>::type report_status_ef()
-      const {
-    static const auto report_kernel = [](const data_mat_type &mat,
-                                         const char *         name) {
-      if (!mat.converted()) {
-        hif_info(
-            "%s was not able to be converted to interval, too small average "
-            "interval (<2)",
-            name);
-      } else {
-        hif_info(
-            "%s was converted to interval!\n"
-            "\tstorage ratio (interval:classical) = %.3f%%\n"
-            "\taverage interval length = %.4g",
-            name, 100.0 * mat.storage_cost_ratio(),
-            (double)mat.nnz() / mat.nitrvs());
-      }
-    };
-
-    report_kernel(E, "E");
-    report_kernel(F, "F");
-  }
-
-  template <typename T = void>
-  inline typename std::enable_if<!INTERVAL_BASED, T>::type report_status_ef()
-      const {
+  inline void report_status_ef() const {
     // do nothing
   }
 
-  /// \brief report LU status with SFINAE
-  template <typename T = void>
-  inline typename std::enable_if<is_interval_cs<mat_type>::value, T>::type
-  report_status_lu() const {
-    static const auto report_kernel = [](const data_mat_type &mat,
-                                         const char *         name) {
-      if (!mat.converted()) {
-        hif_info(
-            "%s was not able to be converted to interval, too small average "
-            "interval (<2)",
-            name);
-      } else {
-        hif_info(
-            "%s was converted to interval!\n"
-            "\tstorage ratio (interval:classical) = %.3f%%\n"
-            "\taverage interval length = %.4g",
-            name, 100.0 * mat.storage_cost_ratio(),
-            (double)mat.nnz() / mat.nitrvs());
-      }
-    };
-
-    report_kernel(L_B, "L_B");
-    report_kernel(U_B, "U_B");
-  }
-
-  template <typename T = void>
-  inline typename std::enable_if<!is_interval_cs<mat_type>::value, T>::type
-  report_status_lu() const {}
+  inline void report_status_lu() const {}
 
   /// \brief check if this a last level preconditioner
   ///
@@ -275,20 +218,20 @@ struct Prec {
   }
 
   /// \brief export all numerical data
-  template <class ExportType, typename T = void>
-  inline typename std::enable_if<!INTERVAL_BASED, T>::type export_sparse_data(
-      typename ExportType::ipointer L_indptr,
-      typename ExportType::ipointer L_indices,
+  template <class ExportType>
+  inline void export_sparse_data(
+      typename ExportType::ippointer L_indptr,
+      typename ExportType::ipointer  L_indices,
       typename ExportType::pointer L_vals, typename ExportType::pointer D_vals,
-      typename ExportType::ipointer U_indptr,
-      typename ExportType::ipointer U_indices,
-      typename ExportType::pointer  U_vals,
-      typename ExportType::ipointer E_indptr,
-      typename ExportType::ipointer E_indices,
-      typename ExportType::pointer  E_vals,
-      typename ExportType::ipointer F_indptr,
-      typename ExportType::ipointer F_indices,
-      typename ExportType::pointer  F_vals,
+      typename ExportType::ippointer U_indptr,
+      typename ExportType::ipointer  U_indices,
+      typename ExportType::pointer   U_vals,
+      typename ExportType::ippointer E_indptr,
+      typename ExportType::ipointer  E_indices,
+      typename ExportType::pointer   E_vals,
+      typename ExportType::ippointer F_indptr,
+      typename ExportType::ipointer  F_indices,
+      typename ExportType::pointer   F_vals,
       typename ValueTypeTrait<typename ExportType::value_type>::value_type
           *s_vals,
       typename ValueTypeTrait<typename ExportType::value_type>::value_type
@@ -327,23 +270,6 @@ struct Prec {
       perm_type().swap(q_inv);
       m = n = 0;
     }
-  }
-
-  template <class ExportType, typename T = void>
-  inline typename std::enable_if<INTERVAL_BASED, T>::type export_sparse_data(
-      typename ExportType::ipointer, typename ExportType::ipointer,
-      typename ExportType::pointer, typename ExportType::pointer,
-      typename ExportType::ipointer, typename ExportType::ipointer,
-      typename ExportType::pointer, typename ExportType::ipointer,
-      typename ExportType::ipointer, typename ExportType::pointer,
-      typename ExportType::ipointer, typename ExportType::ipointer,
-      typename ExportType::pointer,
-      typename ValueTypeTrait<typename ExportType::value_type>::value_type *,
-      typename ValueTypeTrait<typename ExportType::value_type>::value_type *,
-      typename ExportType::ipointer, typename ExportType::ipointer,
-      typename ExportType::ipointer, typename ExportType::ipointer,
-      const bool = false) const {
-    hif_error("cannot export data for interval-based compressed formats!");
   }
 
   template <class T>
@@ -411,6 +337,7 @@ struct Prec {
 /// \brief multilevel preconditioners
 /// \tparam ValueType value data type, e.g. \a double
 /// \tparam IndexType index data type, e.g. \a int
+/// \tparam IndPtrType index pointer type, default is \a std::ptrdiff_t
 /// \tparam UserDenseFactor Potential user customized dense factor
 /// \ingroup slv
 ///
@@ -425,9 +352,10 @@ struct Prec {
 /// precs_t precs;
 /// precs.emplace_back(m, n, /* rvalue references */);
 /// \endcode
-template <class ValueType, class IndexType,
+template <class ValueType, class IndexType, class IndPtrType = std::ptrdiff_t,
           template <class> class UserDenseFactor = DefaultDenseSolver>
-using Precs = std::list<Prec<ValueType, IndexType, UserDenseFactor>>;
+using Precs =
+    std::list<Prec<ValueType, IndexType, IndPtrType, UserDenseFactor>>;
 
 }  // namespace hif
 
