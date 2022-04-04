@@ -337,6 +337,7 @@ struct Prec {
 /// \brief multilevel preconditioners
 /// \tparam ValueType value data type, e.g. \a double
 /// \tparam IndexType index data type, e.g. \a int
+/// \tparam IndPtrType index pointer type, default is \a std::ptrdiff_t
 /// \tparam UserDenseFactor Potential user customized dense factor
 /// \ingroup slv
 ///
@@ -351,9 +352,10 @@ struct Prec {
 /// precs_t precs;
 /// precs.emplace_back(m, n, /* rvalue references */);
 /// \endcode
-template <class ValueType, class IndexType,
+template <class ValueType, class IndexType, class IndPtrType = std::ptrdiff_t,
           template <class> class UserDenseFactor = DefaultDenseSolver>
-using Precs = std::list<Prec<ValueType, IndexType, UserDenseFactor>>;
+using Precs =
+    std::list<Prec<ValueType, IndexType, IndPtrType, UserDenseFactor>>;
 
 }  // namespace hif
 
