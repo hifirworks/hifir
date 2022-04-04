@@ -30,7 +30,8 @@ static double compute_error(const size_t n, const double *ref,
 
 int main() {
   /* variables */
-  LhfInt *      rowptr, *colind;
+  LhfIndPtr *   rowptr;
+  LhfInt *      colind;
   double *      vals, *b, *x, *b2;
   int           is_sparse, is_real;
   double        err;
@@ -61,7 +62,7 @@ int main() {
     return (1);
   }
   /* allocate data */
-  rowptr = (LhfInt *)malloc((nrows + 1) * sizeof(LhfInt));
+  rowptr = (LhfIndPtr *)malloc((nrows + 1) * sizeof(LhfIndPtr));
   colind = (LhfInt *)malloc(nnz * sizeof(LhfInt));
   vals   = (double *)malloc(nnz * sizeof(double));
   printf("Successfully created data arrays for the input matrix.\n");
