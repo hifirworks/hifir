@@ -57,6 +57,19 @@ typedef int32_t LhfInt;
 typedef int64_t LhfInt;
 #endif
 
+#ifndef LIBHIF_INDPTR_SIZE
+#  define LIBHIF_INDPTR_SIZE 64
+#endif
+
+#if LIBHIF_INDPTR_SIZE != 32 && LIBHIF_INDPTR_SIZE != 64
+#  error "Unsupported indptr type size, must be either 32 or 64!"
+#endif
+#if LIBHIF_INDPTR_SIZE == 64
+typedef ptrdiff_t LhfIndPtr;
+#else
+typedef int     LhfIndPtr;
+#endif
+
 /*!
  * We use an anonymous enum to group parameter positions in an array. The first
  * thing one needs to do is to create a @a double array of length
@@ -300,7 +313,7 @@ LhfStatus lhfQueryMmFile(const char* fname, int* is_sparse, int* is_real,
  *       instance of sparse matrix.
  */
 LhfdMatrixHdl lhfdCreateMatrix(const int is_rowmajor, const size_t n,
-                               const LhfInt* indptr, const LhfInt* indices,
+                               const LhfIndPtr* indptr, const LhfInt* indices,
                                const double* vals);
 
 /*!
@@ -356,7 +369,7 @@ LhfStatus lhfdReadVector(const char* fname, const size_t n, double* v);
  *       instance of sparse matrix.
  */
 LhfsMatrixHdl lhfsCreateMatrix(const int is_rowmajor, const size_t n,
-                               const LhfInt* indptr, const LhfInt* indices,
+                               const LhfIndPtr* indptr, const LhfInt* indices,
                                const float* vals);
 
 /*!
@@ -412,7 +425,7 @@ LhfStatus lhfsReadVector(const char* fname, const size_t n, float* v);
  *       instance of sparse matrix.
  */
 LhfzMatrixHdl lhfzCreateMatrix(const int is_rowmajor, const size_t n,
-                               const LhfInt* indptr, const LhfInt* indices,
+                               const LhfIndPtr* indptr, const LhfInt* indices,
                                const double _Complex* vals);
 
 /*!
@@ -468,7 +481,7 @@ LhfStatus lhfzReadVector(const char* fname, const size_t n, double _Complex* v);
  *       instance of sparse matrix.
  */
 LhfcMatrixHdl lhfcCreateMatrix(const int is_rowmajor, const size_t n,
-                               const LhfInt* indptr, const LhfInt* indices,
+                               const LhfIndPtr* indptr, const LhfInt* indices,
                                const float _Complex* vals);
 
 /*!
@@ -518,7 +531,7 @@ LhfStatus lhfcReadVector(const char* fname, const size_t n, float _Complex* v);
  * @ingroup cdouble
  */
 LhfStatus lhfdWrapMatrix(LhfdMatrixHdl mat, const size_t n,
-                         const LhfInt* indptr, const LhfInt* indices,
+                         const LhfIndPtr* indptr, const LhfInt* indices,
                          const double* vals);
 
 /*!
@@ -531,7 +544,7 @@ LhfStatus lhfdWrapMatrix(LhfdMatrixHdl mat, const size_t n,
  * @ingroup csingle
  */
 LhfStatus lhfsWrapMatrix(LhfsMatrixHdl mat, const size_t n,
-                         const LhfInt* indptr, const LhfInt* indices,
+                         const LhfIndPtr* indptr, const LhfInt* indices,
                          const float* vals);
 
 /*!
@@ -544,7 +557,7 @@ LhfStatus lhfsWrapMatrix(LhfsMatrixHdl mat, const size_t n,
  * @ingroup ccomplexdouble
  */
 LhfStatus lhfzWrapMatrix(LhfzMatrixHdl mat, const size_t n,
-                         const LhfInt* indptr, const LhfInt* indices,
+                         const LhfIndPtr* indptr, const LhfInt* indices,
                          const double _Complex* vals);
 
 /*!
@@ -557,7 +570,7 @@ LhfStatus lhfzWrapMatrix(LhfzMatrixHdl mat, const size_t n,
  * @ingroup ccomplexsingle
  */
 LhfStatus lhfcWrapMatrix(LhfcMatrixHdl mat, const size_t n,
-                         const LhfInt* indptr, const LhfInt* indices,
+                         const LhfIndPtr* indptr, const LhfInt* indices,
                          const float _Complex* vals);
 
 // HIF preconditioners
