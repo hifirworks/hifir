@@ -72,6 +72,9 @@ class CompressedStorage {
   typedef typename ValueTypeTrait<value_type>::value_type scalar_type;
   ///< scalar (real) type
 
+  static_assert(sizeof(indptr_type) >= sizeof(index_type),
+                "indptr type size must be larger than that of index type");
+
  public:
   /// \brief default constructor
   CompressedStorage() { _psize = 0; }
@@ -106,7 +109,7 @@ class CompressedStorage {
         _vals.resize(nnz);
       }
     }
-    std::fill(_ind_start.begin(), _ind_start.end(), index_type(0));
+    std::fill(_ind_start.begin(), _ind_start.end(), indptr_type(0));
     _psize = n;
   }
 
