@@ -1774,7 +1774,6 @@ inline CRS<ValueType, IndexType> wrap_const_crs(
   if (check) {
     if (row_start[0] != 0)
       hif_error("first entry of row_start does not agree with 0.");
-    Array<ValueType> buf;
     for (size_type i = 0u; i < nrows; ++i) {
       if (!mat.nnz_in_row(i)) {
         hif_warning("row %zd is empty!", i);
