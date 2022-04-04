@@ -50,11 +50,11 @@ namespace hif {
 /// \param[in] opt options
 /// \return symmetric permutation so that PAP' satisties AMD property
 template <bool IsSymm, class CcsType>
-inline Array<typename CcsType::index_type> run_amd(const CcsType &B,
-                                                   const Options &opt) {
-  using size_type  = typename CcsType::size_type;
-  using index_type = typename CcsType::index_type;
-  using amd        = amd::AMD<index_type>;
+inline typename CcsType::iparray_type run_amd(const CcsType &B,
+                                              const Options &opt) {
+  using size_type   = typename CcsType::size_type;
+  using indptr_type = typename CcsType::indptr_type;
+  using amd         = amd::AMD<indptr_type>;
 
   const size_type m = B.nrows();
   hif_assert(B.nrows() == m, "the leading block size should be size(B)");
@@ -70,9 +70,17 @@ inline Array<typename CcsType::index_type> run_amd(const CcsType &B,
     amd::control(s, Control);
     hif_info(s.str().c_str());
   }
-  Array<index_type> P(m);
+  Array<indptr_type> P(m);
+  Array<indptr_type> row_ind;
+  if (sizeof(indptr_type) == sizeof(typename CcsType::index_type))
+    row_ind = wrap_const_array(B.row_ind().size(),
+                               (const indptr_type *)B.row_ind().data());
+  else {
+    row_ind.resize(B.row_ind().size());
+    std::copy(B.row_ind().cbegin(), B.row_ind().cend(), row_ind.begin());
+  }
   hif_error_if(P.status() == DATA_UNDEF, "memory allocation failed");
-  const int result = amd::order(m, B.col_start().data(), B.row_ind().data(),
+  const int result = amd::order(m, B.col_start().data(), row_ind.data(),
                                 P.data(), Control, Info);
   if (result != AMD_OK && result != AMD_OK_BUT_JUMBLED) {
     // NOTE that we modified AMD to utilize jumbled return to automatically
@@ -101,19 +109,26 @@ inline Array<typename CcsType::index_type> run_amd(const CcsType &B,
 /// \param[in] opt options
 /// \return symmetric permutation so that PAP' satisties RCM property
 template <class CcsType>
-inline typename CcsType::iarray_type run_rcm(const CcsType &B,
-                                             const Options &opt) {
-  using index_type  = typename CcsType::index_type;
-  using iarray_type = typename CcsType::iarray_type;
-  using rcm_type    = rcm::RCM<index_type>;
+inline typename CcsType::iparray_type run_rcm(const CcsType &B,
+                                              const Options &opt) {
+  using indptr_type  = typename CcsType::indptr_type;
+  using iparray_type = typename CcsType::iparray_type;
+  using rcm_type     = rcm::RCM<indptr_type>;
 
   if (hif_verbose(PRE, opt)) hif_info("begin running RCM reordering...");
-  const auto   n      = B.nrows();
-  iarray_type &xadj   = const_cast<iarray_type &>(B.col_start());
-  iarray_type &adjncy = const_cast<iarray_type &>(B.row_ind());
+  const auto   n = B.nrows();
+  iparray_type adjncy;
+  if (sizeof(indptr_type) == sizeof(typename CcsType::index_type))
+    adjncy = wrap_array(B.row_ind().size(), (indptr_type *)B.row_ind().data());
+  else {
+    adjncy.resize(B.row_ind().size());
+    std::copy(B.row_ind().cbegin(), B.row_ind().cend(), adjncy.begin());
+  }
+  iparray_type &xadj = const_cast<iparray_type &>(B.col_start());
+
   for (auto &v : xadj) ++v;
   for (auto &v : adjncy) ++v;
-  iarray_type P(n);
+  iparray_type P(n);
   rcm_type().apply(n, xadj.data(), adjncy.data(), P.data());
   for (auto &v : P) --v;
   if (hif_verbose(PRE, opt)) hif_info("finish RCM reordering...");

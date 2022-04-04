@@ -345,17 +345,16 @@ inline CcsType compute_leading_block(const CcsType &A, const CrsType &A_crs,
 /// \ingroup pre
 template <bool IsSymm, class CcsType, class CrsType, class ScalingArray,
           class PermType>
-inline std::pair<
-    CCS<typename CcsType::value_type, typename CcsType::index_type>,
-    typename CcsType::size_type>
-do_maching(const CcsType &A, const CrsType &A_crs,
-           const typename CcsType::size_type m0,
-           const typename CcsType::size_type level, const Options &opts,
-           ScalingArray &s, ScalingArray &t, PermType &p, PermType &q) {
+inline std::pair<CcsType, typename CcsType::size_type> do_maching(
+    const CcsType &A, const CrsType &A_crs,
+    const typename CcsType::size_type m0,
+    const typename CcsType::size_type level, const Options &opts,
+    ScalingArray &s, ScalingArray &t, PermType &p, PermType &q) {
   static_assert(!CcsType::ROW_MAJOR, "input must be CCS type");
   static_assert(CrsType::ROW_MAJOR, "input A_crs must be CRS type");
   using value_type  = typename CcsType::value_type;
   using index_type  = typename CcsType::index_type;
+  using indptr_type = typename CcsType::indptr_type;
   using return_type = CcsType;
   using size_type   = typename CcsType::size_type;
 
@@ -386,7 +385,7 @@ do_maching(const CcsType &A, const CrsType &A_crs,
         B.resize(M, M);
         B.vals() = A_crs.vals();
         // the following are deep copies
-        B.row_start() = typename CrsType::iarray_type(A_crs.row_start(), true);
+        B.row_start() = typename CrsType::iparray_type(A_crs.row_start(), true);
         B.col_ind()   = typename CrsType::iarray_type(A_crs.col_ind(), true);
       }
     } else {
@@ -396,7 +395,7 @@ do_maching(const CcsType &A, const CrsType &A_crs,
         B.col_ind()   = A_crs.col_ind();
       } else {
         // the following are deep copies
-        B.row_start() = typename CrsType::iarray_type(A_crs.row_start(), true);
+        B.row_start() = typename CrsType::iparray_type(A_crs.row_start(), true);
         B.col_ind()   = typename CrsType::iarray_type(A_crs.col_ind(), true);
       }
       B.vals().resize(A_crs.nnz());
@@ -406,12 +405,12 @@ do_maching(const CcsType &A, const CrsType &A_crs,
   } else
     B = A_crs.extract_leading(m0);  // for explicit leading block do copy
 
-  using mc64_kernel = EqlDriver<value_type, index_type>;
+  using eq_kernel = EqlDriver<value_type, index_type, indptr_type>;
   do {
     DefaultTimer timer;
     timer.start();
-    mc64_kernel::template do_matching<IsSymm>(opts.verbose, B, p(), q(), s, t,
-                                              opts.pre_scale);
+    eq_kernel::template do_matching<IsSymm>(opts.verbose, B, p(), q(), s, t,
+                                            opts.pre_scale);
     timer.finish();
     if (timing) hif_info("Equilibrator took %gs.", (double)timer.time());
   } while (false);
