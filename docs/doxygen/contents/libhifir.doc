@@ -25,6 +25,9 @@ real, single real, double complex, and single complex values.
 - \ref LhfInt This is the integer type used in \a libhifir. It is 32-bit
   integer if linking to `libhifir.so`; it is 64-bit integer if linking to the
   64-bit library `libhifir_i64.so`.
+- \ref LhfIndPtr This is the integer type for `ind_start` arrays in sparse
+  matrices as well as in HIF. Note that LhfInt is for index arrays in sparse
+  matrices and HIF. By default, LhfIndPtr is \a ptrdiff_t
 - \ref LhfStatus
 - \ref LhfOperationType
 - \ref lhfGetVersions

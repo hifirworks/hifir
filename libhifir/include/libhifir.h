@@ -51,6 +51,12 @@ extern "C" {
 #if LIBHIFIR_INT_SIZE != 32 && LIBHIFIR_INT_SIZE != 64
 #  error "Unsupported integer size, must be either 32 or 64!"
 #endif
+
+/*!
+ * @typedef LhfInt
+ * @brief Integer type used in index arrays in sparse matrice and HIF
+ * @note The default value is \a int
+ */
 #if LIBHIFIR_INT_SIZE == 32
 typedef int32_t LhfInt;
 #else
@@ -64,6 +70,12 @@ typedef int64_t LhfInt;
 #if LIBHIF_INDPTR_SIZE != 32 && LIBHIF_INDPTR_SIZE != 64
 #  error "Unsupported indptr type size, must be either 32 or 64!"
 #endif
+
+/*!
+ * @typedef LhfIndPtr
+ * @brief Integer type used in ind_start arrays in sparse matrice and HIF
+ * @note The default value is \a ptrdiff_t
+ */
 #if LIBHIF_INDPTR_SIZE == 64
 typedef ptrdiff_t LhfIndPtr;
 #else
