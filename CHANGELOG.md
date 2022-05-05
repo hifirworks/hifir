@@ -8,7 +8,7 @@ We follow the [Semantic Versioning](https://semver.org/) policy, which uses `MAJ
 - `MINOR` version when you add functionality in a backwards compatible manner, and
 - `PATCH` version when you make backwards compatible bug fixes.
 
-## v0.2.0 (TBD) ##
+## [v0.2.0](https://github.com/hifirworks/hifir/releases/tag/v0.2.0) (TBD) ##
 
 Changes from [v0.1.0](https://github.com/hifirworks/hifir/releases/tag/v0.1.0) to v0.2.0:
 
@@ -23,7 +23,7 @@ Changes from [v0.1.0](https://github.com/hifirworks/hifir/releases/tag/v0.1.0) t
 - Added MatrixMarket file readers for the C library.
 - Added example code for `libhifir`.
 
-[Full Changelog](https://github.com/hifirworks/hifir/compare/v0.1.0...HEAD)
+[Full Changelog](https://github.com/hifirworks/hifir/compare/v0.1.0...v0.2.0)
 
 ## [v0.1.0](https://github.com/hifirworks/hifir/releases/tag/v0.1.0) (2021-08-22) ##
 
