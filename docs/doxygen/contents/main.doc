@@ -55,7 +55,7 @@ please cite the following papers.
 \verbatim
 @Article{jiao2022approximate,
   author  = {Xiangmin Jiao and Qiao Chen},
-  journal = {SIAM J. Matrix Anal. Appl},
+  journal = {SIAM J. Matrix Anal. Appl.},
   title   = {Approximate generalized inverses with iterative refinement for
              $\epsilon$-accurate preconditioning of singular systems},
   year    = {2022},
@@ -67,13 +67,12 @@ please cite the following papers.
 \endverbatim
 
 \verbatim
-@Article{chen2021hifir,
+@Article{chen2022hifir,
   author  = {Chen, Qiao and Jiao, Xiangmin},
   title   = {{HIFIR}: Hybrid incomplete factorization with iterative refinement
              for preconditioning ill-conditioned and singular systems},
-  journal = {arXiv},
-  year    = {2021},
-  note    = {arXiv:2106.09877}
+  journal = {ACM Trans. Math. Softw.},
+  year    = {2022}
 }
 \endverbatim
 
