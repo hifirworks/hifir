@@ -106,7 +106,8 @@ If you plan to use HIFIR in solving singular and ill-conditioned systems, please
   title   = {{HIFIR}: Hybrid incomplete factorization with iterative refinement
              for preconditioning ill-conditioned and singular systems},
   journal = {ACM Trans. Math. Softw.},
-  year    = {2022}
+  year    = {2022},
+  doi     = {10.1145/3536165}
 }
 ```
 
