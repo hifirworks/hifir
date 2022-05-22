@@ -1,6 +1,6 @@
 <map id="hif::AugCRS::interchange_entries" name="hif::AugCRS::interchange_entries">
 <area shape="rect" id="node2" href="$classhif_1_1AugCRS.html#ab5a1d953e8dab796e7c08afcc702e8c1" title="interchange two columns " alt="" coords="224,56,427,83"/>
-<area shape="rect" id="node3" href="$classhif_1_1AugCRS.html#a8c01fd4d3fc5dbe3a26f42e51d4af8ae" title="given a column handle, get its next location " alt="" coords="475,5,645,32"/>
+<area shape="rect" id="node3" href="$classhif_1_1AugCRS.html#aef3b6fbe22af53e7902ffa0ee6f2c1cc" title="given a column handle, get its next location " alt="" coords="475,5,645,32"/>
 <area shape="rect" id="node4" href="$classhif_1_1AugCRS.html#ad230b3f094510e272fc0c92a859b6aa2" title="given a column handle/ID, get its corresponding row index " alt="" coords="485,56,635,83"/>
-<area shape="rect" id="node5" href="$classhif_1_1AugCRS.html#a006b32359c190acb772e68e8f44973b6" title="given column index, get the starting column handle " alt="" coords="495,107,625,149"/>
+<area shape="rect" id="node5" href="$classhif_1_1AugCRS.html#a40e75ab6ad3e7f767aa606f03d49a020" title="given column index, get the starting column handle " alt="" coords="495,107,625,149"/>
 </map>

@@ -1,25 +1,24 @@
 <map id="Prec.hpp" name="Prec.hpp">
-<area shape="rect" id="node5" href="$CompressedStorage_8hpp.html" title="Core about CRS and CCS storage formats. " alt="" coords="2135,169,2338,196"/>
-<area shape="rect" id="node22" href="$common_8hpp.html" title="Utility/helper routines. " alt="" coords="815,393,957,420"/>
-<area shape="rect" id="node38" href="$IntervalCompressedStorage_8hpp.html" title="Interval&#45;based compressed storages. " alt="" coords="2292,80,2467,121"/>
-<area shape="rect" id="node40" href="$solver_8hpp.html" title="Small scale solver main interface. " alt="" coords="1257,87,1430,114"/>
-<area shape="rect" id="node9" href="$Array_8hpp.html" title="Array data structure, with functionality of wrapping external data. " alt="" coords="2166,393,2281,420"/>
-<area shape="rect" id="node25" href="$coo2compress_8hpp.html" title="Helper function to convert coordinate to compressed format. " alt="" coords="2514,319,2693,345"/>
-<area shape="rect" id="node26" href="$io_8hpp.html" title="Read and write native IO formats. " alt="" coords="2828,244,2931,271"/>
-<area shape="rect" id="node32" href="$math_8hpp.html" title="Some handy BLAS 1 vector routines. " alt="" coords="834,319,957,345"/>
-<area shape="rect" id="node35" href="$mt__mv_8hpp.html" title="Multithreaded matrix&#45;vector product for CRS. " alt="" coords="2081,244,2214,271"/>
-<area shape="rect" id="node12" href="$log_8hpp.html" title="Logging interface, including info/warning/error. " alt="" coords="944,468,1055,495"/>
-<area shape="rect" id="node19" href="$print_8hpp.html" title="Macros for &quot;stdout&quot; and &quot;stderr&quot; message printers. " alt="" coords="940,543,1059,569"/>
-<area shape="rect" id="node21" href="$stacktrace_8hpp.html" title="Print stacktrace on error aborting. " alt="" coords="1082,543,1237,569"/>
-<area shape="rect" id="node34" href="$version_8h.html" title="HIF version header. " alt="" coords="3174,319,3267,345"/>
-<area shape="rect" id="node37" href="$mt_8hpp.html" title="Multithreading helpers. " alt="" coords="2819,319,2927,345"/>
-<area shape="rect" id="node41" href="$LUP_8hpp.html" title="Small scale solver with dense LU with partial pivoting. " alt="" coords="1499,169,1663,196"/>
-<area shape="rect" id="node49" href="$QRCP_8hpp.html" title="Small scale solver with dense QR with column pivoting. " alt="" coords="845,169,1023,196"/>
-<area shape="rect" id="node50" href="$SYEIG_8hpp.html" title="Small scale solver with symmetric eigendecomposition. " alt="" coords="1254,169,1433,196"/>
-<area shape="rect" id="node42" href="$Options_8h.html" title="HIF algorithm parameter controls. " alt="" coords="1533,244,1629,271"/>
-<area shape="rect" id="node44" href="$DenseMatrix_8hpp.html" title="Dense storage for the last level in multilevel ILU. " alt="" coords="1031,319,1189,345"/>
-<area shape="rect" id="node45" href="$lapack_8hpp.html" title="HIF LAPACK interface. " alt="" coords="783,244,959,271"/>
-<area shape="rect" id="node46" href="$lapackf_8hpp.html" title="Low&#45;level Fortran&#45;based LAPACK interfaces. " alt="" coords="376,319,556,345"/>
-<area shape="rect" id="node47" href="$config_8hpp.html" title="Simple configuration for using LAPACK. " alt="" coords="119,393,293,420"/>
-<area shape="rect" id="node48" href="$fc__mangling_8hpp.html" title="HIFIR Fortran name mangling interface. " alt="" coords="125,468,287,495"/>
+<area shape="rect" id="node5" href="$CompressedStorage_8hpp.html" title="Core about CRS and CCS storage formats. " alt="" coords="1081,155,1283,181"/>
+<area shape="rect" id="node22" href="$common_8hpp.html" title="Utility/helper routines. " alt="" coords="1365,379,1508,405"/>
+<area shape="rect" id="node38" href="$solver_8hpp.html" title="Small scale solver main interface. " alt="" coords="2205,80,2378,107"/>
+<area shape="rect" id="node9" href="$Array_8hpp.html" title="Array data structure, with functionality of wrapping external data. " alt="" coords="1873,379,1987,405"/>
+<area shape="rect" id="node25" href="$coo2compress_8hpp.html" title="Helper function to convert coordinate to compressed format. " alt="" coords="1746,304,1925,331"/>
+<area shape="rect" id="node26" href="$io_8hpp.html" title="Read and write sparse matrices in HIFIR. " alt="" coords="753,229,856,256"/>
+<area shape="rect" id="node32" href="$math_8hpp.html" title="Some handy BLAS 1 vector routines. " alt="" coords="1474,304,1597,331"/>
+<area shape="rect" id="node35" href="$mt__mv_8hpp.html" title="Multithreaded matrix&#45;vector product for CRS. " alt="" coords="1063,229,1197,256"/>
+<area shape="rect" id="node12" href="$log_8hpp.html" title="Logging interface, including info/warning/error. " alt="" coords="1740,453,1851,480"/>
+<area shape="rect" id="node19" href="$print_8hpp.html" title="Macros for &quot;stdout&quot; and &quot;stderr&quot; message printers. " alt="" coords="1855,528,1973,555"/>
+<area shape="rect" id="node21" href="$stacktrace_8hpp.html" title="Print stacktrace on error aborting. " alt="" coords="1997,528,2151,555"/>
+<area shape="rect" id="node34" href="$version_8h.html" title="HIF version header. " alt="" coords="717,304,810,331"/>
+<area shape="rect" id="node37" href="$mt_8hpp.html" title="Multithreading helpers. " alt="" coords="987,304,1095,331"/>
+<area shape="rect" id="node39" href="$LUP_8hpp.html" title="Small scale solver with dense LU with partial pivoting. " alt="" coords="2663,155,2827,181"/>
+<area shape="rect" id="node47" href="$QRCP_8hpp.html" title="Small scale solver with dense QR with column pivoting. " alt="" coords="2095,155,2272,181"/>
+<area shape="rect" id="node48" href="$SYEIG_8hpp.html" title="Small scale solver with symmetric eigendecomposition. " alt="" coords="2310,155,2489,181"/>
+<area shape="rect" id="node40" href="$Options_8h.html" title="HIF algorithm parameter controls. " alt="" coords="2857,229,2953,256"/>
+<area shape="rect" id="node42" href="$DenseMatrix_8hpp.html" title="Dense storage for the last level in multilevel ILU. " alt="" coords="2226,304,2383,331"/>
+<area shape="rect" id="node43" href="$lapack_8hpp.html" title="HIF LAPACK interface. " alt="" coords="2657,229,2833,256"/>
+<area shape="rect" id="node44" href="$lapackf_8hpp.html" title="Low&#45;level Fortran&#45;based LAPACK interfaces. " alt="" coords="2816,304,2996,331"/>
+<area shape="rect" id="node45" href="$config_8hpp.html" title="Simple configuration for using LAPACK. " alt="" coords="2823,379,2997,405"/>
+<area shape="rect" id="node46" href="$fc__mangling_8hpp.html" title="HIFIR Fortran name mangling interface. " alt="" coords="2829,453,2991,480"/>
 </map>

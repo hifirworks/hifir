@@ -32,7 +32,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">HIFIR
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -90,6 +90,7 @@ $(document).ready(function(){initNavTree('install.html','');});
 <div class="toc"><h3>Table of Contents</h3>
 <ul><li class="level1"><a href="#install_cpp">Installation of the C++ interface</a></li>
 <li class="level1"><a href="#install_c">Installation of the C library (libhifir)</a></li>
+<li class="level1"><a href="#install_lapack">Installation of Third-Party Dependency: LAPACK</a></li>
 </ul>
 </div>
 <div class="textblock"><p><a name="ainstallation"></a></p>
@@ -97,13 +98,30 @@ $(document).ready(function(){initNavTree('install.html','');});
 Installation of the C++ interface</h1>
 <p>The <em>HIFIR</em> package is written in C++, and it uses template-based and header-only programming. Hence, the installation of C++ interface is pretty straightforward.</p>
 <p>To download the latest version of the code, use the command</p>
-<div class="fragment"><div class="line">git clone -b release -–depth 1 https://github.com/hifirworks/hifir.git hifir</div><div class="line">cd hifir</div></div><!-- fragment --><p>Use <code>git pull</code> to download any new changes that have been added since <code>git clone</code> or last <code>git pull</code>. Alternatively, use <code>git checkout v[GLOBAL].[MAJOR].[MINOR]</code> to download a specific version. Another way is to download the current archive at <a href="https://github.com/hifirworks/hifir/releases/tag/v0.1.0">v0.1.0</a>.</p>
+<div class="fragment"><div class="line">git clone -b release -–depth 1 https://github.com/hifirworks/hifir.git hifir</div><div class="line">cd hifir</div></div><!-- fragment --><p>Use <code>git pull</code> to download any new changes that have been added since <code>git clone</code> or last <code>git pull</code>. Alternatively, use <code>git checkout v[GLOBAL].[MAJOR].[MINOR]</code> to download a specific version. Another way is to download the current archive at <a href="https://github.com/hifirworks/hifir/releases">here</a>.</p>
 <p>To install the code, you can simply do the following on a UNIX system</p>
 <div class="fragment"><div class="line">sudo cp -r src/* /usr/local/include</div></div><!-- fragment --><p>or copy the source files to any user-level directories, e.g.,</p>
 <div class="fragment"><div class="line">cp -r src/* $HOME/.local/include</div></div><!-- fragment --><p>and then add <code>-I$HOME/.local/include</code> to the command line of your C++ compiler.</p>
 <h1><a class="anchor" id="install_c"></a>
 Installation of the C library (libhifir)</h1>
-<p>Finish me... </p>
+<p>After obtaining the C++ interface, one can (optionally) install the C library <em>libhifir</em>. First, navigate to the subfolder libhifir</p>
+<div class="fragment"><div class="line">cd libhifir</div></div><!-- fragment --><p>Then, compile and install the package using the following commands:</p>
+<div class="fragment"><div class="line">make -j</div><div class="line">make PREFIX=/path/to/destination install</div></div><!-- fragment --><p>The <code>-j</code> options allows building both 32-bit-integer and 64-bit-integer verions at the same time. By default, <code>PREFIX=/usr/local</code>. In addition, set the <code>LAPACK_LIBS</code> variable if you have customized installation of LAPACK, such as</p>
+<div class="fragment"><div class="line">make LAPACK_LIBS=&quot;-L/path/to/openblas/lib -lopenblas&quot; -j</div></div><!-- fragment --><p>which is also preferable to set <code>LDFLAGS=-Wl,-rpath,/path/to/openblas/lib</code>. Note that <code>LAPACK_LIBS="-llapack -lblas"</code> by default. Note that HIFIR uses OpenMP for computing the Schur complement. You can disable OpenMP by setting <code>USE_OPENMP=0</code>, i.e., <code>make USE_OPENMP=0 -j</code>.</p>
+<p>Once the installation is finished, we will have</p>
+<ul>
+<li><code>${PREFIX}/include/libhifir.h</code>: This is the header file.</li>
+<li><code>${PREFIX}/lib/libhifir_i32.{so,a}</code>: These are shared and static libraries for 32-bit integer builds.</li>
+<li><code>${PREFIX}/lib/libhifir_i64.{so,a}</code>: These are shared and static libraries for 64-bit integer builds.</li>
+</ul>
+<p>To use 64bit library, set <code>-DLIBHIFIR_INT_SIZE=64</code> while compiling your program, such as</p>
+<div class="fragment"><div class="line">cc -DLIBHIFIR_INT_SIZE=64 my_prog.c -lhifir_i64</div></div><!-- fragment --><h1><a class="anchor" id="install_lapack"></a>
+Installation of Third-Party Dependency: LAPACK</h1>
+<p>The only third-party dependency of HIFIR is LAPACK, which HIFIR uses for its dense-level factorization and solve. We recommend using <a href="https://www.openblas.net/">OpenBLAS</a>, <a href="http://math-atlas.sourceforge.net/">ATLAS</a>, or <a href="https://software.intel.com/content/www/us/en/develop/tools/oneapi/components/onemkl.html">Intel oneAPI Math Kernel Library</a>. Assuming you have system-administrator permussions, you can install OpenBLAS using the <code>apt</code> and <code>yum</code> command on Debian and RedHat-based Linux systems, such as</p>
+<div class="fragment"><div class="line">sudo apt install libopenblas-dev</div></div><!-- fragment --><p>and</p>
+<div class="fragment"><div class="line">sudo yum install libopenblas-devel</div></div><!-- fragment --><p>If you prefer to use ATLAS, the corresponding libraries are <code>libatlas-dev</code> and <code>libatlas-devel</code> on Debian and RedHat-based systems, respectively. Note that if you have multiple versions of BLAS and LAPACK installed, you may need to use the <code>update-alternatives --config</code> or <code>alternatives --config</code> command to config your system for the proper versions of BLAS and LAPACK; see <a href="https://wiki.debian.org/DebianScience/LinearAlgebraLibraries">https://wiki.debian.org/DebianScience/LinearAlgebraLibraries</a> and <a href="https://www.redhat.com/sysadmin/alternatives-command">https://www.redhat.com/sysadmin/alternatives-command</a> for more detail.</p>
+<p>For Intel MKL, please refer to <a href="https://software.intel.com/content/www/us/en/develop/articles/installing-intel-free-libs-and-python-apt-repo.html">https://software.intel.com/content/www/us/en/develop/articles/installing-intel-free-libs-and-python-apt-repo.html</a> and <a href="https://software.intel.com/content/www/us/en/develop/articles/installing-intel-free-libs-and-python-yum-repo.html">https://software.intel.com/content/www/us/en/develop/articles/installing-intel-free-libs-and-python-yum-repo.html</a> for installation on Debian and RedHat-based systems, respectively.</p>
+<p>For other platforms, please refer to the official documentation of <a href="https://www.openblas.net/">OpenBLAS</a>, <a href="http://math-atlas.sourceforge.net/faq.html#doc">ATLAS</a>, <a href="https://software.intel.com/content/www/us/en/develop/tools/oneapi/components/onemkl.html">Intel MKL</a>, or the vendor-provided LAPACK for your platform, respectively. </p>
 </div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- HTML footer for doxygen 1.8.13-->

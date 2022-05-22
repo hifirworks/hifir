@@ -32,7 +32,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">HIFIR
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -96,10 +96,10 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1amd_1_1AMD.html">hif::amd::AMD&lt; Int &gt;</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">kernels for approxmiated minimum degree orderingThis class contains only <em>static</em> member functions, which are extracted and template-ized from original <b>SuiteSparse</b> <a class="el" href="classhif_1_1amd_1_1AMD.html" title="kernels for approxmiated minimum degree orderingThis class contains only static member functions...">AMD</a> implementation.  <a href="classhif_1_1amd_1_1AMD.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1EqlDriver.html">hif::EqlDriver&lt; ValueType, IndexType &gt;</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1EqlDriver.html">hif::EqlDriver&lt; ValueType, IndexType, IndPtrType &gt;</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">driver class wrapped around <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">eql::Equilibrator</a>  <a href="classhif_1_1EqlDriver.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">object for equilibrating a CRS/CCS matrixAs to the container, besides it must be array, the following interfaces are needed:  <a href="classhif_1_1eql_1_1Equilibrator.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1rcm_1_1RCM.html">hif::rcm::RCM&lt; _Integer &gt;</a></td></tr>
@@ -131,12 +131,12 @@ Functions</h2></td></tr>
 <tr class="memitem:ga943e58512c4e2ef77eb4e2e794828178"><td class="memTemplParams" colspan="2">template&lt;typename _Integer &gt; </td></tr>
 <tr class="memitem:ga943e58512c4e2ef77eb4e2e794828178"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__pre.html#ga943e58512c4e2ef77eb4e2e794828178">hif::eql::detail::set_default_pars</a> (_Integer *pars)</td></tr>
 <tr class="separator:ga943e58512c4e2ef77eb4e2e794828178"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gae0e310aae6fa8b9793e58d4d071cb5df"><td class="memTemplParams" colspan="2">template&lt;typename _Integer , typename _Real &gt; </td></tr>
-<tr class="memitem:gae0e310aae6fa8b9793e58d4d071cb5df"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__pre.html#gae0e310aae6fa8b9793e58d4d071cb5df">hif::eql::detail::kernel</a> (_Integer, const _Integer *, const _Integer *, const _Real *, _Integer *, _Integer *, _Integer *, _Integer *, _Integer *, _Integer *, _Integer *, _Real *, _Real *)</td></tr>
-<tr class="separator:gae0e310aae6fa8b9793e58d4d071cb5df"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gae0a9714e50843ed5778fe9e55df1f4b1"><td class="memTemplParams" colspan="2">template&lt;typename _Integer , typename _ValReal , typename _Real &gt; </td></tr>
-<tr class="memitem:gae0a9714e50843ed5778fe9e55df1f4b1"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__pre.html#gae0a9714e50843ed5778fe9e55df1f4b1">hif::eql::detail::compute</a> (const _Integer n, const _Integer ne, const _Integer *indptr, const _Integer *indices, const _ValReal *vals, _Integer *no, _Integer *cperm, _Integer liwork, _Integer *iwork, _Integer lwork, _Real *work, const _Integer *pars, _Integer *<a class="el" href="group__util.html#gaa22fcfffe28e3d198a7ca7c99ece3aae">info</a>)</td></tr>
-<tr class="separator:gae0a9714e50843ed5778fe9e55df1f4b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9de97b327783628b45bbbe9e31bbe92b"><td class="memTemplParams" colspan="2">template&lt;typename _Integer , typename _Index , typename _Real &gt; </td></tr>
+<tr class="memitem:ga9de97b327783628b45bbbe9e31bbe92b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__pre.html#ga9de97b327783628b45bbbe9e31bbe92b">hif::eql::detail::kernel</a> (_Integer, const _Integer *, const _Index *, const _Real *, _Index *, _Integer *, _Integer *, _Integer *, _Integer *, _Integer *, _Integer *, _Real *, _Real *)</td></tr>
+<tr class="separator:ga9de97b327783628b45bbbe9e31bbe92b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3cb5de7e8c7b07529efbe3ce52bb2f37"><td class="memTemplParams" colspan="2">template&lt;typename _Integer , typename _Index , typename _ValReal , typename _Real &gt; </td></tr>
+<tr class="memitem:ga3cb5de7e8c7b07529efbe3ce52bb2f37"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__pre.html#ga3cb5de7e8c7b07529efbe3ce52bb2f37">hif::eql::detail::compute</a> (const _Integer n, const _Integer ne, const _Integer *indptr, const _Index *indices, const _ValReal *vals, _Integer *no, _Index *cperm, _Integer liwork, _Integer *iwork, _Integer lwork, _Real *work, const _Integer *pars, _Integer *<a class="el" href="group__util.html#gaa22fcfffe28e3d198a7ca7c99ece3aae">info</a>)</td></tr>
+<tr class="separator:ga3cb5de7e8c7b07529efbe3ce52bb2f37"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga78c5fd2a4632b0258e69312a01c11b54"><td class="memTemplParams" colspan="2">template&lt;typename _Integer , typename _Real &gt; </td></tr>
 <tr class="memitem:ga78c5fd2a4632b0258e69312a01c11b54"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__pre.html#ga78c5fd2a4632b0258e69312a01c11b54">hif::eql::detail::kernel_</a> (const _Integer j, const _Integer n, _Integer *q, _Real *d__, _Integer *l, const bool flag)</td></tr>
 <tr class="separator:ga78c5fd2a4632b0258e69312a01c11b54"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -146,9 +146,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gaa4baff2676f6d28df54685ec23fca7a7"><td class="memTemplParams" colspan="2">template&lt;typename _Integer , typename _Real &gt; </td></tr>
 <tr class="memitem:gaa4baff2676f6d28df54685ec23fca7a7"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__pre.html#gaa4baff2676f6d28df54685ec23fca7a7">hif::eql::detail::kernel___</a> (_Integer *pos_, _Integer *qlen, const _Integer n, _Integer *q, _Real *d__, _Integer *l, const bool flag)</td></tr>
 <tr class="separator:gaa4baff2676f6d28df54685ec23fca7a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaf9db2ca29f66cb3e06758e1ef7fba902"><td class="memTemplParams" colspan="2">template&lt;typename _Integer , typename _Real &gt; </td></tr>
-<tr class="memitem:gaf9db2ca29f66cb3e06758e1ef7fba902"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__pre.html#gaf9db2ca29f66cb3e06758e1ef7fba902">hif::eql::detail::cleanup</a> (const _Integer n, _Integer *num, _Integer *iperm, _Integer *jperm, const _Integer *irn, _Integer *out, const _Real *a, _Real *d__, _Real *u)</td></tr>
-<tr class="separator:gaf9db2ca29f66cb3e06758e1ef7fba902"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga93b91c96e9c318e22ad6bec764dfe92c"><td class="memTemplParams" colspan="2">template&lt;typename _Integer , typename _Index , typename _Real &gt; </td></tr>
+<tr class="memitem:ga93b91c96e9c318e22ad6bec764dfe92c"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__pre.html#ga93b91c96e9c318e22ad6bec764dfe92c">hif::eql::detail::cleanup</a> (const _Integer n, _Integer *num, _Index *iperm, _Integer *jperm, const _Index *irn, _Integer *out, const _Real *a, _Real *d__, _Real *u)</td></tr>
+<tr class="separator:ga93b91c96e9c318e22ad6bec764dfe92c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gae714f9f72fcbdac33dafedb1c38ddda0"><td class="memTemplParams" colspan="2">template&lt;class PermType , class ScalingArray &gt; </td></tr>
 <tr class="memitem:gae714f9f72fcbdac33dafedb1c38ddda0"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__pre.html#gae714f9f72fcbdac33dafedb1c38ddda0">hif::internal::fix_poor_scaling</a> (const typename ScalingArray::size_type m0, const typename ScalingArray::size_type level, const PermType &amp;p, const PermType &amp;q, ScalingArray &amp;s, ScalingArray &amp;t, const double beta=1e3)</td></tr>
 <tr class="memdesc:gae714f9f72fcbdac33dafedb1c38ddda0"><td class="mdescLeft">&#160;</td><td class="mdescRight">fix poorly scaled row and column weights due to MC64  <a href="group__pre.html#gae714f9f72fcbdac33dafedb1c38ddda0">More...</a><br /></td></tr>
@@ -161,10 +161,10 @@ Functions</h2></td></tr>
 <tr class="memitem:gaa3a3bcd7d89dad5b09e8ad428bcba78e"><td class="memTemplItemLeft" align="right" valign="top">CcsType&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__pre.html#gaa3a3bcd7d89dad5b09e8ad428bcba78e">hif::internal::compute_leading_block</a> (const CcsType &amp;A, const CrsType &amp;A_crs, const typename CcsType::size_type m, const PermType &amp;p, const PermType &amp;q, const bool apat=false)</td></tr>
 <tr class="memdesc:gaa3a3bcd7d89dad5b09e8ad428bcba78e"><td class="mdescLeft">&#160;</td><td class="mdescRight">permute the matrix for asymmetric cases  <a href="group__pre.html#gaa3a3bcd7d89dad5b09e8ad428bcba78e">More...</a><br /></td></tr>
 <tr class="separator:gaa3a3bcd7d89dad5b09e8ad428bcba78e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gabea4cba27b6abd9ebec59daf709f4671"><td class="memTemplParams" colspan="2">template&lt;bool IsSymm, class CcsType , class CrsType , class ScalingArray , class PermType &gt; </td></tr>
-<tr class="memitem:gabea4cba27b6abd9ebec59daf709f4671"><td class="memTemplItemLeft" align="right" valign="top">std::pair&lt; <a class="el" href="classhif_1_1CCS.html">CCS</a>&lt; typename CcsType::value_type, typename CcsType::index_type &gt;, typename CcsType::size_type &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__pre.html#gabea4cba27b6abd9ebec59daf709f4671">hif::do_maching</a> (const CcsType &amp;A, const CrsType &amp;A_crs, const typename CcsType::size_type m0, const typename CcsType::size_type level, const <a class="el" href="group__itr.html#ga8af676f52fa6072d6264436495d20772">Options</a> &amp;opts, ScalingArray &amp;s, ScalingArray &amp;t, PermType &amp;p, PermType &amp;q)</td></tr>
-<tr class="memdesc:gabea4cba27b6abd9ebec59daf709f4671"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the matching for preprocessing  <a href="group__pre.html#gabea4cba27b6abd9ebec59daf709f4671">More...</a><br /></td></tr>
-<tr class="separator:gabea4cba27b6abd9ebec59daf709f4671"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaeafb403d7c40fafe1baa32579db1d787"><td class="memTemplParams" colspan="2">template&lt;bool IsSymm, class CcsType , class CrsType , class ScalingArray , class PermType &gt; </td></tr>
+<tr class="memitem:gaeafb403d7c40fafe1baa32579db1d787"><td class="memTemplItemLeft" align="right" valign="top">std::pair&lt; CcsType, typename CcsType::size_type &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__pre.html#gaeafb403d7c40fafe1baa32579db1d787">hif::do_maching</a> (const CcsType &amp;A, const CrsType &amp;A_crs, const typename CcsType::size_type m0, const typename CcsType::size_type level, const <a class="el" href="group__itr.html#ga8af676f52fa6072d6264436495d20772">Options</a> &amp;opts, ScalingArray &amp;s, ScalingArray &amp;t, PermType &amp;p, PermType &amp;q)</td></tr>
+<tr class="memdesc:gaeafb403d7c40fafe1baa32579db1d787"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the matching for preprocessing  <a href="group__pre.html#gaeafb403d7c40fafe1baa32579db1d787">More...</a><br /></td></tr>
+<tr class="separator:gaeafb403d7c40fafe1baa32579db1d787"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga42b4634c1f5dcaf31a354ef9245889da"><td class="memTemplParams" colspan="2">template&lt;typename _Integer &gt; </td></tr>
 <tr class="memitem:ga42b4634c1f5dcaf31a354ef9245889da"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__pre.html#ga42b4634c1f5dcaf31a354ef9245889da">hif::rcm::detail::rootls_</a> (const _Integer root, const _Integer *xadj, const _Integer *adjncy, std::vector&lt; bool &gt; &amp;mask, _Integer *nlvl, _Integer *xls, _Integer *ls)</td></tr>
 <tr class="separator:ga42b4634c1f5dcaf31a354ef9245889da"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -180,24 +180,24 @@ Functions</h2></td></tr>
 <tr class="memitem:ga82435611b3a10cd1a1e70609b2ad1912"><td class="memTemplParams" colspan="2">template&lt;typename _Integer &gt; </td></tr>
 <tr class="memitem:ga82435611b3a10cd1a1e70609b2ad1912"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__pre.html#ga82435611b3a10cd1a1e70609b2ad1912">hif::rcm::detail::genrcm_</a> (const _Integer neqns, _Integer *xadj, const _Integer *adjncy, _Integer *perm, std::vector&lt; bool &gt; &amp;mask, _Integer *xls)</td></tr>
 <tr class="separator:ga82435611b3a10cd1a1e70609b2ad1912"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga32dd1486848fb34d6c355e68d5e362e8"><td class="memTemplParams" colspan="2">template&lt;bool IsSymm, class CcsType &gt; </td></tr>
-<tr class="memitem:ga32dd1486848fb34d6c355e68d5e362e8"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1Array.html">Array</a>&lt; typename CcsType::index_type &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__pre.html#ga32dd1486848fb34d6c355e68d5e362e8">hif::run_amd</a> (const CcsType &amp;B, const <a class="el" href="group__itr.html#ga8af676f52fa6072d6264436495d20772">Options</a> &amp;opt)</td></tr>
-<tr class="memdesc:ga32dd1486848fb34d6c355e68d5e362e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">apply approximated mimimum degree ordering  <a href="group__pre.html#ga32dd1486848fb34d6c355e68d5e362e8">More...</a><br /></td></tr>
-<tr class="separator:ga32dd1486848fb34d6c355e68d5e362e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga86d43b4b7fa82ae7b42de7765f8b6115"><td class="memTemplParams" colspan="2">template&lt;class CcsType &gt; </td></tr>
-<tr class="memitem:ga86d43b4b7fa82ae7b42de7765f8b6115"><td class="memTemplItemLeft" align="right" valign="top">CcsType::iarray_type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__pre.html#ga86d43b4b7fa82ae7b42de7765f8b6115">hif::run_rcm</a> (const CcsType &amp;B, const <a class="el" href="group__itr.html#ga8af676f52fa6072d6264436495d20772">Options</a> &amp;opt)</td></tr>
-<tr class="memdesc:ga86d43b4b7fa82ae7b42de7765f8b6115"><td class="mdescLeft">&#160;</td><td class="mdescRight">apply reversed Cuthill-Mckee ordering  <a href="group__pre.html#ga86d43b4b7fa82ae7b42de7765f8b6115">More...</a><br /></td></tr>
-<tr class="separator:ga86d43b4b7fa82ae7b42de7765f8b6115"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6446d4f61326606b26ecbbe80cd900d2"><td class="memTemplParams" colspan="2">template&lt;bool IsSymm, class CcsType &gt; </td></tr>
+<tr class="memitem:ga6446d4f61326606b26ecbbe80cd900d2"><td class="memTemplItemLeft" align="right" valign="top">CcsType::iparray_type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__pre.html#ga6446d4f61326606b26ecbbe80cd900d2">hif::run_amd</a> (const CcsType &amp;B, const <a class="el" href="group__itr.html#ga8af676f52fa6072d6264436495d20772">Options</a> &amp;opt)</td></tr>
+<tr class="memdesc:ga6446d4f61326606b26ecbbe80cd900d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">apply approximated mimimum degree ordering  <a href="group__pre.html#ga6446d4f61326606b26ecbbe80cd900d2">More...</a><br /></td></tr>
+<tr class="separator:ga6446d4f61326606b26ecbbe80cd900d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaafa96d03530626663bb9630c22469fe5"><td class="memTemplParams" colspan="2">template&lt;class CcsType &gt; </td></tr>
+<tr class="memitem:gaafa96d03530626663bb9630c22469fe5"><td class="memTemplItemLeft" align="right" valign="top">CcsType::iparray_type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__pre.html#gaafa96d03530626663bb9630c22469fe5">hif::run_rcm</a> (const CcsType &amp;B, const <a class="el" href="group__itr.html#ga8af676f52fa6072d6264436495d20772">Options</a> &amp;opt)</td></tr>
+<tr class="memdesc:gaafa96d03530626663bb9630c22469fe5"><td class="mdescLeft">&#160;</td><td class="mdescRight">apply reversed Cuthill-Mckee ordering  <a href="group__pre.html#gaafa96d03530626663bb9630c22469fe5">More...</a><br /></td></tr>
+<tr class="separator:gaafa96d03530626663bb9630c22469fe5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="gaf9db2ca29f66cb3e06758e1ef7fba902"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gaf9db2ca29f66cb3e06758e1ef7fba902">&#9670;&nbsp;</a></span>cleanup()</h2>
+<a id="ga93b91c96e9c318e22ad6bec764dfe92c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga93b91c96e9c318e22ad6bec764dfe92c">&#9670;&nbsp;</a></span>cleanup()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename _Integer , typename _Real &gt; </div>
+template&lt;typename _Integer , typename _Index , typename _Real &gt; </div>
       <table class="memname">
         <tr>
           <td class="memname">void hif::eql::detail::cleanup </td>
@@ -214,7 +214,7 @@ template&lt;typename _Integer , typename _Real &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">_Integer *&#160;</td>
+          <td class="paramtype">_Index *&#160;</td>
           <td class="paramname"><em>iperm</em>, </td>
         </tr>
         <tr>
@@ -226,7 +226,7 @@ template&lt;typename _Integer , typename _Real &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const _Integer *&#160;</td>
+          <td class="paramtype">const _Index *&#160;</td>
           <td class="paramname"><em>irn</em>, </td>
         </tr>
         <tr>
@@ -265,13 +265,13 @@ template&lt;typename _Integer , typename _Real &gt; </div>
 
 </div>
 </div>
-<a id="gae0a9714e50843ed5778fe9e55df1f4b1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gae0a9714e50843ed5778fe9e55df1f4b1">&#9670;&nbsp;</a></span>compute()</h2>
+<a id="ga3cb5de7e8c7b07529efbe3ce52bb2f37"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga3cb5de7e8c7b07529efbe3ce52bb2f37">&#9670;&nbsp;</a></span>compute()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename _Integer , typename _ValReal , typename _Real &gt; </div>
+template&lt;typename _Integer , typename _Index , typename _ValReal , typename _Real &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -297,7 +297,7 @@ template&lt;typename _Integer , typename _ValReal , typename _Real &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const _Integer *&#160;</td>
+          <td class="paramtype">const _Index *&#160;</td>
           <td class="paramname"><em>indices</em>, </td>
         </tr>
         <tr>
@@ -315,7 +315,7 @@ template&lt;typename _Integer , typename _ValReal , typename _Real &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">_Integer *&#160;</td>
+          <td class="paramtype">_Index *&#160;</td>
           <td class="paramname"><em>cperm</em>, </td>
         </tr>
         <tr>
@@ -627,8 +627,8 @@ template&lt;typename _Integer &gt; </div>
 
 </div>
 </div>
-<a id="gabea4cba27b6abd9ebec59daf709f4671"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gabea4cba27b6abd9ebec59daf709f4671">&#9670;&nbsp;</a></span>do_maching()</h2>
+<a id="gaeafb403d7c40fafe1baa32579db1d787"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaeafb403d7c40fafe1baa32579db1d787">&#9670;&nbsp;</a></span>do_maching()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -639,7 +639,7 @@ template&lt;bool IsSymm, class CcsType , class CrsType , class ScalingArray , cl
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::pair&lt; <a class="el" href="classhif_1_1CCS.html">CCS</a>&lt;typename CcsType::value_type, typename CcsType::index_type&gt;, typename CcsType::size_type&gt; hif::do_maching </td>
+          <td class="memname">std::pair&lt;CcsType, typename CcsType::size_type&gt; hif::do_maching </td>
           <td>(</td>
           <td class="paramtype">const CcsType &amp;&#160;</td>
           <td class="paramname"><em>A</em>, </td>
@@ -731,14 +731,14 @@ template&lt;bool IsSymm, class CcsType , class CrsType , class ScalingArray , cl
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A <em>pair</em> of <a class="el" href="classhif_1_1CCS.html">CCS</a> matrix in <b>C-index</b> and the actual leading block size, which is no larger than <em>m0</em>. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="matching__scaling_8hpp_source.html#l00351">351</a> of file <a class="el" href="matching__scaling_8hpp_source.html">matching_scaling.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="matching__scaling_8hpp_source.html#l00348">348</a> of file <a class="el" href="matching__scaling_8hpp_source.html">matching_scaling.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Options_8h_source.html#l00110">hif_Options::beta</a>, <a class="el" href="Array_8hpp_source.html#l00060">hif::DATA_UNDEF</a>, <a class="el" href="Timer_8hpp_source.html#l00129">hif::Timer&lt; Clock, RepType &gt;::finish()</a>, <a class="el" href="log_8hpp_source.html#l00079">hif::info()</a>, <a class="el" href="Options_8h_source.html#l00097">hif_Options::pre_scale</a>, <a class="el" href="Options_8h_source.html#l00094">hif_Options::reorder</a>, <a class="el" href="Options_8h_source.html#l00250">hif::REORDER_OFF</a>, <a class="el" href="Options_8h_source.html#l00254">hif::REORDER_RCM</a>, <a class="el" href="Timer_8hpp_source.html#l00125">hif::Timer&lt; Clock, RepType &gt;::start()</a>, <a class="el" href="Timer_8hpp_source.html#l00143">hif::Timer&lt; Clock, RepType &gt;::time()</a>, and <a class="el" href="Options_8h_source.html#l00092">hif_Options::verbose</a>.</p>
+<p class="reference">References <a class="el" href="Options_8h_source.html#l00110">hif_Options::beta</a>, <a class="el" href="Array_8hpp_source.html#l00060">hif::DATA_UNDEF</a>, <a class="el" href="Timer_8hpp_source.html#l00129">hif::Timer&lt; Clock, RepType &gt;::finish()</a>, <a class="el" href="log_8hpp_source.html#l00071">hif::info()</a>, <a class="el" href="Options_8h_source.html#l00097">hif_Options::pre_scale</a>, <a class="el" href="Options_8h_source.html#l00094">hif_Options::reorder</a>, <a class="el" href="Options_8h_source.html#l00250">hif::REORDER_OFF</a>, <a class="el" href="Options_8h_source.html#l00254">hif::REORDER_RCM</a>, <a class="el" href="Timer_8hpp_source.html#l00125">hif::Timer&lt; Clock, RepType &gt;::start()</a>, <a class="el" href="Timer_8hpp_source.html#l00143">hif::Timer&lt; Clock, RepType &gt;::time()</a>, and <a class="el" href="Options_8h_source.html#l00092">hif_Options::verbose</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="group__pre_gabea4cba27b6abd9ebec59daf709f4671_cgraph.png" border="0" usemap="#group__pre_gabea4cba27b6abd9ebec59daf709f4671_cgraph" alt=""/></div>
-<map name="group__pre_gabea4cba27b6abd9ebec59daf709f4671_cgraph" id="group__pre_gabea4cba27b6abd9ebec59daf709f4671_cgraph">
+<div class="center"><img src="group__pre_gaeafb403d7c40fafe1baa32579db1d787_cgraph.png" border="0" usemap="#group__pre_gaeafb403d7c40fafe1baa32579db1d787_cgraph" alt=""/></div>
+<map name="group__pre_gaeafb403d7c40fafe1baa32579db1d787_cgraph" id="group__pre_gaeafb403d7c40fafe1baa32579db1d787_cgraph">
 <area shape="rect" id="node2" href="classhif_1_1Timer.html#a40ddb5ec755809b41193505a35072b3f" title="finish timer " alt="" coords="168,5,284,32"/>
 <area shape="rect" id="node3" href="group__util.html#gaa22fcfffe28e3d198a7ca7c99ece3aae" title="common information streaming, dump msg to HIF_STDOUT " alt="" coords="193,56,259,83"/>
 <area shape="rect" id="node4" href="classhif_1_1Timer.html#ae8aed1e5ffc158a0987e255db30b0fc5" title="start timer " alt="" coords="171,107,281,133"/>
@@ -855,7 +855,7 @@ template&lt;bool IsSymm, class CcsType , class CrsType , class ScalingArray , cl
 
 <p class="definition">Definition at line <a class="el" href="driver_8hpp_source.html#l00068">68</a> of file <a class="el" href="driver_8hpp_source.html">driver.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="log_8hpp_source.html#l00125">hif::error()</a>, <a class="el" href="Timer_8hpp_source.html#l00129">hif::Timer&lt; Clock, RepType &gt;::finish()</a>, <a class="el" href="log_8hpp_source.html#l00079">hif::info()</a>, <a class="el" href="Options_8h_source.html#l00094">hif_Options::reorder</a>, <a class="el" href="Options_8h_source.html#l00253">hif::REORDER_AMD</a>, <a class="el" href="Options_8h_source.html#l00251">hif::REORDER_AUTO</a>, <a class="el" href="Options_8h_source.html#l00255">hif::REORDER_NULL</a>, <a class="el" href="Options_8h_source.html#l00250">hif::REORDER_OFF</a>, <a class="el" href="Timer_8hpp_source.html#l00125">hif::Timer&lt; Clock, RepType &gt;::start()</a>, and <a class="el" href="Timer_8hpp_source.html#l00143">hif::Timer&lt; Clock, RepType &gt;::time()</a>.</p>
+<p class="reference">References <a class="el" href="log_8hpp_source.html#l00119">hif::error()</a>, <a class="el" href="Timer_8hpp_source.html#l00129">hif::Timer&lt; Clock, RepType &gt;::finish()</a>, <a class="el" href="log_8hpp_source.html#l00071">hif::info()</a>, <a class="el" href="Options_8h_source.html#l00094">hif_Options::reorder</a>, <a class="el" href="Options_8h_source.html#l00253">hif::REORDER_AMD</a>, <a class="el" href="Options_8h_source.html#l00251">hif::REORDER_AUTO</a>, <a class="el" href="Options_8h_source.html#l00255">hif::REORDER_NULL</a>, <a class="el" href="Options_8h_source.html#l00250">hif::REORDER_OFF</a>, <a class="el" href="Timer_8hpp_source.html#l00125">hif::Timer&lt; Clock, RepType &gt;::start()</a>, and <a class="el" href="Timer_8hpp_source.html#l00143">hif::Timer&lt; Clock, RepType &gt;::time()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1178,7 +1178,7 @@ template&lt;bool IsSymm, class CrsType , class ScalingType &gt; </div>
 </dl>
 <p>References : D. Ruiz and B. Ucar, A Symmetry Preserving Algorithm for Matrix Scaling, SIAM J. MATRIX ANAL. APPL. 2014 </p>
 
-<p class="definition">Definition at line <a class="el" href="a__priori__scaling_8hpp_source.html#l00270">270</a> of file <a class="el" href="a__priori__scaling_8hpp_source.html">a_priori_scaling.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="a__priori__scaling_8hpp_source.html#l00273">273</a> of file <a class="el" href="a__priori__scaling_8hpp_source.html">a_priori_scaling.hpp</a>.</p>
 
 </div>
 </div>
@@ -1272,17 +1272,17 @@ template&lt;bool IsSymm, class PermType , class CrsType , class ScalingType &gt;
 </dl>
 <p>References : D. Ruiz and B. Ucar, A Symmetry Preserving Algorithm for Matrix Scaling, SIAM J. MATRIX ANAL. APPL. 2014 </p>
 
-<p class="definition">Definition at line <a class="el" href="a__priori__scaling_8hpp_source.html#l00161">161</a> of file <a class="el" href="a__priori__scaling_8hpp_source.html">a_priori_scaling.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="a__priori__scaling_8hpp_source.html#l00163">163</a> of file <a class="el" href="a__priori__scaling_8hpp_source.html">a_priori_scaling.hpp</a>.</p>
 
 </div>
 </div>
-<a id="gae0e310aae6fa8b9793e58d4d071cb5df"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gae0e310aae6fa8b9793e58d4d071cb5df">&#9670;&nbsp;</a></span>kernel()</h2>
+<a id="ga9de97b327783628b45bbbe9e31bbe92b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga9de97b327783628b45bbbe9e31bbe92b">&#9670;&nbsp;</a></span>kernel()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename _Integer , typename _Real &gt; </div>
+template&lt;typename _Integer , typename _Index , typename _Real &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -1302,7 +1302,7 @@ template&lt;typename _Integer , typename _Real &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const _Integer *&#160;</td>
+          <td class="paramtype">const _Index *&#160;</td>
           <td class="paramname"><em>irn</em>, </td>
         </tr>
         <tr>
@@ -1314,7 +1314,7 @@ template&lt;typename _Integer , typename _Real &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">_Integer *&#160;</td>
+          <td class="paramtype">_Index *&#160;</td>
           <td class="paramname"><em>iperm</em>, </td>
         </tr>
         <tr>
@@ -1720,8 +1720,8 @@ template&lt;typename _Integer &gt; </div>
 
 </div>
 </div>
-<a id="ga32dd1486848fb34d6c355e68d5e362e8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga32dd1486848fb34d6c355e68d5e362e8">&#9670;&nbsp;</a></span>run_amd()</h2>
+<a id="ga6446d4f61326606b26ecbbe80cd900d2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga6446d4f61326606b26ecbbe80cd900d2">&#9670;&nbsp;</a></span>run_amd()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1732,7 +1732,7 @@ template&lt;bool IsSymm, class CcsType &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1Array.html">Array</a>&lt;typename CcsType::index_type&gt; hif::run_amd </td>
+          <td class="memname">CcsType::iparray_type hif::run_amd </td>
           <td>(</td>
           <td class="paramtype">const CcsType &amp;&#160;</td>
           <td class="paramname"><em>B</em>, </td>
@@ -1775,20 +1775,20 @@ template&lt;bool IsSymm, class CcsType &gt; </div>
 
 <p class="definition">Definition at line <a class="el" href="reordering_8hpp_source.html#l00053">53</a> of file <a class="el" href="reordering_8hpp_source.html">reordering.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Array_8hpp_source.html#l00060">hif::DATA_UNDEF</a>, and <a class="el" href="log_8hpp_source.html#l00125">hif::error()</a>.</p>
+<p class="reference">References <a class="el" href="Array_8hpp_source.html#l00060">hif::DATA_UNDEF</a>, and <a class="el" href="log_8hpp_source.html#l00119">hif::error()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="group__pre_ga32dd1486848fb34d6c355e68d5e362e8_cgraph.png" border="0" usemap="#group__pre_ga32dd1486848fb34d6c355e68d5e362e8_cgraph" alt=""/></div>
-<map name="group__pre_ga32dd1486848fb34d6c355e68d5e362e8_cgraph" id="group__pre_ga32dd1486848fb34d6c355e68d5e362e8_cgraph">
+<div class="center"><img src="group__pre_ga6446d4f61326606b26ecbbe80cd900d2_cgraph.png" border="0" usemap="#group__pre_ga6446d4f61326606b26ecbbe80cd900d2_cgraph" alt=""/></div>
+<map name="group__pre_ga6446d4f61326606b26ecbbe80cd900d2_cgraph" id="group__pre_ga6446d4f61326606b26ecbbe80cd900d2_cgraph">
 <area shape="rect" id="node2" href="group__util.html#ga0a3c88ad06db9caf44d1a64d51ebb7b2" title="error information streaming, dump to HIF_STDERR " alt="" coords="148,5,219,32"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="ga86d43b4b7fa82ae7b42de7765f8b6115"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga86d43b4b7fa82ae7b42de7765f8b6115">&#9670;&nbsp;</a></span>run_rcm()</h2>
+<a id="gaafa96d03530626663bb9630c22469fe5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaafa96d03530626663bb9630c22469fe5">&#9670;&nbsp;</a></span>run_rcm()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1799,7 +1799,7 @@ template&lt;class CcsType &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">CcsType::iarray_type hif::run_rcm </td>
+          <td class="memname">CcsType::iparray_type hif::run_rcm </td>
           <td>(</td>
           <td class="paramtype">const CcsType &amp;&#160;</td>
           <td class="paramname"><em>B</em>, </td>
@@ -1839,7 +1839,7 @@ template&lt;class CcsType &gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>symmetric permutation so that PAP' satisties RCM property </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="reordering_8hpp_source.html#l00104">104</a> of file <a class="el" href="reordering_8hpp_source.html">reordering.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="reordering_8hpp_source.html#l00112">112</a> of file <a class="el" href="reordering_8hpp_source.html">reordering.hpp</a>.</p>
 
 </div>
 </div>
@@ -1911,7 +1911,7 @@ template&lt;bool IsSymm, class CrsType , class ScalingType &gt; </div>
 </dl>
 <p>This function performs a single step of asynchronous scaling (Gauss-Seidel) scaling, thus the row will be scaled before column scaling computes the local extreme values. </p>
 
-<p class="definition">Definition at line <a class="el" href="a__priori__scaling_8hpp_source.html#l00086">86</a> of file <a class="el" href="a__priori__scaling_8hpp_source.html">a_priori_scaling.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="a__priori__scaling_8hpp_source.html#l00087">87</a> of file <a class="el" href="a__priori__scaling_8hpp_source.html">a_priori_scaling.hpp</a>.</p>
 
 </div>
 </div>

@@ -1,6 +1,7 @@
 <map id="hif::AugCCS&lt; CcsType &gt;" name="hif::AugCCS&lt; CcsType &gt;">
-<area shape="rect" id="node3" href="$classhif_1_1internal_1_1AugmentedCore.html" title="hif::internal::Augmented\lCore\&lt; CcsType::index_type \&gt;" alt="" coords="105,527,303,568"/>
-<area shape="rect" id="node4" href="$classhif_1_1Array.html" title="hif::Array\&lt; index_type \&gt;" alt="" coords="87,184,249,211"/>
-<area shape="rect" id="node7" href="$classhif_1_1internal_1_1AugmentedCore.html" title="A group of forward link lists for CompressedStorage. " alt="" coords="252,392,412,433"/>
-<area shape="rect" id="node5" href="$classhif_1_1Array.html" title="Core data structure used in compressed storage. " alt="" coords="115,95,221,121"/>
+<area shape="rect" id="node3" href="$classhif_1_1internal_1_1AugmentedCore.html" title="hif::internal::Augmented\lCore\&lt; CcsType::index_type,\l CcsType::indptr_type \&gt;" alt="" coords="1073,137,1264,193"/>
+<area shape="rect" id="node4" href="$classhif_1_1Array.html" title="hif::Array\&lt; indptr\l_type \&gt;" alt="" coords="399,130,518,171"/>
+<area shape="rect" id="node8" href="$classhif_1_1internal_1_1AugmentedCore.html" title="A group of forward link lists for CompressedStorage. " alt="" coords="673,145,880,186"/>
+<area shape="rect" id="node5" href="$classhif_1_1Array.html" title="Core data structure used in compressed storage. " alt="" coords="129,168,236,195"/>
+<area shape="rect" id="node7" href="$classhif_1_1Array.html" title="hif::Array\&lt; index_type \&gt;" alt="" coords="377,197,540,224"/>
 </map>

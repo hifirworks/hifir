@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>HIFIR: hif::internal::AugmentedCore&lt; IndexType &gt; Class Template Reference</title>
+<title>HIFIR: hif::internal::AugmentedCore&lt; IndexType, IndPtrType &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -32,7 +32,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">HIFIR
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -92,7 +92,7 @@ $(document).ready(function(){initNavTree('classhif_1_1internal_1_1AugmentedCore.
 <a href="#pro-static-attribs">Static Protected Attributes</a> &#124;
 <a href="classhif_1_1internal_1_1AugmentedCore-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">hif::internal::AugmentedCore&lt; IndexType &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__ds.html">Data Structures</a></div></div>  </div>
+<div class="title">hif::internal::AugmentedCore&lt; IndexType, IndPtrType &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__ds.html">Data Structures</a></div></div>  </div>
 </div><!--header-->
 <div class="contents">
 
@@ -101,153 +101,161 @@ $(document).ready(function(){initNavTree('classhif_1_1internal_1_1AugmentedCore.
 
 <p><code>#include &lt;<a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>&gt;</code></p>
 <div class="dynheader">
-Collaboration diagram for hif::internal::AugmentedCore&lt; IndexType &gt;:</div>
+Collaboration diagram for hif::internal::AugmentedCore&lt; IndexType, IndPtrType &gt;:</div>
 <div class="dyncontent">
-<div class="center"><img src="classhif_1_1internal_1_1AugmentedCore__coll__graph.png" border="0" usemap="#hif_1_1internal_1_1AugmentedCore_3_01IndexType_01_4_coll__map" alt="Collaboration graph"/></div>
-<map name="hif_1_1internal_1_1AugmentedCore_3_01IndexType_01_4_coll__map" id="hif_1_1internal_1_1AugmentedCore_3_01IndexType_01_4_coll__map">
-<area shape="rect" id="node2" href="classhif_1_1Array.html" title="hif::Array\&lt; index_type \&gt;" alt="" coords="5,184,168,211"/>
-<area shape="rect" id="node3" href="classhif_1_1Array.html" title="Core data structure used in compressed storage. " alt="" coords="33,95,140,121"/>
+<div class="center"><img src="classhif_1_1internal_1_1AugmentedCore__coll__graph.png" border="0" usemap="#hif_1_1internal_1_1AugmentedCore_3_01IndexType_00_01IndPtrType_01_4_coll__map" alt="Collaboration graph"/></div>
+<map name="hif_1_1internal_1_1AugmentedCore_3_01IndexType_00_01IndPtrType_01_4_coll__map" id="hif_1_1internal_1_1AugmentedCore_3_01IndexType_00_01IndPtrType_01_4_coll__map">
+<area shape="rect" id="node2" href="classhif_1_1Array.html" title="hif::Array\&lt; indptr\l_type \&gt;" alt="" coords="5,184,124,225"/>
+<area shape="rect" id="node3" href="classhif_1_1Array.html" title="Core data structure used in compressed storage. " alt="" coords="93,95,199,121"/>
+<area shape="rect" id="node5" href="classhif_1_1Array.html" title="hif::Array\&lt; index_type \&gt;" alt="" coords="149,191,311,218"/>
 </map>
 <center><span class="legend">[<a target="top" href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:a1e7e50b7473e4fcf15fa61ec5293d6a3"><td class="memItemLeft" align="right" valign="top">typedef IndexType&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1e7e50b7473e4fcf15fa61ec5293d6a3">index_type</a></td></tr>
-<tr class="memdesc:a1e7e50b7473e4fcf15fa61ec5293d6a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">index  <a href="#a1e7e50b7473e4fcf15fa61ec5293d6a3">More...</a><br /></td></tr>
-<tr class="separator:a1e7e50b7473e4fcf15fa61ec5293d6a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a77dfdbad4ad15fd706fd5315be37ba72"><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="classhif_1_1Array.html">Array</a>&lt; <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1e7e50b7473e4fcf15fa61ec5293d6a3">index_type</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a></td></tr>
-<tr class="memdesc:a77dfdbad4ad15fd706fd5315be37ba72"><td class="mdescLeft">&#160;</td><td class="mdescRight">container  <a href="#a77dfdbad4ad15fd706fd5315be37ba72">More...</a><br /></td></tr>
-<tr class="separator:a77dfdbad4ad15fd706fd5315be37ba72"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a27af7dfdc7f24c5a8e8bec59758480e4"><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="classhif_1_1Array.html#a30a5c91b2e6628c6a93b0a094fd0e300">iarray_type::size_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a></td></tr>
-<tr class="memdesc:a27af7dfdc7f24c5a8e8bec59758480e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">size  <a href="#a27af7dfdc7f24c5a8e8bec59758480e4">More...</a><br /></td></tr>
-<tr class="separator:a27af7dfdc7f24c5a8e8bec59758480e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9f05457feb06f3ba4c5935ddf1b8c7b8"><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">AugmentedCore</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a9f05457feb06f3ba4c5935ddf1b8c7b8">this_type</a></td></tr>
-<tr class="memdesc:a9f05457feb06f3ba4c5935ddf1b8c7b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">this  <a href="#a9f05457feb06f3ba4c5935ddf1b8c7b8">More...</a><br /></td></tr>
-<tr class="separator:a9f05457feb06f3ba4c5935ddf1b8c7b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1a66f5f9e0e663f3df65ae6bdd7b34ee"><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="classhif_1_1Array.html#a9f51a1b7d3038ff1f174db18b6022f6e">iarray_type::iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1a66f5f9e0e663f3df65ae6bdd7b34ee">iterator</a></td></tr>
-<tr class="memdesc:a1a66f5f9e0e663f3df65ae6bdd7b34ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">iterator type  <a href="#a1a66f5f9e0e663f3df65ae6bdd7b34ee">More...</a><br /></td></tr>
-<tr class="separator:a1a66f5f9e0e663f3df65ae6bdd7b34ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a995fb7192e3b64e6c5ac30202fa8f525"><td class="memItemLeft" align="right" valign="top">typedef IndexType&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a995fb7192e3b64e6c5ac30202fa8f525">index_type</a></td></tr>
+<tr class="memdesc:a995fb7192e3b64e6c5ac30202fa8f525"><td class="mdescLeft">&#160;</td><td class="mdescRight">index  <a href="#a995fb7192e3b64e6c5ac30202fa8f525">More...</a><br /></td></tr>
+<tr class="separator:a995fb7192e3b64e6c5ac30202fa8f525"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab012eb787fc43a9710e5ad21f479594c"><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="classhif_1_1Array.html">Array</a>&lt; <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a995fb7192e3b64e6c5ac30202fa8f525">index_type</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#ab012eb787fc43a9710e5ad21f479594c">iarray_type</a></td></tr>
+<tr class="memdesc:ab012eb787fc43a9710e5ad21f479594c"><td class="mdescLeft">&#160;</td><td class="mdescRight">container  <a href="#ab012eb787fc43a9710e5ad21f479594c">More...</a><br /></td></tr>
+<tr class="separator:ab012eb787fc43a9710e5ad21f479594c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a220e366f9a3c7df2da3a8e1fe54ab462"><td class="memItemLeft" align="right" valign="top">typedef IndPtrType&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a220e366f9a3c7df2da3a8e1fe54ab462">indptr_type</a></td></tr>
+<tr class="memdesc:a220e366f9a3c7df2da3a8e1fe54ab462"><td class="mdescLeft">&#160;</td><td class="mdescRight">index_pointer type  <a href="#a220e366f9a3c7df2da3a8e1fe54ab462">More...</a><br /></td></tr>
+<tr class="separator:a220e366f9a3c7df2da3a8e1fe54ab462"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8106e73d2081d10504809fee19b726da"><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="classhif_1_1Array.html">Array</a>&lt; <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a220e366f9a3c7df2da3a8e1fe54ab462">indptr_type</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8106e73d2081d10504809fee19b726da">iparray_type</a></td></tr>
+<tr class="memdesc:a8106e73d2081d10504809fee19b726da"><td class="mdescLeft">&#160;</td><td class="mdescRight">indptr array  <a href="#a8106e73d2081d10504809fee19b726da">More...</a><br /></td></tr>
+<tr class="separator:a8106e73d2081d10504809fee19b726da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a375e2bae010f24df89b27d7ea4fd5a6a"><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="classhif_1_1Array.html#a30a5c91b2e6628c6a93b0a094fd0e300">iarray_type::size_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a></td></tr>
+<tr class="memdesc:a375e2bae010f24df89b27d7ea4fd5a6a"><td class="mdescLeft">&#160;</td><td class="mdescRight">size  <a href="#a375e2bae010f24df89b27d7ea4fd5a6a">More...</a><br /></td></tr>
+<tr class="separator:a375e2bae010f24df89b27d7ea4fd5a6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a02bdd7d149670d2093718c5f63d95f3f"><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">AugmentedCore</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a02bdd7d149670d2093718c5f63d95f3f">this_type</a></td></tr>
+<tr class="memdesc:a02bdd7d149670d2093718c5f63d95f3f"><td class="mdescLeft">&#160;</td><td class="mdescRight">this  <a href="#a02bdd7d149670d2093718c5f63d95f3f">More...</a><br /></td></tr>
+<tr class="separator:a02bdd7d149670d2093718c5f63d95f3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe6e67b2e89dd3040995f561019fbe5b"><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="classhif_1_1Array.html#a9f51a1b7d3038ff1f174db18b6022f6e">iarray_type::iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#afe6e67b2e89dd3040995f561019fbe5b">iterator</a></td></tr>
+<tr class="memdesc:afe6e67b2e89dd3040995f561019fbe5b"><td class="mdescLeft">&#160;</td><td class="mdescRight">iterator type  <a href="#afe6e67b2e89dd3040995f561019fbe5b">More...</a><br /></td></tr>
+<tr class="separator:afe6e67b2e89dd3040995f561019fbe5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ace8af777b929a2316e265adfe19b6e94"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#ace8af777b929a2316e265adfe19b6e94">AugmentedCore</a> ()=default</td></tr>
-<tr class="memdesc:ace8af777b929a2316e265adfe19b6e94"><td class="mdescLeft">&#160;</td><td class="mdescRight">default constructor  <a href="#ace8af777b929a2316e265adfe19b6e94">More...</a><br /></td></tr>
-<tr class="separator:ace8af777b929a2316e265adfe19b6e94"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0620e3e050522475412ea37c8da10c0f"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a0620e3e050522475412ea37c8da10c0f">AugmentedCore</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a> nlist, const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a> nnz=0, bool <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a880653395442fe93cd78bd5f9355a421">reserve</a>=true)</td></tr>
-<tr class="memdesc:a0620e3e050522475412ea37c8da10c0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">constructor with number of lists  <a href="#a0620e3e050522475412ea37c8da10c0f">More...</a><br /></td></tr>
-<tr class="separator:a0620e3e050522475412ea37c8da10c0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1b897647f88793ea895886e8610776b8"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1b897647f88793ea895886e8610776b8">AugmentedCore</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a9f05457feb06f3ba4c5935ddf1b8c7b8">this_type</a> &amp;other, bool clone=false)</td></tr>
-<tr class="memdesc:a1b897647f88793ea895886e8610776b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">shallow copy of clone  <a href="#a1b897647f88793ea895886e8610776b8">More...</a><br /></td></tr>
-<tr class="separator:a1b897647f88793ea895886e8610776b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a54cb7b45c2044f57ded2ec747101423b"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a54cb7b45c2044f57ded2ec747101423b">AugmentedCore</a> (<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a9f05457feb06f3ba4c5935ddf1b8c7b8">this_type</a> &amp;&amp;)=default</td></tr>
-<tr class="separator:a54cb7b45c2044f57ded2ec747101423b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1297f198aef5008a62ff08721b5827c5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a9f05457feb06f3ba4c5935ddf1b8c7b8">this_type</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1297f198aef5008a62ff08721b5827c5">operator=</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a9f05457feb06f3ba4c5935ddf1b8c7b8">this_type</a> &amp;)=default</td></tr>
-<tr class="separator:a1297f198aef5008a62ff08721b5827c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6907e0a5d9199977180b766f021d0bcf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a9f05457feb06f3ba4c5935ddf1b8c7b8">this_type</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a6907e0a5d9199977180b766f021d0bcf">operator=</a> (<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a9f05457feb06f3ba4c5935ddf1b8c7b8">this_type</a> &amp;&amp;)=default</td></tr>
-<tr class="separator:a6907e0a5d9199977180b766f021d0bcf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aafdb24aeb9ad87bc38c34c16c6018ab0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1e7e50b7473e4fcf15fa61ec5293d6a3">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#aafdb24aeb9ad87bc38c34c16c6018ab0">val_pos_idx</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a> nid) const</td></tr>
-<tr class="memdesc:aafdb24aeb9ad87bc38c34c16c6018ab0"><td class="mdescLeft">&#160;</td><td class="mdescRight">given a node handle, query its value position (index)  <a href="#aafdb24aeb9ad87bc38c34c16c6018ab0">More...</a><br /></td></tr>
-<tr class="separator:aafdb24aeb9ad87bc38c34c16c6018ab0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8dc42aa3cc57e17515356f8d0b5b3340"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8dc42aa3cc57e17515356f8d0b5b3340">val_pos</a> ()</td></tr>
-<tr class="separator:a8dc42aa3cc57e17515356f8d0b5b3340"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1027719cc0533e29c494fb340bc664cc"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1027719cc0533e29c494fb340bc664cc">val_pos</a> () const</td></tr>
-<tr class="separator:a1027719cc0533e29c494fb340bc664cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a880653395442fe93cd78bd5f9355a421"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a880653395442fe93cd78bd5f9355a421">reserve</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a> nnz)</td></tr>
-<tr class="memdesc:a880653395442fe93cd78bd5f9355a421"><td class="mdescLeft">&#160;</td><td class="mdescRight">reserve spaces for nnz arrays  <a href="#a880653395442fe93cd78bd5f9355a421">More...</a><br /></td></tr>
-<tr class="separator:a880653395442fe93cd78bd5f9355a421"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac1216ed2b45caa57f69702738f43110f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#ac1216ed2b45caa57f69702738f43110f">secondary_start</a> ()</td></tr>
-<tr class="separator:ac1216ed2b45caa57f69702738f43110f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0e0f1ae065008c4b3740499e0e930fb7"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a0e0f1ae065008c4b3740499e0e930fb7">secondary_start</a> () const</td></tr>
-<tr class="separator:a0e0f1ae065008c4b3740499e0e930fb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab74bc294e80634cc9bdb1c9f358448b8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#ab74bc294e80634cc9bdb1c9f358448b8">secondary_end</a> ()</td></tr>
-<tr class="separator:ab74bc294e80634cc9bdb1c9f358448b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5814caa9cf205fa07b26510d40719c8d"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a5814caa9cf205fa07b26510d40719c8d">secondary_end</a> () const</td></tr>
-<tr class="separator:a5814caa9cf205fa07b26510d40719c8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1241b26612f5086b4dcf6ba0aba8f2a9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1241b26612f5086b4dcf6ba0aba8f2a9">secondary_counts</a> ()</td></tr>
-<tr class="separator:a1241b26612f5086b4dcf6ba0aba8f2a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa6a7519f1cb49dc63fe2814851c936db"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#aa6a7519f1cb49dc63fe2814851c936db">secondary_counts</a> () const</td></tr>
-<tr class="separator:aa6a7519f1cb49dc63fe2814851c936db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b0949d7e7cf824a3d586afb3f5e24db"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8b0949d7e7cf824a3d586afb3f5e24db">AugmentedCore</a> ()=default</td></tr>
+<tr class="memdesc:a8b0949d7e7cf824a3d586afb3f5e24db"><td class="mdescLeft">&#160;</td><td class="mdescRight">default constructor  <a href="#a8b0949d7e7cf824a3d586afb3f5e24db">More...</a><br /></td></tr>
+<tr class="separator:a8b0949d7e7cf824a3d586afb3f5e24db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a445535493ec1397a85e1b4d69745d6"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a0a445535493ec1397a85e1b4d69745d6">AugmentedCore</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a> nlist, const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a> nnz=0, bool <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a7447c438ed4cfc9080d64c67cb767ff2">reserve</a>=true)</td></tr>
+<tr class="memdesc:a0a445535493ec1397a85e1b4d69745d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">constructor with number of lists  <a href="#a0a445535493ec1397a85e1b4d69745d6">More...</a><br /></td></tr>
+<tr class="separator:a0a445535493ec1397a85e1b4d69745d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c817a24219c2bf290606161e0c9f930"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a3c817a24219c2bf290606161e0c9f930">AugmentedCore</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a02bdd7d149670d2093718c5f63d95f3f">this_type</a> &amp;other, bool clone=false)</td></tr>
+<tr class="memdesc:a3c817a24219c2bf290606161e0c9f930"><td class="mdescLeft">&#160;</td><td class="mdescRight">shallow copy of clone  <a href="#a3c817a24219c2bf290606161e0c9f930">More...</a><br /></td></tr>
+<tr class="separator:a3c817a24219c2bf290606161e0c9f930"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1120c44b0787b7ee296e80b4c4157f77"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1120c44b0787b7ee296e80b4c4157f77">AugmentedCore</a> (<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a02bdd7d149670d2093718c5f63d95f3f">this_type</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a1120c44b0787b7ee296e80b4c4157f77"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a22a0adefe79f40461b32aad1cf538666"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a02bdd7d149670d2093718c5f63d95f3f">this_type</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a22a0adefe79f40461b32aad1cf538666">operator=</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a02bdd7d149670d2093718c5f63d95f3f">this_type</a> &amp;)=default</td></tr>
+<tr class="separator:a22a0adefe79f40461b32aad1cf538666"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a81dc731e13dd548b6a6a65a3b1da0ff2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a02bdd7d149670d2093718c5f63d95f3f">this_type</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a81dc731e13dd548b6a6a65a3b1da0ff2">operator=</a> (<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a02bdd7d149670d2093718c5f63d95f3f">this_type</a> &amp;&amp;)=default</td></tr>
+<tr class="separator:a81dc731e13dd548b6a6a65a3b1da0ff2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a272fb70b25249576a21dbc9d7919fc76"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a220e366f9a3c7df2da3a8e1fe54ab462">indptr_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a272fb70b25249576a21dbc9d7919fc76">val_pos_idx</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a> nid) const</td></tr>
+<tr class="memdesc:a272fb70b25249576a21dbc9d7919fc76"><td class="mdescLeft">&#160;</td><td class="mdescRight">given a node handle, query its value position (index)  <a href="#a272fb70b25249576a21dbc9d7919fc76">More...</a><br /></td></tr>
+<tr class="separator:a272fb70b25249576a21dbc9d7919fc76"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a66dbc280c79377a54008e662cd35c24d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8106e73d2081d10504809fee19b726da">iparray_type</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a66dbc280c79377a54008e662cd35c24d">val_pos</a> ()</td></tr>
+<tr class="separator:a66dbc280c79377a54008e662cd35c24d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acdbcdb16996e61435ad93f54cf499cac"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8106e73d2081d10504809fee19b726da">iparray_type</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#acdbcdb16996e61435ad93f54cf499cac">val_pos</a> () const</td></tr>
+<tr class="separator:acdbcdb16996e61435ad93f54cf499cac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7447c438ed4cfc9080d64c67cb767ff2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a7447c438ed4cfc9080d64c67cb767ff2">reserve</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a> nnz)</td></tr>
+<tr class="memdesc:a7447c438ed4cfc9080d64c67cb767ff2"><td class="mdescLeft">&#160;</td><td class="mdescRight">reserve spaces for nnz arrays  <a href="#a7447c438ed4cfc9080d64c67cb767ff2">More...</a><br /></td></tr>
+<tr class="separator:a7447c438ed4cfc9080d64c67cb767ff2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa313fd8688ce76d270ff57fddd33ab44"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8106e73d2081d10504809fee19b726da">iparray_type</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#aa313fd8688ce76d270ff57fddd33ab44">secondary_start</a> ()</td></tr>
+<tr class="separator:aa313fd8688ce76d270ff57fddd33ab44"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a92f7fb2dfca960f74f8fd4f54244eef3"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8106e73d2081d10504809fee19b726da">iparray_type</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a92f7fb2dfca960f74f8fd4f54244eef3">secondary_start</a> () const</td></tr>
+<tr class="separator:a92f7fb2dfca960f74f8fd4f54244eef3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a666141333ef8789eed7d8ce1ecf6b1b5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8106e73d2081d10504809fee19b726da">iparray_type</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a666141333ef8789eed7d8ce1ecf6b1b5">secondary_end</a> ()</td></tr>
+<tr class="separator:a666141333ef8789eed7d8ce1ecf6b1b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6d7a42ad0b37b6127c434a6b8c7007e"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8106e73d2081d10504809fee19b726da">iparray_type</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#ab6d7a42ad0b37b6127c434a6b8c7007e">secondary_end</a> () const</td></tr>
+<tr class="separator:ab6d7a42ad0b37b6127c434a6b8c7007e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a17c844f09887aabf886ec467f03aace5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#ab012eb787fc43a9710e5ad21f479594c">iarray_type</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a17c844f09887aabf886ec467f03aace5">secondary_counts</a> ()</td></tr>
+<tr class="separator:a17c844f09887aabf886ec467f03aace5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1fdb52243bb346e90b9fa911929c383a"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#ab012eb787fc43a9710e5ad21f479594c">iarray_type</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1fdb52243bb346e90b9fa911929c383a">secondary_counts</a> () const</td></tr>
+<tr class="separator:a1fdb52243bb346e90b9fa911929c383a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a1d804c7d16688d89b8fbd6f4d4d3ddec"><td class="memItemLeft" align="right" valign="top">static constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1d804c7d16688d89b8fbd6f4d4d3ddec">is_nil</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1e7e50b7473e4fcf15fa61ec5293d6a3">index_type</a> i)</td></tr>
-<tr class="memdesc:a1d804c7d16688d89b8fbd6f4d4d3ddec"><td class="mdescLeft">&#160;</td><td class="mdescRight">check if a given node handle is NIL or not  <a href="#a1d804c7d16688d89b8fbd6f4d4d3ddec">More...</a><br /></td></tr>
-<tr class="separator:a1d804c7d16688d89b8fbd6f4d4d3ddec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a77daad8b2ab28c9d8edb698eca48d4df"><td class="memItemLeft" align="right" valign="top">static constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77daad8b2ab28c9d8edb698eca48d4df">is_nil</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a220e366f9a3c7df2da3a8e1fe54ab462">indptr_type</a> i)</td></tr>
+<tr class="memdesc:a77daad8b2ab28c9d8edb698eca48d4df"><td class="mdescLeft">&#160;</td><td class="mdescRight">check if a given node handle is NIL or not  <a href="#a77daad8b2ab28c9d8edb698eca48d4df">More...</a><br /></td></tr>
+<tr class="separator:a77daad8b2ab28c9d8edb698eca48d4df"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
-<tr class="memitem:a90a820138b5596fbfbda67c5db3a9706"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a90a820138b5596fbfbda67c5db3a9706">_begin_assemble_nodes</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a> nlist)</td></tr>
-<tr class="memdesc:a90a820138b5596fbfbda67c5db3a9706"><td class="mdescLeft">&#160;</td><td class="mdescRight">begin assemble nodes  <a href="#a90a820138b5596fbfbda67c5db3a9706">More...</a><br /></td></tr>
-<tr class="separator:a90a820138b5596fbfbda67c5db3a9706"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a19b98bd8b49a88052d90d92e12c4c63f"><td class="memTemplParams" colspan="2">template&lt;class Iter &gt; </td></tr>
-<tr class="memitem:a19b98bd8b49a88052d90d92e12c4c63f"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a19b98bd8b49a88052d90d92e12c4c63f">_push_back_nodes</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a> entry, Iter first, Iter last)</td></tr>
-<tr class="memdesc:a19b98bd8b49a88052d90d92e12c4c63f"><td class="mdescLeft">&#160;</td><td class="mdescRight">update linked lists given new nodes from back  <a href="#a19b98bd8b49a88052d90d92e12c4c63f">More...</a><br /></td></tr>
-<tr class="separator:a19b98bd8b49a88052d90d92e12c4c63f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4e4ffb274c40098a63d5cb5d8cd49925"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1e7e50b7473e4fcf15fa61ec5293d6a3">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a4e4ffb274c40098a63d5cb5d8cd49925">_start_node</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a> lid) const</td></tr>
-<tr class="memdesc:a4e4ffb274c40098a63d5cb5d8cd49925"><td class="mdescLeft">&#160;</td><td class="mdescRight">get starting node ID  <a href="#a4e4ffb274c40098a63d5cb5d8cd49925">More...</a><br /></td></tr>
-<tr class="separator:a4e4ffb274c40098a63d5cb5d8cd49925"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a147b276bda7bf1f4ffce2efa5b0ad680"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1e7e50b7473e4fcf15fa61ec5293d6a3">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a147b276bda7bf1f4ffce2efa5b0ad680">_next_node</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a> nid) const</td></tr>
-<tr class="memdesc:a147b276bda7bf1f4ffce2efa5b0ad680"><td class="mdescLeft">&#160;</td><td class="mdescRight">get the next node ID  <a href="#a147b276bda7bf1f4ffce2efa5b0ad680">More...</a><br /></td></tr>
-<tr class="separator:a147b276bda7bf1f4ffce2efa5b0ad680"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a06d4f149c9cd53b8ee51f1651e9e161a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1e7e50b7473e4fcf15fa61ec5293d6a3">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a06d4f149c9cd53b8ee51f1651e9e161a">_node_ind</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a> nid) const</td></tr>
-<tr class="memdesc:a06d4f149c9cd53b8ee51f1651e9e161a"><td class="mdescLeft">&#160;</td><td class="mdescRight">get node item ({col-,row-}index in aug-{ccx,crs}, correspondingly)  <a href="#a06d4f149c9cd53b8ee51f1651e9e161a">More...</a><br /></td></tr>
-<tr class="separator:a06d4f149c9cd53b8ee51f1651e9e161a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a33e969242acdadf8fd2545fb7b61e203"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a33e969242acdadf8fd2545fb7b61e203">_swap_val_pos_exp</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a> p1, const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a> p2)</td></tr>
-<tr class="memdesc:a33e969242acdadf8fd2545fb7b61e203"><td class="mdescLeft">&#160;</td><td class="mdescRight">given two existing indices, swap them explicitly  <a href="#a33e969242acdadf8fd2545fb7b61e203">More...</a><br /></td></tr>
-<tr class="separator:a33e969242acdadf8fd2545fb7b61e203"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acbf0b6153d6ed1ef17cd56e2c8e6007a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#acbf0b6153d6ed1ef17cd56e2c8e6007a">_rotate_val_pos_left</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a> n, const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a> src)</td></tr>
-<tr class="memdesc:acbf0b6153d6ed1ef17cd56e2c8e6007a"><td class="mdescLeft">&#160;</td><td class="mdescRight">rotate value positions toward left  <a href="#acbf0b6153d6ed1ef17cd56e2c8e6007a">More...</a><br /></td></tr>
-<tr class="separator:acbf0b6153d6ed1ef17cd56e2c8e6007a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a20b60fceffbc712e547e8c6002819230"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a20b60fceffbc712e547e8c6002819230">_rotate_val_pos_right</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a> n, const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a> src)</td></tr>
-<tr class="memdesc:a20b60fceffbc712e547e8c6002819230"><td class="mdescLeft">&#160;</td><td class="mdescRight">rotate value positions toward right  <a href="#a20b60fceffbc712e547e8c6002819230">More...</a><br /></td></tr>
-<tr class="separator:a20b60fceffbc712e547e8c6002819230"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adedceadba809a52bfd4a959084be3bb2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#adedceadba809a52bfd4a959084be3bb2">_interchange_ik_head_tail</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a> i, const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a> k)</td></tr>
-<tr class="memdesc:adedceadba809a52bfd4a959084be3bb2"><td class="mdescLeft">&#160;</td><td class="mdescRight">interchange the head and tail nodes given list i and k  <a href="#adedceadba809a52bfd4a959084be3bb2">More...</a><br /></td></tr>
-<tr class="separator:adedceadba809a52bfd4a959084be3bb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad711a5f12855b538ee7222d39300dc77"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#ad711a5f12855b538ee7222d39300dc77">_build_aug</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a> nlist, const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a> &amp;ind_start, const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a> &amp;indices)</td></tr>
-<tr class="memdesc:ad711a5f12855b538ee7222d39300dc77"><td class="mdescLeft">&#160;</td><td class="mdescRight">build augmented cores based on compressed storages  <a href="#ad711a5f12855b538ee7222d39300dc77">More...</a><br /></td></tr>
-<tr class="separator:ad711a5f12855b538ee7222d39300dc77"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afa3f2cae684947486386ee774c710782"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#afa3f2cae684947486386ee774c710782">_nodes_in_list</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a> i) const</td></tr>
-<tr class="memdesc:afa3f2cae684947486386ee774c710782"><td class="mdescLeft">&#160;</td><td class="mdescRight">query total number of in a certain list  <a href="#afa3f2cae684947486386ee774c710782">More...</a><br /></td></tr>
-<tr class="separator:afa3f2cae684947486386ee774c710782"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a29e3934d92c9e6aeaf8fb266b6d72cc2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a29e3934d92c9e6aeaf8fb266b6d72cc2">_begin_assemble_nodes</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a> nlist)</td></tr>
+<tr class="memdesc:a29e3934d92c9e6aeaf8fb266b6d72cc2"><td class="mdescLeft">&#160;</td><td class="mdescRight">begin assemble nodes  <a href="#a29e3934d92c9e6aeaf8fb266b6d72cc2">More...</a><br /></td></tr>
+<tr class="separator:a29e3934d92c9e6aeaf8fb266b6d72cc2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a19df420bc7a6c012efb824e2d6535a68"><td class="memTemplParams" colspan="2">template&lt;class Iter &gt; </td></tr>
+<tr class="memitem:a19df420bc7a6c012efb824e2d6535a68"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a19df420bc7a6c012efb824e2d6535a68">_push_back_nodes</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a> entry, Iter first, Iter last)</td></tr>
+<tr class="memdesc:a19df420bc7a6c012efb824e2d6535a68"><td class="mdescLeft">&#160;</td><td class="mdescRight">update linked lists given new nodes from back  <a href="#a19df420bc7a6c012efb824e2d6535a68">More...</a><br /></td></tr>
+<tr class="separator:a19df420bc7a6c012efb824e2d6535a68"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5e8e7daad4b06edcf99006bbf0762549"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a220e366f9a3c7df2da3a8e1fe54ab462">indptr_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a5e8e7daad4b06edcf99006bbf0762549">_start_node</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a> lid) const</td></tr>
+<tr class="memdesc:a5e8e7daad4b06edcf99006bbf0762549"><td class="mdescLeft">&#160;</td><td class="mdescRight">get starting node ID  <a href="#a5e8e7daad4b06edcf99006bbf0762549">More...</a><br /></td></tr>
+<tr class="separator:a5e8e7daad4b06edcf99006bbf0762549"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7fa846f8e43c36a5da1d8c78729c04f1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a220e366f9a3c7df2da3a8e1fe54ab462">indptr_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a7fa846f8e43c36a5da1d8c78729c04f1">_next_node</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a> nid) const</td></tr>
+<tr class="memdesc:a7fa846f8e43c36a5da1d8c78729c04f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">get the next node ID  <a href="#a7fa846f8e43c36a5da1d8c78729c04f1">More...</a><br /></td></tr>
+<tr class="separator:a7fa846f8e43c36a5da1d8c78729c04f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a961097ba3a88f7bc018d47c19fc5b6f8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a995fb7192e3b64e6c5ac30202fa8f525">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a961097ba3a88f7bc018d47c19fc5b6f8">_node_ind</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a> nid) const</td></tr>
+<tr class="memdesc:a961097ba3a88f7bc018d47c19fc5b6f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">get node item ({col-,row-}index in aug-{ccx,crs}, correspondingly)  <a href="#a961097ba3a88f7bc018d47c19fc5b6f8">More...</a><br /></td></tr>
+<tr class="separator:a961097ba3a88f7bc018d47c19fc5b6f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a41c5fe65603057b7c8c7816ebe734cb1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a41c5fe65603057b7c8c7816ebe734cb1">_swap_val_pos_exp</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a> p1, const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a> p2)</td></tr>
+<tr class="memdesc:a41c5fe65603057b7c8c7816ebe734cb1"><td class="mdescLeft">&#160;</td><td class="mdescRight">given two existing indices, swap them explicitly  <a href="#a41c5fe65603057b7c8c7816ebe734cb1">More...</a><br /></td></tr>
+<tr class="separator:a41c5fe65603057b7c8c7816ebe734cb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a374c09d47305ff283777c285800ee32d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a374c09d47305ff283777c285800ee32d">_rotate_val_pos_left</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a> n, const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a> src)</td></tr>
+<tr class="memdesc:a374c09d47305ff283777c285800ee32d"><td class="mdescLeft">&#160;</td><td class="mdescRight">rotate value positions toward left  <a href="#a374c09d47305ff283777c285800ee32d">More...</a><br /></td></tr>
+<tr class="separator:a374c09d47305ff283777c285800ee32d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaa6d9856fd7d123c57c9d4b26752483d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#aaa6d9856fd7d123c57c9d4b26752483d">_rotate_val_pos_right</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a> n, const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a> src)</td></tr>
+<tr class="memdesc:aaa6d9856fd7d123c57c9d4b26752483d"><td class="mdescLeft">&#160;</td><td class="mdescRight">rotate value positions toward right  <a href="#aaa6d9856fd7d123c57c9d4b26752483d">More...</a><br /></td></tr>
+<tr class="separator:aaa6d9856fd7d123c57c9d4b26752483d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad812b0cd523e2b45da3f0e7ed823401a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#ad812b0cd523e2b45da3f0e7ed823401a">_interchange_ik_head_tail</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a> i, const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a> k)</td></tr>
+<tr class="memdesc:ad812b0cd523e2b45da3f0e7ed823401a"><td class="mdescLeft">&#160;</td><td class="mdescRight">interchange the head and tail nodes given list i and k  <a href="#ad812b0cd523e2b45da3f0e7ed823401a">More...</a><br /></td></tr>
+<tr class="separator:ad812b0cd523e2b45da3f0e7ed823401a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a08c48e27160a8ebda4145f5144f9dc5d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a08c48e27160a8ebda4145f5144f9dc5d">_build_aug</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a> nlist, const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8106e73d2081d10504809fee19b726da">iparray_type</a> &amp;ind_start, const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#ab012eb787fc43a9710e5ad21f479594c">iarray_type</a> &amp;indices)</td></tr>
+<tr class="memdesc:a08c48e27160a8ebda4145f5144f9dc5d"><td class="mdescLeft">&#160;</td><td class="mdescRight">build augmented cores based on compressed storages  <a href="#a08c48e27160a8ebda4145f5144f9dc5d">More...</a><br /></td></tr>
+<tr class="separator:a08c48e27160a8ebda4145f5144f9dc5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac62f08c9205006a1f6cec9bc2b3f8c6f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#ac62f08c9205006a1f6cec9bc2b3f8c6f">_nodes_in_list</a> (const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a> i) const</td></tr>
+<tr class="memdesc:ac62f08c9205006a1f6cec9bc2b3f8c6f"><td class="mdescLeft">&#160;</td><td class="mdescRight">query total number of in a certain list  <a href="#ac62f08c9205006a1f6cec9bc2b3f8c6f">More...</a><br /></td></tr>
+<tr class="separator:ac62f08c9205006a1f6cec9bc2b3f8c6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
-<tr class="memitem:ada49787002c716114b07c23e1be5297d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#ada49787002c716114b07c23e1be5297d">_node_inds</a></td></tr>
-<tr class="memdesc:ada49787002c716114b07c23e1be5297d"><td class="mdescLeft">&#160;</td><td class="mdescRight">indices (values) of each node  <a href="#ada49787002c716114b07c23e1be5297d">More...</a><br /></td></tr>
-<tr class="separator:ada49787002c716114b07c23e1be5297d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa5920f148baf354a84de4411ed6a7e1a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#aa5920f148baf354a84de4411ed6a7e1a">_node_start</a></td></tr>
-<tr class="memdesc:aa5920f148baf354a84de4411ed6a7e1a"><td class="mdescLeft">&#160;</td><td class="mdescRight">head nodes  <a href="#aa5920f148baf354a84de4411ed6a7e1a">More...</a><br /></td></tr>
-<tr class="separator:aa5920f148baf354a84de4411ed6a7e1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa5dc6b2a7b2ebdcaabdd4e29f1523cde"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#aa5dc6b2a7b2ebdcaabdd4e29f1523cde">_node_next</a></td></tr>
-<tr class="memdesc:aa5dc6b2a7b2ebdcaabdd4e29f1523cde"><td class="mdescLeft">&#160;</td><td class="mdescRight">next nodes  <a href="#aa5dc6b2a7b2ebdcaabdd4e29f1523cde">More...</a><br /></td></tr>
-<tr class="separator:aa5dc6b2a7b2ebdcaabdd4e29f1523cde"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5793ba46b48f2f75cb2c39f20e06ee99"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a5793ba46b48f2f75cb2c39f20e06ee99">_node_end</a></td></tr>
-<tr class="memdesc:a5793ba46b48f2f75cb2c39f20e06ee99"><td class="mdescLeft">&#160;</td><td class="mdescRight">ending positions  <a href="#a5793ba46b48f2f75cb2c39f20e06ee99">More...</a><br /></td></tr>
-<tr class="separator:a5793ba46b48f2f75cb2c39f20e06ee99"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8dc001644c687f1f7fa5ab0ef9fdca59"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8dc001644c687f1f7fa5ab0ef9fdca59">_val_pos</a></td></tr>
-<tr class="memdesc:a8dc001644c687f1f7fa5ab0ef9fdca59"><td class="mdescLeft">&#160;</td><td class="mdescRight">value positions  <a href="#a8dc001644c687f1f7fa5ab0ef9fdca59">More...</a><br /></td></tr>
-<tr class="separator:a8dc001644c687f1f7fa5ab0ef9fdca59"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a70693b8b501896f6553abfbc96535cd2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a70693b8b501896f6553abfbc96535cd2">_val_pos_inv</a></td></tr>
-<tr class="memdesc:a70693b8b501896f6553abfbc96535cd2"><td class="mdescLeft">&#160;</td><td class="mdescRight">value position inverse, i.e. inv(_val_pos)  <a href="#a70693b8b501896f6553abfbc96535cd2">More...</a><br /></td></tr>
-<tr class="separator:a70693b8b501896f6553abfbc96535cd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a966fe16d1c980176407078febd4ddbd0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a966fe16d1c980176407078febd4ddbd0">_node_counts</a></td></tr>
-<tr class="memdesc:a966fe16d1c980176407078febd4ddbd0"><td class="mdescLeft">&#160;</td><td class="mdescRight">number of nodes per list  <a href="#a966fe16d1c980176407078febd4ddbd0">More...</a><br /></td></tr>
-<tr class="separator:a966fe16d1c980176407078febd4ddbd0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac39602b8af704f0943ec5addf6aa03a1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#ab012eb787fc43a9710e5ad21f479594c">iarray_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#ac39602b8af704f0943ec5addf6aa03a1">_node_inds</a></td></tr>
+<tr class="memdesc:ac39602b8af704f0943ec5addf6aa03a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">indices (values) of each node  <a href="#ac39602b8af704f0943ec5addf6aa03a1">More...</a><br /></td></tr>
+<tr class="separator:ac39602b8af704f0943ec5addf6aa03a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a78400ffdec7e27327c01de58fe72eb18"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8106e73d2081d10504809fee19b726da">iparray_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a78400ffdec7e27327c01de58fe72eb18">_node_start</a></td></tr>
+<tr class="memdesc:a78400ffdec7e27327c01de58fe72eb18"><td class="mdescLeft">&#160;</td><td class="mdescRight">head nodes  <a href="#a78400ffdec7e27327c01de58fe72eb18">More...</a><br /></td></tr>
+<tr class="separator:a78400ffdec7e27327c01de58fe72eb18"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9c7e7c5168618a62d0b7059a672ece18"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8106e73d2081d10504809fee19b726da">iparray_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a9c7e7c5168618a62d0b7059a672ece18">_node_next</a></td></tr>
+<tr class="memdesc:a9c7e7c5168618a62d0b7059a672ece18"><td class="mdescLeft">&#160;</td><td class="mdescRight">next nodes  <a href="#a9c7e7c5168618a62d0b7059a672ece18">More...</a><br /></td></tr>
+<tr class="separator:a9c7e7c5168618a62d0b7059a672ece18"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa81bd61bfe97b9a29f450325b19c427b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8106e73d2081d10504809fee19b726da">iparray_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#aa81bd61bfe97b9a29f450325b19c427b">_node_end</a></td></tr>
+<tr class="memdesc:aa81bd61bfe97b9a29f450325b19c427b"><td class="mdescLeft">&#160;</td><td class="mdescRight">ending positions  <a href="#aa81bd61bfe97b9a29f450325b19c427b">More...</a><br /></td></tr>
+<tr class="separator:aa81bd61bfe97b9a29f450325b19c427b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4c7b45e7adc7944a849e18aed6066535"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8106e73d2081d10504809fee19b726da">iparray_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a4c7b45e7adc7944a849e18aed6066535">_val_pos</a></td></tr>
+<tr class="memdesc:a4c7b45e7adc7944a849e18aed6066535"><td class="mdescLeft">&#160;</td><td class="mdescRight">value positions  <a href="#a4c7b45e7adc7944a849e18aed6066535">More...</a><br /></td></tr>
+<tr class="separator:a4c7b45e7adc7944a849e18aed6066535"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b1d42e5d2bfb74e9ddb10ff4b26829f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8106e73d2081d10504809fee19b726da">iparray_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a4b1d42e5d2bfb74e9ddb10ff4b26829f">_val_pos_inv</a></td></tr>
+<tr class="memdesc:a4b1d42e5d2bfb74e9ddb10ff4b26829f"><td class="mdescLeft">&#160;</td><td class="mdescRight">value position inverse, i.e. inv(_val_pos)  <a href="#a4b1d42e5d2bfb74e9ddb10ff4b26829f">More...</a><br /></td></tr>
+<tr class="separator:a4b1d42e5d2bfb74e9ddb10ff4b26829f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a49c130f7d2a315b1e6e86ec62090f42e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#ab012eb787fc43a9710e5ad21f479594c">iarray_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a49c130f7d2a315b1e6e86ec62090f42e">_node_counts</a></td></tr>
+<tr class="memdesc:a49c130f7d2a315b1e6e86ec62090f42e"><td class="mdescLeft">&#160;</td><td class="mdescRight">number of nodes per list  <a href="#a49c130f7d2a315b1e6e86ec62090f42e">More...</a><br /></td></tr>
+<tr class="separator:a49c130f7d2a315b1e6e86ec62090f42e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-attribs"></a>
 Static Protected Attributes</h2></td></tr>
-<tr class="memitem:ade25a45dd096ce1ffc0fa6c14e101dc0"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1e7e50b7473e4fcf15fa61ec5293d6a3">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#ade25a45dd096ce1ffc0fa6c14e101dc0">_NIL</a> = std::numeric_limits&lt;<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1e7e50b7473e4fcf15fa61ec5293d6a3">index_type</a>&gt;::max()</td></tr>
-<tr class="separator:ade25a45dd096ce1ffc0fa6c14e101dc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a21a186910c599fa46cde51e2f3e19fc0"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a220e366f9a3c7df2da3a8e1fe54ab462">indptr_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a21a186910c599fa46cde51e2f3e19fc0">_NIL</a> = std::numeric_limits&lt;<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a220e366f9a3c7df2da3a8e1fe54ab462">indptr_type</a>&gt;::max()</td></tr>
+<tr class="separator:a21a186910c599fa46cde51e2f3e19fc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><h3>template&lt;class IndexType&gt;<br />
-class hif::internal::AugmentedCore&lt; IndexType &gt;</h3>
+<div class="textblock"><h3>template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt;<br />
+class hif::internal::AugmentedCore&lt; IndexType, IndPtrType &gt;</h3>
 
 <p>A group of forward link lists for <a class="el" href="classhif_1_1internal_1_1CompressedStorage.html" title="Core of the compressed storage, including data and interfaces. ">CompressedStorage</a>. </p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">IndexType</td><td>index type </td></tr>
+    <tr><td class="paramname">IndPtrType</td><td>index_pointer type </td></tr>
   </table>
   </dd>
 </dl>
@@ -255,131 +263,172 @@ class hif::internal::AugmentedCore&lt; IndexType &gt;</h3>
 <p>This is the version of explicitly maintaining the value positions, i.e. the mapping from linked lists to the compressed storage, and corresponding inverse mapping, i.e. the reversed mapping from compressed storage to the linked lists. Notice that this is a flexible approach, meaning that one can use this data structure to interchange rows/columns in arbitrary orders. However, the drawback is also obvious, we need to mainly two nnz-sized arrays, which are memory inefficient.</p>
 <p>An alternative idea is to take into account of <a class="el" href="classhif_1_1Crout.html" title="Crout update in deferred fashionThe idea of this class is to implement Crout kernels that wrap around...">Crout</a> updating, by using the leading positions. This approach is relatively counterintuitive, but can be efficient in memory usage. The drawback is that this will make the augmented data structure only suitable for <a class="el" href="classhif_1_1Crout.html" title="Crout update in deferred fashionThe idea of this class is to implement Crout kernels that wrap around...">Crout</a> update, which is less a concern for this project. </p>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00061">61</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00062">62</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 </div><div class="dynheader">
-Collaboration diagram for hif::internal::AugmentedCore&lt; IndexType &gt;:</div>
+Collaboration diagram for hif::internal::AugmentedCore&lt; IndexType, IndPtrType &gt;:</div>
 <div class="dyncontent">
-<div class="center"><img src="classhif_1_1internal_1_1AugmentedCore__coll__graph.png" border="0" usemap="#hif_1_1internal_1_1AugmentedCore_3_01IndexType_01_4_coll__map" alt="Collaboration graph"/></div>
-<map name="hif_1_1internal_1_1AugmentedCore_3_01IndexType_01_4_coll__map" id="hif_1_1internal_1_1AugmentedCore_3_01IndexType_01_4_coll__map">
-<area shape="rect" id="node2" href="classhif_1_1Array.html" title="hif::Array\&lt; index_type \&gt;" alt="" coords="5,184,168,211"/>
-<area shape="rect" id="node3" href="classhif_1_1Array.html" title="Core data structure used in compressed storage. " alt="" coords="33,95,140,121"/>
+<div class="center"><img src="classhif_1_1internal_1_1AugmentedCore__coll__graph.png" border="0" usemap="#hif_1_1internal_1_1AugmentedCore_3_01IndexType_00_01IndPtrType_01_4_coll__map" alt="Collaboration graph"/></div>
+<map name="hif_1_1internal_1_1AugmentedCore_3_01IndexType_00_01IndPtrType_01_4_coll__map" id="hif_1_1internal_1_1AugmentedCore_3_01IndexType_00_01IndPtrType_01_4_coll__map">
+<area shape="rect" id="node2" href="classhif_1_1Array.html" title="hif::Array\&lt; indptr\l_type \&gt;" alt="" coords="5,184,124,225"/>
+<area shape="rect" id="node3" href="classhif_1_1Array.html" title="Core data structure used in compressed storage. " alt="" coords="93,95,199,121"/>
+<area shape="rect" id="node5" href="classhif_1_1Array.html" title="hif::Array\&lt; index_type \&gt;" alt="" coords="149,191,311,218"/>
 </map>
 <center><span class="legend">[<a target="top" href="graph_legend.html">legend</a>]</span></center></div>
 <h2 class="groupheader">Member Typedef Documentation</h2>
-<a id="a77dfdbad4ad15fd706fd5315be37ba72"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a77dfdbad4ad15fd706fd5315be37ba72">&#9670;&nbsp;</a></span>iarray_type</h2>
+<a id="ab012eb787fc43a9710e5ad21f479594c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab012eb787fc43a9710e5ad21f479594c">&#9670;&nbsp;</a></span>iarray_type</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">typedef <a class="el" href="classhif_1_1Array.html">Array</a>&lt;<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1e7e50b7473e4fcf15fa61ec5293d6a3">index_type</a>&gt; <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a></td>
+          <td class="memname">typedef <a class="el" href="classhif_1_1Array.html">Array</a>&lt;<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a995fb7192e3b64e6c5ac30202fa8f525">index_type</a>&gt; <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#ab012eb787fc43a9710e5ad21f479594c">iarray_type</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>container </p>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00064">64</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00065">65</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
 </div>
 </div>
-<a id="a1e7e50b7473e4fcf15fa61ec5293d6a3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1e7e50b7473e4fcf15fa61ec5293d6a3">&#9670;&nbsp;</a></span>index_type</h2>
+<a id="a995fb7192e3b64e6c5ac30202fa8f525"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a995fb7192e3b64e6c5ac30202fa8f525">&#9670;&nbsp;</a></span>index_type</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">typedef IndexType <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1e7e50b7473e4fcf15fa61ec5293d6a3">index_type</a></td>
+          <td class="memname">typedef IndexType <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a995fb7192e3b64e6c5ac30202fa8f525">index_type</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>index </p>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00063">63</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00064">64</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
 </div>
 </div>
-<a id="a1a66f5f9e0e663f3df65ae6bdd7b34ee"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1a66f5f9e0e663f3df65ae6bdd7b34ee">&#9670;&nbsp;</a></span>iterator</h2>
+<a id="a220e366f9a3c7df2da3a8e1fe54ab462"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a220e366f9a3c7df2da3a8e1fe54ab462">&#9670;&nbsp;</a></span>indptr_type</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">typedef <a class="el" href="classhif_1_1Array.html#a9f51a1b7d3038ff1f174db18b6022f6e">iarray_type::iterator</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1a66f5f9e0e663f3df65ae6bdd7b34ee">iterator</a></td>
+          <td class="memname">typedef IndPtrType <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a220e366f9a3c7df2da3a8e1fe54ab462">indptr_type</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>index_pointer type </p>
+
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00066">66</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+
+</div>
+</div>
+<a id="a8106e73d2081d10504809fee19b726da"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8106e73d2081d10504809fee19b726da">&#9670;&nbsp;</a></span>iparray_type</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef <a class="el" href="classhif_1_1Array.html">Array</a>&lt;<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a220e366f9a3c7df2da3a8e1fe54ab462">indptr_type</a>&gt; <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8106e73d2081d10504809fee19b726da">iparray_type</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>indptr array </p>
+
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00067">67</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+
+</div>
+</div>
+<a id="afe6e67b2e89dd3040995f561019fbe5b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afe6e67b2e89dd3040995f561019fbe5b">&#9670;&nbsp;</a></span>iterator</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef <a class="el" href="classhif_1_1Array.html#a9f51a1b7d3038ff1f174db18b6022f6e">iarray_type::iterator</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#afe6e67b2e89dd3040995f561019fbe5b">iterator</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>iterator type </p>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00067">67</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00070">70</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
 </div>
 </div>
-<a id="a27af7dfdc7f24c5a8e8bec59758480e4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a27af7dfdc7f24c5a8e8bec59758480e4">&#9670;&nbsp;</a></span>size_type</h2>
+<a id="a375e2bae010f24df89b27d7ea4fd5a6a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a375e2bae010f24df89b27d7ea4fd5a6a">&#9670;&nbsp;</a></span>size_type</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">typedef <a class="el" href="classhif_1_1Array.html#a30a5c91b2e6628c6a93b0a094fd0e300">iarray_type::size_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a></td>
+          <td class="memname">typedef <a class="el" href="classhif_1_1Array.html#a30a5c91b2e6628c6a93b0a094fd0e300">iarray_type::size_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>size </p>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00065">65</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00068">68</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
 </div>
 </div>
-<a id="a9f05457feb06f3ba4c5935ddf1b8c7b8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9f05457feb06f3ba4c5935ddf1b8c7b8">&#9670;&nbsp;</a></span>this_type</h2>
+<a id="a02bdd7d149670d2093718c5f63d95f3f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a02bdd7d149670d2093718c5f63d95f3f">&#9670;&nbsp;</a></span>this_type</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">typedef <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">AugmentedCore</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a9f05457feb06f3ba4c5935ddf1b8c7b8">this_type</a></td>
+          <td class="memname">typedef <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">AugmentedCore</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a02bdd7d149670d2093718c5f63d95f3f">this_type</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>this </p>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00066">66</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00069">69</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="ace8af777b929a2316e265adfe19b6e94"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ace8af777b929a2316e265adfe19b6e94">&#9670;&nbsp;</a></span>AugmentedCore() <span class="overload">[1/4]</span></h2>
+<a id="a8b0949d7e7cf824a3d586afb3f5e24db"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8b0949d7e7cf824a3d586afb3f5e24db">&#9670;&nbsp;</a></span>AugmentedCore() <span class="overload">[1/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">AugmentedCore</a> </td>
+          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">AugmentedCore</a> </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -396,27 +445,27 @@ template&lt;class IndexType&gt; </div>
 
 </div>
 </div>
-<a id="a0620e3e050522475412ea37c8da10c0f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0620e3e050522475412ea37c8da10c0f">&#9670;&nbsp;</a></span>AugmentedCore() <span class="overload">[2/4]</span></h2>
+<a id="a0a445535493ec1397a85e1b4d69745d6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0a445535493ec1397a85e1b4d69745d6">&#9670;&nbsp;</a></span>AugmentedCore() <span class="overload">[2/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">AugmentedCore</a> </td>
+          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">AugmentedCore</a> </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a>&#160;</td>
           <td class="paramname"><em>nlist</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a>&#160;</td>
           <td class="paramname"><em>nnz</em> = <code>0</code>, </td>
         </tr>
         <tr>
@@ -448,25 +497,25 @@ template&lt;class IndexType&gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00080">80</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00083">83</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
 </div>
 </div>
-<a id="a1b897647f88793ea895886e8610776b8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1b897647f88793ea895886e8610776b8">&#9670;&nbsp;</a></span>AugmentedCore() <span class="overload">[3/4]</span></h2>
+<a id="a3c817a24219c2bf290606161e0c9f930"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3c817a24219c2bf290606161e0c9f930">&#9670;&nbsp;</a></span>AugmentedCore() <span class="overload">[3/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">AugmentedCore</a> </td>
+          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">AugmentedCore</a> </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a9f05457feb06f3ba4c5935ddf1b8c7b8">this_type</a> &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a02bdd7d149670d2093718c5f63d95f3f">this_type</a> &amp;&#160;</td>
           <td class="paramname"><em>other</em>, </td>
         </tr>
         <tr>
@@ -497,25 +546,25 @@ template&lt;class IndexType&gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00106">106</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00109">109</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
 </div>
 </div>
-<a id="a54cb7b45c2044f57ded2ec747101423b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a54cb7b45c2044f57ded2ec747101423b">&#9670;&nbsp;</a></span>AugmentedCore() <span class="overload">[4/4]</span></h2>
+<a id="a1120c44b0787b7ee296e80b4c4157f77"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1120c44b0787b7ee296e80b4c4157f77">&#9670;&nbsp;</a></span>AugmentedCore() <span class="overload">[4/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">AugmentedCore</a> </td>
+          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">AugmentedCore</a> </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a9f05457feb06f3ba4c5935ddf1b8c7b8">this_type</a> &amp;&amp;&#160;</td>
+          <td class="paramtype"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a02bdd7d149670d2093718c5f63d95f3f">this_type</a> &amp;&amp;&#160;</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
@@ -530,21 +579,21 @@ template&lt;class IndexType&gt; </div>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a90a820138b5596fbfbda67c5db3a9706"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a90a820138b5596fbfbda67c5db3a9706">&#9670;&nbsp;</a></span>_begin_assemble_nodes()</h2>
+<a id="a29e3934d92c9e6aeaf8fb266b6d72cc2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a29e3934d92c9e6aeaf8fb266b6d72cc2">&#9670;&nbsp;</a></span>_begin_assemble_nodes()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::_begin_assemble_nodes </td>
+          <td class="memname">void <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::_begin_assemble_nodes </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a>&#160;</td>
           <td class="paramname"><em>nlist</em></td><td>)</td>
           <td></td>
         </tr>
@@ -564,47 +613,47 @@ template&lt;class IndexType&gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00155">155</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00158">158</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="AugmentedStorage_8hpp_source.html#l00321">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_build_aug()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="AugmentedStorage_8hpp_source.html#l00324">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_build_aug()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="classhif_1_1internal_1_1AugmentedCore_a90a820138b5596fbfbda67c5db3a9706_icgraph.png" border="0" usemap="#classhif_1_1internal_1_1AugmentedCore_a90a820138b5596fbfbda67c5db3a9706_icgraph" alt=""/></div>
-<map name="classhif_1_1internal_1_1AugmentedCore_a90a820138b5596fbfbda67c5db3a9706_icgraph" id="classhif_1_1internal_1_1AugmentedCore_a90a820138b5596fbfbda67c5db3a9706_icgraph">
-<area shape="rect" id="node2" href="classhif_1_1internal_1_1AugmentedCore.html#ad711a5f12855b538ee7222d39300dc77" title="build augmented cores based on compressed storages " alt="" coords="255,5,441,61"/>
+<div class="center"><img src="classhif_1_1internal_1_1AugmentedCore_a29e3934d92c9e6aeaf8fb266b6d72cc2_icgraph.png" border="0" usemap="#classhif_1_1internal_1_1AugmentedCore_a29e3934d92c9e6aeaf8fb266b6d72cc2_icgraph" alt=""/></div>
+<map name="classhif_1_1internal_1_1AugmentedCore_a29e3934d92c9e6aeaf8fb266b6d72cc2_icgraph" id="classhif_1_1internal_1_1AugmentedCore_a29e3934d92c9e6aeaf8fb266b6d72cc2_icgraph">
+<area shape="rect" id="node2" href="classhif_1_1internal_1_1AugmentedCore.html#a08c48e27160a8ebda4145f5144f9dc5d" title="build augmented cores based on compressed storages " alt="" coords="255,5,441,76"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="ad711a5f12855b538ee7222d39300dc77"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad711a5f12855b538ee7222d39300dc77">&#9670;&nbsp;</a></span>_build_aug()</h2>
+<a id="a08c48e27160a8ebda4145f5144f9dc5d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a08c48e27160a8ebda4145f5144f9dc5d">&#9670;&nbsp;</a></span>_build_aug()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::_build_aug </td>
+          <td class="memname">void <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::_build_aug </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a>&#160;</td>
           <td class="paramname"><em>nlist</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a> &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8106e73d2081d10504809fee19b726da">iparray_type</a> &amp;&#160;</td>
           <td class="paramname"><em>ind_start</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a> &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#ab012eb787fc43a9710e5ad21f479594c">iarray_type</a> &amp;&#160;</td>
           <td class="paramname"><em>indices</em>&#160;</td>
         </tr>
         <tr>
@@ -631,31 +680,31 @@ template&lt;class IndexType&gt; </div>
 </dl>
 <dl class="section warning"><dt>Warning</dt><dd>Advanced usaged </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00321">321</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00324">324</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
 </div>
 </div>
-<a id="adedceadba809a52bfd4a959084be3bb2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adedceadba809a52bfd4a959084be3bb2">&#9670;&nbsp;</a></span>_interchange_ik_head_tail()</h2>
+<a id="ad812b0cd523e2b45da3f0e7ed823401a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad812b0cd523e2b45da3f0e7ed823401a">&#9670;&nbsp;</a></span>_interchange_ik_head_tail()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::_interchange_ik_head_tail </td>
+          <td class="memname">void <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::_interchange_ik_head_tail </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a>&#160;</td>
           <td class="paramname"><em>i</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a>&#160;</td>
           <td class="paramname"><em>k</em>&#160;</td>
         </tr>
         <tr>
@@ -681,25 +730,25 @@ template&lt;class IndexType&gt; </div>
 </dl>
 <dl class="section note"><dt>Note</dt><dd>Complexity: <img class="formulaInl" alt="$\mathcal{O}(1)$" src="form_33.png"/> </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00306">306</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00309">309</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
 </div>
 </div>
-<a id="a147b276bda7bf1f4ffce2efa5b0ad680"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a147b276bda7bf1f4ffce2efa5b0ad680">&#9670;&nbsp;</a></span>_next_node()</h2>
+<a id="a7fa846f8e43c36a5da1d8c78729c04f1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7fa846f8e43c36a5da1d8c78729c04f1">&#9670;&nbsp;</a></span>_next_node()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1e7e50b7473e4fcf15fa61ec5293d6a3">index_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::_next_node </td>
+          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a220e366f9a3c7df2da3a8e1fe54ab462">indptr_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::_next_node </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a>&#160;</td>
           <td class="paramname"><em>nid</em></td><td>)</td>
           <td> const</td>
         </tr>
@@ -719,25 +768,25 @@ template&lt;class IndexType&gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00220">220</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00223">223</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
 </div>
 </div>
-<a id="a06d4f149c9cd53b8ee51f1651e9e161a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a06d4f149c9cd53b8ee51f1651e9e161a">&#9670;&nbsp;</a></span>_node_ind()</h2>
+<a id="a961097ba3a88f7bc018d47c19fc5b6f8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a961097ba3a88f7bc018d47c19fc5b6f8">&#9670;&nbsp;</a></span>_node_ind()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1e7e50b7473e4fcf15fa61ec5293d6a3">index_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::_node_ind </td>
+          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a995fb7192e3b64e6c5ac30202fa8f525">index_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::_node_ind </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a>&#160;</td>
           <td class="paramname"><em>nid</em></td><td>)</td>
           <td> const</td>
         </tr>
@@ -757,25 +806,25 @@ template&lt;class IndexType&gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00228">228</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00231">231</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
 </div>
 </div>
-<a id="afa3f2cae684947486386ee774c710782"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afa3f2cae684947486386ee774c710782">&#9670;&nbsp;</a></span>_nodes_in_list()</h2>
+<a id="ac62f08c9205006a1f6cec9bc2b3f8c6f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac62f08c9205006a1f6cec9bc2b3f8c6f">&#9670;&nbsp;</a></span>_nodes_in_list()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::_nodes_in_list </td>
+          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::_nodes_in_list </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a>&#160;</td>
           <td class="paramname"><em>i</em></td><td>)</td>
           <td> const</td>
         </tr>
@@ -789,17 +838,17 @@ template&lt;class IndexType&gt; </div>
 
 <p>query total number of in a certain list </p>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00342">342</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00345">345</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
 </div>
 </div>
-<a id="a19b98bd8b49a88052d90d92e12c4c63f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a19b98bd8b49a88052d90d92e12c4c63f">&#9670;&nbsp;</a></span>_push_back_nodes()</h2>
+<a id="a19df420bc7a6c012efb824e2d6535a68"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a19df420bc7a6c012efb824e2d6535a68">&#9670;&nbsp;</a></span>_push_back_nodes()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <div class="memtemplate">
 template&lt;class Iter &gt; </div>
 <table class="mlabels">
@@ -807,9 +856,9 @@ template&lt;class Iter &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::_push_back_nodes </td>
+          <td class="memname">void <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::_push_back_nodes </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a>&#160;</td>
           <td class="paramname"><em>entry</em>, </td>
         </tr>
         <tr>
@@ -854,31 +903,31 @@ template&lt;class Iter &gt; </div>
 </dl>
 <dl class="section note"><dt>Note</dt><dd>Complexity: <img class="formulaInl" alt="$\mathcal{O}(n)$" src="form_37.png"/>, where n is size from first to last </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00178">178</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00181">181</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
 </div>
 </div>
-<a id="acbf0b6153d6ed1ef17cd56e2c8e6007a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acbf0b6153d6ed1ef17cd56e2c8e6007a">&#9670;&nbsp;</a></span>_rotate_val_pos_left()</h2>
+<a id="a374c09d47305ff283777c285800ee32d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a374c09d47305ff283777c285800ee32d">&#9670;&nbsp;</a></span>_rotate_val_pos_left()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::_rotate_val_pos_left </td>
+          <td class="memname">void <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::_rotate_val_pos_left </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a>&#160;</td>
           <td class="paramname"><em>n</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a>&#160;</td>
           <td class="paramname"><em>src</em>&#160;</td>
         </tr>
         <tr>
@@ -903,34 +952,34 @@ template&lt;class IndexType&gt; </div>
   </dd>
 </dl>
 <dl class="section note"><dt>Note</dt><dd>Complexity: <img class="formulaInl" alt="$\mathcal{O}(n)$" src="form_37.png"/> </dd></dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a20b60fceffbc712e547e8c6002819230" title="rotate value positions toward right ">_rotate_val_pos_right</a></dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#aaa6d9856fd7d123c57c9d4b26752483d" title="rotate value positions toward right ">_rotate_val_pos_right</a></dd></dl>
 <p>Firstly, rotate the inverse mapping, then assign the value positions accordingly. </p>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00257">257</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00260">260</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
 </div>
 </div>
-<a id="a20b60fceffbc712e547e8c6002819230"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a20b60fceffbc712e547e8c6002819230">&#9670;&nbsp;</a></span>_rotate_val_pos_right()</h2>
+<a id="aaa6d9856fd7d123c57c9d4b26752483d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaa6d9856fd7d123c57c9d4b26752483d">&#9670;&nbsp;</a></span>_rotate_val_pos_right()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::_rotate_val_pos_right </td>
+          <td class="memname">void <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::_rotate_val_pos_right </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a>&#160;</td>
           <td class="paramname"><em>n</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a>&#160;</td>
           <td class="paramname"><em>src</em>&#160;</td>
         </tr>
         <tr>
@@ -955,28 +1004,28 @@ template&lt;class IndexType&gt; </div>
   </dd>
 </dl>
 <dl class="section note"><dt>Note</dt><dd>Complexity: <img class="formulaInl" alt="$\mathcal{O}(n)$" src="form_37.png"/> </dd></dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#acbf0b6153d6ed1ef17cd56e2c8e6007a" title="rotate value positions toward left ">_rotate_val_pos_left</a></dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a374c09d47305ff283777c285800ee32d" title="rotate value positions toward left ">_rotate_val_pos_left</a></dd></dl>
 <p>Firstly, rotate the inverse mapping, then assign the value positions accordingly. </p>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00282">282</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00285">285</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
 </div>
 </div>
-<a id="a4e4ffb274c40098a63d5cb5d8cd49925"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4e4ffb274c40098a63d5cb5d8cd49925">&#9670;&nbsp;</a></span>_start_node()</h2>
+<a id="a5e8e7daad4b06edcf99006bbf0762549"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5e8e7daad4b06edcf99006bbf0762549">&#9670;&nbsp;</a></span>_start_node()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1e7e50b7473e4fcf15fa61ec5293d6a3">index_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::_start_node </td>
+          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a220e366f9a3c7df2da3a8e1fe54ab462">indptr_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::_start_node </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a>&#160;</td>
           <td class="paramname"><em>lid</em></td><td>)</td>
           <td> const</td>
         </tr>
@@ -996,31 +1045,31 @@ template&lt;class IndexType&gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00212">212</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00215">215</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
 </div>
 </div>
-<a id="a33e969242acdadf8fd2545fb7b61e203"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a33e969242acdadf8fd2545fb7b61e203">&#9670;&nbsp;</a></span>_swap_val_pos_exp()</h2>
+<a id="a41c5fe65603057b7c8c7816ebe734cb1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a41c5fe65603057b7c8c7816ebe734cb1">&#9670;&nbsp;</a></span>_swap_val_pos_exp()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::_swap_val_pos_exp </td>
+          <td class="memname">void <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::_swap_val_pos_exp </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a>&#160;</td>
           <td class="paramname"><em>p1</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a>&#160;</td>
           <td class="paramname"><em>p2</em>&#160;</td>
         </tr>
         <tr>
@@ -1046,25 +1095,25 @@ template&lt;class IndexType&gt; </div>
 </dl>
 <dl class="section note"><dt>Note</dt><dd>Complexity: <img class="formulaInl" alt="$\mathcal{O}(1)$" src="form_33.png"/> </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00238">238</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00241">241</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
 </div>
 </div>
-<a id="a1d804c7d16688d89b8fbd6f4d4d3ddec"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1d804c7d16688d89b8fbd6f4d4d3ddec">&#9670;&nbsp;</a></span>is_nil()</h2>
+<a id="a77daad8b2ab28c9d8edb698eca48d4df"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a77daad8b2ab28c9d8edb698eca48d4df">&#9670;&nbsp;</a></span>is_nil()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static constexpr bool <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::is_nil </td>
+          <td class="memname">static constexpr bool <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::is_nil </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1e7e50b7473e4fcf15fa61ec5293d6a3">index_type</a>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a220e366f9a3c7df2da3a8e1fe54ab462">indptr_type</a>&#160;</td>
           <td class="paramname"><em>i</em></td><td>)</td>
           <td></td>
         </tr>
@@ -1079,35 +1128,35 @@ template&lt;class IndexType&gt; </div>
 <p>check if a given node handle is NIL or not </p>
 <dl class="section return"><dt>Returns</dt><dd>if <em>true</em>, then the node is nil </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00122">122</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00125">125</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="AugmentedStorage_8hpp_source.html#l00178">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_push_back_nodes()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="AugmentedStorage_8hpp_source.html#l00181">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_push_back_nodes()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="classhif_1_1internal_1_1AugmentedCore_a1d804c7d16688d89b8fbd6f4d4d3ddec_icgraph.png" border="0" usemap="#classhif_1_1internal_1_1AugmentedCore_a1d804c7d16688d89b8fbd6f4d4d3ddec_icgraph" alt=""/></div>
-<map name="classhif_1_1internal_1_1AugmentedCore_a1d804c7d16688d89b8fbd6f4d4d3ddec_icgraph" id="classhif_1_1internal_1_1AugmentedCore_a1d804c7d16688d89b8fbd6f4d4d3ddec_icgraph">
-<area shape="rect" id="node2" href="classhif_1_1internal_1_1AugmentedCore.html#a19b98bd8b49a88052d90d92e12c4c63f" title="update linked lists given new nodes from back " alt="" coords="213,5,400,61"/>
+<div class="center"><img src="classhif_1_1internal_1_1AugmentedCore_a77daad8b2ab28c9d8edb698eca48d4df_icgraph.png" border="0" usemap="#classhif_1_1internal_1_1AugmentedCore_a77daad8b2ab28c9d8edb698eca48d4df_icgraph" alt=""/></div>
+<map name="classhif_1_1internal_1_1AugmentedCore_a77daad8b2ab28c9d8edb698eca48d4df_icgraph" id="classhif_1_1internal_1_1AugmentedCore_a77daad8b2ab28c9d8edb698eca48d4df_icgraph">
+<area shape="rect" id="node2" href="classhif_1_1internal_1_1AugmentedCore.html#a19df420bc7a6c012efb824e2d6535a68" title="update linked lists given new nodes from back " alt="" coords="213,5,400,76"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="a1297f198aef5008a62ff08721b5827c5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1297f198aef5008a62ff08721b5827c5">&#9670;&nbsp;</a></span>operator=() <span class="overload">[1/2]</span></h2>
+<a id="a22a0adefe79f40461b32aad1cf538666"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a22a0adefe79f40461b32aad1cf538666">&#9670;&nbsp;</a></span>operator=() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a9f05457feb06f3ba4c5935ddf1b8c7b8">this_type</a>&amp; <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::operator= </td>
+          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a02bdd7d149670d2093718c5f63d95f3f">this_type</a>&amp; <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::operator= </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a9f05457feb06f3ba4c5935ddf1b8c7b8">this_type</a> &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a02bdd7d149670d2093718c5f63d95f3f">this_type</a> &amp;&#160;</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
@@ -1121,21 +1170,21 @@ template&lt;class IndexType&gt; </div>
 
 </div>
 </div>
-<a id="a6907e0a5d9199977180b766f021d0bcf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6907e0a5d9199977180b766f021d0bcf">&#9670;&nbsp;</a></span>operator=() <span class="overload">[2/2]</span></h2>
+<a id="a81dc731e13dd548b6a6a65a3b1da0ff2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a81dc731e13dd548b6a6a65a3b1da0ff2">&#9670;&nbsp;</a></span>operator=() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a9f05457feb06f3ba4c5935ddf1b8c7b8">this_type</a>&amp; <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::operator= </td>
+          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a02bdd7d149670d2093718c5f63d95f3f">this_type</a>&amp; <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::operator= </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a9f05457feb06f3ba4c5935ddf1b8c7b8">this_type</a> &amp;&amp;&#160;</td>
+          <td class="paramtype"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a02bdd7d149670d2093718c5f63d95f3f">this_type</a> &amp;&amp;&#160;</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
@@ -1149,21 +1198,21 @@ template&lt;class IndexType&gt; </div>
 
 </div>
 </div>
-<a id="a880653395442fe93cd78bd5f9355a421"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a880653395442fe93cd78bd5f9355a421">&#9670;&nbsp;</a></span>reserve()</h2>
+<a id="a7447c438ed4cfc9080d64c67cb767ff2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7447c438ed4cfc9080d64c67cb767ff2">&#9670;&nbsp;</a></span>reserve()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::reserve </td>
+          <td class="memname">void <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::reserve </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a>&#160;</td>
           <td class="paramname"><em>nnz</em></td><td>)</td>
           <td></td>
         </tr>
@@ -1183,33 +1232,33 @@ template&lt;class IndexType&gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00137">137</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00140">140</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="AugmentedStorage_8hpp_source.html#l00321">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_build_aug()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="AugmentedStorage_8hpp_source.html#l00324">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_build_aug()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="classhif_1_1internal_1_1AugmentedCore_a880653395442fe93cd78bd5f9355a421_icgraph.png" border="0" usemap="#classhif_1_1internal_1_1AugmentedCore_a880653395442fe93cd78bd5f9355a421_icgraph" alt=""/></div>
-<map name="classhif_1_1internal_1_1AugmentedCore_a880653395442fe93cd78bd5f9355a421_icgraph" id="classhif_1_1internal_1_1AugmentedCore_a880653395442fe93cd78bd5f9355a421_icgraph">
-<area shape="rect" id="node2" href="classhif_1_1internal_1_1AugmentedCore.html#ad711a5f12855b538ee7222d39300dc77" title="build augmented cores based on compressed storages " alt="" coords="213,5,400,61"/>
+<div class="center"><img src="classhif_1_1internal_1_1AugmentedCore_a7447c438ed4cfc9080d64c67cb767ff2_icgraph.png" border="0" usemap="#classhif_1_1internal_1_1AugmentedCore_a7447c438ed4cfc9080d64c67cb767ff2_icgraph" alt=""/></div>
+<map name="classhif_1_1internal_1_1AugmentedCore_a7447c438ed4cfc9080d64c67cb767ff2_icgraph" id="classhif_1_1internal_1_1AugmentedCore_a7447c438ed4cfc9080d64c67cb767ff2_icgraph">
+<area shape="rect" id="node2" href="classhif_1_1internal_1_1AugmentedCore.html#a08c48e27160a8ebda4145f5144f9dc5d" title="build augmented cores based on compressed storages " alt="" coords="213,5,400,76"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="a1241b26612f5086b4dcf6ba0aba8f2a9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1241b26612f5086b4dcf6ba0aba8f2a9">&#9670;&nbsp;</a></span>secondary_counts() <span class="overload">[1/2]</span></h2>
+<a id="a17c844f09887aabf886ec467f03aace5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a17c844f09887aabf886ec467f03aace5">&#9670;&nbsp;</a></span>secondary_counts() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a>&amp; <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::secondary_counts </td>
+          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#ab012eb787fc43a9710e5ad21f479594c">iarray_type</a>&amp; <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::secondary_counts </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -1222,26 +1271,55 @@ template&lt;class IndexType&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00149">149</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00152">152</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
 </div>
 </div>
-<a id="aa6a7519f1cb49dc63fe2814851c936db"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa6a7519f1cb49dc63fe2814851c936db">&#9670;&nbsp;</a></span>secondary_counts() <span class="overload">[2/2]</span></h2>
+<a id="a1fdb52243bb346e90b9fa911929c383a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1fdb52243bb346e90b9fa911929c383a">&#9670;&nbsp;</a></span>secondary_counts() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a>&amp; <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::secondary_counts </td>
+          <td class="memname">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#ab012eb787fc43a9710e5ad21f479594c">iarray_type</a>&amp; <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::secondary_counts </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00153">153</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+
+</div>
+</div>
+<a id="a666141333ef8789eed7d8ce1ecf6b1b5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a666141333ef8789eed7d8ce1ecf6b1b5">&#9670;&nbsp;</a></span>secondary_end() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8106e73d2081d10504809fee19b726da">iparray_type</a>&amp; <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::secondary_end </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
         </tr>
       </table>
   </td>
@@ -1255,22 +1333,22 @@ template&lt;class IndexType&gt; </div>
 
 </div>
 </div>
-<a id="ab74bc294e80634cc9bdb1c9f358448b8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab74bc294e80634cc9bdb1c9f358448b8">&#9670;&nbsp;</a></span>secondary_end() <span class="overload">[1/2]</span></h2>
+<a id="ab6d7a42ad0b37b6127c434a6b8c7007e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab6d7a42ad0b37b6127c434a6b8c7007e">&#9670;&nbsp;</a></span>secondary_end() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a>&amp; <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::secondary_end </td>
+          <td class="memname">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8106e73d2081d10504809fee19b726da">iparray_type</a>&amp; <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::secondary_end </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
-          <td></td>
+          <td> const</td>
         </tr>
       </table>
   </td>
@@ -1280,26 +1358,26 @@ template&lt;class IndexType&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00147">147</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00151">151</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
 </div>
 </div>
-<a id="a5814caa9cf205fa07b26510d40719c8d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5814caa9cf205fa07b26510d40719c8d">&#9670;&nbsp;</a></span>secondary_end() <span class="overload">[2/2]</span></h2>
+<a id="aa313fd8688ce76d270ff57fddd33ab44"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa313fd8688ce76d270ff57fddd33ab44">&#9670;&nbsp;</a></span>secondary_start() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a>&amp; <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::secondary_end </td>
+          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8106e73d2081d10504809fee19b726da">iparray_type</a>&amp; <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::secondary_start </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
-          <td> const</td>
+          <td></td>
         </tr>
       </table>
   </td>
@@ -1313,48 +1391,19 @@ template&lt;class IndexType&gt; </div>
 
 </div>
 </div>
-<a id="ac1216ed2b45caa57f69702738f43110f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac1216ed2b45caa57f69702738f43110f">&#9670;&nbsp;</a></span>secondary_start() <span class="overload">[1/2]</span></h2>
+<a id="a92f7fb2dfca960f74f8fd4f54244eef3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a92f7fb2dfca960f74f8fd4f54244eef3">&#9670;&nbsp;</a></span>secondary_start() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a>&amp; <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::secondary_start </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00145">145</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
-
-</div>
-</div>
-<a id="a0e0f1ae065008c4b3740499e0e930fb7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0e0f1ae065008c4b3740499e0e930fb7">&#9670;&nbsp;</a></span>secondary_start() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;class IndexType&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a>&amp; <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::secondary_start </td>
+          <td class="memname">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8106e73d2081d10504809fee19b726da">iparray_type</a>&amp; <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::secondary_start </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -1367,23 +1416,23 @@ template&lt;class IndexType&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00146">146</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00149">149</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
 </div>
 </div>
-<a id="a8dc42aa3cc57e17515356f8d0b5b3340"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8dc42aa3cc57e17515356f8d0b5b3340">&#9670;&nbsp;</a></span>val_pos() <span class="overload">[1/2]</span></h2>
+<a id="a66dbc280c79377a54008e662cd35c24d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a66dbc280c79377a54008e662cd35c24d">&#9670;&nbsp;</a></span>val_pos() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a>&amp; <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::val_pos </td>
+          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8106e73d2081d10504809fee19b726da">iparray_type</a>&amp; <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::val_pos </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -1396,23 +1445,23 @@ template&lt;class IndexType&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00132">132</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00135">135</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
 </div>
 </div>
-<a id="a1027719cc0533e29c494fb340bc664cc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1027719cc0533e29c494fb340bc664cc">&#9670;&nbsp;</a></span>val_pos() <span class="overload">[2/2]</span></h2>
+<a id="acdbcdb16996e61435ad93f54cf499cac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acdbcdb16996e61435ad93f54cf499cac">&#9670;&nbsp;</a></span>val_pos() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a>&amp; <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::val_pos </td>
+          <td class="memname">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8106e73d2081d10504809fee19b726da">iparray_type</a>&amp; <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::val_pos </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -1425,25 +1474,25 @@ template&lt;class IndexType&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00133">133</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00136">136</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
 </div>
 </div>
-<a id="aafdb24aeb9ad87bc38c34c16c6018ab0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aafdb24aeb9ad87bc38c34c16c6018ab0">&#9670;&nbsp;</a></span>val_pos_idx()</h2>
+<a id="a272fb70b25249576a21dbc9d7919fc76"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a272fb70b25249576a21dbc9d7919fc76">&#9670;&nbsp;</a></span>val_pos_idx()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1e7e50b7473e4fcf15fa61ec5293d6a3">index_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::val_pos_idx </td>
+          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a220e366f9a3c7df2da3a8e1fe54ab462">indptr_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::val_pos_idx </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a27af7dfdc7f24c5a8e8bec59758480e4">size_type</a>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a375e2bae010f24df89b27d7ea4fd5a6a">size_type</a>&#160;</td>
           <td class="paramname"><em>nid</em></td><td>)</td>
           <td> const</td>
         </tr>
@@ -1458,24 +1507,24 @@ template&lt;class IndexType&gt; </div>
 <p>given a node handle, query its value position (index) </p>
 <dl class="section note"><dt>Note</dt><dd>The index is in C-based system </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00126">126</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00129">129</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
-<a id="ade25a45dd096ce1ffc0fa6c14e101dc0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ade25a45dd096ce1ffc0fa6c14e101dc0">&#9670;&nbsp;</a></span>_NIL</h2>
+<a id="a21a186910c599fa46cde51e2f3e19fc0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a21a186910c599fa46cde51e2f3e19fc0">&#9670;&nbsp;</a></span>_NIL</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1e7e50b7473e4fcf15fa61ec5293d6a3">index_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::_NIL = std::numeric_limits&lt;<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1e7e50b7473e4fcf15fa61ec5293d6a3">index_type</a>&gt;::max()</td>
+          <td class="memname">constexpr <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a220e366f9a3c7df2da3a8e1fe54ab462">indptr_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::_NIL = std::numeric_limits&lt;<a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a220e366f9a3c7df2da3a8e1fe54ab462">indptr_type</a>&gt;::max()</td>
         </tr>
       </table>
   </td>
@@ -1485,25 +1534,25 @@ template&lt;class IndexType&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00070">70</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00073">73</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="AugmentedStorage_8hpp_source.html#l00155">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_begin_assemble_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00178">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_push_back_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00080">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::AugmentedCore()</a>, and <a class="el" href="AugmentedStorage_8hpp_source.html#l00122">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::is_nil()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="AugmentedStorage_8hpp_source.html#l00158">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_begin_assemble_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00181">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_push_back_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00083">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::AugmentedCore()</a>, and <a class="el" href="AugmentedStorage_8hpp_source.html#l00125">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::is_nil()</a>.</p>
 
 </div>
 </div>
-<a id="a966fe16d1c980176407078febd4ddbd0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a966fe16d1c980176407078febd4ddbd0">&#9670;&nbsp;</a></span>_node_counts</h2>
+<a id="a49c130f7d2a315b1e6e86ec62090f42e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a49c130f7d2a315b1e6e86ec62090f42e">&#9670;&nbsp;</a></span>_node_counts</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::_node_counts</td>
+          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#ab012eb787fc43a9710e5ad21f479594c">iarray_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::_node_counts</td>
         </tr>
       </table>
   </td>
@@ -1515,25 +1564,25 @@ template&lt;class IndexType&gt; </div>
 
 <p>number of nodes per list </p>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00355">355</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00358">358</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="AugmentedStorage_8hpp_source.html#l00155">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_begin_assemble_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00306">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_interchange_ik_head_tail()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00342">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_nodes_in_list()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00178">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_push_back_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00080">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::AugmentedCore()</a>, and <a class="el" href="AugmentedStorage_8hpp_source.html#l00149">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::secondary_counts()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="AugmentedStorage_8hpp_source.html#l00158">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_begin_assemble_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00309">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_interchange_ik_head_tail()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00345">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_nodes_in_list()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00181">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_push_back_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00083">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::AugmentedCore()</a>, and <a class="el" href="AugmentedStorage_8hpp_source.html#l00152">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::secondary_counts()</a>.</p>
 
 </div>
 </div>
-<a id="a5793ba46b48f2f75cb2c39f20e06ee99"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5793ba46b48f2f75cb2c39f20e06ee99">&#9670;&nbsp;</a></span>_node_end</h2>
+<a id="aa81bd61bfe97b9a29f450325b19c427b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa81bd61bfe97b9a29f450325b19c427b">&#9670;&nbsp;</a></span>_node_end</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::_node_end</td>
+          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8106e73d2081d10504809fee19b726da">iparray_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::_node_end</td>
         </tr>
       </table>
   </td>
@@ -1545,25 +1594,25 @@ template&lt;class IndexType&gt; </div>
 
 <p>ending positions </p>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00352">352</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00355">355</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="AugmentedStorage_8hpp_source.html#l00155">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_begin_assemble_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00306">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_interchange_ik_head_tail()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00178">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_push_back_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00080">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::AugmentedCore()</a>, and <a class="el" href="AugmentedStorage_8hpp_source.html#l00147">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::secondary_end()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="AugmentedStorage_8hpp_source.html#l00158">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_begin_assemble_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00309">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_interchange_ik_head_tail()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00181">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_push_back_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00083">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::AugmentedCore()</a>, and <a class="el" href="AugmentedStorage_8hpp_source.html#l00150">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::secondary_end()</a>.</p>
 
 </div>
 </div>
-<a id="ada49787002c716114b07c23e1be5297d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ada49787002c716114b07c23e1be5297d">&#9670;&nbsp;</a></span>_node_inds</h2>
+<a id="ac39602b8af704f0943ec5addf6aa03a1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac39602b8af704f0943ec5addf6aa03a1">&#9670;&nbsp;</a></span>_node_inds</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::_node_inds</td>
+          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#ab012eb787fc43a9710e5ad21f479594c">iarray_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::_node_inds</td>
         </tr>
       </table>
   </td>
@@ -1575,25 +1624,25 @@ template&lt;class IndexType&gt; </div>
 
 <p>indices (values) of each node </p>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00349">349</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00352">352</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="AugmentedStorage_8hpp_source.html#l00155">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_begin_assemble_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00228">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_node_ind()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00178">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_push_back_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00080">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::AugmentedCore()</a>, and <a class="el" href="AugmentedStorage_8hpp_source.html#l00137">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::reserve()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="AugmentedStorage_8hpp_source.html#l00158">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_begin_assemble_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00231">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_node_ind()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00181">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_push_back_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00083">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::AugmentedCore()</a>, and <a class="el" href="AugmentedStorage_8hpp_source.html#l00140">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::reserve()</a>.</p>
 
 </div>
 </div>
-<a id="aa5dc6b2a7b2ebdcaabdd4e29f1523cde"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa5dc6b2a7b2ebdcaabdd4e29f1523cde">&#9670;&nbsp;</a></span>_node_next</h2>
+<a id="a9c7e7c5168618a62d0b7059a672ece18"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9c7e7c5168618a62d0b7059a672ece18">&#9670;&nbsp;</a></span>_node_next</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::_node_next</td>
+          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8106e73d2081d10504809fee19b726da">iparray_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::_node_next</td>
         </tr>
       </table>
   </td>
@@ -1605,25 +1654,25 @@ template&lt;class IndexType&gt; </div>
 
 <p>next nodes </p>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00351">351</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00354">354</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="AugmentedStorage_8hpp_source.html#l00155">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_begin_assemble_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00220">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_next_node()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00178">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_push_back_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00080">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::AugmentedCore()</a>, and <a class="el" href="AugmentedStorage_8hpp_source.html#l00137">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::reserve()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="AugmentedStorage_8hpp_source.html#l00158">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_begin_assemble_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00223">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_next_node()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00181">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_push_back_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00083">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::AugmentedCore()</a>, and <a class="el" href="AugmentedStorage_8hpp_source.html#l00140">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::reserve()</a>.</p>
 
 </div>
 </div>
-<a id="aa5920f148baf354a84de4411ed6a7e1a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa5920f148baf354a84de4411ed6a7e1a">&#9670;&nbsp;</a></span>_node_start</h2>
+<a id="a78400ffdec7e27327c01de58fe72eb18"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a78400ffdec7e27327c01de58fe72eb18">&#9670;&nbsp;</a></span>_node_start</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::_node_start</td>
+          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8106e73d2081d10504809fee19b726da">iparray_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::_node_start</td>
         </tr>
       </table>
   </td>
@@ -1635,25 +1684,25 @@ template&lt;class IndexType&gt; </div>
 
 <p>head nodes </p>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00350">350</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00353">353</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="AugmentedStorage_8hpp_source.html#l00155">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_begin_assemble_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00306">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_interchange_ik_head_tail()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00178">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_push_back_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00212">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_start_node()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00080">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::AugmentedCore()</a>, and <a class="el" href="AugmentedStorage_8hpp_source.html#l00145">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::secondary_start()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="AugmentedStorage_8hpp_source.html#l00158">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_begin_assemble_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00309">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_interchange_ik_head_tail()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00181">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_push_back_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00215">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_start_node()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00083">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::AugmentedCore()</a>, and <a class="el" href="AugmentedStorage_8hpp_source.html#l00148">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::secondary_start()</a>.</p>
 
 </div>
 </div>
-<a id="a8dc001644c687f1f7fa5ab0ef9fdca59"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8dc001644c687f1f7fa5ab0ef9fdca59">&#9670;&nbsp;</a></span>_val_pos</h2>
+<a id="a4c7b45e7adc7944a849e18aed6066535"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4c7b45e7adc7944a849e18aed6066535">&#9670;&nbsp;</a></span>_val_pos</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::_val_pos</td>
+          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8106e73d2081d10504809fee19b726da">iparray_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::_val_pos</td>
         </tr>
       </table>
   </td>
@@ -1665,25 +1714,25 @@ template&lt;class IndexType&gt; </div>
 
 <p>value positions </p>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00353">353</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00356">356</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="AugmentedStorage_8hpp_source.html#l00155">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_begin_assemble_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00178">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_push_back_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00257">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_rotate_val_pos_left()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00282">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_rotate_val_pos_right()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00238">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_swap_val_pos_exp()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00080">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::AugmentedCore()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00137">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::reserve()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00132">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::val_pos()</a>, and <a class="el" href="AugmentedStorage_8hpp_source.html#l00126">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::val_pos_idx()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="AugmentedStorage_8hpp_source.html#l00158">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_begin_assemble_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00181">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_push_back_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00260">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_rotate_val_pos_left()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00285">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_rotate_val_pos_right()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00241">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_swap_val_pos_exp()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00083">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::AugmentedCore()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00140">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::reserve()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00135">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::val_pos()</a>, and <a class="el" href="AugmentedStorage_8hpp_source.html#l00129">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::val_pos_idx()</a>.</p>
 
 </div>
 </div>
-<a id="a70693b8b501896f6553abfbc96535cd2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a70693b8b501896f6553abfbc96535cd2">&#9670;&nbsp;</a></span>_val_pos_inv</h2>
+<a id="a4b1d42e5d2bfb74e9ddb10ff4b26829f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4b1d42e5d2bfb74e9ddb10ff4b26829f">&#9670;&nbsp;</a></span>_val_pos_inv</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexType&gt; </div>
+template&lt;class IndexType, class IndPtrType = std::ptrdiff_t&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a77dfdbad4ad15fd706fd5315be37ba72">iarray_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType &gt;::_val_pos_inv</td>
+          <td class="memname"><a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8106e73d2081d10504809fee19b726da">iparray_type</a> <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html">hif::internal::AugmentedCore</a>&lt; IndexType, IndPtrType &gt;::_val_pos_inv</td>
         </tr>
       </table>
   </td>
@@ -1695,9 +1744,9 @@ template&lt;class IndexType&gt; </div>
 
 <p>value position inverse, i.e. inv(_val_pos) </p>
 
-<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00354">354</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AugmentedStorage_8hpp_source.html#l00357">357</a> of file <a class="el" href="AugmentedStorage_8hpp_source.html">AugmentedStorage.hpp</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="AugmentedStorage_8hpp_source.html#l00155">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_begin_assemble_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00178">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_push_back_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00257">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_rotate_val_pos_left()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00282">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_rotate_val_pos_right()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00238">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::_swap_val_pos_exp()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00080">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::AugmentedCore()</a>, and <a class="el" href="AugmentedStorage_8hpp_source.html#l00137">hif::internal::AugmentedCore&lt; CcsType::index_type &gt;::reserve()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="AugmentedStorage_8hpp_source.html#l00158">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_begin_assemble_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00181">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_push_back_nodes()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00260">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_rotate_val_pos_left()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00285">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_rotate_val_pos_right()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00241">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::_swap_val_pos_exp()</a>, <a class="el" href="AugmentedStorage_8hpp_source.html#l00083">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::AugmentedCore()</a>, and <a class="el" href="AugmentedStorage_8hpp_source.html#l00140">hif::internal::AugmentedCore&lt; CrsType::index_type, CrsType::indptr_type &gt;::reserve()</a>.</p>
 
 </div>
 </div>

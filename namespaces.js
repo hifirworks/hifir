@@ -1,4 +1,5 @@
 var namespaces =
 [
-    [ "hif", "namespacehif.html", "namespacehif" ]
+    [ "hif", "namespacehif.html", "namespacehif" ],
+    [ "libhifir_impl", "namespacelibhifir__impl.html", null ]
 ];

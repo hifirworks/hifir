@@ -1,4 +1,4 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$classhif_1_1Crout.html" title="Crout update in deferred fashionThe idea of this class is to implement Crout kernels that wrap around..." alt="" coords="5,5,81,32"/>
-<area shape="rect" id="node2" href="$classhif_1_1PivotCrout.html" title="Crout update in deferred fashion with pivotingThe idea of this class is to implement Crout kernels th..." alt="" coords="129,5,236,32"/>
+<area shape="rect" id="node1" href="$classhif_1_1internal_1_1AugmentedCore.html" title="hif::internal::Augmented\lCore\&lt; CrsType::index_type,\l CrsType::indptr_type \&gt;" alt="" coords="5,5,192,61"/>
+<area shape="rect" id="node2" href="$classhif_1_1AugCRS.html" title="Augmented CRS data structure. " alt="" coords="240,53,411,80"/>
 </map>

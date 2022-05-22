@@ -32,7 +32,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">HIFIR
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -117,22 +117,22 @@ Public Types</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a7141fe35e82caf4b175b65bafd3215bd"><td class="memTemplParams" colspan="2">template&lt;class ScaleArray , class CcsType , class PermType , class AugCcsType , class PosArray , class DiagType , class AugCrsType &gt; </td></tr>
-<tr class="memitem:a7141fe35e82caf4b175b65bafd3215bd"><td class="memTemplItemLeft" align="right" valign="top">DiagType::value_type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1PivotCrout.html#a7141fe35e82caf4b175b65bafd3215bd">compute_dk</a> (const ScaleArray &amp;s, const CcsType &amp;ccs_A, const ScaleArray &amp;t, const PermType &amp;p_inv, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> qk, const AugCcsType &amp;L, const PosArray &amp;L_start, const DiagType &amp;d, const AugCrsType &amp;U) const</td></tr>
-<tr class="memdesc:a7141fe35e82caf4b175b65bafd3215bd"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute diagonal entry  <a href="#a7141fe35e82caf4b175b65bafd3215bd">More...</a><br /></td></tr>
-<tr class="separator:a7141fe35e82caf4b175b65bafd3215bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0501a26e462c5d62fee0e923a17f84d9"><td class="memTemplParams" colspan="2">template&lt;class ScaleArray , class CrsType , class PermType , class AugCcsType , class DiagType , class AugCrsType , class PosArray , class SpVecType &gt; </td></tr>
-<tr class="memitem:a0501a26e462c5d62fee0e923a17f84d9"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1PivotCrout.html#a0501a26e462c5d62fee0e923a17f84d9">compute_ut</a> (const ScaleArray &amp;s, const CrsType &amp;crs_A, const ScaleArray &amp;t, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> pk, const PermType &amp;q_inv, const AugCcsType &amp;L, const DiagType &amp;d, const AugCrsType &amp;U, const PosArray &amp;U_start, SpVecType &amp;ut) const</td></tr>
-<tr class="memdesc:a0501a26e462c5d62fee0e923a17f84d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">dual of the <a class="el" href="classhif_1_1PivotCrout.html#a6898b665fe8bf7eab93a4f8b1d1b620f">compute_l</a>, i.e. computing the row of U  <a href="#a0501a26e462c5d62fee0e923a17f84d9">More...</a><br /></td></tr>
-<tr class="separator:a0501a26e462c5d62fee0e923a17f84d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6898b665fe8bf7eab93a4f8b1d1b620f"><td class="memTemplParams" colspan="2">template&lt;class ScaleArray , class CcsType , class PermType , class AugCcsType , class PosArray , class DiagType , class AugCrsType , class SpVecType &gt; </td></tr>
-<tr class="memitem:a6898b665fe8bf7eab93a4f8b1d1b620f"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1PivotCrout.html#a6898b665fe8bf7eab93a4f8b1d1b620f">compute_l</a> (const ScaleArray &amp;s, const CcsType &amp;ccs_A, const ScaleArray &amp;t, const PermType &amp;p_inv, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> qk, const AugCcsType &amp;L, const PosArray &amp;L_start, const DiagType &amp;d, const AugCrsType &amp;U, SpVecType &amp;l) const</td></tr>
-<tr class="memdesc:a6898b665fe8bf7eab93a4f8b1d1b620f"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the column vector of L of current step  <a href="#a6898b665fe8bf7eab93a4f8b1d1b620f">More...</a><br /></td></tr>
-<tr class="separator:a6898b665fe8bf7eab93a4f8b1d1b620f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7ccaa0d77f9bd8559d8192e156e13fc1"><td class="memTemplParams" colspan="2">template&lt;class CsType , class PosArray &gt; </td></tr>
-<tr class="memitem:a7ccaa0d77f9bd8559d8192e156e13fc1"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1PivotCrout.html#a7ccaa0d77f9bd8559d8192e156e13fc1">update_compress</a> (CsType &amp;T, PosArray &amp;start) const</td></tr>
-<tr class="memdesc:a7ccaa0d77f9bd8559d8192e156e13fc1"><td class="mdescLeft">&#160;</td><td class="mdescRight">compress L and U and update their corresponding starting positions  <a href="#a7ccaa0d77f9bd8559d8192e156e13fc1">More...</a><br /></td></tr>
-<tr class="separator:a7ccaa0d77f9bd8559d8192e156e13fc1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a07090b1b1076f6c100df45ec3952226e"><td class="memTemplParams" colspan="2">template&lt;class ScaleArray , class CcsType , class PermType , class AugCcsType , class IndPtrArray , class DiagType , class AugCrsType &gt; </td></tr>
+<tr class="memitem:a07090b1b1076f6c100df45ec3952226e"><td class="memTemplItemLeft" align="right" valign="top">DiagType::value_type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1PivotCrout.html#a07090b1b1076f6c100df45ec3952226e">compute_dk</a> (const ScaleArray &amp;s, const CcsType &amp;ccs_A, const ScaleArray &amp;t, const PermType &amp;p_inv, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> qk, const AugCcsType &amp;L, const IndPtrArray &amp;L_start, const DiagType &amp;d, const AugCrsType &amp;U) const</td></tr>
+<tr class="memdesc:a07090b1b1076f6c100df45ec3952226e"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute diagonal entry  <a href="#a07090b1b1076f6c100df45ec3952226e">More...</a><br /></td></tr>
+<tr class="separator:a07090b1b1076f6c100df45ec3952226e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a82761654d2ad8824de83e7073aa64629"><td class="memTemplParams" colspan="2">template&lt;class ScaleArray , class CrsType , class PermType , class AugCcsType , class DiagType , class AugCrsType , class IndPtrArray , class SpVecType &gt; </td></tr>
+<tr class="memitem:a82761654d2ad8824de83e7073aa64629"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1PivotCrout.html#a82761654d2ad8824de83e7073aa64629">compute_ut</a> (const ScaleArray &amp;s, const CrsType &amp;crs_A, const ScaleArray &amp;t, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> pk, const PermType &amp;q_inv, const AugCcsType &amp;L, const DiagType &amp;d, const AugCrsType &amp;U, const IndPtrArray &amp;U_start, SpVecType &amp;ut) const</td></tr>
+<tr class="memdesc:a82761654d2ad8824de83e7073aa64629"><td class="mdescLeft">&#160;</td><td class="mdescRight">dual of the <a class="el" href="classhif_1_1PivotCrout.html#a10f12a87c293233a0acd52ece0a41c4f">compute_l</a>, i.e. computing the row of U  <a href="#a82761654d2ad8824de83e7073aa64629">More...</a><br /></td></tr>
+<tr class="separator:a82761654d2ad8824de83e7073aa64629"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a10f12a87c293233a0acd52ece0a41c4f"><td class="memTemplParams" colspan="2">template&lt;class ScaleArray , class CcsType , class PermType , class AugCcsType , class IndPtrArray , class DiagType , class AugCrsType , class SpVecType &gt; </td></tr>
+<tr class="memitem:a10f12a87c293233a0acd52ece0a41c4f"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1PivotCrout.html#a10f12a87c293233a0acd52ece0a41c4f">compute_l</a> (const ScaleArray &amp;s, const CcsType &amp;ccs_A, const ScaleArray &amp;t, const PermType &amp;p_inv, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> qk, const AugCcsType &amp;L, const IndPtrArray &amp;L_start, const DiagType &amp;d, const AugCrsType &amp;U, SpVecType &amp;l) const</td></tr>
+<tr class="memdesc:a10f12a87c293233a0acd52ece0a41c4f"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the column vector of L of current step  <a href="#a10f12a87c293233a0acd52ece0a41c4f">More...</a><br /></td></tr>
+<tr class="separator:a10f12a87c293233a0acd52ece0a41c4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae76c701d74e4e9d77f2acf23fcecb6cc"><td class="memTemplParams" colspan="2">template&lt;class CsType , class IndPtrArray &gt; </td></tr>
+<tr class="memitem:ae76c701d74e4e9d77f2acf23fcecb6cc"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1PivotCrout.html#ae76c701d74e4e9d77f2acf23fcecb6cc">update_compress</a> (CsType &amp;T, IndPtrArray &amp;start) const</td></tr>
+<tr class="memdesc:ae76c701d74e4e9d77f2acf23fcecb6cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">compress L and U and update their corresponding starting positions  <a href="#ae76c701d74e4e9d77f2acf23fcecb6cc">More...</a><br /></td></tr>
+<tr class="separator:ae76c701d74e4e9d77f2acf23fcecb6cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0a5d451bf8f68a3d76805b7b291511ca"><td class="memTemplParams" colspan="2">template&lt;class AugCsType , class KappaArray &gt; </td></tr>
 <tr class="memitem:a0a5d451bf8f68a3d76805b7b291511ca"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1PivotCrout.html#a0a5d451bf8f68a3d76805b7b291511ca">update_kappa</a> (const AugCsType &amp;T, KappaArray &amp;kappa, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> entry=0u)</td></tr>
 <tr class="memdesc:a0a5d451bf8f68a3d76805b7b291511ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">estimate the inverse norm with augmented ds  <a href="#a0a5d451bf8f68a3d76805b7b291511ca">More...</a><br /></td></tr>
@@ -145,10 +145,10 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a75f24ca9e1bcfa66268de9b280c58536"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1PivotCrout.html#a75f24ca9e1bcfa66268de9b280c58536">interchange</a> (const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> pivot, AugCsType &amp;T, PermType &amp;p, InvPermType &amp;p_inv, DiagArrayType &amp;d, SpVecType &amp;a_k) const</td></tr>
 <tr class="memdesc:a75f24ca9e1bcfa66268de9b280c58536"><td class="mdescLeft">&#160;</td><td class="mdescRight">interchagen with pivot for pivoting with <a class="el" href="classhif_1_1Crout.html" title="Crout update in deferred fashionThe idea of this class is to implement Crout kernels that wrap around...">Crout</a> LU  <a href="#a75f24ca9e1bcfa66268de9b280c58536">More...</a><br /></td></tr>
 <tr class="separator:a75f24ca9e1bcfa66268de9b280c58536"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5665a23b591bd00d81ab140dcad77d8f"><td class="memTemplParams" colspan="2">template&lt;class ScaleArray , class PermType , class PermType2 , class CcsType , class CrsType , class CroutInfoStreamer , class PosArray , class PivotUnaryOpL , class PivotUnaryOpU , class AugCcsType , class DiagType , class AugCrsType , class SpVecType &gt; </td></tr>
-<tr class="memitem:a5665a23b591bd00d81ab140dcad77d8f"><td class="memTemplItemLeft" align="right" valign="top">std::pair&lt; int, int &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1PivotCrout.html#a5665a23b591bd00d81ab140dcad77d8f">apply_thres_pivot</a> (const ScaleArray &amp;s, const ScaleArray &amp;t, const CcsType &amp;A_ccs, const CrsType &amp;A_crs, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> m, const double gamma, const int max_steps, const CroutInfoStreamer &amp;Crout_info, const PosArray &amp;L_start, const PosArray &amp;U_start, const PivotUnaryOpL &amp;op_l, const PivotUnaryOpU &amp;op_ut, PermType &amp;p, PermType2 &amp;p_inv, PermType &amp;q, PermType2 &amp;q_inv, AugCcsType &amp;L, DiagType &amp;d, AugCrsType &amp;U, SpVecType &amp;l, SpVecType &amp;ut) const</td></tr>
-<tr class="memdesc:a5665a23b591bd00d81ab140dcad77d8f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply inverse-based rook pivoting.  <a href="#a5665a23b591bd00d81ab140dcad77d8f">More...</a><br /></td></tr>
-<tr class="separator:a5665a23b591bd00d81ab140dcad77d8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a67ee6d3984898a8fac1f38c0f98c2e26"><td class="memTemplParams" colspan="2">template&lt;class ScaleArray , class PermType , class PermType2 , class CcsType , class CrsType , class CroutInfoStreamer , class IndPtrType , class PivotUnaryOpL , class PivotUnaryOpU , class AugCcsType , class DiagType , class AugCrsType , class SpVecType &gt; </td></tr>
+<tr class="memitem:a67ee6d3984898a8fac1f38c0f98c2e26"><td class="memTemplItemLeft" align="right" valign="top">std::pair&lt; int, int &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1PivotCrout.html#a67ee6d3984898a8fac1f38c0f98c2e26">apply_thres_pivot</a> (const ScaleArray &amp;s, const ScaleArray &amp;t, const CcsType &amp;A_ccs, const CrsType &amp;A_crs, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> m, const double gamma, const int max_steps, const CroutInfoStreamer &amp;Crout_info, const IndPtrType &amp;L_start, const IndPtrType &amp;U_start, const PivotUnaryOpL &amp;op_l, const PivotUnaryOpU &amp;op_ut, PermType &amp;p, PermType2 &amp;p_inv, PermType &amp;q, PermType2 &amp;q_inv, AugCcsType &amp;L, DiagType &amp;d, AugCrsType &amp;U, SpVecType &amp;l, SpVecType &amp;ut) const</td></tr>
+<tr class="memdesc:a67ee6d3984898a8fac1f38c0f98c2e26"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply inverse-based rook pivoting.  <a href="#a67ee6d3984898a8fac1f38c0f98c2e26">More...</a><br /></td></tr>
+<tr class="separator:a67ee6d3984898a8fac1f38c0f98c2e26"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classhif_1_1Crout"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classhif_1_1Crout')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classhif_1_1Crout.html">hif::Crout</a></td></tr>
 <tr class="memitem:a7d4ddd7a6707f318b734410ec419c948 inherit pub_methods_classhif_1_1Crout"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#a7d4ddd7a6707f318b734410ec419c948">Crout</a> ()</td></tr>
 <tr class="memdesc:a7d4ddd7a6707f318b734410ec419c948 inherit pub_methods_classhif_1_1Crout"><td class="mdescLeft">&#160;</td><td class="mdescRight">default constructor  <a href="classhif_1_1Crout.html#a7d4ddd7a6707f318b734410ec419c948">More...</a><br /></td></tr>
@@ -186,30 +186,30 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a1b22f1f1e2c8025abe84d35c71fa622b inherit pub_methods_classhif_1_1Crout"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#a1b22f1f1e2c8025abe84d35c71fa622b">assign_gap_array</a> (const ArrayIn &amp;r, ArrayOut &amp;l) const</td></tr>
 <tr class="memdesc:a1b22f1f1e2c8025abe84d35c71fa622b inherit pub_methods_classhif_1_1Crout"><td class="mdescLeft">&#160;</td><td class="mdescRight">compress an array and assign the no-gapped value to another one  <a href="classhif_1_1Crout.html#a1b22f1f1e2c8025abe84d35c71fa622b">More...</a><br /></td></tr>
 <tr class="separator:a1b22f1f1e2c8025abe84d35c71fa622b inherit pub_methods_classhif_1_1Crout"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6160f724500f49f900f4b12014c3bc22 inherit pub_methods_classhif_1_1Crout"><td class="memTemplParams" colspan="2">template&lt;class ScaleArray , class CrsType , class PermType , class PosArray , class DiagType , class CcsType , class SpVecType &gt; </td></tr>
-<tr class="memitem:a6160f724500f49f900f4b12014c3bc22 inherit pub_methods_classhif_1_1Crout"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#a6160f724500f49f900f4b12014c3bc22">compute_ut</a> (const ScaleArray &amp;s, const CrsType &amp;crs_A, const ScaleArray &amp;t, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> pk, const PermType &amp;q, const CcsType &amp;L, const PosArray &amp;L_start, const PosArray &amp;L_list, const DiagType &amp;d, const CrsType &amp;U, const PosArray &amp;U_start, SpVecType &amp;ut) const</td></tr>
-<tr class="memdesc:a6160f724500f49f900f4b12014c3bc22 inherit pub_methods_classhif_1_1Crout"><td class="mdescLeft">&#160;</td><td class="mdescRight">dual of the <a class="el" href="classhif_1_1Crout.html#a11611d8b989bd1c21d7836c00e55037b">compute_l</a>, i.e. computing the row of U  <a href="classhif_1_1Crout.html#a6160f724500f49f900f4b12014c3bc22">More...</a><br /></td></tr>
-<tr class="separator:a6160f724500f49f900f4b12014c3bc22 inherit pub_methods_classhif_1_1Crout"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a11611d8b989bd1c21d7836c00e55037b inherit pub_methods_classhif_1_1Crout"><td class="memTemplParams" colspan="2">template&lt;bool IsSymm, class ScaleArray , class CcsType , class PermType , class PosArray , class DiagType , class CrsType , class SpVecType &gt; </td></tr>
-<tr class="memitem:a11611d8b989bd1c21d7836c00e55037b inherit pub_methods_classhif_1_1Crout"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#a11611d8b989bd1c21d7836c00e55037b">compute_l</a> (const ScaleArray &amp;s, const CcsType &amp;ccs_A, const ScaleArray &amp;t, const PermType &amp;p, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> qk, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> m, const CcsType &amp;L, const PosArray &amp;L_start, const DiagType &amp;d, const CrsType &amp;U, const PosArray &amp;U_start, const PosArray &amp;U_list, SpVecType &amp;l) const</td></tr>
-<tr class="memdesc:a11611d8b989bd1c21d7836c00e55037b inherit pub_methods_classhif_1_1Crout"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the column vector of L of current step  <a href="classhif_1_1Crout.html#a11611d8b989bd1c21d7836c00e55037b">More...</a><br /></td></tr>
-<tr class="separator:a11611d8b989bd1c21d7836c00e55037b inherit pub_methods_classhif_1_1Crout"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7e7124b69c3f78edc6996c8674ff780e inherit pub_methods_classhif_1_1Crout"><td class="memTemplParams" colspan="2">template&lt;class ScaleArray , class CcsType , class PermType , class PosArray , class DiagType , class SpVecType &gt; </td></tr>
-<tr class="memitem:a7e7124b69c3f78edc6996c8674ff780e inherit pub_methods_classhif_1_1Crout"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#a7e7124b69c3f78edc6996c8674ff780e">compute_symm</a> (const ScaleArray &amp;s, const CcsType &amp;ccs_A, const ScaleArray &amp;t, const PermType &amp;p, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> qk, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> m, const CcsType &amp;L, const PosArray &amp;L_start, const PosArray &amp;L_list, const DiagType &amp;d, SpVecType &amp;l) const</td></tr>
-<tr class="memdesc:a7e7124b69c3f78edc6996c8674ff780e inherit pub_methods_classhif_1_1Crout"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the column vector of L of current step for <img class="formulaInl" alt="$LDL^{T}$" src="form_12.png"/>  <a href="classhif_1_1Crout.html#a7e7124b69c3f78edc6996c8674ff780e">More...</a><br /></td></tr>
-<tr class="separator:a7e7124b69c3f78edc6996c8674ff780e inherit pub_methods_classhif_1_1Crout"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a58fe5439dac781d451a848728b3bd8dd inherit pub_methods_classhif_1_1Crout"><td class="memTemplParams" colspan="2">template&lt;class CsType , class PosArray &gt; </td></tr>
-<tr class="memitem:a58fe5439dac781d451a848728b3bd8dd inherit pub_methods_classhif_1_1Crout"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#a58fe5439dac781d451a848728b3bd8dd">update_compress</a> (CsType &amp;T, PosArray &amp;list, PosArray &amp;start) const</td></tr>
-<tr class="memdesc:a58fe5439dac781d451a848728b3bd8dd inherit pub_methods_classhif_1_1Crout"><td class="mdescLeft">&#160;</td><td class="mdescRight">compress L and U and update their corresponding starting positions and linked lists  <a href="classhif_1_1Crout.html#a58fe5439dac781d451a848728b3bd8dd">More...</a><br /></td></tr>
-<tr class="separator:a58fe5439dac781d451a848728b3bd8dd inherit pub_methods_classhif_1_1Crout"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4638e17d4ded44ef0cd4150446e7015b inherit pub_methods_classhif_1_1Crout"><td class="memTemplParams" colspan="2">template&lt;class CcsType , class PosArray &gt; </td></tr>
-<tr class="memitem:a4638e17d4ded44ef0cd4150446e7015b inherit pub_methods_classhif_1_1Crout"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#a4638e17d4ded44ef0cd4150446e7015b">symm_update_lstart</a> (const CcsType &amp;L, const typename CcsType::size_type m, PosArray &amp;L_start) const</td></tr>
-<tr class="memdesc:a4638e17d4ded44ef0cd4150446e7015b inherit pub_methods_classhif_1_1Crout"><td class="mdescLeft">&#160;</td><td class="mdescRight">another starting array needed in symmetric computation to get the offsets  <a href="classhif_1_1Crout.html#a4638e17d4ded44ef0cd4150446e7015b">More...</a><br /></td></tr>
-<tr class="separator:a4638e17d4ded44ef0cd4150446e7015b inherit pub_methods_classhif_1_1Crout"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a08c98476a04ffc426d052151f68b9f9e inherit pub_methods_classhif_1_1Crout"><td class="memTemplParams" colspan="2">template&lt;class CsType , class PosArray , class KappaArray &gt; </td></tr>
-<tr class="memitem:a08c98476a04ffc426d052151f68b9f9e inherit pub_methods_classhif_1_1Crout"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#a08c98476a04ffc426d052151f68b9f9e">update_kappa</a> (const CsType &amp;T, const PosArray &amp;list, const PosArray &amp;start, KappaArray &amp;kappa) const</td></tr>
-<tr class="memdesc:a08c98476a04ffc426d052151f68b9f9e inherit pub_methods_classhif_1_1Crout"><td class="mdescLeft">&#160;</td><td class="mdescRight">estimate the inverse norm  <a href="classhif_1_1Crout.html#a08c98476a04ffc426d052151f68b9f9e">More...</a><br /></td></tr>
-<tr class="separator:a08c98476a04ffc426d052151f68b9f9e inherit pub_methods_classhif_1_1Crout"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6859cbf1c747aaac7e6cbb38c33fe08 inherit pub_methods_classhif_1_1Crout"><td class="memTemplParams" colspan="2">template&lt;class ScaleArray , class CrsType , class PermType , class ListArray , class IndPtrArray , class DiagType , class CcsType , class SpVecType &gt; </td></tr>
+<tr class="memitem:ab6859cbf1c747aaac7e6cbb38c33fe08 inherit pub_methods_classhif_1_1Crout"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#ab6859cbf1c747aaac7e6cbb38c33fe08">compute_ut</a> (const ScaleArray &amp;s, const CrsType &amp;crs_A, const ScaleArray &amp;t, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> pk, const PermType &amp;q, const CcsType &amp;L, const IndPtrArray &amp;L_start, const ListArray &amp;L_list, const DiagType &amp;d, const CrsType &amp;U, const IndPtrArray &amp;U_start, SpVecType &amp;ut) const</td></tr>
+<tr class="memdesc:ab6859cbf1c747aaac7e6cbb38c33fe08 inherit pub_methods_classhif_1_1Crout"><td class="mdescLeft">&#160;</td><td class="mdescRight">dual of the <a class="el" href="classhif_1_1Crout.html#acd828247defa0e394b12d62811930216">compute_l</a>, i.e. computing the row of U  <a href="classhif_1_1Crout.html#ab6859cbf1c747aaac7e6cbb38c33fe08">More...</a><br /></td></tr>
+<tr class="separator:ab6859cbf1c747aaac7e6cbb38c33fe08 inherit pub_methods_classhif_1_1Crout"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acd828247defa0e394b12d62811930216 inherit pub_methods_classhif_1_1Crout"><td class="memTemplParams" colspan="2">template&lt;bool IsSymm, class ScaleArray , class CcsType , class PermType , class ListArray , class IndPtrArray , class DiagType , class CrsType , class SpVecType &gt; </td></tr>
+<tr class="memitem:acd828247defa0e394b12d62811930216 inherit pub_methods_classhif_1_1Crout"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#acd828247defa0e394b12d62811930216">compute_l</a> (const ScaleArray &amp;s, const CcsType &amp;ccs_A, const ScaleArray &amp;t, const PermType &amp;p, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> qk, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> m, const CcsType &amp;L, const IndPtrArray &amp;L_start, const DiagType &amp;d, const CrsType &amp;U, const IndPtrArray &amp;U_start, const ListArray &amp;U_list, SpVecType &amp;l) const</td></tr>
+<tr class="memdesc:acd828247defa0e394b12d62811930216 inherit pub_methods_classhif_1_1Crout"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the column vector of L of current step  <a href="classhif_1_1Crout.html#acd828247defa0e394b12d62811930216">More...</a><br /></td></tr>
+<tr class="separator:acd828247defa0e394b12d62811930216 inherit pub_methods_classhif_1_1Crout"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab428dc148a9fb48819d8ba9f104b555e inherit pub_methods_classhif_1_1Crout"><td class="memTemplParams" colspan="2">template&lt;class ScaleArray , class CcsType , class PermType , class ListArray , class IndPtrArray , class DiagType , class SpVecType &gt; </td></tr>
+<tr class="memitem:ab428dc148a9fb48819d8ba9f104b555e inherit pub_methods_classhif_1_1Crout"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#ab428dc148a9fb48819d8ba9f104b555e">compute_symm</a> (const ScaleArray &amp;s, const CcsType &amp;ccs_A, const ScaleArray &amp;t, const PermType &amp;p, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> qk, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> m, const CcsType &amp;L, const IndPtrArray &amp;L_start, const ListArray &amp;L_list, const DiagType &amp;d, SpVecType &amp;l) const</td></tr>
+<tr class="memdesc:ab428dc148a9fb48819d8ba9f104b555e inherit pub_methods_classhif_1_1Crout"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the column vector of L of current step for <img class="formulaInl" alt="$LDL^{T}$" src="form_12.png"/>  <a href="classhif_1_1Crout.html#ab428dc148a9fb48819d8ba9f104b555e">More...</a><br /></td></tr>
+<tr class="separator:ab428dc148a9fb48819d8ba9f104b555e inherit pub_methods_classhif_1_1Crout"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51bbf7c0a0a4c8ee89ef806e30c2bb96 inherit pub_methods_classhif_1_1Crout"><td class="memTemplParams" colspan="2">template&lt;class CsType , class ListArray , class IndPtrArray &gt; </td></tr>
+<tr class="memitem:a51bbf7c0a0a4c8ee89ef806e30c2bb96 inherit pub_methods_classhif_1_1Crout"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#a51bbf7c0a0a4c8ee89ef806e30c2bb96">update_compress</a> (CsType &amp;T, ListArray &amp;list, IndPtrArray &amp;start) const</td></tr>
+<tr class="memdesc:a51bbf7c0a0a4c8ee89ef806e30c2bb96 inherit pub_methods_classhif_1_1Crout"><td class="mdescLeft">&#160;</td><td class="mdescRight">compress L and U and update their corresponding starting positions and linked lists  <a href="classhif_1_1Crout.html#a51bbf7c0a0a4c8ee89ef806e30c2bb96">More...</a><br /></td></tr>
+<tr class="separator:a51bbf7c0a0a4c8ee89ef806e30c2bb96 inherit pub_methods_classhif_1_1Crout"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a984d77596bff9eaabb639ce79ebf1782 inherit pub_methods_classhif_1_1Crout"><td class="memTemplParams" colspan="2">template&lt;class CcsType , class IndPtrArray &gt; </td></tr>
+<tr class="memitem:a984d77596bff9eaabb639ce79ebf1782 inherit pub_methods_classhif_1_1Crout"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#a984d77596bff9eaabb639ce79ebf1782">symm_update_lstart</a> (const CcsType &amp;L, const typename CcsType::size_type m, IndPtrArray &amp;L_start) const</td></tr>
+<tr class="memdesc:a984d77596bff9eaabb639ce79ebf1782 inherit pub_methods_classhif_1_1Crout"><td class="mdescLeft">&#160;</td><td class="mdescRight">another starting array needed in symmetric computation to get the offsets  <a href="classhif_1_1Crout.html#a984d77596bff9eaabb639ce79ebf1782">More...</a><br /></td></tr>
+<tr class="separator:a984d77596bff9eaabb639ce79ebf1782 inherit pub_methods_classhif_1_1Crout"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a27f96d50a47d0d0dd817c3ff2b27d90f inherit pub_methods_classhif_1_1Crout"><td class="memTemplParams" colspan="2">template&lt;class CsType , class ListArray , class IndPtrArray , class KappaArray &gt; </td></tr>
+<tr class="memitem:a27f96d50a47d0d0dd817c3ff2b27d90f inherit pub_methods_classhif_1_1Crout"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#a27f96d50a47d0d0dd817c3ff2b27d90f">update_kappa</a> (const CsType &amp;T, const ListArray &amp;list, const IndPtrArray &amp;start, KappaArray &amp;kappa) const</td></tr>
+<tr class="memdesc:a27f96d50a47d0d0dd817c3ff2b27d90f inherit pub_methods_classhif_1_1Crout"><td class="mdescLeft">&#160;</td><td class="mdescRight">estimate the inverse norm  <a href="classhif_1_1Crout.html#a27f96d50a47d0d0dd817c3ff2b27d90f">More...</a><br /></td></tr>
+<tr class="separator:a27f96d50a47d0d0dd817c3ff2b27d90f inherit pub_methods_classhif_1_1Crout"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab041ed49a6b640ea60e17d52ee8bb88f inherit pub_methods_classhif_1_1Crout"><td class="memTemplParams" colspan="2">template&lt;bool IsSymm, class SpVecType , class DiagType &gt; </td></tr>
 <tr class="memitem:ab041ed49a6b640ea60e17d52ee8bb88f inherit pub_methods_classhif_1_1Crout"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt;!IsSymm &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#ab041ed49a6b640ea60e17d52ee8bb88f">update_diag</a> (const SpVecType &amp;l, const SpVecType &amp;ut, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> m, DiagType &amp;d) const</td></tr>
 <tr class="memdesc:ab041ed49a6b640ea60e17d52ee8bb88f inherit pub_methods_classhif_1_1Crout"><td class="mdescLeft">&#160;</td><td class="mdescRight">update the current diagonal entry  <a href="classhif_1_1Crout.html#ab041ed49a6b640ea60e17d52ee8bb88f">More...</a><br /></td></tr>
@@ -222,14 +222,14 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a6fb95f423981075e44d17fe3547f8ae8 inherit pub_methods_classhif_1_1Crout"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#a6fb95f423981075e44d17fe3547f8ae8">scale_inv_diag</a> (const DiagType &amp;d, SpVecType &amp;v) const</td></tr>
 <tr class="memdesc:a6fb95f423981075e44d17fe3547f8ae8 inherit pub_methods_classhif_1_1Crout"><td class="mdescLeft">&#160;</td><td class="mdescRight">scale the computed row/column vectors by current diagonal inverse  <a href="classhif_1_1Crout.html#a6fb95f423981075e44d17fe3547f8ae8">More...</a><br /></td></tr>
 <tr class="separator:a6fb95f423981075e44d17fe3547f8ae8 inherit pub_methods_classhif_1_1Crout"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaefa97e5aac490e4a8716e9953afa510b inherit pub_methods_classhif_1_1Crout"><td class="memTemplParams" colspan="2">template&lt;class CsType , class PosArray &gt; </td></tr>
-<tr class="memitem:gaefa97e5aac490e4a8716e9953afa510b inherit pub_methods_classhif_1_1Crout"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__defer.html#gaefa97e5aac490e4a8716e9953afa510b">defer_entry</a> (const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> to_idx, const PosArray &amp;start, CsType &amp;T, PosArray &amp;list) const</td></tr>
-<tr class="memdesc:gaefa97e5aac490e4a8716e9953afa510b inherit pub_methods_classhif_1_1Crout"><td class="mdescLeft">&#160;</td><td class="mdescRight">defer an secondary entry  <a href="group__defer.html#gaefa97e5aac490e4a8716e9953afa510b">More...</a><br /></td></tr>
-<tr class="separator:gaefa97e5aac490e4a8716e9953afa510b inherit pub_methods_classhif_1_1Crout"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gadfd48df3729864a4391a72084d83025e inherit pub_methods_classhif_1_1Crout"><td class="memTemplParams" colspan="2">template&lt;class CcsType , class PosArray &gt; </td></tr>
-<tr class="memitem:gadfd48df3729864a4391a72084d83025e inherit pub_methods_classhif_1_1Crout"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__defer.html#gadfd48df3729864a4391a72084d83025e">symm_defer_l</a> (const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> to_idx, const PosArray &amp;L_start, CcsType &amp;L, PosArray &amp;L_list, PosArray &amp;L_offsets) const</td></tr>
-<tr class="memdesc:gadfd48df3729864a4391a72084d83025e inherit pub_methods_classhif_1_1Crout"><td class="mdescLeft">&#160;</td><td class="mdescRight">for symmetric leading block, we need to fix the offset positions while we do deferring  <a href="group__defer.html#gadfd48df3729864a4391a72084d83025e">More...</a><br /></td></tr>
-<tr class="separator:gadfd48df3729864a4391a72084d83025e inherit pub_methods_classhif_1_1Crout"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7b356d55089463baf58948c321b70d03 inherit pub_methods_classhif_1_1Crout"><td class="memTemplParams" colspan="2">template&lt;class CsType , class IndPtrArray , class ListArray &gt; </td></tr>
+<tr class="memitem:ga7b356d55089463baf58948c321b70d03 inherit pub_methods_classhif_1_1Crout"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__defer.html#ga7b356d55089463baf58948c321b70d03">defer_entry</a> (const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> to_idx, const IndPtrArray &amp;start, CsType &amp;T, ListArray &amp;list) const</td></tr>
+<tr class="memdesc:ga7b356d55089463baf58948c321b70d03 inherit pub_methods_classhif_1_1Crout"><td class="mdescLeft">&#160;</td><td class="mdescRight">defer an secondary entry  <a href="group__defer.html#ga7b356d55089463baf58948c321b70d03">More...</a><br /></td></tr>
+<tr class="separator:ga7b356d55089463baf58948c321b70d03 inherit pub_methods_classhif_1_1Crout"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga35d2c5eed453173334a580cd0fc5ec19 inherit pub_methods_classhif_1_1Crout"><td class="memTemplParams" colspan="2">template&lt;class CcsType , class IndPtrArray , class ListArray &gt; </td></tr>
+<tr class="memitem:ga35d2c5eed453173334a580cd0fc5ec19 inherit pub_methods_classhif_1_1Crout"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__defer.html#ga35d2c5eed453173334a580cd0fc5ec19">symm_defer_l</a> (const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> to_idx, const IndPtrArray &amp;L_start, CcsType &amp;L, ListArray &amp;L_list, IndPtrArray &amp;L_offsets) const</td></tr>
+<tr class="memdesc:ga35d2c5eed453173334a580cd0fc5ec19 inherit pub_methods_classhif_1_1Crout"><td class="mdescLeft">&#160;</td><td class="mdescRight">for symmetric leading block, we need to fix the offset positions while we do deferring  <a href="group__defer.html#ga35d2c5eed453173334a580cd0fc5ec19">More...</a><br /></td></tr>
+<tr class="separator:ga35d2c5eed453173334a580cd0fc5ec19 inherit pub_methods_classhif_1_1Crout"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
@@ -283,13 +283,13 @@ Collaboration diagram for hif::PivotCrout:</div>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a5665a23b591bd00d81ab140dcad77d8f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5665a23b591bd00d81ab140dcad77d8f">&#9670;&nbsp;</a></span>apply_thres_pivot()</h2>
+<a id="a67ee6d3984898a8fac1f38c0f98c2e26"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a67ee6d3984898a8fac1f38c0f98c2e26">&#9670;&nbsp;</a></span>apply_thres_pivot()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class ScaleArray , class PermType , class PermType2 , class CcsType , class CrsType , class CroutInfoStreamer , class PosArray , class PivotUnaryOpL , class PivotUnaryOpU , class AugCcsType , class DiagType , class AugCrsType , class SpVecType &gt; </div>
+template&lt;class ScaleArray , class PermType , class PermType2 , class CcsType , class CrsType , class CroutInfoStreamer , class IndPtrType , class PivotUnaryOpL , class PivotUnaryOpU , class AugCcsType , class DiagType , class AugCrsType , class SpVecType &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -345,13 +345,13 @@ template&lt;class ScaleArray , class PermType , class PermType2 , class CcsType 
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const PosArray &amp;&#160;</td>
+          <td class="paramtype">const IndPtrType &amp;&#160;</td>
           <td class="paramname"><em>L_start</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const PosArray &amp;&#160;</td>
+          <td class="paramtype">const IndPtrType &amp;&#160;</td>
           <td class="paramname"><em>U_start</em>, </td>
         </tr>
         <tr>
@@ -442,7 +442,7 @@ template&lt;class ScaleArray , class PermType , class PermType2 , class CcsType 
     <tr><td class="paramname">CcsType</td><td>Ccs storage type, see <a class="el" href="classhif_1_1CCS.html">CCS</a> </td></tr>
     <tr><td class="paramname">CrsType</td><td>Crs storage type, see <a class="el" href="classhif_1_1CRS.html">CRS</a> </td></tr>
     <tr><td class="paramname">CroutInfoStreamer</td><td><a class="el" href="classhif_1_1Crout.html" title="Crout update in deferred fashionThe idea of this class is to implement Crout kernels that wrap around...">Crout</a> update information streamer </td></tr>
-    <tr><td class="paramname">PosArray</td><td>Integer array type for storing position information </td></tr>
+    <tr><td class="paramname">IndPtrType</td><td>Integer array type for storing position information </td></tr>
     <tr><td class="paramname">PivotUnaryOpL</td><td>Unary predictor for finding pivot in L </td></tr>
     <tr><td class="paramname">PivotUnaryOpU</td><td>Unary predictor for finding pivot in U </td></tr>
     <tr><td class="paramname">AugCcsType</td><td>Augmented ccs storage type, see <a class="el" href="classhif_1_1AugCCS.html">AugCCS</a> </td></tr>
@@ -482,14 +482,14 @@ template&lt;class ScaleArray , class PermType , class PermType2 , class CcsType 
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="classhif_1_1PivotCrout.html#a75f24ca9e1bcfa66268de9b280c58536" title="interchagen with pivot for pivoting with Crout LU ">interchange</a></dd></dl>
 <p>Regarding <em>op_l</em> and <em>op_u</em>, we find a pivot in L if and only if it satisfies op_l condition, i.e., op_l(pivot_l)==true. </p>
 
-<p class="definition">Definition at line <a class="el" href="PivotCrout_8hpp_source.html#l00508">508</a> of file <a class="el" href="PivotCrout_8hpp_source.html">PivotCrout.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PivotCrout_8hpp_source.html#l00510">510</a> of file <a class="el" href="PivotCrout_8hpp_source.html">PivotCrout.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00827">hif::Crout::_defers</a>, <a class="el" href="Crout_8hpp_source.html#l00097">hif::Crout::deferred_step()</a>, and <a class="el" href="log_8hpp_source.html#l00092">hif::warning()</a>.</p>
+<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00833">hif::Crout::_defers</a>, <a class="el" href="Crout_8hpp_source.html#l00097">hif::Crout::deferred_step()</a>, and <a class="el" href="log_8hpp_source.html#l00085">hif::warning()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="classhif_1_1PivotCrout_a5665a23b591bd00d81ab140dcad77d8f_cgraph.png" border="0" usemap="#classhif_1_1PivotCrout_a5665a23b591bd00d81ab140dcad77d8f_cgraph" alt=""/></div>
-<map name="classhif_1_1PivotCrout_a5665a23b591bd00d81ab140dcad77d8f_cgraph" id="classhif_1_1PivotCrout_a5665a23b591bd00d81ab140dcad77d8f_cgraph">
+<div class="center"><img src="classhif_1_1PivotCrout_a67ee6d3984898a8fac1f38c0f98c2e26_cgraph.png" border="0" usemap="#classhif_1_1PivotCrout_a67ee6d3984898a8fac1f38c0f98c2e26_cgraph" alt=""/></div>
+<map name="classhif_1_1PivotCrout_a67ee6d3984898a8fac1f38c0f98c2e26_cgraph" id="classhif_1_1PivotCrout_a67ee6d3984898a8fac1f38c0f98c2e26_cgraph">
 <area shape="rect" id="node2" href="classhif_1_1Crout.html#a48b806171f0e3b1274f5e77d8fba7e73" title="get the deferred step " alt="" coords="199,5,361,32"/>
 <area shape="rect" id="node3" href="group__util.html#ga1d4c2000af1b3a9f14ece0c026d1c39a" title="warning information streaming, dump to HIF_STDERR " alt="" coords="235,56,325,83"/>
 </map>
@@ -497,13 +497,13 @@ Here is the call graph for this function:</div>
 
 </div>
 </div>
-<a id="a7141fe35e82caf4b175b65bafd3215bd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7141fe35e82caf4b175b65bafd3215bd">&#9670;&nbsp;</a></span>compute_dk()</h2>
+<a id="a07090b1b1076f6c100df45ec3952226e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a07090b1b1076f6c100df45ec3952226e">&#9670;&nbsp;</a></span>compute_dk()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class ScaleArray , class CcsType , class PermType , class AugCcsType , class PosArray , class DiagType , class AugCrsType &gt; </div>
+template&lt;class ScaleArray , class CcsType , class PermType , class AugCcsType , class IndPtrArray , class DiagType , class AugCrsType &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -547,7 +547,7 @@ template&lt;class ScaleArray , class CcsType , class PermType , class AugCcsType
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const PosArray &amp;&#160;</td>
+          <td class="paramtype">const IndPtrArray &amp;&#160;</td>
           <td class="paramname"><em>L_start</em>, </td>
         </tr>
         <tr>
@@ -582,7 +582,7 @@ template&lt;class ScaleArray , class CcsType , class PermType , class AugCcsType
     <tr><td class="paramname">CcsType</td><td>ccs format, see <a class="el" href="classhif_1_1CCS.html">CCS</a> </td></tr>
     <tr><td class="paramname">PermType</td><td>permutation matrix type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
     <tr><td class="paramname">AugCcsType</td><td>ccs format, see <a class="el" href="classhif_1_1AugCCS.html">AugCCS</a> </td></tr>
-    <tr><td class="paramname">PosArray</td><td>position array type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
+    <tr><td class="paramname">IndPtrArray</td><td>position array type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
     <tr><td class="paramname">DiagType</td><td>array used for storing diagonal array, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
     <tr><td class="paramname">AugCrsType</td><td>crs format, see <a class="el" href="classhif_1_1AugCRS.html">AugCRS</a> </td></tr>
   </table>
@@ -603,7 +603,7 @@ template&lt;class ScaleArray , class CcsType , class PermType , class AugCcsType
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>diagonal entry value </dd></dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classhif_1_1PivotCrout.html#a0501a26e462c5d62fee0e923a17f84d9" title="dual of the compute_l, i.e. computing the row of U ">compute_ut</a>, <a class="el" href="classhif_1_1PivotCrout.html#a6898b665fe8bf7eab93a4f8b1d1b620f" title="compute the column vector of L of current step ">compute_l</a></dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classhif_1_1PivotCrout.html#a82761654d2ad8824de83e7073aa64629" title="dual of the compute_l, i.e. computing the row of U ">compute_ut</a>, <a class="el" href="classhif_1_1PivotCrout.html#a10f12a87c293233a0acd52ece0a41c4f" title="compute the column vector of L of current step ">compute_l</a></dd></dl>
 <p>This routine computes the current diagonal entry of <img class="formulaInl" alt="$\mathbf{D}$" src="form_24.png"/> Mathematically, this routine is to compute:</p>
 <p class="formulaDsp">
 <img class="formulaDsp" alt="\[ d_{k}=\hat{A}[p_{k},q_{k}]-\mathbf{L}_{k,1:k-1}\mathbf{D}_{k-1} \mathbf{U}_{1:k-1,k} \]" src="form_25.png"/>
@@ -611,25 +611,25 @@ template&lt;class ScaleArray , class CcsType , class PermType , class AugCcsType
  
 <p class="definition">Definition at line <a class="el" href="PivotCrout_8hpp_source.html#l00093">93</a> of file <a class="el" href="PivotCrout_8hpp_source.html">PivotCrout.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00826">hif::Crout::_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">hif::Crout::deferred_step()</a>.</p>
+<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00832">hif::Crout::_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">hif::Crout::deferred_step()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="classhif_1_1PivotCrout_a7141fe35e82caf4b175b65bafd3215bd_cgraph.png" border="0" usemap="#classhif_1_1PivotCrout_a7141fe35e82caf4b175b65bafd3215bd_cgraph" alt=""/></div>
-<map name="classhif_1_1PivotCrout_a7141fe35e82caf4b175b65bafd3215bd_cgraph" id="classhif_1_1PivotCrout_a7141fe35e82caf4b175b65bafd3215bd_cgraph">
+<div class="center"><img src="classhif_1_1PivotCrout_a07090b1b1076f6c100df45ec3952226e_cgraph.png" border="0" usemap="#classhif_1_1PivotCrout_a07090b1b1076f6c100df45ec3952226e_cgraph" alt=""/></div>
+<map name="classhif_1_1PivotCrout_a07090b1b1076f6c100df45ec3952226e_cgraph" id="classhif_1_1PivotCrout_a07090b1b1076f6c100df45ec3952226e_cgraph">
 <area shape="rect" id="node2" href="classhif_1_1Crout.html#a48b806171f0e3b1274f5e77d8fba7e73" title="get the deferred step " alt="" coords="239,5,401,32"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="a6898b665fe8bf7eab93a4f8b1d1b620f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6898b665fe8bf7eab93a4f8b1d1b620f">&#9670;&nbsp;</a></span>compute_l()</h2>
+<a id="a10f12a87c293233a0acd52ece0a41c4f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a10f12a87c293233a0acd52ece0a41c4f">&#9670;&nbsp;</a></span>compute_l()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class ScaleArray , class CcsType , class PermType , class AugCcsType , class PosArray , class DiagType , class AugCrsType , class SpVecType &gt; </div>
+template&lt;class ScaleArray , class CcsType , class PermType , class AugCcsType , class IndPtrArray , class DiagType , class AugCrsType , class SpVecType &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -673,7 +673,7 @@ template&lt;class ScaleArray , class CcsType , class PermType , class AugCcsType
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const PosArray &amp;&#160;</td>
+          <td class="paramtype">const IndPtrArray &amp;&#160;</td>
           <td class="paramname"><em>L_start</em>, </td>
         </tr>
         <tr>
@@ -714,7 +714,7 @@ template&lt;class ScaleArray , class CcsType , class PermType , class AugCcsType
     <tr><td class="paramname">CcsType</td><td>ccs format, see <a class="el" href="classhif_1_1CCS.html">CCS</a> </td></tr>
     <tr><td class="paramname">PermType</td><td>permutation matrix type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
     <tr><td class="paramname">AugCcsType</td><td>ccs format, see <a class="el" href="classhif_1_1AugCCS.html">AugCCS</a> </td></tr>
-    <tr><td class="paramname">PosArray</td><td>position array type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
+    <tr><td class="paramname">IndPtrArray</td><td>position array type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
     <tr><td class="paramname">DiagType</td><td>array used for storing diagonal array, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
     <tr><td class="paramname">AugCrsType</td><td>crs format, see <a class="el" href="classhif_1_1AugCRS.html">AugCRS</a> </td></tr>
     <tr><td class="paramname">SpVecType</td><td>sparse vector for storing l, see <a class="el" href="classhif_1_1SparseVector.html">SparseVector</a> </td></tr>
@@ -736,7 +736,7 @@ template&lt;class ScaleArray , class CcsType , class PermType , class AugCcsType
   </table>
   </dd>
 </dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classhif_1_1PivotCrout.html#a0501a26e462c5d62fee0e923a17f84d9" title="dual of the compute_l, i.e. computing the row of U ">compute_ut</a></dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classhif_1_1PivotCrout.html#a82761654d2ad8824de83e7073aa64629" title="dual of the compute_l, i.e. computing the row of U ">compute_ut</a></dd></dl>
 <p>This routine computes the current column vector of <img class="formulaInl" alt="$\mathbf{L}$" src="form_2.png"/> (w/o diagonal scaling). Mathematically, this routine is to compute:</p>
 <p class="formulaDsp">
 <img class="formulaDsp" alt="\[ \mathbf{\ell}_{k}= \hat{\mathbf{A}}[\mathbf{p}_{k+1:n},q_{k}]- \mathbf{L}_{k+1:n,1:k-1}\mathbf{D}_{k-1} \mathbf{U}_{1:k-1,k} \]" src="form_7.png"/>
@@ -744,27 +744,27 @@ template&lt;class ScaleArray , class CcsType , class PermType , class AugCcsType
 <p>It's worth noting that, conceptally, the formula above is nothing but a matrix vector operation. However, standard implementation won't give good performance (especially with consideration of cache performance), this is because <img class="formulaInl" alt="$\mathbf{L}$" src="form_2.png"/> is stored in column major whereas row major for <img class="formulaInl" alt="$\mathbf{U}$" src="form_0.png"/>. Therefore, the actual implementation is in the fashion that loops through <img class="formulaInl" alt="$\mathbf{L}$" src="form_2.png"/> in column major while keeping <img class="formulaInl" alt="$\mathbf{U}$" src="form_0.png"/> as much static as possible.</p>
 <p>Regarding the complexity cost, it takes <img class="formulaInl" alt="$\mathcal{O}(\cup_i \textrm{nnz}(\mathbf{L}_{:,i}))$" src="form_10.png"/>, where <img class="formulaInl" alt="$u_{ik}\neq 0$" src="form_11.png"/> for computing the matrix vector operation. </p>
 
-<p class="definition">Definition at line <a class="el" href="PivotCrout_8hpp_source.html#l00295">295</a> of file <a class="el" href="PivotCrout_8hpp_source.html">PivotCrout.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PivotCrout_8hpp_source.html#l00298">298</a> of file <a class="el" href="PivotCrout_8hpp_source.html">PivotCrout.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00826">hif::Crout::_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">hif::Crout::deferred_step()</a>.</p>
+<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00832">hif::Crout::_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">hif::Crout::deferred_step()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="classhif_1_1PivotCrout_a6898b665fe8bf7eab93a4f8b1d1b620f_cgraph.png" border="0" usemap="#classhif_1_1PivotCrout_a6898b665fe8bf7eab93a4f8b1d1b620f_cgraph" alt=""/></div>
-<map name="classhif_1_1PivotCrout_a6898b665fe8bf7eab93a4f8b1d1b620f_cgraph" id="classhif_1_1PivotCrout_a6898b665fe8bf7eab93a4f8b1d1b620f_cgraph">
+<div class="center"><img src="classhif_1_1PivotCrout_a10f12a87c293233a0acd52ece0a41c4f_cgraph.png" border="0" usemap="#classhif_1_1PivotCrout_a10f12a87c293233a0acd52ece0a41c4f_cgraph" alt=""/></div>
+<map name="classhif_1_1PivotCrout_a10f12a87c293233a0acd52ece0a41c4f_cgraph" id="classhif_1_1PivotCrout_a10f12a87c293233a0acd52ece0a41c4f_cgraph">
 <area shape="rect" id="node2" href="classhif_1_1Crout.html#a48b806171f0e3b1274f5e77d8fba7e73" title="get the deferred step " alt="" coords="228,5,391,32"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="a0501a26e462c5d62fee0e923a17f84d9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0501a26e462c5d62fee0e923a17f84d9">&#9670;&nbsp;</a></span>compute_ut()</h2>
+<a id="a82761654d2ad8824de83e7073aa64629"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a82761654d2ad8824de83e7073aa64629">&#9670;&nbsp;</a></span>compute_ut()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class ScaleArray , class CrsType , class PermType , class AugCcsType , class DiagType , class AugCrsType , class PosArray , class SpVecType &gt; </div>
+template&lt;class ScaleArray , class CrsType , class PermType , class AugCcsType , class DiagType , class AugCrsType , class IndPtrArray , class SpVecType &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -820,7 +820,7 @@ template&lt;class ScaleArray , class CrsType , class PermType , class AugCcsType
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const PosArray &amp;&#160;</td>
+          <td class="paramtype">const IndPtrArray &amp;&#160;</td>
           <td class="paramname"><em>U_start</em>, </td>
         </tr>
         <tr>
@@ -842,7 +842,7 @@ template&lt;class ScaleArray , class CrsType , class PermType , class AugCcsType
 </table>
 </div><div class="memdoc">
 
-<p>dual of the <a class="el" href="classhif_1_1PivotCrout.html#a6898b665fe8bf7eab93a4f8b1d1b620f">compute_l</a>, i.e. computing the row of U </p>
+<p>dual of the <a class="el" href="classhif_1_1PivotCrout.html#a10f12a87c293233a0acd52ece0a41c4f">compute_l</a>, i.e. computing the row of U </p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">ScaleArray</td><td>row scaling diagonal matrix type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
@@ -851,7 +851,7 @@ template&lt;class ScaleArray , class CrsType , class PermType , class AugCcsType
     <tr><td class="paramname">AugCcsType</td><td>ccs format, see <a class="el" href="classhif_1_1AugCCS.html">AugCCS</a> </td></tr>
     <tr><td class="paramname">DiagType</td><td>diagonal matrix type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
     <tr><td class="paramname">AugCrsType</td><td>crs format, see <a class="el" href="classhif_1_1AugCRS.html">AugCRS</a> </td></tr>
-    <tr><td class="paramname">PosArray</td><td>position array type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
+    <tr><td class="paramname">IndPtrArray</td><td>position array type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
     <tr><td class="paramname">SpVecType</td><td>work array for current row vector, see <a class="el" href="classhif_1_1SparseVector.html">SparseVector</a> </td></tr>
   </table>
   </dd>
@@ -871,7 +871,7 @@ template&lt;class ScaleArray , class CrsType , class PermType , class AugCcsType
   </table>
   </dd>
 </dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classhif_1_1PivotCrout.html#a6898b665fe8bf7eab93a4f8b1d1b620f" title="compute the column vector of L of current step ">compute_l</a></dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classhif_1_1PivotCrout.html#a10f12a87c293233a0acd52ece0a41c4f" title="compute the column vector of L of current step ">compute_l</a></dd></dl>
 <p>This routine computes the current row vector of <img class="formulaInl" alt="$\mathbf{U}$" src="form_0.png"/> (w/o diagonal scaling). Mathematically, this routine is to compute:</p>
 <p class="formulaDsp">
 <img class="formulaDsp" alt="\[ \mathbf{u}_{k}^{T}= \hat{\mathbf{A}}[p_{k},\mathbf{q}_{k+1:n}]- \mathbf{L}_{k,1:k-1}\mathbf{D}_{k-1} \mathbf{U}_{1:k-1,k+1:n} \]" src="form_1.png"/>
@@ -879,14 +879,14 @@ template&lt;class ScaleArray , class CrsType , class PermType , class AugCcsType
 <p>It's worth noting that, conceptally, the formula above is nothing but a vector matrix operation. However, standard implementation won't give good performance (especially with consideration of cache performance), this is because <img class="formulaInl" alt="$\mathbf{L}$" src="form_2.png"/> is stored in column major whereas row major for <img class="formulaInl" alt="$\mathbf{U}$" src="form_0.png"/>. Therefore, the actual implementation is in the fashion that loops through <img class="formulaInl" alt="$\mathbf{U}$" src="form_0.png"/> in row major while keeping <img class="formulaInl" alt="$\mathbf{L}$" src="form_2.png"/> as much static as possible.</p>
 <p>Regarding computation cost, it takes <img class="formulaInl" alt="$\mathcal{O}(\cup_j \textrm{nnz}(\mathbf{U}_{j,:}))$" src="form_5.png"/>, where <img class="formulaInl" alt="$l_{kj}\neq 0$" src="form_6.png"/> for computing the vector matrix operation. </p>
 
-<p class="definition">Definition at line <a class="el" href="PivotCrout_8hpp_source.html#l00193">193</a> of file <a class="el" href="PivotCrout_8hpp_source.html">PivotCrout.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PivotCrout_8hpp_source.html#l00195">195</a> of file <a class="el" href="PivotCrout_8hpp_source.html">PivotCrout.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00826">hif::Crout::_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">hif::Crout::deferred_step()</a>.</p>
+<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00832">hif::Crout::_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">hif::Crout::deferred_step()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="classhif_1_1PivotCrout_a0501a26e462c5d62fee0e923a17f84d9_cgraph.png" border="0" usemap="#classhif_1_1PivotCrout_a0501a26e462c5d62fee0e923a17f84d9_cgraph" alt=""/></div>
-<map name="classhif_1_1PivotCrout_a0501a26e462c5d62fee0e923a17f84d9_cgraph" id="classhif_1_1PivotCrout_a0501a26e462c5d62fee0e923a17f84d9_cgraph">
+<div class="center"><img src="classhif_1_1PivotCrout_a82761654d2ad8824de83e7073aa64629_cgraph.png" border="0" usemap="#classhif_1_1PivotCrout_a82761654d2ad8824de83e7073aa64629_cgraph" alt=""/></div>
+<map name="classhif_1_1PivotCrout_a82761654d2ad8824de83e7073aa64629_cgraph" id="classhif_1_1PivotCrout_a82761654d2ad8824de83e7073aa64629_cgraph">
 <area shape="rect" id="node2" href="classhif_1_1Crout.html#a48b806171f0e3b1274f5e77d8fba7e73" title="get the deferred step " alt="" coords="236,5,399,32"/>
 </map>
 </div>
@@ -976,7 +976,7 @@ template&lt;class AugCsType , class PermType , class InvPermType , class DiagArr
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="PivotCrout_8hpp_source.html#l00452">452</a> of file <a class="el" href="PivotCrout_8hpp_source.html">PivotCrout.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PivotCrout_8hpp_source.html#l00454">454</a> of file <a class="el" href="PivotCrout_8hpp_source.html">PivotCrout.hpp</a>.</p>
 
 <p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00097">hif::Crout::deferred_step()</a>.</p>
 <div class="dynheader">
@@ -990,13 +990,13 @@ Here is the call graph for this function:</div>
 
 </div>
 </div>
-<a id="a7ccaa0d77f9bd8559d8192e156e13fc1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7ccaa0d77f9bd8559d8192e156e13fc1">&#9670;&nbsp;</a></span>update_compress()</h2>
+<a id="ae76c701d74e4e9d77f2acf23fcecb6cc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae76c701d74e4e9d77f2acf23fcecb6cc">&#9670;&nbsp;</a></span>update_compress()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class CsType , class PosArray &gt; </div>
+template&lt;class CsType , class IndPtrArray &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -1010,7 +1010,7 @@ template&lt;class CsType , class PosArray &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">PosArray &amp;&#160;</td>
+          <td class="paramtype">IndPtrArray &amp;&#160;</td>
           <td class="paramname"><em>start</em>&#160;</td>
         </tr>
         <tr>
@@ -1030,7 +1030,7 @@ template&lt;class CsType , class PosArray &gt; </div>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">CsType</td><td>either <a class="el" href="classhif_1_1AugCRS.html">AugCRS</a> or <a class="el" href="classhif_1_1AugCCS.html">AugCCS</a> </td></tr>
-    <tr><td class="paramname">PosArray</td><td>position array type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
+    <tr><td class="paramname">IndPtrArray</td><td>position array type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -1045,14 +1045,14 @@ template&lt;class CsType , class PosArray &gt; </div>
 <dd>
 All other routines should be called before this one, and deferred_step therein are conceptually the current <a class="el" href="classhif_1_1Crout.html" title="Crout update in deferred fashionThe idea of this class is to implement Crout kernels that wrap around...">Crout</a> step </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="PivotCrout_8hpp_source.html#l00360">360</a> of file <a class="el" href="PivotCrout_8hpp_source.html">PivotCrout.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PivotCrout_8hpp_source.html#l00362">362</a> of file <a class="el" href="PivotCrout_8hpp_source.html">PivotCrout.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00827">hif::Crout::_defers</a>, <a class="el" href="Crout_8hpp_source.html#l00826">hif::Crout::_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">hif::Crout::deferred_step()</a>.</p>
+<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00833">hif::Crout::_defers</a>, <a class="el" href="Crout_8hpp_source.html#l00832">hif::Crout::_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">hif::Crout::deferred_step()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="classhif_1_1PivotCrout_a7ccaa0d77f9bd8559d8192e156e13fc1_cgraph.png" border="0" usemap="#classhif_1_1PivotCrout_a7ccaa0d77f9bd8559d8192e156e13fc1_cgraph" alt=""/></div>
-<map name="classhif_1_1PivotCrout_a7ccaa0d77f9bd8559d8192e156e13fc1_cgraph" id="classhif_1_1PivotCrout_a7ccaa0d77f9bd8559d8192e156e13fc1_cgraph">
+<div class="center"><img src="classhif_1_1PivotCrout_ae76c701d74e4e9d77f2acf23fcecb6cc_cgraph.png" border="0" usemap="#classhif_1_1PivotCrout_ae76c701d74e4e9d77f2acf23fcecb6cc_cgraph" alt=""/></div>
+<map name="classhif_1_1PivotCrout_ae76c701d74e4e9d77f2acf23fcecb6cc_cgraph" id="classhif_1_1PivotCrout_ae76c701d74e4e9d77f2acf23fcecb6cc_cgraph">
 <area shape="rect" id="node2" href="classhif_1_1Crout.html#a48b806171f0e3b1274f5e77d8fba7e73" title="get the deferred step " alt="" coords="207,13,369,39"/>
 </map>
 </div>
@@ -1118,9 +1118,9 @@ template&lt;class AugCsType , class KappaArray &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="PivotCrout_8hpp_source.html#l00392">392</a> of file <a class="el" href="PivotCrout_8hpp_source.html">PivotCrout.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PivotCrout_8hpp_source.html#l00394">394</a> of file <a class="el" href="PivotCrout_8hpp_source.html">PivotCrout.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00826">hif::Crout::_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">hif::Crout::deferred_step()</a>.</p>
+<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00832">hif::Crout::_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">hif::Crout::deferred_step()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">

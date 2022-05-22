@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>HIFIR: hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt; Class Template Reference</title>
+<title>HIFIR: hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -32,7 +32,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">HIFIR
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -90,7 +90,7 @@ $(document).ready(function(){initNavTree('classhif_1_1eql_1_1Equilibrator.html',
 <a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="classhif_1_1eql_1_1Equilibrator-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__pre.html">Preprocessing</a></div></div>  </div>
+<div class="title">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt; Class Template Reference<div class="ingroups"><a class="el" href="group__pre.html">Preprocessing</a></div></div>  </div>
 </div><!--header-->
 <div class="contents">
 
@@ -101,73 +101,80 @@ $(document).ready(function(){initNavTree('classhif_1_1eql_1_1Equilibrator.html',
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:ae464ad457b15b4f893d8ce2eb79ceea5"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae464ad457b15b4f893d8ce2eb79ceea5">index_type</a> = _Integer</td></tr>
-<tr class="memdesc:ae464ad457b15b4f893d8ce2eb79ceea5"><td class="mdescLeft">&#160;</td><td class="mdescRight">index type  <a href="#ae464ad457b15b4f893d8ce2eb79ceea5">More...</a><br /></td></tr>
-<tr class="separator:ae464ad457b15b4f893d8ce2eb79ceea5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a12825ba38e2de97025ada695fc204ebf"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a12825ba38e2de97025ada695fc204ebf">value_type</a> = _Value</td></tr>
-<tr class="memdesc:a12825ba38e2de97025ada695fc204ebf"><td class="mdescLeft">&#160;</td><td class="mdescRight">scalar type  <a href="#a12825ba38e2de97025ada695fc204ebf">More...</a><br /></td></tr>
-<tr class="separator:a12825ba38e2de97025ada695fc204ebf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae914aa7d5e46f51faf17260c272d4e66"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae914aa7d5e46f51faf17260c272d4e66">real_type</a> = _Real</td></tr>
-<tr class="memdesc:ae914aa7d5e46f51faf17260c272d4e66"><td class="mdescLeft">&#160;</td><td class="mdescRight">real type  <a href="#ae914aa7d5e46f51faf17260c272d4e66">More...</a><br /></td></tr>
-<tr class="separator:ae914aa7d5e46f51faf17260c272d4e66"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a93554fa0eddf305aaa6b939e8a1dd781"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a93554fa0eddf305aaa6b939e8a1dd781">iarray_type</a> = _Container&lt; <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae464ad457b15b4f893d8ce2eb79ceea5">index_type</a> &gt;</td></tr>
-<tr class="memdesc:a93554fa0eddf305aaa6b939e8a1dd781"><td class="mdescLeft">&#160;</td><td class="mdescRight">index array  <a href="#a93554fa0eddf305aaa6b939e8a1dd781">More...</a><br /></td></tr>
-<tr class="separator:a93554fa0eddf305aaa6b939e8a1dd781"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5eb1b016ee150fd3381fb1b436bc0489"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a5eb1b016ee150fd3381fb1b436bc0489">array_type</a> = _Container&lt; <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae914aa7d5e46f51faf17260c272d4e66">real_type</a> &gt;</td></tr>
-<tr class="memdesc:a5eb1b016ee150fd3381fb1b436bc0489"><td class="mdescLeft">&#160;</td><td class="mdescRight">real array  <a href="#a5eb1b016ee150fd3381fb1b436bc0489">More...</a><br /></td></tr>
-<tr class="separator:a5eb1b016ee150fd3381fb1b436bc0489"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a37d1d22add0f4762582a610e6efb24cb"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a37d1d22add0f4762582a610e6efb24cb">varray_type</a> = _Container&lt; <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a12825ba38e2de97025ada695fc204ebf">value_type</a> &gt;</td></tr>
-<tr class="memdesc:a37d1d22add0f4762582a610e6efb24cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">value array  <a href="#a37d1d22add0f4762582a610e6efb24cb">More...</a><br /></td></tr>
-<tr class="separator:a37d1d22add0f4762582a610e6efb24cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84b6a0aa51d5dc5ee19e37391956b979"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a84b6a0aa51d5dc5ee19e37391956b979">indptr_type</a> = _Integer</td></tr>
+<tr class="memdesc:a84b6a0aa51d5dc5ee19e37391956b979"><td class="mdescLeft">&#160;</td><td class="mdescRight">index_pointer type  <a href="#a84b6a0aa51d5dc5ee19e37391956b979">More...</a><br /></td></tr>
+<tr class="separator:a84b6a0aa51d5dc5ee19e37391956b979"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af4a806a13a670b143d45d1589f609568"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#af4a806a13a670b143d45d1589f609568">index_type</a> = _Index</td></tr>
+<tr class="memdesc:af4a806a13a670b143d45d1589f609568"><td class="mdescLeft">&#160;</td><td class="mdescRight">index type  <a href="#af4a806a13a670b143d45d1589f609568">More...</a><br /></td></tr>
+<tr class="separator:af4a806a13a670b143d45d1589f609568"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1894f6edc1f5881a7d6fa4992c8b9224"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a1894f6edc1f5881a7d6fa4992c8b9224">value_type</a> = _Value</td></tr>
+<tr class="memdesc:a1894f6edc1f5881a7d6fa4992c8b9224"><td class="mdescLeft">&#160;</td><td class="mdescRight">scalar type  <a href="#a1894f6edc1f5881a7d6fa4992c8b9224">More...</a><br /></td></tr>
+<tr class="separator:a1894f6edc1f5881a7d6fa4992c8b9224"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ed1f0d251d43bcd105bfc592b815dfc"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a0ed1f0d251d43bcd105bfc592b815dfc">real_type</a> = _Real</td></tr>
+<tr class="memdesc:a0ed1f0d251d43bcd105bfc592b815dfc"><td class="mdescLeft">&#160;</td><td class="mdescRight">real type  <a href="#a0ed1f0d251d43bcd105bfc592b815dfc">More...</a><br /></td></tr>
+<tr class="separator:a0ed1f0d251d43bcd105bfc592b815dfc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a939247265dfded4cde7ea97f07e5fa6d"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a939247265dfded4cde7ea97f07e5fa6d">iparray_type</a> = _Container&lt; <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a84b6a0aa51d5dc5ee19e37391956b979">indptr_type</a> &gt;</td></tr>
+<tr class="memdesc:a939247265dfded4cde7ea97f07e5fa6d"><td class="mdescLeft">&#160;</td><td class="mdescRight">indptr array  <a href="#a939247265dfded4cde7ea97f07e5fa6d">More...</a><br /></td></tr>
+<tr class="separator:a939247265dfded4cde7ea97f07e5fa6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8798b264d7d4ace847d8f29adad4815c"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a8798b264d7d4ace847d8f29adad4815c">iarray_type</a> = _Container&lt; <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#af4a806a13a670b143d45d1589f609568">index_type</a> &gt;</td></tr>
+<tr class="memdesc:a8798b264d7d4ace847d8f29adad4815c"><td class="mdescLeft">&#160;</td><td class="mdescRight">index array  <a href="#a8798b264d7d4ace847d8f29adad4815c">More...</a><br /></td></tr>
+<tr class="separator:a8798b264d7d4ace847d8f29adad4815c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0adab14c01b2d887e8afa51e44f301c2"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a0adab14c01b2d887e8afa51e44f301c2">array_type</a> = _Container&lt; <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a0ed1f0d251d43bcd105bfc592b815dfc">real_type</a> &gt;</td></tr>
+<tr class="memdesc:a0adab14c01b2d887e8afa51e44f301c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">real array  <a href="#a0adab14c01b2d887e8afa51e44f301c2">More...</a><br /></td></tr>
+<tr class="separator:a0adab14c01b2d887e8afa51e44f301c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a82ef5f4e172790b3c0d185a8d1b9d95f"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a82ef5f4e172790b3c0d185a8d1b9d95f">varray_type</a> = _Container&lt; <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a1894f6edc1f5881a7d6fa4992c8b9224">value_type</a> &gt;</td></tr>
+<tr class="memdesc:a82ef5f4e172790b3c0d185a8d1b9d95f"><td class="mdescLeft">&#160;</td><td class="mdescRight">value array  <a href="#a82ef5f4e172790b3c0d185a8d1b9d95f">More...</a><br /></td></tr>
+<tr class="separator:a82ef5f4e172790b3c0d185a8d1b9d95f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:aefefad09c52c9068826c43625dd944cd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae464ad457b15b4f893d8ce2eb79ceea5">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#aefefad09c52c9068826c43625dd944cd">compute</a> (<a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae464ad457b15b4f893d8ce2eb79ceea5">index_type</a> n, <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae464ad457b15b4f893d8ce2eb79ceea5">index_type</a> nnz, const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae464ad457b15b4f893d8ce2eb79ceea5">index_type</a> *indptr, const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae464ad457b15b4f893d8ce2eb79ceea5">index_type</a> *indices, const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a12825ba38e2de97025ada695fc204ebf">value_type</a> *vals, <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae464ad457b15b4f893d8ce2eb79ceea5">index_type</a> *perm) const</td></tr>
-<tr class="memdesc:aefefad09c52c9068826c43625dd944cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">equilibrate a CRS/CCS matrix  <a href="#aefefad09c52c9068826c43625dd944cd">More...</a><br /></td></tr>
-<tr class="separator:aefefad09c52c9068826c43625dd944cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8db9ca3e83bcb7386370cbf532a43697"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae464ad457b15b4f893d8ce2eb79ceea5">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a8db9ca3e83bcb7386370cbf532a43697">compute</a> (const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a93554fa0eddf305aaa6b939e8a1dd781">iarray_type</a> &amp;indptr, const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a93554fa0eddf305aaa6b939e8a1dd781">iarray_type</a> &amp;indices, const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a37d1d22add0f4762582a610e6efb24cb">varray_type</a> &amp;vals, <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a93554fa0eddf305aaa6b939e8a1dd781">iarray_type</a> &amp;perm) const</td></tr>
-<tr class="memdesc:a8db9ca3e83bcb7386370cbf532a43697"><td class="mdescLeft">&#160;</td><td class="mdescRight">equilibrate a CRS/CCS matrix with container inputs  <a href="#a8db9ca3e83bcb7386370cbf532a43697">More...</a><br /></td></tr>
-<tr class="separator:a8db9ca3e83bcb7386370cbf532a43697"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a16e8d2e0fc1aacca6dbc1e58de50e36d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae914aa7d5e46f51faf17260c272d4e66">real_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a16e8d2e0fc1aacca6dbc1e58de50e36d">s</a> (const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae464ad457b15b4f893d8ce2eb79ceea5">index_type</a> i) const</td></tr>
-<tr class="memdesc:a16e8d2e0fc1aacca6dbc1e58de50e36d"><td class="mdescLeft">&#160;</td><td class="mdescRight">get the S scaling factor  <a href="#a16e8d2e0fc1aacca6dbc1e58de50e36d">More...</a><br /></td></tr>
-<tr class="separator:a16e8d2e0fc1aacca6dbc1e58de50e36d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af08a6144904ef9ff520b4646306df8bf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae914aa7d5e46f51faf17260c272d4e66">real_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#af08a6144904ef9ff520b4646306df8bf">t</a> (const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae464ad457b15b4f893d8ce2eb79ceea5">index_type</a> i) const</td></tr>
-<tr class="memdesc:af08a6144904ef9ff520b4646306df8bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">get the T scaling factor  <a href="#af08a6144904ef9ff520b4646306df8bf">More...</a><br /></td></tr>
-<tr class="separator:af08a6144904ef9ff520b4646306df8bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afa9ceb399b727187cedb7466da9bca09"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#afa9ceb399b727187cedb7466da9bca09">destroy</a> ()</td></tr>
-<tr class="memdesc:afa9ceb399b727187cedb7466da9bca09"><td class="mdescLeft">&#160;</td><td class="mdescRight">destroy internal workspace  <a href="#afa9ceb399b727187cedb7466da9bca09">More...</a><br /></td></tr>
-<tr class="separator:afa9ceb399b727187cedb7466da9bca09"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0a1bdf8e7738cdd5a13bc835dca552b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#af4a806a13a670b143d45d1589f609568">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae0a1bdf8e7738cdd5a13bc835dca552b">compute</a> (<a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a84b6a0aa51d5dc5ee19e37391956b979">indptr_type</a> n, <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a84b6a0aa51d5dc5ee19e37391956b979">indptr_type</a> nnz, const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a84b6a0aa51d5dc5ee19e37391956b979">indptr_type</a> *indptr, const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#af4a806a13a670b143d45d1589f609568">index_type</a> *indices, const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a1894f6edc1f5881a7d6fa4992c8b9224">value_type</a> *vals, <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#af4a806a13a670b143d45d1589f609568">index_type</a> *perm) const</td></tr>
+<tr class="memdesc:ae0a1bdf8e7738cdd5a13bc835dca552b"><td class="mdescLeft">&#160;</td><td class="mdescRight">equilibrate a CRS/CCS matrix  <a href="#ae0a1bdf8e7738cdd5a13bc835dca552b">More...</a><br /></td></tr>
+<tr class="separator:ae0a1bdf8e7738cdd5a13bc835dca552b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af9695f476a50ed17ff185c0c7a98e061"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#af4a806a13a670b143d45d1589f609568">index_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#af9695f476a50ed17ff185c0c7a98e061">compute</a> (const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a939247265dfded4cde7ea97f07e5fa6d">iparray_type</a> &amp;indptr, const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a8798b264d7d4ace847d8f29adad4815c">iarray_type</a> &amp;indices, const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a82ef5f4e172790b3c0d185a8d1b9d95f">varray_type</a> &amp;vals, <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a8798b264d7d4ace847d8f29adad4815c">iarray_type</a> &amp;perm) const</td></tr>
+<tr class="memdesc:af9695f476a50ed17ff185c0c7a98e061"><td class="mdescLeft">&#160;</td><td class="mdescRight">equilibrate a CRS/CCS matrix with container inputs  <a href="#af9695f476a50ed17ff185c0c7a98e061">More...</a><br /></td></tr>
+<tr class="separator:af9695f476a50ed17ff185c0c7a98e061"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af11003b2ce257ab31803fc2bfc3ebea0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a0ed1f0d251d43bcd105bfc592b815dfc">real_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#af11003b2ce257ab31803fc2bfc3ebea0">s</a> (const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#af4a806a13a670b143d45d1589f609568">index_type</a> i) const</td></tr>
+<tr class="memdesc:af11003b2ce257ab31803fc2bfc3ebea0"><td class="mdescLeft">&#160;</td><td class="mdescRight">get the S scaling factor  <a href="#af11003b2ce257ab31803fc2bfc3ebea0">More...</a><br /></td></tr>
+<tr class="separator:af11003b2ce257ab31803fc2bfc3ebea0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a56b51cae3aa5c76bc738ba4a1aeeb20f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a0ed1f0d251d43bcd105bfc592b815dfc">real_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a56b51cae3aa5c76bc738ba4a1aeeb20f">t</a> (const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#af4a806a13a670b143d45d1589f609568">index_type</a> i) const</td></tr>
+<tr class="memdesc:a56b51cae3aa5c76bc738ba4a1aeeb20f"><td class="mdescLeft">&#160;</td><td class="mdescRight">get the T scaling factor  <a href="#a56b51cae3aa5c76bc738ba4a1aeeb20f">More...</a><br /></td></tr>
+<tr class="separator:a56b51cae3aa5c76bc738ba4a1aeeb20f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac6bae1c3d67f64b9f9580f316c0ac14c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ac6bae1c3d67f64b9f9580f316c0ac14c">destroy</a> ()</td></tr>
+<tr class="memdesc:ac6bae1c3d67f64b9f9580f316c0ac14c"><td class="mdescLeft">&#160;</td><td class="mdescRight">destroy internal workspace  <a href="#ac6bae1c3d67f64b9f9580f316c0ac14c">More...</a><br /></td></tr>
+<tr class="separator:ac6bae1c3d67f64b9f9580f316c0ac14c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
-<tr class="memitem:af131aa7e3a89bcc32f917193d76d2b99"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#af131aa7e3a89bcc32f917193d76d2b99">_init</a> (const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae464ad457b15b4f893d8ce2eb79ceea5">index_type</a> n, const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae464ad457b15b4f893d8ce2eb79ceea5">index_type</a> nnz) const</td></tr>
-<tr class="memdesc:af131aa7e3a89bcc32f917193d76d2b99"><td class="mdescLeft">&#160;</td><td class="mdescRight">initialize work spaces  <a href="#af131aa7e3a89bcc32f917193d76d2b99">More...</a><br /></td></tr>
-<tr class="separator:af131aa7e3a89bcc32f917193d76d2b99"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abcf070224861b266b38e43238cbc574a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#abcf070224861b266b38e43238cbc574a">_init</a> (const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#af4a806a13a670b143d45d1589f609568">index_type</a> n, const std::size_t nnz) const</td></tr>
+<tr class="memdesc:abcf070224861b266b38e43238cbc574a"><td class="mdescLeft">&#160;</td><td class="mdescRight">initialize work spaces  <a href="#abcf070224861b266b38e43238cbc574a">More...</a><br /></td></tr>
+<tr class="separator:abcf070224861b266b38e43238cbc574a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
-<tr class="memitem:a608cd9bddf03236092505eb0bdae8e13"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a93554fa0eddf305aaa6b939e8a1dd781">iarray_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a608cd9bddf03236092505eb0bdae8e13">_iwork</a></td></tr>
-<tr class="memdesc:a608cd9bddf03236092505eb0bdae8e13"><td class="mdescLeft">&#160;</td><td class="mdescRight">integer work space  <a href="#a608cd9bddf03236092505eb0bdae8e13">More...</a><br /></td></tr>
-<tr class="separator:a608cd9bddf03236092505eb0bdae8e13"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad44e5e32439e6a802437f34d0999e721"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a5eb1b016ee150fd3381fb1b436bc0489">array_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ad44e5e32439e6a802437f34d0999e721">_work</a></td></tr>
-<tr class="memdesc:ad44e5e32439e6a802437f34d0999e721"><td class="mdescLeft">&#160;</td><td class="mdescRight">real work space  <a href="#ad44e5e32439e6a802437f34d0999e721">More...</a><br /></td></tr>
-<tr class="separator:ad44e5e32439e6a802437f34d0999e721"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7922849e7789cf306211ea44e5a05c64"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae914aa7d5e46f51faf17260c272d4e66">real_type</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a7922849e7789cf306211ea44e5a05c64">_s</a></td></tr>
-<tr class="memdesc:a7922849e7789cf306211ea44e5a05c64"><td class="mdescLeft">&#160;</td><td class="mdescRight">left scaling  <a href="#a7922849e7789cf306211ea44e5a05c64">More...</a><br /></td></tr>
-<tr class="separator:a7922849e7789cf306211ea44e5a05c64"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af8b4240c2588628f0725dbfede666648"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae914aa7d5e46f51faf17260c272d4e66">real_type</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#af8b4240c2588628f0725dbfede666648">_t</a></td></tr>
-<tr class="memdesc:af8b4240c2588628f0725dbfede666648"><td class="mdescLeft">&#160;</td><td class="mdescRight">right scaling  <a href="#af8b4240c2588628f0725dbfede666648">More...</a><br /></td></tr>
-<tr class="separator:af8b4240c2588628f0725dbfede666648"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa0843255bfb1e02dae78729f7ba83dd2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a939247265dfded4cde7ea97f07e5fa6d">iparray_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#aa0843255bfb1e02dae78729f7ba83dd2">_iwork</a></td></tr>
+<tr class="memdesc:aa0843255bfb1e02dae78729f7ba83dd2"><td class="mdescLeft">&#160;</td><td class="mdescRight">integer work space  <a href="#aa0843255bfb1e02dae78729f7ba83dd2">More...</a><br /></td></tr>
+<tr class="separator:aa0843255bfb1e02dae78729f7ba83dd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a505f626b76cbcd4061b120956a27e75c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a0adab14c01b2d887e8afa51e44f301c2">array_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a505f626b76cbcd4061b120956a27e75c">_work</a></td></tr>
+<tr class="memdesc:a505f626b76cbcd4061b120956a27e75c"><td class="mdescLeft">&#160;</td><td class="mdescRight">real work space  <a href="#a505f626b76cbcd4061b120956a27e75c">More...</a><br /></td></tr>
+<tr class="separator:a505f626b76cbcd4061b120956a27e75c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa03f73c0f477ea337920e488132b2426"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a0ed1f0d251d43bcd105bfc592b815dfc">real_type</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#aa03f73c0f477ea337920e488132b2426">_s</a></td></tr>
+<tr class="memdesc:aa03f73c0f477ea337920e488132b2426"><td class="mdescLeft">&#160;</td><td class="mdescRight">left scaling  <a href="#aa03f73c0f477ea337920e488132b2426">More...</a><br /></td></tr>
+<tr class="separator:aa03f73c0f477ea337920e488132b2426"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aedd6104a72ea35b0de2ac9733511c7f7"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a0ed1f0d251d43bcd105bfc592b815dfc">real_type</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#aedd6104a72ea35b0de2ac9733511c7f7">_t</a></td></tr>
+<tr class="memdesc:aedd6104a72ea35b0de2ac9733511c7f7"><td class="mdescLeft">&#160;</td><td class="mdescRight">right scaling  <a href="#aedd6104a72ea35b0de2ac9733511c7f7">More...</a><br /></td></tr>
+<tr class="separator:aedd6104a72ea35b0de2ac9733511c7f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><h3>template&lt;typename _Integer, typename _Value, typename _Real = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt;<br />
-class hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;</h3>
+<div class="textblock"><h3>template&lt;typename _Integer, typename _Index, typename _Value, typename _Real = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt;<br />
+class hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;</h3>
 
 <p>object for equilibrating a CRS/CCS matrix</p>
 <p>As to the container, besides it must be array, the following interfaces are needed: </p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
-    <tr><td class="paramname">_Integer</td><td>integer type </td></tr>
+    <tr><td class="paramname">_Integer</td><td>integer type for indptr </td></tr>
+    <tr><td class="paramname">_Index</td><td>index type </td></tr>
     <tr><td class="paramname">_Value</td><td>value type </td></tr>
     <tr><td class="paramname">_Real</td><td>real value type </td></tr>
     <tr><td class="paramname">_Container</td><td>container metatype, default is <em>std::vector</em> <ul>
@@ -178,7 +185,7 @@ class hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;</h3>
 </li>
 <li><em>resize</em>, (re)allocate memory</li>
 <li><em>size</em>, query the length of the container</li>
-<li><em>swap</em>, used for <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#afa9ceb399b727187cedb7466da9bca09">destroy</a> memory space</li>
+<li><em>swap</em>, used for <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ac6bae1c3d67f64b9f9580f316c0ac14c">destroy</a> memory space</li>
 <li><em>operator</em>[], only constant version is needed for accessing entries </li>
 </ul>
 </td></tr>
@@ -186,150 +193,190 @@ class hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;</h3>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00710">710</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00712">712</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
-<a id="a5eb1b016ee150fd3381fb1b436bc0489"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5eb1b016ee150fd3381fb1b436bc0489">&#9670;&nbsp;</a></span>array_type</h2>
+<a id="a0adab14c01b2d887e8afa51e44f301c2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0adab14c01b2d887e8afa51e44f301c2">&#9670;&nbsp;</a></span>array_type</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename _Integer , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
+template&lt;typename _Integer , typename _Index , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Value, _Real, _Container &gt;::<a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a5eb1b016ee150fd3381fb1b436bc0489">array_type</a> =  _Container&lt;<a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae914aa7d5e46f51faf17260c272d4e66">real_type</a>&gt;</td>
+          <td class="memname">using <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Index, _Value, _Real, _Container &gt;::<a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a0adab14c01b2d887e8afa51e44f301c2">array_type</a> =  _Container&lt;<a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a0ed1f0d251d43bcd105bfc592b815dfc">real_type</a>&gt;</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>real array </p>
 
-<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00716">716</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00720">720</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
 
 </div>
 </div>
-<a id="a93554fa0eddf305aaa6b939e8a1dd781"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a93554fa0eddf305aaa6b939e8a1dd781">&#9670;&nbsp;</a></span>iarray_type</h2>
+<a id="a8798b264d7d4ace847d8f29adad4815c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8798b264d7d4ace847d8f29adad4815c">&#9670;&nbsp;</a></span>iarray_type</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename _Integer , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
+template&lt;typename _Integer , typename _Index , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Value, _Real, _Container &gt;::<a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a93554fa0eddf305aaa6b939e8a1dd781">iarray_type</a> =  _Container&lt;<a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae464ad457b15b4f893d8ce2eb79ceea5">index_type</a>&gt;</td>
+          <td class="memname">using <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Index, _Value, _Real, _Container &gt;::<a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a8798b264d7d4ace847d8f29adad4815c">iarray_type</a> =  _Container&lt;<a class="el" href="classhif_1_1eql_1_1Equilibrator.html#af4a806a13a670b143d45d1589f609568">index_type</a>&gt;</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>index array </p>
 
-<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00715">715</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00719">719</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
 
 </div>
 </div>
-<a id="ae464ad457b15b4f893d8ce2eb79ceea5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae464ad457b15b4f893d8ce2eb79ceea5">&#9670;&nbsp;</a></span>index_type</h2>
+<a id="af4a806a13a670b143d45d1589f609568"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af4a806a13a670b143d45d1589f609568">&#9670;&nbsp;</a></span>index_type</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename _Integer , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
+template&lt;typename _Integer , typename _Index , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Value, _Real, _Container &gt;::<a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae464ad457b15b4f893d8ce2eb79ceea5">index_type</a> =  _Integer</td>
+          <td class="memname">using <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Index, _Value, _Real, _Container &gt;::<a class="el" href="classhif_1_1eql_1_1Equilibrator.html#af4a806a13a670b143d45d1589f609568">index_type</a> =  _Index</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>index type </p>
 
-<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00712">712</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00715">715</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
 
 </div>
 </div>
-<a id="ae914aa7d5e46f51faf17260c272d4e66"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae914aa7d5e46f51faf17260c272d4e66">&#9670;&nbsp;</a></span>real_type</h2>
+<a id="a84b6a0aa51d5dc5ee19e37391956b979"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a84b6a0aa51d5dc5ee19e37391956b979">&#9670;&nbsp;</a></span>indptr_type</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename _Integer , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
+template&lt;typename _Integer , typename _Index , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Value, _Real, _Container &gt;::<a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae914aa7d5e46f51faf17260c272d4e66">real_type</a> =  _Real</td>
+          <td class="memname">using <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Index, _Value, _Real, _Container &gt;::<a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a84b6a0aa51d5dc5ee19e37391956b979">indptr_type</a> =  _Integer</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>index_pointer type </p>
+
+<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00714">714</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
+
+</div>
+</div>
+<a id="a939247265dfded4cde7ea97f07e5fa6d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a939247265dfded4cde7ea97f07e5fa6d">&#9670;&nbsp;</a></span>iparray_type</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename _Integer , typename _Index , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Index, _Value, _Real, _Container &gt;::<a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a939247265dfded4cde7ea97f07e5fa6d">iparray_type</a> =  _Container&lt;<a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a84b6a0aa51d5dc5ee19e37391956b979">indptr_type</a>&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>indptr array </p>
+
+<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00718">718</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
+
+</div>
+</div>
+<a id="a0ed1f0d251d43bcd105bfc592b815dfc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0ed1f0d251d43bcd105bfc592b815dfc">&#9670;&nbsp;</a></span>real_type</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename _Integer , typename _Index , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Index, _Value, _Real, _Container &gt;::<a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a0ed1f0d251d43bcd105bfc592b815dfc">real_type</a> =  _Real</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>real type </p>
 
-<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00714">714</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00717">717</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
 
 </div>
 </div>
-<a id="a12825ba38e2de97025ada695fc204ebf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a12825ba38e2de97025ada695fc204ebf">&#9670;&nbsp;</a></span>value_type</h2>
+<a id="a1894f6edc1f5881a7d6fa4992c8b9224"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1894f6edc1f5881a7d6fa4992c8b9224">&#9670;&nbsp;</a></span>value_type</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename _Integer , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
+template&lt;typename _Integer , typename _Index , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Value, _Real, _Container &gt;::<a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a12825ba38e2de97025ada695fc204ebf">value_type</a> =  _Value</td>
+          <td class="memname">using <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Index, _Value, _Real, _Container &gt;::<a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a1894f6edc1f5881a7d6fa4992c8b9224">value_type</a> =  _Value</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>scalar type </p>
 
-<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00713">713</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00716">716</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
 
 </div>
 </div>
-<a id="a37d1d22add0f4762582a610e6efb24cb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a37d1d22add0f4762582a610e6efb24cb">&#9670;&nbsp;</a></span>varray_type</h2>
+<a id="a82ef5f4e172790b3c0d185a8d1b9d95f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a82ef5f4e172790b3c0d185a8d1b9d95f">&#9670;&nbsp;</a></span>varray_type</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename _Integer , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
+template&lt;typename _Integer , typename _Index , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Value, _Real, _Container &gt;::<a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a37d1d22add0f4762582a610e6efb24cb">varray_type</a> =  _Container&lt;<a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a12825ba38e2de97025ada695fc204ebf">value_type</a>&gt;</td>
+          <td class="memname">using <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Index, _Value, _Real, _Container &gt;::<a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a82ef5f4e172790b3c0d185a8d1b9d95f">varray_type</a> =  _Container&lt;<a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a1894f6edc1f5881a7d6fa4992c8b9224">value_type</a>&gt;</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>value array </p>
 
-<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00717">717</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00721">721</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="af131aa7e3a89bcc32f917193d76d2b99"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af131aa7e3a89bcc32f917193d76d2b99">&#9670;&nbsp;</a></span>_init()</h2>
+<a id="abcf070224861b266b38e43238cbc574a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abcf070224861b266b38e43238cbc574a">&#9670;&nbsp;</a></span>_init()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename _Integer , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
+template&lt;typename _Integer , typename _Index , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Value, _Real, _Container &gt;::_init </td>
+          <td class="memname">void <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Index, _Value, _Real, _Container &gt;::_init </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae464ad457b15b4f893d8ce2eb79ceea5">index_type</a>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#af4a806a13a670b143d45d1589f609568">index_type</a>&#160;</td>
           <td class="paramname"><em>n</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae464ad457b15b4f893d8ce2eb79ceea5">index_type</a>&#160;</td>
+          <td class="paramtype">const std::size_t&#160;</td>
           <td class="paramname"><em>nnz</em>&#160;</td>
         </tr>
         <tr>
@@ -354,67 +401,67 @@ template&lt;typename _Integer , typename _Value , typename _Real  = _Value, temp
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00786">786</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00790">790</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="equilibrate_8hpp_source.html#l00777">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;::_iwork</a>, <a class="el" href="equilibrate_8hpp_source.html#l00779">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;::_s</a>, <a class="el" href="equilibrate_8hpp_source.html#l00780">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;::_t</a>, and <a class="el" href="equilibrate_8hpp_source.html#l00778">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;::_work</a>.</p>
+<p class="reference">References <a class="el" href="equilibrate_8hpp_source.html#l00781">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;::_iwork</a>, <a class="el" href="equilibrate_8hpp_source.html#l00783">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;::_s</a>, <a class="el" href="equilibrate_8hpp_source.html#l00784">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;::_t</a>, and <a class="el" href="equilibrate_8hpp_source.html#l00782">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;::_work</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="equilibrate_8hpp_source.html#l00727">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;::compute()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="equilibrate_8hpp_source.html#l00731">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;::compute()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="classhif_1_1eql_1_1Equilibrator_af131aa7e3a89bcc32f917193d76d2b99_icgraph.png" border="0" usemap="#classhif_1_1eql_1_1Equilibrator_af131aa7e3a89bcc32f917193d76d2b99_icgraph" alt=""/></div>
-<map name="classhif_1_1eql_1_1Equilibrator_af131aa7e3a89bcc32f917193d76d2b99_icgraph" id="classhif_1_1eql_1_1Equilibrator_af131aa7e3a89bcc32f917193d76d2b99_icgraph">
-<area shape="rect" id="node2" href="classhif_1_1eql_1_1Equilibrator.html#aefefad09c52c9068826c43625dd944cd" title="equilibrate a CRS/CCS matrix " alt="" coords="188,5,323,47"/>
+<div class="center"><img src="classhif_1_1eql_1_1Equilibrator_abcf070224861b266b38e43238cbc574a_icgraph.png" border="0" usemap="#classhif_1_1eql_1_1Equilibrator_abcf070224861b266b38e43238cbc574a_icgraph" alt=""/></div>
+<map name="classhif_1_1eql_1_1Equilibrator_abcf070224861b266b38e43238cbc574a_icgraph" id="classhif_1_1eql_1_1Equilibrator_abcf070224861b266b38e43238cbc574a_icgraph">
+<area shape="rect" id="node2" href="classhif_1_1eql_1_1Equilibrator.html#ae0a1bdf8e7738cdd5a13bc835dca552b" title="equilibrate a CRS/CCS matrix " alt="" coords="188,5,323,47"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="aefefad09c52c9068826c43625dd944cd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aefefad09c52c9068826c43625dd944cd">&#9670;&nbsp;</a></span>compute() <span class="overload">[1/2]</span></h2>
+<a id="ae0a1bdf8e7738cdd5a13bc835dca552b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae0a1bdf8e7738cdd5a13bc835dca552b">&#9670;&nbsp;</a></span>compute() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename _Integer , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
+template&lt;typename _Integer , typename _Index , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae464ad457b15b4f893d8ce2eb79ceea5">index_type</a> <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Value, _Real, _Container &gt;::compute </td>
+          <td class="memname"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#af4a806a13a670b143d45d1589f609568">index_type</a> <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Index, _Value, _Real, _Container &gt;::compute </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae464ad457b15b4f893d8ce2eb79ceea5">index_type</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a84b6a0aa51d5dc5ee19e37391956b979">indptr_type</a>&#160;</td>
           <td class="paramname"><em>n</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae464ad457b15b4f893d8ce2eb79ceea5">index_type</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a84b6a0aa51d5dc5ee19e37391956b979">indptr_type</a>&#160;</td>
           <td class="paramname"><em>nnz</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae464ad457b15b4f893d8ce2eb79ceea5">index_type</a> *&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a84b6a0aa51d5dc5ee19e37391956b979">indptr_type</a> *&#160;</td>
           <td class="paramname"><em>indptr</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae464ad457b15b4f893d8ce2eb79ceea5">index_type</a> *&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#af4a806a13a670b143d45d1589f609568">index_type</a> *&#160;</td>
           <td class="paramname"><em>indices</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a12825ba38e2de97025ada695fc204ebf">value_type</a> *&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a1894f6edc1f5881a7d6fa4992c8b9224">value_type</a> *&#160;</td>
           <td class="paramname"><em>vals</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae464ad457b15b4f893d8ce2eb79ceea5">index_type</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#af4a806a13a670b143d45d1589f609568">index_type</a> *&#160;</td>
           <td class="paramname"><em>perm</em>&#160;</td>
         </tr>
         <tr>
@@ -444,53 +491,53 @@ template&lt;typename _Integer , typename _Value , typename _Real  = _Value, temp
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>information </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00727">727</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00731">731</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="equilibrate_8hpp_source.html#l00786">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;::_init()</a>, <a class="el" href="equilibrate_8hpp_source.html#l00777">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;::_iwork</a>, and <a class="el" href="equilibrate_8hpp_source.html#l00778">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;::_work</a>.</p>
+<p class="reference">References <a class="el" href="equilibrate_8hpp_source.html#l00790">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;::_init()</a>, <a class="el" href="equilibrate_8hpp_source.html#l00781">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;::_iwork</a>, and <a class="el" href="equilibrate_8hpp_source.html#l00782">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;::_work</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="classhif_1_1eql_1_1Equilibrator_aefefad09c52c9068826c43625dd944cd_cgraph.png" border="0" usemap="#classhif_1_1eql_1_1Equilibrator_aefefad09c52c9068826c43625dd944cd_cgraph" alt=""/></div>
-<map name="classhif_1_1eql_1_1Equilibrator_aefefad09c52c9068826c43625dd944cd_cgraph" id="classhif_1_1eql_1_1Equilibrator_aefefad09c52c9068826c43625dd944cd_cgraph">
-<area shape="rect" id="node2" href="classhif_1_1eql_1_1Equilibrator.html#af131aa7e3a89bcc32f917193d76d2b99" title="initialize work spaces " alt="" coords="188,5,323,47"/>
+<div class="center"><img src="classhif_1_1eql_1_1Equilibrator_ae0a1bdf8e7738cdd5a13bc835dca552b_cgraph.png" border="0" usemap="#classhif_1_1eql_1_1Equilibrator_ae0a1bdf8e7738cdd5a13bc835dca552b_cgraph" alt=""/></div>
+<map name="classhif_1_1eql_1_1Equilibrator_ae0a1bdf8e7738cdd5a13bc835dca552b_cgraph" id="classhif_1_1eql_1_1Equilibrator_ae0a1bdf8e7738cdd5a13bc835dca552b_cgraph">
+<area shape="rect" id="node2" href="classhif_1_1eql_1_1Equilibrator.html#abcf070224861b266b38e43238cbc574a" title="initialize work spaces " alt="" coords="188,5,323,47"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="a8db9ca3e83bcb7386370cbf532a43697"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8db9ca3e83bcb7386370cbf532a43697">&#9670;&nbsp;</a></span>compute() <span class="overload">[2/2]</span></h2>
+<a id="af9695f476a50ed17ff185c0c7a98e061"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af9695f476a50ed17ff185c0c7a98e061">&#9670;&nbsp;</a></span>compute() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename _Integer , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
+template&lt;typename _Integer , typename _Index , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae464ad457b15b4f893d8ce2eb79ceea5">index_type</a> <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Value, _Real, _Container &gt;::compute </td>
+          <td class="memname"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#af4a806a13a670b143d45d1589f609568">index_type</a> <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Index, _Value, _Real, _Container &gt;::compute </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a93554fa0eddf305aaa6b939e8a1dd781">iarray_type</a> &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a939247265dfded4cde7ea97f07e5fa6d">iparray_type</a> &amp;&#160;</td>
           <td class="paramname"><em>indptr</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a93554fa0eddf305aaa6b939e8a1dd781">iarray_type</a> &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a8798b264d7d4ace847d8f29adad4815c">iarray_type</a> &amp;&#160;</td>
           <td class="paramname"><em>indices</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a37d1d22add0f4762582a610e6efb24cb">varray_type</a> &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a82ef5f4e172790b3c0d185a8d1b9d95f">varray_type</a> &amp;&#160;</td>
           <td class="paramname"><em>vals</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a93554fa0eddf305aaa6b939e8a1dd781">iarray_type</a> &amp;&#160;</td>
+          <td class="paramtype"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a8798b264d7d4ace847d8f29adad4815c">iarray_type</a> &amp;&#160;</td>
           <td class="paramname"><em>perm</em>&#160;</td>
         </tr>
         <tr>
@@ -518,23 +565,23 @@ template&lt;typename _Integer , typename _Value , typename _Real  = _Value, temp
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>information </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00751">751</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00755">755</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
 
 </div>
 </div>
-<a id="afa9ceb399b727187cedb7466da9bca09"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afa9ceb399b727187cedb7466da9bca09">&#9670;&nbsp;</a></span>destroy()</h2>
+<a id="ac6bae1c3d67f64b9f9580f316c0ac14c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac6bae1c3d67f64b9f9580f316c0ac14c">&#9670;&nbsp;</a></span>destroy()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename _Integer , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
+template&lt;typename _Integer , typename _Index , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Value, _Real, _Container &gt;::destroy </td>
+          <td class="memname">void <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Index, _Value, _Real, _Container &gt;::destroy </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -549,27 +596,27 @@ template&lt;typename _Integer , typename _Value , typename _Real  = _Value, temp
 
 <p>destroy internal workspace </p>
 
-<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00770">770</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00774">774</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="equilibrate_8hpp_source.html#l00777">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;::_iwork</a>, <a class="el" href="equilibrate_8hpp_source.html#l00779">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;::_s</a>, <a class="el" href="equilibrate_8hpp_source.html#l00780">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;::_t</a>, and <a class="el" href="equilibrate_8hpp_source.html#l00778">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;::_work</a>.</p>
+<p class="reference">References <a class="el" href="equilibrate_8hpp_source.html#l00781">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;::_iwork</a>, <a class="el" href="equilibrate_8hpp_source.html#l00783">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;::_s</a>, <a class="el" href="equilibrate_8hpp_source.html#l00784">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;::_t</a>, and <a class="el" href="equilibrate_8hpp_source.html#l00782">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;::_work</a>.</p>
 
 </div>
 </div>
-<a id="a16e8d2e0fc1aacca6dbc1e58de50e36d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a16e8d2e0fc1aacca6dbc1e58de50e36d">&#9670;&nbsp;</a></span>s()</h2>
+<a id="af11003b2ce257ab31803fc2bfc3ebea0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af11003b2ce257ab31803fc2bfc3ebea0">&#9670;&nbsp;</a></span>s()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename _Integer , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
+template&lt;typename _Integer , typename _Index , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae914aa7d5e46f51faf17260c272d4e66">real_type</a> <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Value, _Real, _Container &gt;::s </td>
+          <td class="memname"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a0ed1f0d251d43bcd105bfc592b815dfc">real_type</a> <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Index, _Value, _Real, _Container &gt;::s </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae464ad457b15b4f893d8ce2eb79ceea5">index_type</a>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#af4a806a13a670b143d45d1589f609568">index_type</a>&#160;</td>
           <td class="paramname"><em>i</em></td><td>)</td>
           <td> const</td>
         </tr>
@@ -583,27 +630,27 @@ template&lt;typename _Integer , typename _Value , typename _Real  = _Value, temp
 
 <p>get the S scaling factor </p>
 
-<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00764">764</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00768">768</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="equilibrate_8hpp_source.html#l00779">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;::_s</a>.</p>
+<p class="reference">References <a class="el" href="equilibrate_8hpp_source.html#l00783">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;::_s</a>.</p>
 
 </div>
 </div>
-<a id="af08a6144904ef9ff520b4646306df8bf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af08a6144904ef9ff520b4646306df8bf">&#9670;&nbsp;</a></span>t()</h2>
+<a id="a56b51cae3aa5c76bc738ba4a1aeeb20f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a56b51cae3aa5c76bc738ba4a1aeeb20f">&#9670;&nbsp;</a></span>t()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename _Integer , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
+template&lt;typename _Integer , typename _Index , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae914aa7d5e46f51faf17260c272d4e66">real_type</a> <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Value, _Real, _Container &gt;::t </td>
+          <td class="memname"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a0ed1f0d251d43bcd105bfc592b815dfc">real_type</a> <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Index, _Value, _Real, _Container &gt;::t </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae464ad457b15b4f893d8ce2eb79ceea5">index_type</a>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#af4a806a13a670b143d45d1589f609568">index_type</a>&#160;</td>
           <td class="paramname"><em>i</em></td><td>)</td>
           <td> const</td>
         </tr>
@@ -617,26 +664,26 @@ template&lt;typename _Integer , typename _Value , typename _Real  = _Value, temp
 
 <p>get the T scaling factor </p>
 
-<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00767">767</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00771">771</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="equilibrate_8hpp_source.html#l00780">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;::_t</a>.</p>
+<p class="reference">References <a class="el" href="equilibrate_8hpp_source.html#l00784">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;::_t</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
-<a id="a608cd9bddf03236092505eb0bdae8e13"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a608cd9bddf03236092505eb0bdae8e13">&#9670;&nbsp;</a></span>_iwork</h2>
+<a id="aa0843255bfb1e02dae78729f7ba83dd2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa0843255bfb1e02dae78729f7ba83dd2">&#9670;&nbsp;</a></span>_iwork</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename _Integer , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
+template&lt;typename _Integer , typename _Index , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a93554fa0eddf305aaa6b939e8a1dd781">iarray_type</a> <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Value, _Real, _Container &gt;::_iwork</td>
+          <td class="memname"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a939247265dfded4cde7ea97f07e5fa6d">iparray_type</a> <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Index, _Value, _Real, _Container &gt;::_iwork</td>
         </tr>
       </table>
   </td>
@@ -648,25 +695,25 @@ template&lt;typename _Integer , typename _Value , typename _Real  = _Value, temp
 
 <p>integer work space </p>
 
-<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00777">777</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00781">781</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="equilibrate_8hpp_source.html#l00786">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;::_init()</a>, <a class="el" href="equilibrate_8hpp_source.html#l00727">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;::compute()</a>, and <a class="el" href="equilibrate_8hpp_source.html#l00770">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;::destroy()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="equilibrate_8hpp_source.html#l00790">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;::_init()</a>, <a class="el" href="equilibrate_8hpp_source.html#l00731">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;::compute()</a>, and <a class="el" href="equilibrate_8hpp_source.html#l00774">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;::destroy()</a>.</p>
 
 </div>
 </div>
-<a id="a7922849e7789cf306211ea44e5a05c64"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7922849e7789cf306211ea44e5a05c64">&#9670;&nbsp;</a></span>_s</h2>
+<a id="aa03f73c0f477ea337920e488132b2426"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa03f73c0f477ea337920e488132b2426">&#9670;&nbsp;</a></span>_s</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename _Integer , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
+template&lt;typename _Integer , typename _Index , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae914aa7d5e46f51faf17260c272d4e66">real_type</a>* <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Value, _Real, _Container &gt;::_s</td>
+          <td class="memname">const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a0ed1f0d251d43bcd105bfc592b815dfc">real_type</a>* <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Index, _Value, _Real, _Container &gt;::_s</td>
         </tr>
       </table>
   </td>
@@ -678,25 +725,25 @@ template&lt;typename _Integer , typename _Value , typename _Real  = _Value, temp
 
 <p>left scaling </p>
 
-<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00779">779</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00783">783</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="equilibrate_8hpp_source.html#l00786">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;::_init()</a>, <a class="el" href="equilibrate_8hpp_source.html#l00770">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;::destroy()</a>, and <a class="el" href="equilibrate_8hpp_source.html#l00764">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;::s()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="equilibrate_8hpp_source.html#l00790">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;::_init()</a>, <a class="el" href="equilibrate_8hpp_source.html#l00774">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;::destroy()</a>, and <a class="el" href="equilibrate_8hpp_source.html#l00768">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;::s()</a>.</p>
 
 </div>
 </div>
-<a id="af8b4240c2588628f0725dbfede666648"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af8b4240c2588628f0725dbfede666648">&#9670;&nbsp;</a></span>_t</h2>
+<a id="aedd6104a72ea35b0de2ac9733511c7f7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aedd6104a72ea35b0de2ac9733511c7f7">&#9670;&nbsp;</a></span>_t</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename _Integer , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
+template&lt;typename _Integer , typename _Index , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae914aa7d5e46f51faf17260c272d4e66">real_type</a>* <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Value, _Real, _Container &gt;::_t</td>
+          <td class="memname">const <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a0ed1f0d251d43bcd105bfc592b815dfc">real_type</a>* <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Index, _Value, _Real, _Container &gt;::_t</td>
         </tr>
       </table>
   </td>
@@ -708,25 +755,25 @@ template&lt;typename _Integer , typename _Value , typename _Real  = _Value, temp
 
 <p>right scaling </p>
 
-<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00780">780</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00784">784</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="equilibrate_8hpp_source.html#l00786">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;::_init()</a>, <a class="el" href="equilibrate_8hpp_source.html#l00770">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;::destroy()</a>, and <a class="el" href="equilibrate_8hpp_source.html#l00767">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;::t()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="equilibrate_8hpp_source.html#l00790">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;::_init()</a>, <a class="el" href="equilibrate_8hpp_source.html#l00774">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;::destroy()</a>, and <a class="el" href="equilibrate_8hpp_source.html#l00771">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;::t()</a>.</p>
 
 </div>
 </div>
-<a id="ad44e5e32439e6a802437f34d0999e721"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad44e5e32439e6a802437f34d0999e721">&#9670;&nbsp;</a></span>_work</h2>
+<a id="a505f626b76cbcd4061b120956a27e75c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a505f626b76cbcd4061b120956a27e75c">&#9670;&nbsp;</a></span>_work</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename _Integer , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
+template&lt;typename _Integer , typename _Index , typename _Value , typename _Real  = _Value, template&lt; class &gt; class _Container = internal::std_vector&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a5eb1b016ee150fd3381fb1b436bc0489">array_type</a> <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Value, _Real, _Container &gt;::_work</td>
+          <td class="memname"><a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a0adab14c01b2d887e8afa51e44f301c2">array_type</a> <a class="el" href="classhif_1_1eql_1_1Equilibrator.html">hif::eql::Equilibrator</a>&lt; _Integer, _Index, _Value, _Real, _Container &gt;::_work</td>
         </tr>
       </table>
   </td>
@@ -738,9 +785,9 @@ template&lt;typename _Integer , typename _Value , typename _Real  = _Value, temp
 
 <p>real work space </p>
 
-<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00778">778</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="equilibrate_8hpp_source.html#l00782">782</a> of file <a class="el" href="equilibrate_8hpp_source.html">equilibrate.hpp</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="equilibrate_8hpp_source.html#l00786">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;::_init()</a>, <a class="el" href="equilibrate_8hpp_source.html#l00727">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;::compute()</a>, and <a class="el" href="equilibrate_8hpp_source.html#l00770">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;::destroy()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="equilibrate_8hpp_source.html#l00790">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;::_init()</a>, <a class="el" href="equilibrate_8hpp_source.html#l00731">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;::compute()</a>, and <a class="el" href="equilibrate_8hpp_source.html#l00774">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;::destroy()</a>.</p>
 
 </div>
 </div>

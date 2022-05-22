@@ -32,7 +32,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">HIFIR
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -101,52 +101,14 @@ Collaboration diagram for File I/O:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ga1caaca05c2c4b8f14478bff2c80bb67f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__io.html#ga1caaca05c2c4b8f14478bff2c80bb67f">hif::internal::is_little_endian</a> ()</td></tr>
-<tr class="memdesc:ga1caaca05c2c4b8f14478bff2c80bb67f"><td class="mdescLeft">&#160;</td><td class="mdescRight">check if the os is litter endian  <a href="group__io.html#ga1caaca05c2c4b8f14478bff2c80bb67f">More...</a><br /></td></tr>
-<tr class="separator:ga1caaca05c2c4b8f14478bff2c80bb67f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga4dfe3067d6fed134a6f1bd1061d65708"><td class="memItemLeft" align="right" valign="top">constexpr std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__io.html#ga4dfe3067d6fed134a6f1bd1061d65708">hif::internal::get_word_size</a> ()</td></tr>
-<tr class="memdesc:ga4dfe3067d6fed134a6f1bd1061d65708"><td class="mdescLeft">&#160;</td><td class="mdescRight">check the word size  <a href="group__io.html#ga4dfe3067d6fed134a6f1bd1061d65708">More...</a><br /></td></tr>
-<tr class="separator:ga4dfe3067d6fed134a6f1bd1061d65708"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga189b04f700d1d1232ba2342fedcda595"><td class="memTemplParams" colspan="2">template&lt;class InStream &gt; </td></tr>
-<tr class="memitem:ga189b04f700d1d1232ba2342fedcda595"><td class="memTemplItemLeft" align="right" valign="top">std::tuple&lt; bool, std::size_t, std::size_t, bool, bool, bool, bool &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__io.html#ga189b04f700d1d1232ba2342fedcda595">hif::internal::read_general_info</a> (InStream &amp;i_str)</td></tr>
-<tr class="memdesc:ga189b04f700d1d1232ba2342fedcda595"><td class="mdescLeft">&#160;</td><td class="mdescRight">read the general information  <a href="group__io.html#ga189b04f700d1d1232ba2342fedcda595">More...</a><br /></td></tr>
-<tr class="separator:ga189b04f700d1d1232ba2342fedcda595"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga371b7839983aebe182ad641c70a3d4de"><td class="memTemplParams" colspan="2">template&lt;class InStream &gt; </td></tr>
-<tr class="memitem:ga371b7839983aebe182ad641c70a3d4de"><td class="memTemplItemLeft" align="right" valign="top">std::tuple&lt; std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__io.html#ga371b7839983aebe182ad641c70a3d4de">hif::internal::read_matrix_sizes</a> (InStream &amp;i_str)</td></tr>
-<tr class="memdesc:ga371b7839983aebe182ad641c70a3d4de"><td class="mdescLeft">&#160;</td><td class="mdescRight">read the matrix size information  <a href="group__io.html#ga371b7839983aebe182ad641c70a3d4de">More...</a><br /></td></tr>
-<tr class="separator:ga371b7839983aebe182ad641c70a3d4de"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaf013cbf9a3c60a750a817eb3c95da540"><td class="memTemplParams" colspan="2">template&lt;class InStream &gt; </td></tr>
-<tr class="memitem:gaf013cbf9a3c60a750a817eb3c95da540"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__io.html#gaf013cbf9a3c60a750a817eb3c95da540">hif::internal::read_matrix_data_attrs</a> (InStream &amp;i_str, const std::size_t int_size, const std::size_t real_size, const std::uint64_t start_size, const std::uint64_t nnz, char *ind_start, char *indices, char *vals)</td></tr>
-<tr class="memdesc:gaf013cbf9a3c60a750a817eb3c95da540"><td class="mdescLeft">&#160;</td><td class="mdescRight">read matrix data attributes  <a href="group__io.html#gaf013cbf9a3c60a750a817eb3c95da540">More...</a><br /></td></tr>
-<tr class="separator:gaf013cbf9a3c60a750a817eb3c95da540"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gac3ddf1dfb884fa78fdddb422eb0609f3"><td class="memTemplParams" colspan="2">template&lt;class OutStream &gt; </td></tr>
-<tr class="memitem:gac3ddf1dfb884fa78fdddb422eb0609f3"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__io.html#gac3ddf1dfb884fa78fdddb422eb0609f3">hif::internal::write_general_info</a> (OutStream &amp;o_str, const std::size_t int_size, const bool is_row, const bool is_c, const bool is_double, const bool is_real)</td></tr>
-<tr class="memdesc:gac3ddf1dfb884fa78fdddb422eb0609f3"><td class="mdescLeft">&#160;</td><td class="mdescRight">write general information  <a href="group__io.html#gac3ddf1dfb884fa78fdddb422eb0609f3">More...</a><br /></td></tr>
-<tr class="separator:gac3ddf1dfb884fa78fdddb422eb0609f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga04c4449bfe44bfba72c9208110c6b32d"><td class="memTemplParams" colspan="2">template&lt;class OutStream &gt; </td></tr>
-<tr class="memitem:ga04c4449bfe44bfba72c9208110c6b32d"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__io.html#ga04c4449bfe44bfba72c9208110c6b32d">hif::internal::write_matrix_sizes</a> (OutStream &amp;o_str, const std::uint64_t row, const std::uint64_t col, const std::uint64_t nnz, const std::uint64_t m)</td></tr>
-<tr class="memdesc:ga04c4449bfe44bfba72c9208110c6b32d"><td class="mdescLeft">&#160;</td><td class="mdescRight">write matrix size information  <a href="group__io.html#ga04c4449bfe44bfba72c9208110c6b32d">More...</a><br /></td></tr>
-<tr class="separator:ga04c4449bfe44bfba72c9208110c6b32d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gac6e3cc364db7eb3cbcd27668719d46ae"><td class="memTemplParams" colspan="2">template&lt;class OutStream &gt; </td></tr>
-<tr class="memitem:gac6e3cc364db7eb3cbcd27668719d46ae"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__io.html#gac6e3cc364db7eb3cbcd27668719d46ae">hif::internal::write_matrix_data_attrs</a> (OutStream &amp;o_str, const std::size_t int_size, const std::size_t real_size, const std::uint64_t start_size, const std::uint64_t nnz, const void *ind_start, const void *indices, const void *vals)</td></tr>
-<tr class="memdesc:gac6e3cc364db7eb3cbcd27668719d46ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">write matrix data attributes  <a href="group__io.html#gac6e3cc364db7eb3cbcd27668719d46ae">More...</a><br /></td></tr>
-<tr class="separator:gac6e3cc364db7eb3cbcd27668719d46ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga8ca589f59d401977be6102a0a6809bac"><td class="memTemplParams" colspan="2">template&lt;class CsType &gt; </td></tr>
-<tr class="memitem:ga8ca589f59d401977be6102a0a6809bac"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; CsType::ROW_MAJOR &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__io.html#ga8ca589f59d401977be6102a0a6809bac">hif::write_bin</a> (const char *filename, const CsType &amp;A, const std::uint64_t m)</td></tr>
-<tr class="memdesc:ga8ca589f59d401977be6102a0a6809bac"><td class="mdescLeft">&#160;</td><td class="mdescRight">write a <a class="el" href="classhif_1_1CRS.html">CRS</a> matrix  <a href="group__io.html#ga8ca589f59d401977be6102a0a6809bac">More...</a><br /></td></tr>
-<tr class="separator:ga8ca589f59d401977be6102a0a6809bac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga55c28a7fae18f4d32e9b5ead78e6c9b7"><td class="memTemplParams" colspan="2">template&lt;class CsType , typename T  = std::uint64_t&gt; </td></tr>
-<tr class="memitem:ga55c28a7fae18f4d32e9b5ead78e6c9b7"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt;!CsType::ROW_MAJOR, T &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__io.html#ga55c28a7fae18f4d32e9b5ead78e6c9b7">hif::read_bin</a> (const char *filename, CsType &amp;A)</td></tr>
-<tr class="memdesc:ga55c28a7fae18f4d32e9b5ead78e6c9b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">read data from file to a <a class="el" href="classhif_1_1CCS.html">CCS</a> matrix  <a href="group__io.html#ga55c28a7fae18f4d32e9b5ead78e6c9b7">More...</a><br /></td></tr>
-<tr class="separator:ga55c28a7fae18f4d32e9b5ead78e6c9b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga3c53e6cd53eddf765de2bb0cc2df47ce"><td class="memTemplParams" colspan="2">template&lt;bool IsRowMajor, class IndexArray , class ValueArray &gt; </td></tr>
-<tr class="memitem:ga3c53e6cd53eddf765de2bb0cc2df47ce"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__io.html#ga3c53e6cd53eddf765de2bb0cc2df47ce">hif::write_ascii</a> (const char *fname, const IndexArray &amp;ind_start, const typename IndexArray::size_type other_size, const IndexArray &amp;indices, const ValueArray &amp;vals, const typename IndexArray::size_type m)</td></tr>
-<tr class="memdesc:ga3c53e6cd53eddf765de2bb0cc2df47ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">write to ASCII file  <a href="group__io.html#ga3c53e6cd53eddf765de2bb0cc2df47ce">More...</a><br /></td></tr>
-<tr class="separator:ga3c53e6cd53eddf765de2bb0cc2df47ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gad018615d437ae470a0c1865c1e98acd2"><td class="memTemplParams" colspan="2">template&lt;class IndexArray , class ValueArray &gt; </td></tr>
-<tr class="memitem:gad018615d437ae470a0c1865c1e98acd2"><td class="memTemplItemLeft" align="right" valign="top">std::tuple&lt; bool, bool, char, std::size_t, std::size_t, std::size_t, std::size_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__io.html#gad018615d437ae470a0c1865c1e98acd2">hif::read_ascii</a> (const char *fname, IndexArray &amp;ind_start, IndexArray &amp;indices, ValueArray &amp;vals)</td></tr>
-<tr class="memdesc:gad018615d437ae470a0c1865c1e98acd2"><td class="mdescLeft">&#160;</td><td class="mdescRight">read data from ASCII file  <a href="group__io.html#gad018615d437ae470a0c1865c1e98acd2">More...</a><br /></td></tr>
-<tr class="separator:gad018615d437ae470a0c1865c1e98acd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga59c160eedb6d968e131aea9a10367946"><td class="memTemplParams" colspan="2">template&lt;class CsType &gt; </td></tr>
+<tr class="memitem:ga59c160eedb6d968e131aea9a10367946"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__io.html#ga59c160eedb6d968e131aea9a10367946">hif::write_bin</a> (const char *filename, const CsType &amp;A)</td></tr>
+<tr class="memdesc:ga59c160eedb6d968e131aea9a10367946"><td class="mdescLeft">&#160;</td><td class="mdescRight">write a <a class="el" href="classhif_1_1CRS.html">CRS</a> matrix  <a href="group__io.html#ga59c160eedb6d968e131aea9a10367946">More...</a><br /></td></tr>
+<tr class="separator:ga59c160eedb6d968e131aea9a10367946"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga08e93eae97844ab6109e754d6e460765"><td class="memTemplParams" colspan="2">template&lt;class IndPtrArray , class IndexArray , class ValueArray &gt; </td></tr>
+<tr class="memitem:ga08e93eae97844ab6109e754d6e460765"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__io.html#ga08e93eae97844ab6109e754d6e460765">hif::read_bin</a> (const char *filename, std::uint64_t <a class="el" href="group__util.html#gaa22fcfffe28e3d198a7ca7c99ece3aae">info</a>[], IndPtrArray &amp;ind_start, IndexArray &amp;indices, ValueArray &amp;vals)</td></tr>
+<tr class="memdesc:ga08e93eae97844ab6109e754d6e460765"><td class="mdescLeft">&#160;</td><td class="mdescRight">read data from file to a <a class="el" href="classhif_1_1CRS.html">CRS</a> matrix  <a href="group__io.html#ga08e93eae97844ab6109e754d6e460765">More...</a><br /></td></tr>
+<tr class="separator:ga08e93eae97844ab6109e754d6e460765"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga04ca260446ba7e6b509228b0079d6ad5"><td class="memTemplParams" colspan="2">template&lt;int TypeID, bool IsReal, class IndexType , class ValueType &gt; </td></tr>
 <tr class="memitem:ga04ca260446ba7e6b509228b0079d6ad5"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__io.html#ga04ca260446ba7e6b509228b0079d6ad5">hif::internal::mm_read_sparse_data</a> (std::FILE *f, const std::size_t nnz, <a class="el" href="classhif_1_1Array.html">Array</a>&lt; IndexType &gt; &amp;rows, <a class="el" href="classhif_1_1Array.html">Array</a>&lt; IndexType &gt; &amp;cols, <a class="el" href="classhif_1_1Array.html">Array</a>&lt; ValueType &gt; &amp;vals)</td></tr>
 <tr class="memdesc:ga04ca260446ba7e6b509228b0079d6ad5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal routine to read sparse data.  <a href="group__io.html#ga04ca260446ba7e6b509228b0079d6ad5">More...</a><br /></td></tr>
@@ -182,88 +144,6 @@ Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="ga4dfe3067d6fed134a6f1bd1061d65708"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga4dfe3067d6fed134a6f1bd1061d65708">&#9670;&nbsp;</a></span>get_word_size()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">constexpr std::size_t hif::internal::get_word_size </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>check the word size </p>
-
-<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l00109">109</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="io_8hpp_source.html#l00201">hif::internal::write_general_info()</a>.</p>
-<div class="dynheader">
-Here is the caller graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="group__io_ga4dfe3067d6fed134a6f1bd1061d65708_icgraph.png" border="0" usemap="#group__io_ga4dfe3067d6fed134a6f1bd1061d65708_icgraph" alt=""/></div>
-<map name="group__io_ga4dfe3067d6fed134a6f1bd1061d65708_icgraph" id="group__io_ga4dfe3067d6fed134a6f1bd1061d65708_icgraph">
-<area shape="rect" id="node2" href="group__io.html#gac3ddf1dfb884fa78fdddb422eb0609f3" title="write general information " alt="" coords="165,5,288,47"/>
-<area shape="rect" id="node3" href="group__io.html#ga8ca589f59d401977be6102a0a6809bac" title="write a CRS matrix " alt="" coords="336,13,432,39"/>
-</map>
-</div>
-
-</div>
-</div>
-<a id="ga1caaca05c2c4b8f14478bff2c80bb67f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga1caaca05c2c4b8f14478bff2c80bb67f">&#9670;&nbsp;</a></span>is_little_endian()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool hif::internal::is_little_endian </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>check if the os is litter endian </p>
-
-<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l00102">102</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="io_8hpp_source.html#l00380">hif::query_info_bin()</a>, <a class="el" href="io_8hpp_source.html#l00425">hif::read_bin()</a>, and <a class="el" href="io_8hpp_source.html#l00201">hif::internal::write_general_info()</a>.</p>
-<div class="dynheader">
-Here is the caller graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="group__io_ga1caaca05c2c4b8f14478bff2c80bb67f_icgraph.png" border="0" usemap="#group__io_ga1caaca05c2c4b8f14478bff2c80bb67f_icgraph" alt=""/></div>
-<map name="group__io_ga1caaca05c2c4b8f14478bff2c80bb67f_icgraph" id="group__io_ga1caaca05c2c4b8f14478bff2c80bb67f_icgraph">
-<area shape="rect" id="node2" href="group__itr.html#ga21ccbc8c2ac57a00725cb471206b8a0d" title="query information of a binary file " alt="" coords="188,5,316,32"/>
-<area shape="rect" id="node3" href="namespacehif.html#ga55c28a7fae18f4d32e9b5ead78e6c9b7" title="read data from file to a CRS matrix " alt="" coords="205,56,299,83"/>
-<area shape="rect" id="node4" href="group__io.html#gac3ddf1dfb884fa78fdddb422eb0609f3" title="write general information " alt="" coords="191,107,313,149"/>
-<area shape="rect" id="node5" href="group__io.html#ga8ca589f59d401977be6102a0a6809bac" title="write a CRS matrix " alt="" coords="364,115,460,141"/>
-</map>
-</div>
-
-</div>
-</div>
 <a id="gac79beccd6668c627411e4d9ee4624bc9"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#gac79beccd6668c627411e4d9ee4624bc9">&#9670;&nbsp;</a></span>mm_read_dense_size()</h2>
 
@@ -304,15 +184,16 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l01122">1122</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l00723">723</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="io_8hpp_source.html#l01232">hif::read_mm_vector()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="libhifir_8cpp_source.html#l00277">lhfQueryMmFile()</a>, and <a class="el" href="io_8hpp_source.html#l00833">hif::read_mm_vector()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="group__io_gac79beccd6668c627411e4d9ee4624bc9_icgraph.png" border="0" usemap="#group__io_gac79beccd6668c627411e4d9ee4624bc9_icgraph" alt=""/></div>
 <map name="group__io_gac79beccd6668c627411e4d9ee4624bc9_icgraph" id="group__io_gac79beccd6668c627411e4d9ee4624bc9_icgraph">
-<area shape="rect" id="node2" href="group__io.html#gab37317675352a438fa90ce0ca917f7d1" title="Read vector from a MatrixMarket file. " alt="" coords="201,13,343,39"/>
+<area shape="rect" id="node2" href="group__c.html#ga7e9cf594480b7b08329e32ee66684ef7" title="Query information of a MatrixMarket file. " alt="" coords="215,5,329,32"/>
+<area shape="rect" id="node3" href="group__io.html#gab37317675352a438fa90ce0ca917f7d1" title="Read vector from a MatrixMarket file. " alt="" coords="201,56,343,83"/>
 </map>
 </div>
 
@@ -366,11 +247,11 @@ Here is the caller graph for this function:</div>
 
 <p>Internal routine to parse the first line. </p>
 
-<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l01019">1019</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l00620">620</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="log_8hpp_source.html#l00125">hif::error()</a>.</p>
+<p class="reference">References <a class="el" href="log_8hpp_source.html#l00119">hif::error()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="io_8hpp_source.html#l01181">hif::read_mm_sparse()</a>, and <a class="el" href="io_8hpp_source.html#l01232">hif::read_mm_vector()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="libhifir_8cpp_source.html#l00277">lhfQueryMmFile()</a>, <a class="el" href="io_8hpp_source.html#l00782">hif::read_mm_sparse()</a>, and <a class="el" href="io_8hpp_source.html#l00833">hif::read_mm_vector()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -384,8 +265,9 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="group__io_gad40204849ab390db879fcef33ed34dc9_icgraph.png" border="0" usemap="#group__io_gad40204849ab390db879fcef33ed34dc9_icgraph" alt=""/></div>
 <map name="group__io_gad40204849ab390db879fcef33ed34dc9_icgraph" id="group__io_gad40204849ab390db879fcef33ed34dc9_icgraph">
-<area shape="rect" id="node2" href="group__io.html#gafb3eba3c5eeb67b0a41f593aa2ce6337" title="Read a sparse matrix form a MatrixMarket file. " alt="" coords="201,5,345,32"/>
-<area shape="rect" id="node3" href="group__io.html#gab37317675352a438fa90ce0ca917f7d1" title="Read vector from a MatrixMarket file. " alt="" coords="203,56,344,83"/>
+<area shape="rect" id="node2" href="group__c.html#ga7e9cf594480b7b08329e32ee66684ef7" title="Query information of a MatrixMarket file. " alt="" coords="216,5,331,32"/>
+<area shape="rect" id="node3" href="group__io.html#gafb3eba3c5eeb67b0a41f593aa2ce6337" title="Read a sparse matrix form a MatrixMarket file. " alt="" coords="201,56,345,83"/>
+<area shape="rect" id="node4" href="group__io.html#gab37317675352a438fa90ce0ca917f7d1" title="Read vector from a MatrixMarket file. " alt="" coords="203,107,344,133"/>
 </map>
 </div>
 
@@ -447,9 +329,9 @@ template&lt;int TypeID, bool IsReal, class IndexType , class ValueType &gt; </di
 
 <p>Internal routine to read sparse data. </p>
 
-<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l00946">946</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l00547">547</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="log_8hpp_source.html#l00125">hif::error()</a>.</p>
+<p class="reference">References <a class="el" href="log_8hpp_source.html#l00119">hif::error()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -509,15 +391,16 @@ Here is the call graph for this function:</div>
 
 <p>Internal routine to read sizes. </p>
 
-<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l01087">1087</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l00688">688</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="io_8hpp_source.html#l01181">hif::read_mm_sparse()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="libhifir_8cpp_source.html#l00277">lhfQueryMmFile()</a>, and <a class="el" href="io_8hpp_source.html#l00782">hif::read_mm_sparse()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="group__io_ga928563fb92417cbf2befd0771a7c80f6_icgraph.png" border="0" usemap="#group__io_ga928563fb92417cbf2befd0771a7c80f6_icgraph" alt=""/></div>
 <map name="group__io_ga928563fb92417cbf2befd0771a7c80f6_icgraph" id="group__io_ga928563fb92417cbf2befd0771a7c80f6_icgraph">
-<area shape="rect" id="node2" href="group__io.html#gafb3eba3c5eeb67b0a41f593aa2ce6337" title="Read a sparse matrix form a MatrixMarket file. " alt="" coords="201,13,345,39"/>
+<area shape="rect" id="node2" href="group__c.html#ga7e9cf594480b7b08329e32ee66684ef7" title="Query information of a MatrixMarket file. " alt="" coords="216,5,331,32"/>
+<area shape="rect" id="node3" href="group__io.html#gafb3eba3c5eeb67b0a41f593aa2ce6337" title="Read a sparse matrix form a MatrixMarket file. " alt="" coords="201,56,345,83"/>
 </map>
 </div>
 
@@ -567,9 +450,9 @@ template&lt;bool IsReal, class ValueType &gt; </div>
 
 <p>Internal routine to read vector data. </p>
 
-<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l01002">1002</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l00603">603</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="log_8hpp_source.html#l00125">hif::error()</a>.</p>
+<p class="reference">References <a class="el" href="log_8hpp_source.html#l00119">hif::error()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -581,27 +464,33 @@ Here is the call graph for this function:</div>
 
 </div>
 </div>
-<a id="gad018615d437ae470a0c1865c1e98acd2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gad018615d437ae470a0c1865c1e98acd2">&#9670;&nbsp;</a></span>read_ascii()</h2>
+<a id="ga08e93eae97844ab6109e754d6e460765"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga08e93eae97844ab6109e754d6e460765">&#9670;&nbsp;</a></span>read_bin()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IndexArray , class ValueArray &gt; </div>
+template&lt;class IndPtrArray , class IndexArray , class ValueArray &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::tuple&lt;bool, bool, char, std::size_t, std::size_t, std::size_t, std::size_t&gt; hif::read_ascii </td>
+          <td class="memname">void hif::read_bin </td>
           <td>(</td>
           <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>fname</em>, </td>
+          <td class="paramname"><em>filename</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">IndexArray &amp;&#160;</td>
+          <td class="paramtype">std::uint64_t&#160;</td>
+          <td class="paramname"><em>info</em>[], </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">IndPtrArray &amp;&#160;</td>
           <td class="paramname"><em>ind_start</em>, </td>
         </tr>
         <tr>
@@ -629,332 +518,37 @@ template&lt;class IndexArray , class ValueArray &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>read data from ASCII file </p>
+<p>read data from file to a <a class="el" href="classhif_1_1CRS.html">CRS</a> matrix </p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
-    <tr><td class="paramname">IndexArray</td><td>index array type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
-    <tr><td class="paramname">ValueArray</td><td>value array type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">fname</td><td>file name for output </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ind_start</td><td>index start array </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">indices</td><td>index array </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">vals</td><td>value array </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l00824">824</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
-
-<p class="reference">References <a class="el" href="Array_8hpp_source.html#l00060">hif::DATA_UNDEF</a>, and <a class="el" href="log_8hpp_source.html#l00125">hif::error()</a>.</p>
-<div class="dynheader">
-Here is the call graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="group__io_gad018615d437ae470a0c1865c1e98acd2_cgraph.png" border="0" usemap="#group__io_gad018615d437ae470a0c1865c1e98acd2_cgraph" alt=""/></div>
-<map name="group__io_gad018615d437ae470a0c1865c1e98acd2_cgraph" id="group__io_gad018615d437ae470a0c1865c1e98acd2_cgraph">
-<area shape="rect" id="node2" href="group__util.html#ga0a3c88ad06db9caf44d1a64d51ebb7b2" title="error information streaming, dump to HIF_STDERR " alt="" coords="156,5,227,32"/>
-</map>
-</div>
-
-</div>
-</div>
-<a id="ga55c28a7fae18f4d32e9b5ead78e6c9b7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga55c28a7fae18f4d32e9b5ead78e6c9b7">&#9670;&nbsp;</a></span>read_bin()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;class CsType , typename T  = std::uint64_t&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::enable_if&lt;!CsType::ROW_MAJOR, T &gt;::type hif::read_bin </td>
-          <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>filename</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">CsType &amp;&#160;</td>
-          <td class="paramname"><em>A</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>read data from file to a <a class="el" href="classhif_1_1CCS.html">CCS</a> matrix </p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">CsType</td><td>ccs type </td></tr>
+    <tr><td class="paramname">IndPtrArray</td><td>indptr array </td></tr>
+    <tr><td class="paramname">IndexArray</td><td>index array type </td></tr>
+    <tr><td class="paramname">ValueArray</td><td>value array type </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">filename</td><td>file name </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">A</td><td>matrix to store data from file </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>sparse matrix information </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">ind_start</td><td>indptr array </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">indices</td><td>index array </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">vals</td><td>value array </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__io.html#ga8ca589f59d401977be6102a0a6809bac" title="write a CRS matrix ">write_bin</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__io.html#ga59c160eedb6d968e131aea9a10367946" title="write a CRS matrix ">write_bin</a> </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>This function requires HDF5 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l00569">569</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l00218">218</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Array_8hpp_source.html#l00127">hif::Array&lt; T &gt;::Array()</a>, <a class="el" href="Array_8hpp_source.html#l00341">hif::Array&lt; T &gt;::cbegin()</a>, <a class="el" href="Array_8hpp_source.html#l00342">hif::Array&lt; T &gt;::cend()</a>, <a class="el" href="Array_8hpp_source.html#l00318">hif::Array&lt; T &gt;::data()</a>, <a class="el" href="Array_8hpp_source.html#l00060">hif::DATA_UNDEF</a>, <a class="el" href="log_8hpp_source.html#l00125">hif::error()</a>, <a class="el" href="io_8hpp_source.html#l00102">hif::internal::is_little_endian()</a>, <a class="el" href="io_8hpp_source.html#l00121">hif::internal::read_general_info()</a>, <a class="el" href="io_8hpp_source.html#l00180">hif::internal::read_matrix_data_attrs()</a>, <a class="el" href="io_8hpp_source.html#l00158">hif::internal::read_matrix_sizes()</a>, <a class="el" href="Array_8hpp_source.html#l00323">hif::Array&lt; T &gt;::status()</a>, and <a class="el" href="log_8hpp_source.html#l00092">hif::warning()</a>.</p>
+<p class="reference">References <a class="el" href="log_8hpp_source.html#l00119">hif::error()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="group__io_ga55c28a7fae18f4d32e9b5ead78e6c9b7_cgraph.png" border="0" usemap="#group__io_ga55c28a7fae18f4d32e9b5ead78e6c9b7_cgraph" alt=""/></div>
-<map name="group__io_ga55c28a7fae18f4d32e9b5ead78e6c9b7_cgraph" id="group__io_ga55c28a7fae18f4d32e9b5ead78e6c9b7_cgraph">
-<area shape="rect" id="node2" href="classhif_1_1Array.html#a098563f613c9f741796e91f8d59428c7" title="constructor with owned data " alt="" coords="157,5,271,32"/>
-<area shape="rect" id="node3" href="classhif_1_1Array.html#a47fec6aa2ad9bef18d57c2b647b16e0d" title="hif::Array::cbegin" alt="" coords="153,56,275,83"/>
-<area shape="rect" id="node4" href="classhif_1_1Array.html#a71c5cbe4cbec00bb459cf9098eee0d92" title="hif::Array::cend" alt="" coords="159,107,269,133"/>
-<area shape="rect" id="node5" href="classhif_1_1Array.html#ab51be7811a22964bbf83741fa48ec0cf" title="hif::Array::data" alt="" coords="160,157,268,184"/>
-<area shape="rect" id="node6" href="group__util.html#ga0a3c88ad06db9caf44d1a64d51ebb7b2" title="error information streaming, dump to HIF_STDERR " alt="" coords="179,208,249,235"/>
-<area shape="rect" id="node7" href="group__io.html#ga1caaca05c2c4b8f14478bff2c80bb67f" title="check if the os is litter endian " alt="" coords="147,259,281,301"/>
-<area shape="rect" id="node8" href="group__io.html#ga189b04f700d1d1232ba2342fedcda595" title="read the general information " alt="" coords="155,325,273,366"/>
-<area shape="rect" id="node9" href="group__io.html#gaf013cbf9a3c60a750a817eb3c95da540" title="read matrix data attributes " alt="" coords="149,390,279,431"/>
-<area shape="rect" id="node10" href="group__io.html#ga371b7839983aebe182ad641c70a3d4de" title="read the matrix size information " alt="" coords="155,455,273,497"/>
-<area shape="rect" id="node11" href="classhif_1_1Array.html#a6a6f58b76a8afd1abe8dce73890a8934" title="hif::Array::status" alt="" coords="155,521,273,548"/>
-<area shape="rect" id="node12" href="group__util.html#ga1d4c2000af1b3a9f14ece0c026d1c39a" title="warning information streaming, dump to HIF_STDERR " alt="" coords="169,572,259,599"/>
-</map>
-</div>
-
-</div>
-</div>
-<a id="ga189b04f700d1d1232ba2342fedcda595"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga189b04f700d1d1232ba2342fedcda595">&#9670;&nbsp;</a></span>read_general_info()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;class InStream &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::tuple&lt;bool, std::size_t, std::size_t, bool, bool, bool, bool&gt; hif::internal::read_general_info </td>
-          <td>(</td>
-          <td class="paramtype">InStream &amp;&#160;</td>
-          <td class="paramname"><em>i_str</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>read the general information </p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">InStream</td><td>input stream type, should be <em>std::ifstream</em> </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">i_str</td><td>in-file streamer</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>a <em>tuple</em> of args, from left to right, endianness, word size, integer size, row-major flag, C index flag, double precision flag, real/complex flag. </dd></dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__io.html#gac3ddf1dfb884fa78fdddb422eb0609f3" title="write general information ">write_general_info</a> </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l00121">121</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="io_8hpp_source.html#l00380">hif::query_info_bin()</a>, and <a class="el" href="io_8hpp_source.html#l00425">hif::read_bin()</a>.</p>
-<div class="dynheader">
-Here is the caller graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="group__io_ga189b04f700d1d1232ba2342fedcda595_icgraph.png" border="0" usemap="#group__io_ga189b04f700d1d1232ba2342fedcda595_icgraph" alt=""/></div>
-<map name="group__io_ga189b04f700d1d1232ba2342fedcda595_icgraph" id="group__io_ga189b04f700d1d1232ba2342fedcda595_icgraph">
-<area shape="rect" id="node2" href="group__itr.html#ga21ccbc8c2ac57a00725cb471206b8a0d" title="query information of a binary file " alt="" coords="172,5,300,32"/>
-<area shape="rect" id="node3" href="namespacehif.html#ga55c28a7fae18f4d32e9b5ead78e6c9b7" title="read data from file to a CRS matrix " alt="" coords="189,56,283,83"/>
-</map>
-</div>
-
-</div>
-</div>
-<a id="gaf013cbf9a3c60a750a817eb3c95da540"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gaf013cbf9a3c60a750a817eb3c95da540">&#9670;&nbsp;</a></span>read_matrix_data_attrs()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;class InStream &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void hif::internal::read_matrix_data_attrs </td>
-          <td>(</td>
-          <td class="paramtype">InStream &amp;&#160;</td>
-          <td class="paramname"><em>i_str</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::size_t&#160;</td>
-          <td class="paramname"><em>int_size</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::size_t&#160;</td>
-          <td class="paramname"><em>real_size</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::uint64_t&#160;</td>
-          <td class="paramname"><em>start_size</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::uint64_t&#160;</td>
-          <td class="paramname"><em>nnz</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>ind_start</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>indices</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>vals</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>read matrix data attributes </p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">InStream</td><td>input stream type, should be <em>std::ifstream</em> </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">i_str</td><td>in-file streamer </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">int_size</td><td>integer size in bytes </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">real_size</td><td>value data type size in bytes </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">start_size</td><td>primary size, i.e. row for <a class="el" href="classhif_1_1CRS.html" title="Compressed Row Storage (CRS) format for sparse matrices. ">CRS</a> and col for <a class="el" href="classhif_1_1CCS.html" title="Compressed Column Storage (CCS) format for sparse matrices. ">CCS</a> </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">nnz</td><td>total number of nonzeros </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">ind_start</td><td>raw data of size at least int_size*(start_size+1) </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">indices</td><td>raw data of size at least int_size*nnz </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">vals</td><td>raw data of size at least real_size*nnz</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__io.html#gac6e3cc364db7eb3cbcd27668719d46ae" title="write matrix data attributes ">write_matrix_data_attrs</a> </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l00180">180</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="io_8hpp_source.html#l00425">hif::read_bin()</a>.</p>
-<div class="dynheader">
-Here is the caller graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="group__io_gaf013cbf9a3c60a750a817eb3c95da540_icgraph.png" border="0" usemap="#group__io_gaf013cbf9a3c60a750a817eb3c95da540_icgraph" alt=""/></div>
-<map name="group__io_gaf013cbf9a3c60a750a817eb3c95da540_icgraph" id="group__io_gaf013cbf9a3c60a750a817eb3c95da540_icgraph">
-<area shape="rect" id="node2" href="namespacehif.html#ga55c28a7fae18f4d32e9b5ead78e6c9b7" title="read data from file to a CRS matrix " alt="" coords="184,13,277,39"/>
-</map>
-</div>
-
-</div>
-</div>
-<a id="ga371b7839983aebe182ad641c70a3d4de"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga371b7839983aebe182ad641c70a3d4de">&#9670;&nbsp;</a></span>read_matrix_sizes()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;class InStream &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::tuple&lt;std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t&gt; hif::internal::read_matrix_sizes </td>
-          <td>(</td>
-          <td class="paramtype">InStream &amp;&#160;</td>
-          <td class="paramname"><em>i_str</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>read the matrix size information </p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">InStream</td><td>input stream type, should be <em>std::ifstream</em> </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">i_str</td><td>in-file streamer</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>a <em>tuple</em> of args, from left to right, row size, column size, number of nonzeros, and leading symmetric block size. </dd></dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__io.html#ga04c4449bfe44bfba72c9208110c6b32d" title="write matrix size information ">write_matrix_sizes</a></dd></dl>
-<p>Be aware that we use the fixed size integer (<em>std::uint64_t</em>) to store size information. </p>
-
-<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l00158">158</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="io_8hpp_source.html#l00380">hif::query_info_bin()</a>, and <a class="el" href="io_8hpp_source.html#l00425">hif::read_bin()</a>.</p>
-<div class="dynheader">
-Here is the caller graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="group__io_ga371b7839983aebe182ad641c70a3d4de_icgraph.png" border="0" usemap="#group__io_ga371b7839983aebe182ad641c70a3d4de_icgraph" alt=""/></div>
-<map name="group__io_ga371b7839983aebe182ad641c70a3d4de_icgraph" id="group__io_ga371b7839983aebe182ad641c70a3d4de_icgraph">
-<area shape="rect" id="node2" href="group__itr.html#ga21ccbc8c2ac57a00725cb471206b8a0d" title="query information of a binary file " alt="" coords="172,5,300,32"/>
-<area shape="rect" id="node3" href="namespacehif.html#ga55c28a7fae18f4d32e9b5ead78e6c9b7" title="read data from file to a CRS matrix " alt="" coords="189,56,283,83"/>
+<div class="center"><img src="group__io_ga08e93eae97844ab6109e754d6e460765_cgraph.png" border="0" usemap="#group__io_ga08e93eae97844ab6109e754d6e460765_cgraph" alt=""/></div>
+<map name="group__io_ga08e93eae97844ab6109e754d6e460765_cgraph" id="group__io_ga08e93eae97844ab6109e754d6e460765_cgraph">
+<area shape="rect" id="node2" href="group__util.html#ga0a3c88ad06db9caf44d1a64d51ebb7b2" title="error information streaming, dump to HIF_STDERR " alt="" coords="147,5,217,32"/>
 </map>
 </div>
 
@@ -1041,9 +635,9 @@ template&lt;class IndexType , class ValueType &gt; </div>
 </dl>
 <p>Regardless what storage does <em>filename</em> uses, we always output a general matrix. Also, note that matrix market use coordinate format (aka IJV), thus if you plan to use this routine directly, then you need to convert the coordinate data structures into CRS/CCS if necessary. </p>
 
-<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l01181">1181</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l00782">782</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="log_8hpp_source.html#l00125">hif::error()</a>, <a class="el" href="io_8hpp_source.html#l01019">hif::internal::mm_read_firstline()</a>, and <a class="el" href="io_8hpp_source.html#l01087">hif::internal::mm_read_sparse_size()</a>.</p>
+<p class="reference">References <a class="el" href="log_8hpp_source.html#l00119">hif::error()</a>, <a class="el" href="io_8hpp_source.html#l00620">hif::internal::mm_read_firstline()</a>, and <a class="el" href="io_8hpp_source.html#l00688">hif::internal::mm_read_sparse_size()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1110,9 +704,9 @@ template&lt;class ValueType &gt; </div>
 <dl class="section note"><dt>Note</dt><dd>We only read the first column is the file contains multiple columns </dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="group__io.html#gafb3eba3c5eeb67b0a41f593aa2ce6337" title="Read a sparse matrix form a MatrixMarket file. ">read_mm_sparse</a> </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l01232">1232</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l00833">833</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="log_8hpp_source.html#l00125">hif::error()</a>, <a class="el" href="io_8hpp_source.html#l01122">hif::internal::mm_read_dense_size()</a>, and <a class="el" href="io_8hpp_source.html#l01019">hif::internal::mm_read_firstline()</a>.</p>
+<p class="reference">References <a class="el" href="log_8hpp_source.html#l00119">hif::error()</a>, <a class="el" href="io_8hpp_source.html#l00723">hif::internal::mm_read_dense_size()</a>, and <a class="el" href="io_8hpp_source.html#l00620">hif::internal::mm_read_firstline()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1126,103 +720,8 @@ Here is the call graph for this function:</div>
 
 </div>
 </div>
-<a id="ga3c53e6cd53eddf765de2bb0cc2df47ce"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga3c53e6cd53eddf765de2bb0cc2df47ce">&#9670;&nbsp;</a></span>write_ascii()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;bool IsRowMajor, class IndexArray , class ValueArray &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void hif::write_ascii </td>
-          <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>fname</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const IndexArray &amp;&#160;</td>
-          <td class="paramname"><em>ind_start</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const typename IndexArray::size_type&#160;</td>
-          <td class="paramname"><em>other_size</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const IndexArray &amp;&#160;</td>
-          <td class="paramname"><em>indices</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const ValueArray &amp;&#160;</td>
-          <td class="paramname"><em>vals</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const typename IndexArray::size_type&#160;</td>
-          <td class="paramname"><em>m</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>write to ASCII file </p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">IsRowMajor</td><td>flag to indicate <a class="el" href="classhif_1_1CRS.html">CRS</a> or <a class="el" href="classhif_1_1CCS.html">CCS</a> </td></tr>
-    <tr><td class="paramname">IndexArray</td><td>index array type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
-    <tr><td class="paramname">ValueArray</td><td>value array type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">fname</td><td>file name for output </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ind_start</td><td>index start array </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">other_size</td><td>column size for <a class="el" href="classhif_1_1CRS.html">CRS</a>, row size for <a class="el" href="classhif_1_1CCS.html">CCS</a> </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">indices</td><td>index array </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">vals</td><td>value array </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>leading symmetric block size </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l00721">721</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
-
-<p class="reference">References <a class="el" href="log_8hpp_source.html#l00125">hif::error()</a>.</p>
-<div class="dynheader">
-Here is the call graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="group__io_ga3c53e6cd53eddf765de2bb0cc2df47ce_cgraph.png" border="0" usemap="#group__io_ga3c53e6cd53eddf765de2bb0cc2df47ce_cgraph" alt=""/></div>
-<map name="group__io_ga3c53e6cd53eddf765de2bb0cc2df47ce_cgraph" id="group__io_ga3c53e6cd53eddf765de2bb0cc2df47ce_cgraph">
-<area shape="rect" id="node2" href="group__util.html#ga0a3c88ad06db9caf44d1a64d51ebb7b2" title="error information streaming, dump to HIF_STDERR " alt="" coords="160,5,231,32"/>
-</map>
-</div>
-
-</div>
-</div>
-<a id="ga8ca589f59d401977be6102a0a6809bac"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga8ca589f59d401977be6102a0a6809bac">&#9670;&nbsp;</a></span>write_bin()</h2>
+<a id="ga59c160eedb6d968e131aea9a10367946"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga59c160eedb6d968e131aea9a10367946">&#9670;&nbsp;</a></span>write_bin()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1233,7 +732,7 @@ template&lt;class CsType &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::enable_if&lt;CsType::ROW_MAJOR&gt;::type hif::write_bin </td>
+          <td class="memname">void hif::write_bin </td>
           <td>(</td>
           <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>filename</em>, </td>
@@ -1242,13 +741,7 @@ template&lt;class CsType &gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const CsType &amp;&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::uint64_t&#160;</td>
-          <td class="paramname"><em>m</em>&#160;</td>
+          <td class="paramname"><em>A</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1274,326 +767,21 @@ template&lt;class CsType &gt; </div>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">filename</td><td>file name </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>matrix for writing to file </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>leading symmetric block size </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__io.html#ga55c28a7fae18f4d32e9b5ead78e6c9b7" title="read data from file to a CCS matrix ">read_bin</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__io.html#ga08e93eae97844ab6109e754d6e460765" title="read data from file to a CRS matrix ">read_bin</a> </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>This function requires HDF5 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l00321">321</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l00076">76</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="log_8hpp_source.html#l00125">hif::error()</a>, <a class="el" href="io_8hpp_source.html#l00201">hif::internal::write_general_info()</a>, <a class="el" href="io_8hpp_source.html#l00252">hif::internal::write_matrix_data_attrs()</a>, and <a class="el" href="io_8hpp_source.html#l00230">hif::internal::write_matrix_sizes()</a>.</p>
+<p class="reference">References <a class="el" href="log_8hpp_source.html#l00119">hif::error()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="group__io_ga8ca589f59d401977be6102a0a6809bac_cgraph.png" border="0" usemap="#group__io_ga8ca589f59d401977be6102a0a6809bac_cgraph" alt=""/></div>
-<map name="group__io_ga8ca589f59d401977be6102a0a6809bac_cgraph" id="group__io_ga8ca589f59d401977be6102a0a6809bac_cgraph">
-<area shape="rect" id="node2" href="group__util.html#ga0a3c88ad06db9caf44d1a64d51ebb7b2" title="error information streaming, dump to HIF_STDERR " alt="" coords="179,5,250,32"/>
-<area shape="rect" id="node3" href="group__io.html#gac3ddf1dfb884fa78fdddb422eb0609f3" title="write general information " alt="" coords="153,57,276,98"/>
-<area shape="rect" id="node6" href="group__io.html#gac6e3cc364db7eb3cbcd27668719d46ae" title="write matrix data attributes " alt="" coords="149,122,280,163"/>
-<area shape="rect" id="node7" href="group__io.html#ga04c4449bfe44bfba72c9208110c6b32d" title="write matrix size information " alt="" coords="153,187,276,229"/>
-<area shape="rect" id="node4" href="group__io.html#ga1caaca05c2c4b8f14478bff2c80bb67f" title="check if the os is litter endian " alt="" coords="328,25,463,66"/>
-<area shape="rect" id="node5" href="group__io.html#ga4dfe3067d6fed134a6f1bd1061d65708" title="check the word size " alt="" coords="339,90,451,131"/>
-</map>
-</div>
-
-</div>
-</div>
-<a id="gac3ddf1dfb884fa78fdddb422eb0609f3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gac3ddf1dfb884fa78fdddb422eb0609f3">&#9670;&nbsp;</a></span>write_general_info()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;class OutStream &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void hif::internal::write_general_info </td>
-          <td>(</td>
-          <td class="paramtype">OutStream &amp;&#160;</td>
-          <td class="paramname"><em>o_str</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::size_t&#160;</td>
-          <td class="paramname"><em>int_size</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const bool&#160;</td>
-          <td class="paramname"><em>is_row</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const bool&#160;</td>
-          <td class="paramname"><em>is_c</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const bool&#160;</td>
-          <td class="paramname"><em>is_double</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const bool&#160;</td>
-          <td class="paramname"><em>is_real</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>write general information </p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">OutStream</td><td>output stream type, should be <em>std::ofstream</em> </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">o_str</td><td>out-file streamer </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">int_size</td><td>integer size </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">is_row</td><td>row-major flag </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">is_c</td><td>C index flag </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">is_double</td><td>double precision flag </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">is_real</td><td>real/complex flag</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__io.html#ga189b04f700d1d1232ba2342fedcda595" title="read the general information ">read_general_info</a> </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l00201">201</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
-
-<p class="reference">References <a class="el" href="io_8hpp_source.html#l00109">hif::internal::get_word_size()</a>, and <a class="el" href="io_8hpp_source.html#l00102">hif::internal::is_little_endian()</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="io_8hpp_source.html#l00321">hif::write_bin()</a>.</p>
-<div class="dynheader">
-Here is the call graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="group__io_gac3ddf1dfb884fa78fdddb422eb0609f3_cgraph.png" border="0" usemap="#group__io_gac3ddf1dfb884fa78fdddb422eb0609f3_cgraph" alt=""/></div>
-<map name="group__io_gac3ddf1dfb884fa78fdddb422eb0609f3_cgraph" id="group__io_gac3ddf1dfb884fa78fdddb422eb0609f3_cgraph">
-<area shape="rect" id="node2" href="group__io.html#ga4dfe3067d6fed134a6f1bd1061d65708" title="check the word size " alt="" coords="187,5,299,47"/>
-<area shape="rect" id="node3" href="group__io.html#ga1caaca05c2c4b8f14478bff2c80bb67f" title="check if the os is litter endian " alt="" coords="176,71,311,112"/>
-</map>
-</div>
-<div class="dynheader">
-Here is the caller graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="group__io_gac3ddf1dfb884fa78fdddb422eb0609f3_icgraph.png" border="0" usemap="#group__io_gac3ddf1dfb884fa78fdddb422eb0609f3_icgraph" alt=""/></div>
-<map name="group__io_gac3ddf1dfb884fa78fdddb422eb0609f3_icgraph" id="group__io_gac3ddf1dfb884fa78fdddb422eb0609f3_icgraph">
-<area shape="rect" id="node2" href="group__io.html#ga8ca589f59d401977be6102a0a6809bac" title="write a CRS matrix " alt="" coords="176,13,272,39"/>
-</map>
-</div>
-
-</div>
-</div>
-<a id="gac6e3cc364db7eb3cbcd27668719d46ae"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gac6e3cc364db7eb3cbcd27668719d46ae">&#9670;&nbsp;</a></span>write_matrix_data_attrs()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;class OutStream &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void hif::internal::write_matrix_data_attrs </td>
-          <td>(</td>
-          <td class="paramtype">OutStream &amp;&#160;</td>
-          <td class="paramname"><em>o_str</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::size_t&#160;</td>
-          <td class="paramname"><em>int_size</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::size_t&#160;</td>
-          <td class="paramname"><em>real_size</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::uint64_t&#160;</td>
-          <td class="paramname"><em>start_size</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::uint64_t&#160;</td>
-          <td class="paramname"><em>nnz</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const void *&#160;</td>
-          <td class="paramname"><em>ind_start</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const void *&#160;</td>
-          <td class="paramname"><em>indices</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const void *&#160;</td>
-          <td class="paramname"><em>vals</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>write matrix data attributes </p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">OutStream</td><td>output stream type, should be <em>std::ofstream</em> </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">o_str</td><td>out-file streamer </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">int_size</td><td>integer size </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">real_size</td><td>value data type size </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">start_size</td><td>primary size </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">nnz</td><td>total number of nonzeros </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ind_start</td><td>opaque pointer to start positions </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">indices</td><td>opaque pointer to indices </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">vals</td><td>opaque pointer to value array</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__io.html#gaf013cbf9a3c60a750a817eb3c95da540" title="read matrix data attributes ">read_matrix_data_attrs</a> </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l00252">252</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="io_8hpp_source.html#l00321">hif::write_bin()</a>.</p>
-<div class="dynheader">
-Here is the caller graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="group__io_gac6e3cc364db7eb3cbcd27668719d46ae_icgraph.png" border="0" usemap="#group__io_gac6e3cc364db7eb3cbcd27668719d46ae_icgraph" alt=""/></div>
-<map name="group__io_gac6e3cc364db7eb3cbcd27668719d46ae_icgraph" id="group__io_gac6e3cc364db7eb3cbcd27668719d46ae_icgraph">
-<area shape="rect" id="node2" href="group__io.html#ga8ca589f59d401977be6102a0a6809bac" title="write a CRS matrix " alt="" coords="184,13,280,39"/>
-</map>
-</div>
-
-</div>
-</div>
-<a id="ga04c4449bfe44bfba72c9208110c6b32d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga04c4449bfe44bfba72c9208110c6b32d">&#9670;&nbsp;</a></span>write_matrix_sizes()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;class OutStream &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void hif::internal::write_matrix_sizes </td>
-          <td>(</td>
-          <td class="paramtype">OutStream &amp;&#160;</td>
-          <td class="paramname"><em>o_str</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::uint64_t&#160;</td>
-          <td class="paramname"><em>row</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::uint64_t&#160;</td>
-          <td class="paramname"><em>col</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::uint64_t&#160;</td>
-          <td class="paramname"><em>nnz</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::uint64_t&#160;</td>
-          <td class="paramname"><em>m</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>write matrix size information </p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">OutStream</td><td>output stream type, should be <em>std::ofstream</em> </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">o_str</td><td>out-file streamer </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">row</td><td>row size </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">col</td><td>column size </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">nnz</td><td>total number of nonzeros </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>leading symmetric block size</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__io.html#ga371b7839983aebe182ad641c70a3d4de" title="read the matrix size information ">read_matrix_sizes</a> </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l00230">230</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="io_8hpp_source.html#l00321">hif::write_bin()</a>.</p>
-<div class="dynheader">
-Here is the caller graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="group__io_ga04c4449bfe44bfba72c9208110c6b32d_icgraph.png" border="0" usemap="#group__io_ga04c4449bfe44bfba72c9208110c6b32d_icgraph" alt=""/></div>
-<map name="group__io_ga04c4449bfe44bfba72c9208110c6b32d_icgraph" id="group__io_ga04c4449bfe44bfba72c9208110c6b32d_icgraph">
-<area shape="rect" id="node2" href="group__io.html#ga8ca589f59d401977be6102a0a6809bac" title="write a CRS matrix " alt="" coords="176,13,272,39"/>
+<div class="center"><img src="group__io_ga59c160eedb6d968e131aea9a10367946_cgraph.png" border="0" usemap="#group__io_ga59c160eedb6d968e131aea9a10367946_cgraph" alt=""/></div>
+<map name="group__io_ga59c160eedb6d968e131aea9a10367946_cgraph" id="group__io_ga59c160eedb6d968e131aea9a10367946_cgraph">
+<area shape="rect" id="node2" href="group__util.html#ga0a3c88ad06db9caf44d1a64d51ebb7b2" title="error information streaming, dump to HIF_STDERR " alt="" coords="149,5,220,32"/>
 </map>
 </div>
 
@@ -1675,9 +863,9 @@ template&lt;bool IsRowMajor, class IndptrType , class IndexType , class ValueTyp
 </dl>
 <p>For <a class="el" href="classhif_1_1CRS.html" title="Compressed Row Storage (CRS) format for sparse matrices. ">CRS</a>, call this function as write_mm_sparse&lt;true&gt;("test.mm", ncols, rowptr, colind, vals). Similarly, for <a class="el" href="classhif_1_1CCS.html" title="Compressed Column Storage (CCS) format for sparse matrices. ">CCS</a>, call this function as write_mm_sparse&lt;false&gt;("test.mm", nrows, colptr, rowind, vals). </p>
 
-<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l01305">1305</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l00906">906</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="log_8hpp_source.html#l00125">hif::error()</a>.</p>
+<p class="reference">References <a class="el" href="log_8hpp_source.html#l00119">hif::error()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1728,9 +916,9 @@ template&lt;class ValueType &gt; </div>
 <p>Write a float-point vector to a MatrixMarket file. </p>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="group__io.html#gab37317675352a438fa90ce0ca917f7d1" title="Read vector from a MatrixMarket file. ">read_mm_vector</a> </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l01263">1263</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l00864">864</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="log_8hpp_source.html#l00125">hif::error()</a>.</p>
+<p class="reference">References <a class="el" href="log_8hpp_source.html#l00119">hif::error()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">

@@ -1,0 +1,6 @@
+<map id="hif::do_maching" name="hif::do_maching">
+<area shape="rect" id="node2" href="$classhif_1_1Timer.html#a40ddb5ec755809b41193505a35072b3f" title="finish timer " alt="" coords="168,5,284,32"/>
+<area shape="rect" id="node3" href="$group__util.html#gaa22fcfffe28e3d198a7ca7c99ece3aae" title="common information streaming, dump msg to HIF_STDOUT " alt="" coords="193,56,259,83"/>
+<area shape="rect" id="node4" href="$classhif_1_1Timer.html#ae8aed1e5ffc158a0987e255db30b0fc5" title="start timer " alt="" coords="171,107,281,133"/>
+<area shape="rect" id="node5" href="$classhif_1_1Timer.html#acf16542a63575b85fa24b47501af1611" title="get time report in seconds " alt="" coords="171,157,281,184"/>
+</map>

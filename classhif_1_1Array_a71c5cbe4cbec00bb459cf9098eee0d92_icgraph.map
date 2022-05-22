@@ -1,3 +1,6 @@
 <map id="hif::Array::cend" name="hif::Array::cend">
-<area shape="rect" id="node2" href="$namespacehif.html#ga55c28a7fae18f4d32e9b5ead78e6c9b7" title="read data from file to a CRS matrix " alt="" coords="164,5,257,32"/>
+<area shape="rect" id="node2" href="$group__ccomplexsingle.html#ga1dff555079ed695cf5c5aceba6b04cb9" title="Read a vector. " alt="" coords="164,5,276,32"/>
+<area shape="rect" id="node3" href="$group__cdouble.html#gaa3d22ab26df6abac76bbcdce5a0dc444" title="Read a vector. " alt="" coords="164,56,276,83"/>
+<area shape="rect" id="node4" href="$group__csingle.html#ga7b0177fa28e1a364690f8266b751a81d" title="Read a vector. " alt="" coords="164,107,276,133"/>
+<area shape="rect" id="node5" href="$group__ccomplexdouble.html#ga3ac6c365cef8cc4b5ab949c51c6b9a1b" title="Read a vector. " alt="" coords="164,157,276,184"/>
 </map>

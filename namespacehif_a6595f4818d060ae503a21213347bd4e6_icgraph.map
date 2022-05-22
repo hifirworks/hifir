@@ -1,4 +1,5 @@
 <map id="hif::warn_flag" name="hif::warn_flag">
-<area shape="rect" id="node2" href="$classhif_1_1HIF.html#a77f109f53d5b2fde156c258fd2ae5913" title="factorize the HIF preconditioner " alt="" coords="173,5,297,32"/>
-<area shape="rect" id="node3" href="$structhif_1_1internal_1_1StderrStruct.html#a97651e40d4521ed5e4745f295de141e5" title="hif::internal::StderrStruct\l::operator()" alt="" coords="153,57,317,98"/>
+<area shape="rect" id="node2" href="$group__c.html#ga5361ed92350c1fdbd00c65e06388eb79" title="Disable warning. " alt="" coords="171,5,299,32"/>
+<area shape="rect" id="node3" href="$group__c.html#ga9ef59982ec336098d293b4ddf2c6c357" title="Enable warning. " alt="" coords="173,56,297,83"/>
+<area shape="rect" id="node4" href="$structhif_1_1internal_1_1StderrStruct.html#a97651e40d4521ed5e4745f295de141e5" title="hif::internal::StderrStruct\l::operator()" alt="" coords="153,107,317,149"/>
 </map>

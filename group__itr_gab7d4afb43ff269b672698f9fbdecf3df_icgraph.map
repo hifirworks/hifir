@@ -1,3 +1,17 @@
 <map id="hif_get_default_params" name="hif_get_default_params">
-<area shape="rect" id="node2" href="$group__itr.html#ga43f29591bddf7167da6ffd7f1ce485c6" title="alias of get_default_options " alt="" coords="211,5,369,32"/>
+<area shape="rect" id="node2" href="$group__itr.html#ga43f29591bddf7167da6ffd7f1ce485c6" title="alias of get_default_options " alt="" coords="211,183,369,209"/>
+<area shape="rect" id="node3" href="$namespacelibhifir__impl.html#aa647755afeb4c8b87409a5db329361ff" title="libhifir_impl::create\l_params" alt="" coords="417,175,548,217"/>
+<area shape="rect" id="node4" href="$namespacelibhifir__impl.html#a272cb75f88c5869682ab55b82d069ffa" title="libhifir_impl::factorize" alt="" coords="596,183,741,209"/>
+<area shape="rect" id="node5" href="$group__cdouble.html#ga77dbe00f3fc62cfb2583c6ac800f4eb4" title="Setup a double&#45;precision HIF instance. " alt="" coords="806,5,883,32"/>
+<area shape="rect" id="node7" href="$group__cdouble.html#ga6f477b64f3e8c9cd2ecb15153fdb3d0d" title="Refactorize a HIF preconditioner. " alt="" coords="789,56,900,83"/>
+<area shape="rect" id="node8" href="$group__csingle.html#gae44b965049b623a1e776139c990d3793" title="Setup a single&#45;precision HIF instance. " alt="" coords="806,107,883,133"/>
+<area shape="rect" id="node10" href="$group__csingle.html#gabcf548831e7e7028d1d0d626ca420517" title="Refactorize a HIF preconditioner. " alt="" coords="789,157,900,184"/>
+<area shape="rect" id="node11" href="$group__ccomplexdouble.html#gaf484fce835260d01607f69eb16946739" title="Setup a double&#45;precision complex HIF instance. " alt="" coords="806,208,883,235"/>
+<area shape="rect" id="node13" href="$group__ccomplexdouble.html#gaaf48420c2d85a97419d46668d97ac05f" title="Refactorize a HIF preconditioner. " alt="" coords="789,259,900,285"/>
+<area shape="rect" id="node14" href="$group__ccomplexsingle.html#ga50562a146f5a8fccc733496dfc7634c5" title="Setup a single&#45;precision complex HIF instance. " alt="" coords="806,309,883,336"/>
+<area shape="rect" id="node16" href="$group__ccomplexsingle.html#ga049f10f26fc2358c52842427b9580dbc" title="Refactorize a HIF preconditioner. " alt="" coords="789,360,900,387"/>
+<area shape="rect" id="node6" href="$group__cdouble.html#ga9160ad6f47f29b28db1117b5e204dbf2" title="Create a double&#45;precision HIF instance. " alt="" coords="948,5,1031,32"/>
+<area shape="rect" id="node9" href="$group__csingle.html#gae311803de1a5ee4d04d6cd15fbc65bbc" title="Create a single&#45;precision HIF instance. " alt="" coords="948,107,1031,133"/>
+<area shape="rect" id="node12" href="$group__ccomplexdouble.html#ga82a7d40400f181eaa31b9514c6a64793" title="Create a double&#45;precision complex HIF instance. " alt="" coords="948,208,1031,235"/>
+<area shape="rect" id="node15" href="$group__ccomplexsingle.html#ga81f952928dadb1bdb6cae0dcd8101b59" title="Create a single&#45;precision complex HIF instance. " alt="" coords="948,309,1031,336"/>
 </map>

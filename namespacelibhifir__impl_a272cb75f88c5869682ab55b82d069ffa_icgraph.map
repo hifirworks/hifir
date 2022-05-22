@@ -1,0 +1,14 @@
+<map id="libhifir_impl::factorize" name="libhifir_impl::factorize">
+<area shape="rect" id="node2" href="$group__ccomplexsingle.html#ga049f10f26fc2358c52842427b9580dbc" title="Refactorize a HIF preconditioner. " alt="" coords="199,5,309,32"/>
+<area shape="rect" id="node3" href="$group__ccomplexsingle.html#ga50562a146f5a8fccc733496dfc7634c5" title="Setup a single&#45;precision complex HIF instance. " alt="" coords="215,56,293,83"/>
+<area shape="rect" id="node5" href="$group__cdouble.html#ga6f477b64f3e8c9cd2ecb15153fdb3d0d" title="Refactorize a HIF preconditioner. " alt="" coords="199,107,309,133"/>
+<area shape="rect" id="node6" href="$group__cdouble.html#ga77dbe00f3fc62cfb2583c6ac800f4eb4" title="Setup a double&#45;precision HIF instance. " alt="" coords="215,157,293,184"/>
+<area shape="rect" id="node8" href="$group__csingle.html#gabcf548831e7e7028d1d0d626ca420517" title="Refactorize a HIF preconditioner. " alt="" coords="199,208,309,235"/>
+<area shape="rect" id="node9" href="$group__csingle.html#gae44b965049b623a1e776139c990d3793" title="Setup a single&#45;precision HIF instance. " alt="" coords="215,259,293,285"/>
+<area shape="rect" id="node11" href="$group__ccomplexdouble.html#gaaf48420c2d85a97419d46668d97ac05f" title="Refactorize a HIF preconditioner. " alt="" coords="199,309,309,336"/>
+<area shape="rect" id="node12" href="$group__ccomplexdouble.html#gaf484fce835260d01607f69eb16946739" title="Setup a double&#45;precision complex HIF instance. " alt="" coords="215,360,293,387"/>
+<area shape="rect" id="node4" href="$group__ccomplexsingle.html#ga81f952928dadb1bdb6cae0dcd8101b59" title="Create a single&#45;precision complex HIF instance. " alt="" coords="357,56,440,83"/>
+<area shape="rect" id="node7" href="$group__cdouble.html#ga9160ad6f47f29b28db1117b5e204dbf2" title="Create a double&#45;precision HIF instance. " alt="" coords="357,157,440,184"/>
+<area shape="rect" id="node10" href="$group__csingle.html#gae311803de1a5ee4d04d6cd15fbc65bbc" title="Create a single&#45;precision HIF instance. " alt="" coords="357,259,440,285"/>
+<area shape="rect" id="node13" href="$group__ccomplexdouble.html#ga82a7d40400f181eaa31b9514c6a64793" title="Create a double&#45;precision complex HIF instance. " alt="" coords="357,360,440,387"/>
+</map>

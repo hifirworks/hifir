@@ -1,50 +1,45 @@
 <map id="hif::error" name="hif::error">
-<area shape="rect" id="node2" href="$classhif_1_1NspFilter.html#aa31f03962ca6ec731e6cb049bd5022da" title="hif::NspFilter::_const\l_filter" alt="" coords="149,5,293,47"/>
-<area shape="rect" id="node3" href="$classhif_1_1Array.html#a7d2df6d31763c98e80006fb660c2eb7a" title="hif::Array\&lt; index_type\l \&gt;::at" alt="" coords="145,71,296,112"/>
-<area shape="rect" id="node4" href="$classhif_1_1AugCRS.html#aebf6c4ec5774bf7a38db33750a4edaa9" title="build augmented data structure based on mature CRS matrices " alt="" coords="141,137,300,163"/>
-<area shape="rect" id="node5" href="$classhif_1_1AugCCS.html#a864067248afb2166f6801766e9271c09" title="build augmented data structure based on mature CCS matrices " alt="" coords="141,187,300,214"/>
-<area shape="rect" id="node6" href="$classhif_1_1internal_1_1CompressedStorage.html#adb83e48fbb7412e5c59c62664b6c8095" title="check the validity of a matrix " alt="" coords="130,238,311,294"/>
-<area shape="rect" id="node7" href="$group__ds.html#gaf8d6670e7eaa78431ead4e7630d85982" title="convert from one type to another type, e.g. ccs&#45;&gt;crs " alt="" coords="152,319,289,360"/>
-<area shape="rect" id="node8" href="$classhif_1_1EqlDriver.html#a183b0a9ac884a29c5ed7a37472872fa2" title="hif::EqlDriver::do\l_matching" alt="" coords="161,384,281,425"/>
-<area shape="rect" id="node9" href="$group__pre.html#gab1125ac4d4fc70e90dcdec972e494b65" title="routine to perform preprocessing for improving the quality of input " alt="" coords="147,450,294,477"/>
-<area shape="rect" id="node10" href="$structhif_1_1Prec.html#a46c680e85d0e2f77bccf8089036e1fbb" title="hif::Prec::export_sparse_data" alt="" coords="124,501,317,527"/>
-<area shape="rect" id="node11" href="$group__fac.html#ga9ae2a2dd37f64dfcd1678ca6f8497dac" title="extract the E part " alt="" coords="145,551,296,578"/>
-<area shape="rect" id="node12" href="$group__fac.html#gabfa7d15200b25728021b91b690fb1fe7" title="extract the F part " alt="" coords="146,602,295,629"/>
-<area shape="rect" id="node13" href="$group__fac.html#gab07972586727f4a96ebfccd86e755610" title="extract permutated diagonal " alt="" coords="153,653,288,695"/>
-<area shape="rect" id="node14" href="$classhif_1_1LUP.html#a8c2bef9ad4a5bcef602fdcd682c66683" title="perform LU with partial pivoting " alt="" coords="157,719,285,746"/>
-<area shape="rect" id="node16" href="$classhif_1_1SYEIG.html#a5f27002474d910771813274d8641d995" title="compute decomposition and determine the rank " alt="" coords="149,770,292,797"/>
-<area shape="rect" id="node18" href="$classhif_1_1HIF.html#a77f109f53d5b2fde156c258fd2ae5913" title="factorize the HIF preconditioner " alt="" coords="159,821,283,847"/>
-<area shape="rect" id="node19" href="$classhif_1_1NspFilter.html#a69934b8419b47d0e0c5b635e825883f5" title="filtering out null space component from x " alt="" coords="155,871,286,898"/>
-<area shape="rect" id="node20" href="$group__fac.html#ga5e85c4efc549f28f913faacc7a901d9b" title="perform partial incomplete LU for a level " alt="" coords="157,922,285,949"/>
-<area shape="rect" id="node21" href="$group__io.html#gad40204849ab390db879fcef33ed34dc9" title="Internal routine to parse the first line. " alt="" coords="147,1024,295,1065"/>
-<area shape="rect" id="node22" href="$group__io.html#gafb3eba3c5eeb67b0a41f593aa2ce6337" title="Read a sparse matrix form a MatrixMarket file. " alt="" coords="371,1005,515,1031"/>
-<area shape="rect" id="node23" href="$group__io.html#gab37317675352a438fa90ce0ca917f7d1" title="Read vector from a MatrixMarket file. " alt="" coords="372,1059,513,1086"/>
-<area shape="rect" id="node24" href="$group__io.html#ga04ca260446ba7e6b509228b0079d6ad5" title="Internal routine to read sparse data. " alt="" coords="147,1141,295,1183"/>
-<area shape="rect" id="node25" href="$group__io.html#ga6c2b0d5c411209559da79d185886ef33" title="Internal routine to read vector data. " alt="" coords="147,1207,295,1248"/>
-<area shape="rect" id="node26" href="$classhif_1_1CRS.html#a3b1f9465b1ebd26613fe404bb4e4b3a4" title="matrix vector multiplication for MT (CRS only) " alt="" coords="143,1273,298,1329"/>
-<area shape="rect" id="node27" href="$classhif_1_1IntervalCRS.html#a23d90129ef4036448fdb85f1b9f8702e" title="matrix vector multiplication for MT (CRS only) " alt="" coords="127,1353,314,1379"/>
-<area shape="rect" id="node28" href="$classhif_1_1CRS.html#ab3a785ffedf726d174666b32213d903e" title="matrix vector multiplication for MT (CRS only) " alt="" coords="135,1404,307,1445"/>
-<area shape="rect" id="node29" href="$group__fac.html#gacf606dfc70540b8eff78f1e1102e7529" title="perform partial incomplete LU for a level with thresholding pivoting " alt="" coords="139,1470,302,1497"/>
-<area shape="rect" id="node30" href="$classhif_1_1HIF.html#a440a94866490828151898db95e489023" title="get constant reference to a specific level " alt="" coords="171,1521,270,1547"/>
-<area shape="rect" id="node31" href="$group__itr.html#gae2ff7ffcabcdcd58f50cf4be5764041c" title="query information of an ASCII file " alt="" coords="151,1571,290,1598"/>
-<area shape="rect" id="node32" href="$group__itr.html#ga21ccbc8c2ac57a00725cb471206b8a0d" title="query information of a binary file " alt="" coords="157,1622,285,1649"/>
-<area shape="rect" id="node33" href="$group__io.html#gad018615d437ae470a0c1865c1e98acd2" title="read data from ASCII file " alt="" coords="169,1673,272,1699"/>
-<area shape="rect" id="node34" href="$namespacehif.html#ga55c28a7fae18f4d32e9b5ead78e6c9b7" title="read data from file to a CRS matrix " alt="" coords="174,1723,267,1750"/>
-<area shape="rect" id="node35" href="$group__pre.html#ga32dd1486848fb34d6c355e68d5e362e8" title="apply approximated mimimum degree ordering " alt="" coords="173,1774,268,1801"/>
-<area shape="rect" id="node36" href="$classhif_1_1CRS.html#a0e808016bb4614dbfefd0aca27ae9407" title="scale by a diagonal matrix from left " alt="" coords="145,1825,297,1881"/>
-<area shape="rect" id="node37" href="$classhif_1_1CCS.html#aa02faffc383ee87ce0cbff1fa0a282c7" title="scale by a diagonal matrix from left " alt="" coords="137,1905,305,1931"/>
-<area shape="rect" id="node38" href="$classhif_1_1CRS.html#aa6e1c2dc10b9ab1e1346547a48ec5305" title="scale by a diagonal matrix from right " alt="" coords="145,1955,297,2011"/>
-<area shape="rect" id="node39" href="$classhif_1_1CCS.html#ac8f80e9d8fa755b593b81dab0cd8c4ef" title="scale by a diagonal matrix from right " alt="" coords="149,2036,292,2077"/>
-<area shape="rect" id="node40" href="$classhif_1_1LUP.html#a7a636579baa84f3b67ed6ba5e25e7ff7" title="solve &#160;" alt="" coords="166,2102,275,2129"/>
-<area shape="rect" id="node41" href="$classhif_1_1LUP.html#a25d99a0179bbde3720577f41c1b43306" title="solve with multiple RHS " alt="" coords="148,2153,293,2179"/>
-<area shape="rect" id="node42" href="$classhif_1_1HIF.html#a37b9092ee9a1b8dff86229cb96099565" title="get the stats " alt="" coords="169,2203,272,2230"/>
-<area shape="rect" id="node43" href="$group__fac.html#ga7f72580db4c9b6183bafd84427b8c17d" title="perform partial incomplete LU for a level " alt="" coords="135,2254,306,2281"/>
-<area shape="rect" id="node44" href="$group__ds.html#ga6c44405ec0c5564a7c6e8e2878010b15" title="wrap user data for CCS " alt="" coords="151,2305,290,2331"/>
-<area shape="rect" id="node45" href="$group__ds.html#ga084b922d1d56f5cd2132954a939808ce" title="wrap user data for CRS " alt="" coords="153,2355,289,2382"/>
-<area shape="rect" id="node46" href="$group__io.html#ga3c53e6cd53eddf765de2bb0cc2df47ce" title="write to ASCII file " alt="" coords="167,2406,274,2433"/>
-<area shape="rect" id="node47" href="$group__io.html#ga8ca589f59d401977be6102a0a6809bac" title="write a CRS matrix " alt="" coords="173,2457,269,2483"/>
-<area shape="rect" id="node48" href="$group__io.html#ga3b699628b30e89476e69ecfe20dbb20b" title="Write a sparse matrix. " alt="" coords="147,2507,294,2534"/>
-<area shape="rect" id="node49" href="$group__io.html#ga5233adce76a40770def59169ff9f6dd0" title="Write a float&#45;point vector to a MatrixMarket file. " alt="" coords="149,2558,293,2585"/>
-<area shape="rect" id="node15" href="$classhif_1_1LUP.html#ad0da1e4ba9448e3c979af601d6301d83" title="refactorize the dense block " alt="" coords="373,719,512,746"/>
-<area shape="rect" id="node17" href="$classhif_1_1SYEIG.html#a97b686caf3b3e5340172f4539e445084" title="refactorize the dense block " alt="" coords="365,770,520,797"/>
+<area shape="rect" id="node2" href="$classhif_1_1NspFilter.html#aa31f03962ca6ec731e6cb049bd5022da" title="hif::NspFilter::_const\l_filter" alt="" coords="143,5,287,47"/>
+<area shape="rect" id="node3" href="$classhif_1_1Array.html#a7d2df6d31763c98e80006fb660c2eb7a" title="hif::Array\&lt; index_type\l \&gt;::at" alt="" coords="139,71,290,112"/>
+<area shape="rect" id="node4" href="$classhif_1_1AugCRS.html#aebf6c4ec5774bf7a38db33750a4edaa9" title="build augmented data structure based on mature CRS matrices " alt="" coords="135,137,294,163"/>
+<area shape="rect" id="node5" href="$classhif_1_1AugCCS.html#a864067248afb2166f6801766e9271c09" title="build augmented data structure based on mature CCS matrices " alt="" coords="135,187,294,214"/>
+<area shape="rect" id="node6" href="$classhif_1_1internal_1_1CompressedStorage.html#a1d8ef6e1fa92bb5a842ee4132fe3fe30" title="check the validity of a matrix " alt="" coords="124,239,305,309"/>
+<area shape="rect" id="node7" href="$group__ds.html#gacdb6b24daee98b81644f0cee9ed38e0d" title="convert from one type to another type, e.g. ccs&#45;&gt;crs " alt="" coords="146,333,283,375"/>
+<area shape="rect" id="node8" href="$classhif_1_1EqlDriver.html#a3ff8dd55131f524b6fd3cbae5e6c2ce1" title="hif::EqlDriver::do\l_matching" alt="" coords="155,399,275,440"/>
+<area shape="rect" id="node9" href="$group__pre.html#gab1125ac4d4fc70e90dcdec972e494b65" title="routine to perform preprocessing for improving the quality of input " alt="" coords="141,465,288,491"/>
+<area shape="rect" id="node10" href="$group__fac.html#ga9ae2a2dd37f64dfcd1678ca6f8497dac" title="extract the E part " alt="" coords="139,515,290,542"/>
+<area shape="rect" id="node11" href="$group__fac.html#gabfa7d15200b25728021b91b690fb1fe7" title="extract the F part " alt="" coords="140,566,289,593"/>
+<area shape="rect" id="node12" href="$group__fac.html#gab07972586727f4a96ebfccd86e755610" title="extract permutated diagonal " alt="" coords="147,617,282,659"/>
+<area shape="rect" id="node13" href="$classhif_1_1LUP.html#a8c2bef9ad4a5bcef602fdcd682c66683" title="perform LU with partial pivoting " alt="" coords="151,683,279,710"/>
+<area shape="rect" id="node15" href="$classhif_1_1SYEIG.html#a5f27002474d910771813274d8641d995" title="compute decomposition and determine the rank " alt="" coords="143,734,286,761"/>
+<area shape="rect" id="node17" href="$classhif_1_1HIF.html#adc73bbf7cf1a7ea67e214080203cf208" title="factorize the HIF preconditioner " alt="" coords="128,785,301,841"/>
+<area shape="rect" id="node18" href="$classhif_1_1NspFilter.html#a69934b8419b47d0e0c5b635e825883f5" title="filtering out null space component from x " alt="" coords="149,865,280,891"/>
+<area shape="rect" id="node19" href="$group__fac.html#ga5e85c4efc549f28f913faacc7a901d9b" title="perform partial incomplete LU for a level " alt="" coords="151,915,279,942"/>
+<area shape="rect" id="node20" href="$group__io.html#gad40204849ab390db879fcef33ed34dc9" title="Internal routine to parse the first line. " alt="" coords="141,1017,289,1059"/>
+<area shape="rect" id="node22" href="$group__io.html#gafb3eba3c5eeb67b0a41f593aa2ce6337" title="Read a sparse matrix form a MatrixMarket file. " alt="" coords="359,970,503,997"/>
+<area shape="rect" id="node23" href="$group__io.html#gab37317675352a438fa90ce0ca917f7d1" title="Read vector from a MatrixMarket file. " alt="" coords="360,1079,501,1106"/>
+<area shape="rect" id="node24" href="$group__io.html#ga04ca260446ba7e6b509228b0079d6ad5" title="Internal routine to read sparse data. " alt="" coords="141,1135,289,1176"/>
+<area shape="rect" id="node25" href="$group__io.html#ga6c2b0d5c411209559da79d185886ef33" title="Internal routine to read vector data. " alt="" coords="141,1200,289,1241"/>
+<area shape="rect" id="node26" href="$classhif_1_1CRS.html#ab5f6b46babd10ebdd3ee6711321ec9b7" title="matrix vector multiplication for MT (CRS only) " alt="" coords="134,1266,295,1322"/>
+<area shape="rect" id="node27" href="$classhif_1_1CRS.html#a40d3e45ba4e89b823903d1629a463737" title="matrix vector multiplication for MT (CRS only) " alt="" coords="134,1346,295,1402"/>
+<area shape="rect" id="node28" href="$group__fac.html#gacf606dfc70540b8eff78f1e1102e7529" title="perform partial incomplete LU for a level with thresholding pivoting " alt="" coords="133,1426,296,1453"/>
+<area shape="rect" id="node29" href="$classhif_1_1HIF.html#ac3df1ea0a1c3bd6a8f4c7e278515cc19" title="get constant reference to a specific level " alt="" coords="128,1477,301,1533"/>
+<area shape="rect" id="node30" href="$group__io.html#ga08e93eae97844ab6109e754d6e460765" title="read data from file to a CRS matrix " alt="" coords="168,1557,261,1583"/>
+<area shape="rect" id="node31" href="$group__pre.html#ga6446d4f61326606b26ecbbe80cd900d2" title="apply approximated mimimum degree ordering " alt="" coords="167,1607,262,1634"/>
+<area shape="rect" id="node32" href="$classhif_1_1CRS.html#a9b70320b70af0382538300f5f697735f" title="scale by a diagonal matrix from left " alt="" coords="134,1658,295,1714"/>
+<area shape="rect" id="node33" href="$classhif_1_1CCS.html#a4e9722a41efa8aa07017556dad17f71f" title="scale by a diagonal matrix from left " alt="" coords="131,1738,299,1765"/>
+<area shape="rect" id="node34" href="$classhif_1_1CRS.html#a0da5942cdbe9a784ef876cb9eff571aa" title="scale by a diagonal matrix from right " alt="" coords="134,1789,295,1845"/>
+<area shape="rect" id="node35" href="$classhif_1_1CCS.html#abd8fa23f3510ea59567d172d3540d255" title="scale by a diagonal matrix from right " alt="" coords="143,1869,286,1911"/>
+<area shape="rect" id="node36" href="$classhif_1_1LUP.html#a7a636579baa84f3b67ed6ba5e25e7ff7" title="solve &#160;" alt="" coords="160,1935,269,1962"/>
+<area shape="rect" id="node37" href="$classhif_1_1LUP.html#a25d99a0179bbde3720577f41c1b43306" title="solve with multiple RHS " alt="" coords="142,1986,287,2013"/>
+<area shape="rect" id="node38" href="$classhif_1_1HIF.html#ae85c7bbed2f669d41b997d0be509c35c" title="get the stats " alt="" coords="128,2037,301,2093"/>
+<area shape="rect" id="node39" href="$group__fac.html#ga7f72580db4c9b6183bafd84427b8c17d" title="perform partial incomplete LU for a level " alt="" coords="129,2117,300,2143"/>
+<area shape="rect" id="node40" href="$group__ds.html#ga1f1859631e8afbd4acb916097204656b" title="wrap user data for CCS " alt="" coords="145,2167,284,2194"/>
+<area shape="rect" id="node41" href="$group__ds.html#ga4ad1d37b1fae3075020ab2504ed8ffca" title="wrap user data for CRS " alt="" coords="147,2218,283,2245"/>
+<area shape="rect" id="node42" href="$group__io.html#ga59c160eedb6d968e131aea9a10367946" title="write a CRS matrix " alt="" coords="167,2269,263,2295"/>
+<area shape="rect" id="node43" href="$group__io.html#ga3b699628b30e89476e69ecfe20dbb20b" title="Write a sparse matrix. " alt="" coords="141,2319,288,2346"/>
+<area shape="rect" id="node44" href="$group__io.html#ga5233adce76a40770def59169ff9f6dd0" title="Write a float&#45;point vector to a MatrixMarket file. " alt="" coords="143,2370,287,2397"/>
+<area shape="rect" id="node14" href="$classhif_1_1LUP.html#ad0da1e4ba9448e3c979af601d6301d83" title="refactorize the dense block " alt="" coords="361,683,500,710"/>
+<area shape="rect" id="node16" href="$classhif_1_1SYEIG.html#a97b686caf3b3e5340172f4539e445084" title="refactorize the dense block " alt="" coords="353,734,508,761"/>
+<area shape="rect" id="node21" href="$group__c.html#ga7e9cf594480b7b08329e32ee66684ef7" title="Query information of a MatrixMarket file. " alt="" coords="373,1025,488,1051"/>
 </map>

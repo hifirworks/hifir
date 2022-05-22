@@ -32,7 +32,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">HIFIR
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -93,18 +93,18 @@ $(document).ready(function(){initNavTree('functions_func_c.html','');});
 : <a class="el" href="classhif_1_1Array.html#a47fec6aa2ad9bef18d57c2b647b16e0d">hif::Array&lt; T &gt;</a>
 </li>
 <li>CCS()
-: <a class="el" href="classhif_1_1CCS.html#a5bc40a47bac35e300338d5edc74a1527">hif::CCS&lt; ValueType, IndexType &gt;</a>
+: <a class="el" href="classhif_1_1CCS.html#a85330247f5d39a360fd4aefb42827f43">hif::CCS&lt; ValueType, IndexType, IndPtrType &gt;</a>
 </li>
 <li>cend()
 : <a class="el" href="classhif_1_1Array.html#a71c5cbe4cbec00bb459cf9098eee0d92">hif::Array&lt; T &gt;</a>
 </li>
 <li>check_validity()
-: <a class="el" href="classhif_1_1CCS.html#a298b93265763490cd4532da57c50102b">hif::CCS&lt; ValueType, IndexType &gt;</a>
-, <a class="el" href="classhif_1_1CRS.html#a89dfd6203a449b2146aee0c8d54b3427">hif::CRS&lt; ValueType, IndexType &gt;</a>
-, <a class="el" href="classhif_1_1internal_1_1CompressedStorage.html#adb83e48fbb7412e5c59c62664b6c8095">hif::internal::CompressedStorage&lt; ValueType, IndexType &gt;</a>
+: <a class="el" href="classhif_1_1CCS.html#a33ed915302de4b1559682c2f85aa4529">hif::CCS&lt; ValueType, IndexType, IndPtrType &gt;</a>
+, <a class="el" href="classhif_1_1CRS.html#a0ee885b6f4de9a4dcb53498585d051b3">hif::CRS&lt; ValueType, IndexType, IndPtrType &gt;</a>
+, <a class="el" href="classhif_1_1internal_1_1CompressedStorage.html#a1d8ef6e1fa92bb5a842ee4132fe3fe30">hif::internal::CompressedStorage&lt; ValueType, IndexType, IndPtrType &gt;</a>
 </li>
 <li>clear()
-: <a class="el" href="classhif_1_1HIF.html#a70d68281a4586adb5d8c5cc84ae11901">hif::HIF&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="classhif_1_1HIF.html#a0ffc713d0489bf633362f2b8a5a0c243">hif::HIF&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 , <a class="el" href="classhif_1_1IterRefine.html#a6c7c0eb5ea4de7a5850b8a34c3bcbd85">hif::IterRefine&lt; ValueType &gt;</a>
 </li>
 <li>col_begin()
@@ -120,7 +120,7 @@ $(document).ready(function(){initNavTree('functions_func_c.html','');});
 : <a class="el" href="classhif_1_1AugCRS.html#ad2efedd2b5ff9fd3d71fcc02165b749e">hif::AugCRS&lt; CrsType &gt;</a>
 </li>
 <li>col_end()
-: <a class="el" href="classhif_1_1AugCRS.html#a7fefc90dce79e9e6ac9a95ad7b4d70c1">hif::AugCRS&lt; CrsType &gt;</a>
+: <a class="el" href="classhif_1_1AugCRS.html#a6b44e7656dc35fa4d33f04b640ca0e4f">hif::AugCRS&lt; CrsType &gt;</a>
 , <a class="el" href="classhif_1_1DenseMatrix.html#a05f9ca6d87efcfa12f25b2380296d16a">hif::DenseMatrix&lt; ValueType &gt;</a>
 </li>
 <li>col_idx()
@@ -128,26 +128,26 @@ $(document).ready(function(){initNavTree('functions_func_c.html','');});
 </li>
 <li>col_ind()
 : <a class="el" href="classhif_1_1AugCCS.html#aa630091b9aaefbd6e0e983006e024d2b">hif::AugCCS&lt; CcsType &gt;</a>
-, <a class="el" href="classhif_1_1CRS.html#a7c14dd36bd57abdd428390097ed1ac3c">hif::CRS&lt; ValueType, IndexType &gt;</a>
+, <a class="el" href="classhif_1_1CRS.html#a4237041a4908e9d3c418926ccae99084">hif::CRS&lt; ValueType, IndexType, IndPtrType &gt;</a>
 </li>
 <li>col_ind_begin()
-: <a class="el" href="classhif_1_1CRS.html#a34bb800cc30b53f74e0955b3ee591b62">hif::CRS&lt; ValueType, IndexType &gt;</a>
+: <a class="el" href="classhif_1_1CRS.html#ae50c1ee1758b981834697ae1c03e2dc3">hif::CRS&lt; ValueType, IndexType, IndPtrType &gt;</a>
 </li>
 <li>col_ind_cbegin()
-: <a class="el" href="classhif_1_1CRS.html#a59109279a247dd24fa217ed18820eb41">hif::CRS&lt; ValueType, IndexType &gt;</a>
+: <a class="el" href="classhif_1_1CRS.html#a5697cf4cf0b05d143aa9f1e77080afc6">hif::CRS&lt; ValueType, IndexType, IndPtrType &gt;</a>
 </li>
 <li>col_ind_cend()
-: <a class="el" href="classhif_1_1CRS.html#afd39d14ddf7e59cf3d2261f8620ca0a0">hif::CRS&lt; ValueType, IndexType &gt;</a>
+: <a class="el" href="classhif_1_1CRS.html#ab6a75810c83df4908b311194fc84358e">hif::CRS&lt; ValueType, IndexType, IndPtrType &gt;</a>
 </li>
 <li>col_ind_end()
-: <a class="el" href="classhif_1_1CRS.html#ac52430233852e404fb1f5bc7ae9f4f39">hif::CRS&lt; ValueType, IndexType &gt;</a>
+: <a class="el" href="classhif_1_1CRS.html#a86dae61d5a6bbb379cc722be5e4c5c7b">hif::CRS&lt; ValueType, IndexType, IndPtrType &gt;</a>
 </li>
 <li>col_next()
-: <a class="el" href="classhif_1_1AugCRS.html#accd26bafdc942d5511630ebf75ae4236">hif::AugCRS&lt; CrsType &gt;</a>
+: <a class="el" href="classhif_1_1AugCRS.html#ab32423bf3a821d58fca697638d8fae1f">hif::AugCRS&lt; CrsType &gt;</a>
 </li>
 <li>col_start()
-: <a class="el" href="classhif_1_1AugCRS.html#a47a4edf544aa78efe8b085aad20f8397">hif::AugCRS&lt; CrsType &gt;</a>
-, <a class="el" href="classhif_1_1CCS.html#a4e1f5dfbf81c9069a94971d277afa0b7">hif::CCS&lt; ValueType, IndexType &gt;</a>
+: <a class="el" href="classhif_1_1AugCRS.html#ab8eb2e8bf20efd683b11043e815a6f7a">hif::AugCRS&lt; CrsType &gt;</a>
+, <a class="el" href="classhif_1_1CCS.html#ae13e8f61d973fdda20912ee5fcf888b1">hif::CCS&lt; ValueType, IndexType, IndPtrType &gt;</a>
 </li>
 <li>compress_array()
 : <a class="el" href="classhif_1_1Crout.html#abce74b5c7033230c21f25a4909ba2001">hif::Crout</a>
@@ -156,47 +156,43 @@ $(document).ready(function(){initNavTree('functions_func_c.html','');});
 : <a class="el" href="classhif_1_1SparseVector.html#a38a74b10cc5acfc520561dda35e30db2">hif::SparseVector&lt; ValueType, IndexType &gt;</a>
 </li>
 <li>CompressedStorage()
-: <a class="el" href="classhif_1_1internal_1_1CompressedStorage.html#aefc3cb6cc1165408dccc66f0a5921f59">hif::internal::CompressedStorage&lt; ValueType, IndexType &gt;</a>
+: <a class="el" href="classhif_1_1internal_1_1CompressedStorage.html#a94841f5f78498054fb803928b1371613">hif::internal::CompressedStorage&lt; ValueType, IndexType, IndPtrType &gt;</a>
 </li>
 <li>compute()
-: <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a8db9ca3e83bcb7386370cbf532a43697">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;</a>
+: <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ae0a1bdf8e7738cdd5a13bc835dca552b">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;</a>
 </li>
 <li>compute_dk()
-: <a class="el" href="classhif_1_1PivotCrout.html#a7141fe35e82caf4b175b65bafd3215bd">hif::PivotCrout</a>
+: <a class="el" href="classhif_1_1PivotCrout.html#a07090b1b1076f6c100df45ec3952226e">hif::PivotCrout</a>
 </li>
 <li>compute_l()
-: <a class="el" href="classhif_1_1Crout.html#a11611d8b989bd1c21d7836c00e55037b">hif::Crout</a>
-, <a class="el" href="classhif_1_1PivotCrout.html#a6898b665fe8bf7eab93a4f8b1d1b620f">hif::PivotCrout</a>
+: <a class="el" href="classhif_1_1Crout.html#acd828247defa0e394b12d62811930216">hif::Crout</a>
+, <a class="el" href="classhif_1_1PivotCrout.html#a10f12a87c293233a0acd52ece0a41c4f">hif::PivotCrout</a>
 </li>
 <li>compute_perm()
-: <a class="el" href="classhif_1_1CCS.html#a758c9649c4cd34221719e015716f4336">hif::CCS&lt; ValueType, IndexType &gt;</a>
-, <a class="el" href="classhif_1_1CRS.html#a90aa204c41b9a8fbc1fd6d2cbb9d2496">hif::CRS&lt; ValueType, IndexType &gt;</a>
+: <a class="el" href="classhif_1_1CCS.html#a950aee51d186d5c9dc4fb3c9425ffc11">hif::CCS&lt; ValueType, IndexType, IndPtrType &gt;</a>
+, <a class="el" href="classhif_1_1CRS.html#a7bc21211bea4eddaf16c11cd02dc90bb">hif::CRS&lt; ValueType, IndexType, IndPtrType &gt;</a>
 </li>
 <li>compute_symm()
-: <a class="el" href="classhif_1_1Crout.html#a7e7124b69c3f78edc6996c8674ff780e">hif::Crout</a>
+: <a class="el" href="classhif_1_1Crout.html#ab428dc148a9fb48819d8ba9f104b555e">hif::Crout</a>
 </li>
 <li>compute_ut()
-: <a class="el" href="classhif_1_1Crout.html#a6160f724500f49f900f4b12014c3bc22">hif::Crout</a>
-, <a class="el" href="classhif_1_1PivotCrout.html#a0501a26e462c5d62fee0e923a17f84d9">hif::PivotCrout</a>
+: <a class="el" href="classhif_1_1Crout.html#ab6859cbf1c747aaac7e6cbb38c33fe08">hif::Crout</a>
+, <a class="el" href="classhif_1_1PivotCrout.html#a82761654d2ad8824de83e7073aa64629">hif::PivotCrout</a>
 </li>
 <li>control()
 : <a class="el" href="classhif_1_1amd_1_1AMD.html#a25275af34ba460f494e6f54e05a09b6c">hif::amd::AMD&lt; Int &gt;</a>
-</li>
-<li>converted()
-: <a class="el" href="classhif_1_1IntervalCCS.html#ab89a77a2b405e56e6fbfacb83213d0b9">hif::IntervalCCS&lt; ValueType, IndexType, IntervalType &gt;</a>
-, <a class="el" href="classhif_1_1IntervalCRS.html#a05ae34325595805c4afb3b6b248a9a4d">hif::IntervalCRS&lt; ValueType, IndexType, IntervalType &gt;</a>
 </li>
 <li>copy_sparse()
 : <a class="el" href="classhif_1_1DenseMatrix.html#a1d2f1cd57dc70ea628ad41b2640c90af">hif::DenseMatrix&lt; ValueType &gt;</a>
 </li>
 <li>counts()
-: <a class="el" href="classhif_1_1internal_1_1SpVInternalExtractor.html#aff10fa1b2f3d21df690bb00c2e1ede8f">hif::internal::SpVInternalExtractor&lt; SpVecType &gt;</a>
+: <a class="el" href="classhif_1_1internal_1_1SpVInternalExtractor.html#a23454add9dec91efa2ec14cd398e49fc">hif::internal::SpVInternalExtractor&lt; SpVecType &gt;</a>
 </li>
 <li>Crout()
 : <a class="el" href="classhif_1_1Crout.html#a5dd72ad4d40f88860101746811ce3176">hif::Crout</a>
 </li>
 <li>CRS()
-: <a class="el" href="classhif_1_1CRS.html#a2e44ce27d9c3a0fa37ec2c6fc93fbc76">hif::CRS&lt; ValueType, IndexType &gt;</a>
+: <a class="el" href="classhif_1_1CRS.html#ace8a3aebf4bf0a35f3918b12c75531a8">hif::CRS&lt; ValueType, IndexType, IndPtrType &gt;</a>
 </li>
 </ul>
 </div><!-- contents -->

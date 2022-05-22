@@ -1,0 +1,8 @@
+<map id="hif::HIF::levels" name="hif::HIF::levels">
+<area shape="rect" id="node2" href="$classhif_1_1HIF.html#a52b8e38107528fdf7088ae6d089fb8b0" title="hif::HIF\&lt; std::complex\l\&lt; float \&gt;, LhfInt, LhfIndPtr\l \&gt;::_factorize_kernel" alt="" coords="161,5,335,61"/>
+<area shape="rect" id="node3" href="$group__ccomplexsingle.html#ga4a17267675ace72684321ad121047549" title="Get number of levels. " alt="" coords="197,85,299,112"/>
+<area shape="rect" id="node4" href="$group__cdouble.html#gad1b8f686b93423d6114bad828b6ad238" title="Get number of levels. " alt="" coords="197,136,299,163"/>
+<area shape="rect" id="node5" href="$group__csingle.html#ga43bfac0bff31efae7b8522e8d8c21f12" title="Get number of levels. " alt="" coords="197,187,299,213"/>
+<area shape="rect" id="node6" href="$group__ccomplexdouble.html#gac81070c6e959bd70f6adc30b911b23ca" title="Get number of levels. " alt="" coords="197,237,299,264"/>
+<area shape="rect" id="node7" href="$classhif_1_1HIF.html#ac3df1ea0a1c3bd6a8f4c7e278515cc19" title="get constant reference to a specific level " alt="" coords="161,288,335,344"/>
+</map>

@@ -1,0 +1,8 @@
+<map id="hif::HIF::nnz" name="hif::HIF::nnz">
+<area shape="rect" id="node2" href="$classhif_1_1HIF.html#adc73bbf7cf1a7ea67e214080203cf208" title="factorize the HIF preconditioner " alt="" coords="148,5,321,61"/>
+<area shape="rect" id="node3" href="$group__ccomplexsingle.html#ga511c170fd61c370758e52695dfa354a6" title="Get number of nonzeros of a HIF preconditioner. " alt="" coords="191,85,279,112"/>
+<area shape="rect" id="node4" href="$group__cdouble.html#ga2df96a12a73cd1c0363fcb11e17b6a06" title="Get number of nonzeros of a HIF preconditioner. " alt="" coords="191,136,279,163"/>
+<area shape="rect" id="node5" href="$group__csingle.html#ga28510fe5d8a002eb2adb5247ab4bd87b" title="Get number of nonzeros of a HIF preconditioner. " alt="" coords="191,187,279,213"/>
+<area shape="rect" id="node6" href="$group__ccomplexdouble.html#gad205ba204c41b9d1acf165c880a416f9" title="Get number of nonzeros of a HIF preconditioner. " alt="" coords="191,237,279,264"/>
+<area shape="rect" id="node7" href="$classhif_1_1HIF.html#a39b2c1bc0b6ef03583e0af09939fdb8a" title="compute the nnz in L, D, and U " alt="" coords="148,288,321,344"/>
+</map>

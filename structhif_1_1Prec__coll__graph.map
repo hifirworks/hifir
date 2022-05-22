@@ -1,13 +1,14 @@
-<map id="hif::Prec&lt; ValueType, IndexType, UserDenseFactor &gt;" name="hif::Prec&lt; ValueType, IndexType, UserDenseFactor &gt;">
-<area shape="rect" id="node2" href="$classhif_1_1CCS.html" title="Compressed Column Storage (CCS) format for sparse matrices. " alt="" coords="1391,53,1541,94"/>
-<area shape="rect" id="node3" href="$classhif_1_1internal_1_1CompressedStorage.html" title="Core of the compressed storage, including data and interfaces. " alt="" coords="748,83,971,125"/>
-<area shape="rect" id="node9" href="$classhif_1_1internal_1_1CompressedStorage.html" title="hif::internal::Compressed\lStorage\&lt; value_type, index_type \&gt;" alt="" coords="1141,175,1367,217"/>
-<area shape="rect" id="node12" href="$classhif_1_1CRS.html" title="Compressed Row Storage (CRS) format for sparse matrices. " alt="" coords="1179,109,1329,150"/>
-<area shape="rect" id="node4" href="$classhif_1_1Array.html" title="hif::Array\&lt; IndexType \&gt;" alt="" coords="377,88,537,115"/>
-<area shape="rect" id="node5" href="$classhif_1_1Array.html" title="Core data structure used in compressed storage. " alt="" coords="129,167,236,193"/>
-<area shape="rect" id="node7" href="$classhif_1_1Array.html" title="hif::Array\&lt; ValueType \&gt;" alt="" coords="376,139,537,165"/>
-<area shape="rect" id="node10" href="$classhif_1_1Array.html" title="hif::Array\&lt; value_type \&gt;" alt="" coords="561,188,724,215"/>
-<area shape="rect" id="node11" href="$classhif_1_1Array.html" title="hif::Array\&lt; index_type \&gt;" alt="" coords="778,245,941,272"/>
-<area shape="rect" id="node13" href="$classhif_1_1Array.html" title="hif::Array\&lt; scalar\l_type \&gt;" alt="" coords="995,321,1117,362"/>
-<area shape="rect" id="node8" href="$classhif_1_1CRS.html" title="hif::CRS\&lt; value_type,\l index_type \&gt;" alt="" coords="1565,157,1717,198"/>
+<map id="hif::Prec&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;" name="hif::Prec&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;">
+<area shape="rect" id="node2" href="$classhif_1_1CCS.html" title="Compressed Column Storage (CCS) format for sparse matrices. " alt="" coords="1341,58,1512,99"/>
+<area shape="rect" id="node3" href="$classhif_1_1internal_1_1CompressedStorage.html" title="Core of the compressed storage, including data and interfaces. " alt="" coords="751,75,965,131"/>
+<area shape="rect" id="node10" href="$classhif_1_1internal_1_1CompressedStorage.html" title="hif::internal::Compressed\lStorage\&lt; value_type, index\l_type, IndPtrType \&gt;" alt="" coords="1136,175,1317,231"/>
+<area shape="rect" id="node13" href="$classhif_1_1CRS.html" title="Compressed Row Storage (CRS) format for sparse matrices. " alt="" coords="1141,109,1312,150"/>
+<area shape="rect" id="node4" href="$classhif_1_1Array.html" title="hif::Array\&lt; IndPtrType \&gt;" alt="" coords="377,92,540,119"/>
+<area shape="rect" id="node5" href="$classhif_1_1Array.html" title="Core data structure used in compressed storage. " alt="" coords="129,193,236,220"/>
+<area shape="rect" id="node7" href="$classhif_1_1Array.html" title="hif::Array\&lt; IndexType \&gt;" alt="" coords="379,143,539,169"/>
+<area shape="rect" id="node8" href="$classhif_1_1Array.html" title="hif::Array\&lt; ValueType \&gt;" alt="" coords="378,193,539,220"/>
+<area shape="rect" id="node11" href="$classhif_1_1Array.html" title="hif::Array\&lt; value_type \&gt;" alt="" coords="564,244,727,271"/>
+<area shape="rect" id="node12" href="$classhif_1_1Array.html" title="hif::Array\&lt; index_type \&gt;" alt="" coords="777,296,939,323"/>
+<area shape="rect" id="node14" href="$classhif_1_1Array.html" title="hif::Array\&lt; scalar\l_type \&gt;" alt="" coords="989,350,1112,391"/>
+<area shape="rect" id="node9" href="$classhif_1_1CRS.html" title="hif::CRS\&lt; value_type,\l index_type, IndPtrType \&gt;" alt="" coords="1536,175,1709,217"/>
 </map>

@@ -1,3 +1,4 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$structhif_1_1internal_1_1StderrStruct.html" title="struct wrapped around stderr " alt="" coords="5,5,169,32"/>
+<area shape="rect" id="node1" href="$classhif_1_1internal_1_1CompressedStorage.html" title="hif::internal::Compressed\lStorage\&lt; value_type, index\l_type, IndPtrType \&gt;" alt="" coords="5,5,187,61"/>
+<area shape="rect" id="node2" href="$classhif_1_1CRS.html" title="hif::CRS\&lt; value_type,\l index_type, IndPtrType \&gt;" alt="" coords="235,13,408,54"/>
 </map>

@@ -1,7 +1,7 @@
 <map id="hif::mt::get_nthreads" name="hif::mt::get_nthreads">
-<area shape="rect" id="node2" href="$classhif_1_1HIF.html#a77f109f53d5b2fde156c258fd2ae5913" title="factorize the HIF preconditioner " alt="" coords="217,5,341,32"/>
-<area shape="rect" id="node3" href="$group__alg.html#ga4e650486a2775bcf557cf1b271c02d0c" title="matrix vector in parallel with openmp for multiple RHS " alt="" coords="196,56,363,83"/>
-<area shape="rect" id="node4" href="$group__alg.html#gaa8b6008ea09e61dfcdc09dce6b69cd00" title="matrix vector in parallel with openmp for multiple RHS " alt="" coords="205,107,353,149"/>
-<area shape="rect" id="node5" href="$group__alg.html#gac2db8118a4a4e6a3fcdf21dee642adba" title="matrix vector in parallel with openmp " alt="" coords="214,173,345,200"/>
-<area shape="rect" id="node6" href="$group__alg.html#ga78dfa012ecdf12af74a8ed3b923a5162" title="matrix vector in parallel with openmp " alt="" coords="201,224,358,251"/>
+<area shape="rect" id="node2" href="$classhif_1_1HIF.html#adc73bbf7cf1a7ea67e214080203cf208" title="factorize the HIF preconditioner " alt="" coords="196,5,369,61"/>
+<area shape="rect" id="node3" href="$group__alg.html#ga4e650486a2775bcf557cf1b271c02d0c" title="matrix vector in parallel with openmp for multiple RHS " alt="" coords="199,85,366,112"/>
+<area shape="rect" id="node4" href="$group__alg.html#gaa8b6008ea09e61dfcdc09dce6b69cd00" title="matrix vector in parallel with openmp for multiple RHS " alt="" coords="209,137,357,178"/>
+<area shape="rect" id="node5" href="$group__alg.html#gac2db8118a4a4e6a3fcdf21dee642adba" title="matrix vector in parallel with openmp " alt="" coords="217,203,348,229"/>
+<area shape="rect" id="node6" href="$group__alg.html#ga78dfa012ecdf12af74a8ed3b923a5162" title="matrix vector in parallel with openmp " alt="" coords="204,253,361,280"/>
 </map>

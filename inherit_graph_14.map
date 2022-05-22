@@ -1,3 +1,4 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$classhif_1_1Const.html" title="constant values " alt="" coords="5,5,116,32"/>
+<area shape="rect" id="node1" href="$classhif_1_1internal_1_1AugmentedCore.html" title="hif::internal::Augmented\lCore\&lt; CcsType::index_type,\l CcsType::indptr_type \&gt;" alt="" coords="5,5,196,61"/>
+<area shape="rect" id="node2" href="$classhif_1_1AugCCS.html" title="Augmented CCS data structure. " alt="" coords="244,53,417,80"/>
 </map>

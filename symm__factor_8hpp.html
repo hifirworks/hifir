@@ -32,7 +32,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">HIFIR
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -115,7 +115,7 @@ Include dependency graph for symm_factor.hpp:</div>
 <area shape="rect" id="node17" href="print_8hpp.html" title="Macros for &quot;stdout&quot; and &quot;stderr&quot; message printers. " alt="" coords="3279,752,3397,779"/>
 <area shape="rect" id="node19" href="stacktrace_8hpp.html" title="Print stacktrace on error aborting. " alt="" coords="3421,752,3575,779"/>
 <area shape="rect" id="node26" href="coo2compress_8hpp.html" title="Helper function to convert coordinate to compressed format. " alt="" coords="1553,453,1731,480"/>
-<area shape="rect" id="node27" href="io_8hpp.html" title="Read and write native IO formats. " alt="" coords="2487,453,2589,480"/>
+<area shape="rect" id="node27" href="io_8hpp.html" title="Read and write sparse matrices in HIFIR. " alt="" coords="2487,453,2589,480"/>
 <area shape="rect" id="node33" href="math_8hpp.html" title="Some handy BLAS 1 vector routines. " alt="" coords="2289,528,2411,555"/>
 <area shape="rect" id="node35" href="mt__mv_8hpp.html" title="Multithreaded matrix&#45;vector product for CRS. " alt="" coords="2177,453,2310,480"/>
 <area shape="rect" id="node34" href="version_8h.html" title="HIF version header. " alt="" coords="2577,528,2670,555"/>
@@ -135,9 +135,10 @@ This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
 <div class="center"><img src="symm__factor_8hpp__dep__incl.png" border="0" usemap="#symm__factor_8hppdep" alt=""/></div>
 <map name="symm__factor_8hppdep" id="symm__factor_8hppdep">
-<area shape="rect" id="node2" href="builder_8hpp.html" title="Top level user class for building HIF preconditioner. " alt="" coords="24,80,109,107"/>
-<area shape="rect" id="node3" href="hifir_8hpp.html" title="top&#45;level user interface " alt="" coords="33,155,101,181"/>
-<area shape="rect" id="node4" href="demo__utils_8hpp.html" title="demo_utils.hpp" alt="" coords="11,229,122,256"/>
+<area shape="rect" id="node2" href="builder_8hpp.html" title="Top level user class for building HIF preconditioner. " alt="" coords="63,80,149,107"/>
+<area shape="rect" id="node3" href="hifir_8hpp.html" title="top&#45;level user interface " alt="" coords="72,155,140,181"/>
+<area shape="rect" id="node4" href="libhifir_8cpp.html" title="C++ implementation of libhifir. " alt="" coords="5,229,87,256"/>
+<area shape="rect" id="node5" href="demo__utils_8hpp.html" title="demo_utils.hpp" alt="" coords="111,229,221,256"/>
 </map>
 </div>
 </div>
@@ -152,10 +153,10 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a9f7d487519e5413acb1bcb860abb6c82"><td class="memTemplParams" colspan="2">template&lt;class L_Type , class PosArray &gt; </td></tr>
-<tr class="memitem:a9f7d487519e5413acb1bcb860abb6c82"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacehif_1_1internal.html#a9f7d487519e5413acb1bcb860abb6c82">hif::internal::compress_tail</a> (L_Type &amp;L, const PosArray &amp;L_start, const typename PosArray::size_type m, const typename PosArray::size_type dfrs)</td></tr>
-<tr class="memdesc:a9f7d487519e5413acb1bcb860abb6c82"><td class="mdescLeft">&#160;</td><td class="mdescRight">compress offsets to have a compact L  <a href="namespacehif_1_1internal.html#a9f7d487519e5413acb1bcb860abb6c82">More...</a><br /></td></tr>
-<tr class="separator:a9f7d487519e5413acb1bcb860abb6c82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:addcae826258597cd459c65b8c007ad68"><td class="memTemplParams" colspan="2">template&lt;class L_Type , class IndPtrType &gt; </td></tr>
+<tr class="memitem:addcae826258597cd459c65b8c007ad68"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacehif_1_1internal.html#addcae826258597cd459c65b8c007ad68">hif::internal::compress_tail</a> (L_Type &amp;L, const IndPtrType &amp;L_start, const typename IndPtrType::size_type m, const typename IndPtrType::size_type dfrs)</td></tr>
+<tr class="memdesc:addcae826258597cd459c65b8c007ad68"><td class="mdescLeft">&#160;</td><td class="mdescRight">compress offsets to have a compact L  <a href="namespacehif_1_1internal.html#addcae826258597cd459c65b8c007ad68">More...</a><br /></td></tr>
+<tr class="separator:addcae826258597cd459c65b8c007ad68"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a18e064933daf8db9650fbcf146df892d"><td class="memTemplParams" colspan="2">template&lt;class FromType , class ToType &gt; </td></tr>
 <tr class="memitem:a18e064933daf8db9650fbcf146df892d"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacehif_1_1internal.html#a18e064933daf8db9650fbcf146df892d">hif::internal::make_transpose</a> (const FromType &amp;A, ToType &amp;AT, const bool do_conj=false)</td></tr>
 <tr class="memdesc:a18e064933daf8db9650fbcf146df892d"><td class="mdescLeft">&#160;</td><td class="mdescRight">efficiently create transpose  <a href="namespacehif_1_1internal.html#a18e064933daf8db9650fbcf146df892d">More...</a><br /></td></tr>

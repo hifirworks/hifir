@@ -32,7 +32,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">HIFIR
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -103,16 +103,16 @@ Collaboration diagram for Preconditioner Solver:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structhif_1_1Prec.html">hif::Prec&lt; ValueType, IndexType, UserDenseFactor &gt;</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structhif_1_1Prec.html">hif::Prec&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A single level preconditioner.  <a href="structhif_1_1Prec.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
-<tr class="memitem:gac2ec33317f5bf3c566a6c85ce59b572d"><td class="memTemplParams" colspan="2">template&lt;class ValueType , class IndexType , template&lt; class &gt; class UserDenseFactor = DefaultDenseSolver&gt; </td></tr>
-<tr class="memitem:gac2ec33317f5bf3c566a6c85ce59b572d"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__slv.html#gac2ec33317f5bf3c566a6c85ce59b572d">hif::Precs</a> = std::list&lt; <a class="el" href="structhif_1_1Prec.html">Prec</a>&lt; ValueType, IndexType, UserDenseFactor &gt; &gt;</td></tr>
-<tr class="memdesc:gac2ec33317f5bf3c566a6c85ce59b572d"><td class="mdescLeft">&#160;</td><td class="mdescRight">multilevel preconditioners  <a href="group__slv.html#gac2ec33317f5bf3c566a6c85ce59b572d">More...</a><br /></td></tr>
-<tr class="separator:gac2ec33317f5bf3c566a6c85ce59b572d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4e22e9d6058eaeea607eafda5eb2e809"><td class="memTemplParams" colspan="2">template&lt;class ValueType , class IndexType , class IndPtrType  = std::ptrdiff_t, template&lt; class &gt; class UserDenseFactor = DefaultDenseSolver&gt; </td></tr>
+<tr class="memitem:ga4e22e9d6058eaeea607eafda5eb2e809"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__slv.html#ga4e22e9d6058eaeea607eafda5eb2e809">hif::Precs</a> = std::list&lt; <a class="el" href="structhif_1_1Prec.html">Prec</a>&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt; &gt;</td></tr>
+<tr class="memdesc:ga4e22e9d6058eaeea607eafda5eb2e809"><td class="mdescLeft">&#160;</td><td class="mdescRight">multilevel preconditioners  <a href="group__slv.html#ga4e22e9d6058eaeea607eafda5eb2e809">More...</a><br /></td></tr>
+<tr class="separator:ga4e22e9d6058eaeea607eafda5eb2e809"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
@@ -155,16 +155,16 @@ Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Typedef Documentation</h2>
-<a id="gac2ec33317f5bf3c566a6c85ce59b572d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gac2ec33317f5bf3c566a6c85ce59b572d">&#9670;&nbsp;</a></span>Precs</h2>
+<a id="ga4e22e9d6058eaeea607eafda5eb2e809"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga4e22e9d6058eaeea607eafda5eb2e809">&#9670;&nbsp;</a></span>Precs</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class ValueType , class IndexType , template&lt; class &gt; class UserDenseFactor = DefaultDenseSolver&gt; </div>
+template&lt;class ValueType , class IndexType , class IndPtrType  = std::ptrdiff_t, template&lt; class &gt; class UserDenseFactor = DefaultDenseSolver&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="group__slv.html#gac2ec33317f5bf3c566a6c85ce59b572d">hif::Precs</a></td>
+          <td class="memname"><a class="el" href="group__slv.html#ga4e22e9d6058eaeea607eafda5eb2e809">hif::Precs</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -174,13 +174,14 @@ template&lt;class ValueType , class IndexType , template&lt; class &gt; class Us
   <table class="tparams">
     <tr><td class="paramname">ValueType</td><td>value data type, e.g. <em>double</em> </td></tr>
     <tr><td class="paramname">IndexType</td><td>index data type, e.g. <em>int</em> </td></tr>
+    <tr><td class="paramname">IndPtrType</td><td>index pointer type, default is <em>std::ptrdiff_t</em> </td></tr>
     <tr><td class="paramname">UserDenseFactor</td><td>Potential user customized dense factor</td></tr>
   </table>
   </dd>
 </dl>
 <p>We choose to use STL list because adding new node is constant time without bothering copying. It's worth noting that querying the size of <em>list</em> has become constant since C++11. Also, with the constructors in <a class="el" href="structhif_1_1Prec.html">Prec</a>, the following way can be used to construct list:</p>
 <div class="fragment"><div class="line"><span class="keyword">using</span> precs_t = Precs&lt;double, int&gt;;</div><div class="line"><span class="keyword">using</span> prec_t = precs_t::value_type;</div><div class="line">precs_t precs;</div><div class="line">precs.emplace_back(m, n, <span class="comment">/* rvalue references */</span>);</div></div><!-- fragment --> 
-<p class="definition">Definition at line <a class="el" href="Prec_8hpp_source.html#l00430">430</a> of file <a class="el" href="Prec_8hpp_source.html">Prec.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Prec_8hpp_source.html#l00358">358</a> of file <a class="el" href="Prec_8hpp_source.html">Prec.hpp</a>.</p>
 
 </div>
 </div>

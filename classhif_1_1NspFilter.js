@@ -1,9 +1,9 @@
 var classhif_1_1NspFilter =
 [
     [ "user_cb_type", "classhif_1_1NspFilter.html#aa5be4bf3b9531257fce1ccc0393bc4e0", null ],
-    [ "CONSTANT", "classhif_1_1NspFilter.html#a4ce34d73f76d97cef63747e2c18d86b3ac30f4bb2fee1cbf9628995eb25af7776", null ],
-    [ "USER_OR", "classhif_1_1NspFilter.html#a4ce34d73f76d97cef63747e2c18d86b3aaa9a0430c8f676a5b692e61efa636a6b", null ],
-    [ "USER_CB", "classhif_1_1NspFilter.html#a4ce34d73f76d97cef63747e2c18d86b3a532f3cd41f4e4bb20de754b009a37754", null ],
+    [ "CONSTANT", "classhif_1_1NspFilter.html#a9d7c93813110df9d45b8a1909cf6f9d5ac30f4bb2fee1cbf9628995eb25af7776", null ],
+    [ "USER_OR", "classhif_1_1NspFilter.html#a9d7c93813110df9d45b8a1909cf6f9d5aaa9a0430c8f676a5b692e61efa636a6b", null ],
+    [ "USER_CB", "classhif_1_1NspFilter.html#a9d7c93813110df9d45b8a1909cf6f9d5a532f3cd41f4e4bb20de754b009a37754", null ],
     [ "NspFilter", "classhif_1_1NspFilter.html#a76b5eb87bd766a09fc9189a9080776a9", null ],
     [ "NspFilter", "classhif_1_1NspFilter.html#a22afe66b057c89b5b2147f880d3830eb", null ],
     [ "NspFilter", "classhif_1_1NspFilter.html#ac62d68c3c645be23b3af0d0edaa3e0b1", null ],

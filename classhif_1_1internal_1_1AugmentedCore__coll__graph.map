@@ -1,4 +1,5 @@
-<map id="hif::internal::AugmentedCore&lt; IndexType &gt;" name="hif::internal::AugmentedCore&lt; IndexType &gt;">
-<area shape="rect" id="node2" href="$classhif_1_1Array.html" title="hif::Array\&lt; index_type \&gt;" alt="" coords="5,184,168,211"/>
-<area shape="rect" id="node3" href="$classhif_1_1Array.html" title="Core data structure used in compressed storage. " alt="" coords="33,95,140,121"/>
+<map id="hif::internal::AugmentedCore&lt; IndexType, IndPtrType &gt;" name="hif::internal::AugmentedCore&lt; IndexType, IndPtrType &gt;">
+<area shape="rect" id="node2" href="$classhif_1_1Array.html" title="hif::Array\&lt; indptr\l_type \&gt;" alt="" coords="5,184,124,225"/>
+<area shape="rect" id="node3" href="$classhif_1_1Array.html" title="Core data structure used in compressed storage. " alt="" coords="93,95,199,121"/>
+<area shape="rect" id="node5" href="$classhif_1_1Array.html" title="hif::Array\&lt; index_type \&gt;" alt="" coords="149,191,311,218"/>
 </map>

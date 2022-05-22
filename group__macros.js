@@ -3,6 +3,7 @@ var group__macros =
     [ "HIF_DEBUG", "group__macros.html#gaba131019c1fe51cfc75c4451f57463b4", null ],
     [ "HIF_DENSE_MODE", "group__macros.html#ga174907cb004ceb4e122ae3ee237e983d", null ],
     [ "HIF_DISABLE_SPACE_DROP", "group__macros.html#ga154def655fdad283c294c7ab909f2591", null ],
+    [ "HIF_HAS_HDF5", "group__macros.html#gadfeeed21cd3ff2b585c375b606f90d3f", null ],
     [ "HIF_HIGH_PRECISION_SOLVE", "group__macros.html#gaeb6c56e5fae6e97a108f229194daf0c0", null ],
     [ "HIF_LOG_PLAIN_PREFIX", "group__macros.html#gaf5e586da5460d9e0e3be14a7197c8b14", null ],
     [ "HIF_MIN_LOCAL_SIZE_PERCTG", "group__macros.html#gad3599a11fa251bc06c82c248f34eeea4", null ],

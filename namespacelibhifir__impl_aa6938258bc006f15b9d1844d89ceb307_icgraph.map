@@ -1,0 +1,6 @@
+<map id="libhifir_impl::get_factor_stats" name="libhifir_impl::get_factor_stats">
+<area shape="rect" id="node2" href="$group__ccomplexsingle.html#gaf96d221b6e238dc350d1eb637feb4d83" title="Get the statistics of a computed HIF instance. " alt="" coords="167,5,261,32"/>
+<area shape="rect" id="node3" href="$group__cdouble.html#gab8b7e2aa7ba6ac3aec56afcb89299988" title="Get the statistics of a computed HIF instance. " alt="" coords="167,56,261,83"/>
+<area shape="rect" id="node4" href="$group__csingle.html#gaf87cccb9b2d903757b6d633b3c781b38" title="Get the statistics of a computed HIF instance. " alt="" coords="167,107,261,133"/>
+<area shape="rect" id="node5" href="$group__ccomplexdouble.html#ga28faf5abefd5beff8f642413117edd58" title="Get the statistics of a computed HIF instance. " alt="" coords="167,157,261,184"/>
+</map>

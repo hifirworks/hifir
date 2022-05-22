@@ -32,7 +32,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">HIFIR
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -92,10 +92,10 @@ $(document).ready(function(){initNavTree('namespacehif_1_1mt.html','');});
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ga7b8254604257211573f1926c1f2ae0f8"><td class="memTemplParams" colspan="2">template&lt;class CrsType , class CcsType , class BufArray , class IntBufArray &gt; </td></tr>
-<tr class="memitem:ga7b8254604257211573f1926c1f2ae0f8"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__schur.html#ga7b8254604257211573f1926c1f2ae0f8">drop_L_E_and_U_F</a> (const typename CrsType::iarray_type &amp;ref_indptr_L, const double alpha_L, const typename CcsType::iarray_type &amp;ref_indptr_U, const double alpha_U, CrsType &amp;L_E, CcsType &amp;U_F, BufArray &amp;buf_L, IntBufArray &amp;ibuf_L, BufArray &amp;buf_U, IntBufArray &amp;ibuf_U, const int nthreads)</td></tr>
-<tr class="memdesc:ga7b8254604257211573f1926c1f2ae0f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">drop <em>L_E</em> and <em>U_F</em>  <a href="group__schur.html#ga7b8254604257211573f1926c1f2ae0f8">More...</a><br /></td></tr>
-<tr class="separator:ga7b8254604257211573f1926c1f2ae0f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3958b1b4fbebacf71a94961ee823544f"><td class="memTemplParams" colspan="2">template&lt;class CrsType , class CcsType , class BufArray , class IntBufArray &gt; </td></tr>
+<tr class="memitem:ga3958b1b4fbebacf71a94961ee823544f"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__schur.html#ga3958b1b4fbebacf71a94961ee823544f">drop_L_E_and_U_F</a> (const typename CrsType::iparray_type &amp;ref_indptr_L, const double alpha_L, const typename CcsType::iparray_type &amp;ref_indptr_U, const double alpha_U, CrsType &amp;L_E, CcsType &amp;U_F, BufArray &amp;buf_L, IntBufArray &amp;ibuf_L, BufArray &amp;buf_U, IntBufArray &amp;ibuf_U, const int nthreads)</td></tr>
+<tr class="memdesc:ga3958b1b4fbebacf71a94961ee823544f"><td class="mdescLeft">&#160;</td><td class="mdescRight">drop <em>L_E</em> and <em>U_F</em>  <a href="group__schur.html#ga3958b1b4fbebacf71a94961ee823544f">More...</a><br /></td></tr>
+<tr class="separator:ga3958b1b4fbebacf71a94961ee823544f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga581adcebbcbca89ca0192413edbcef71"><td class="memTemplParams" colspan="2">template&lt;class ScaleArray , class CrsType , class PermType , class DiagArray , class SpVecType &gt; </td></tr>
 <tr class="memitem:ga581adcebbcbca89ca0192413edbcef71"><td class="memTemplItemLeft" align="right" valign="top">CrsType&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__schur.html#ga581adcebbcbca89ca0192413edbcef71">compute_Schur_simple</a> (const ScaleArray &amp;s, const CrsType &amp;A, const ScaleArray &amp;t, const PermType &amp;p, const PermType &amp;q, const typename CrsType::size_type m, const CrsType &amp;L_E, const DiagArray &amp;d, const CrsType &amp;U_F, SpVecType &amp;buf0, const int nthreads)</td></tr>
 <tr class="memdesc:ga581adcebbcbca89ca0192413edbcef71"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the simple version of Schur complement in MT setting  <a href="group__schur.html#ga581adcebbcbca89ca0192413edbcef71">More...</a><br /></td></tr>
@@ -193,7 +193,7 @@ template&lt;class CsType , class InType , class OutType , std::size_t Nrhs, type
 
 <p class="definition">Definition at line <a class="el" href="mt__mv_8hpp_source.html#l00176">176</a> of file <a class="el" href="mt__mv_8hpp_source.html">mt_mv.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="log_8hpp_source.html#l00092">hif::warning()</a>.</p>
+<p class="reference">References <a class="el" href="log_8hpp_source.html#l00085">hif::warning()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -251,7 +251,7 @@ template&lt;std::size_t Nrhs, class CsType , class Vx , class Vy , typename T  =
 
 <p class="definition">Definition at line <a class="el" href="mt__mv_8hpp_source.html#l00186">186</a> of file <a class="el" href="mt__mv_8hpp_source.html">mt_mv.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="log_8hpp_source.html#l00092">hif::warning()</a>.</p>
+<p class="reference">References <a class="el" href="log_8hpp_source.html#l00085">hif::warning()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -309,7 +309,7 @@ template&lt;class CsType , class IArray , class OArray , typename T  = void&gt; 
 
 <p class="definition">Definition at line <a class="el" href="mt__mv_8hpp_source.html#l00101">101</a> of file <a class="el" href="mt__mv_8hpp_source.html">mt_mv.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="log_8hpp_source.html#l00092">hif::warning()</a>.</p>
+<p class="reference">References <a class="el" href="log_8hpp_source.html#l00085">hif::warning()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -430,7 +430,7 @@ template&lt;class CsType , class Vx , class Vy , typename T  = void&gt; </div>
 
 <p class="definition">Definition at line <a class="el" href="mt__mv_8hpp_source.html#l00109">109</a> of file <a class="el" href="mt__mv_8hpp_source.html">mt_mv.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="log_8hpp_source.html#l00092">hif::warning()</a>.</p>
+<p class="reference">References <a class="el" href="log_8hpp_source.html#l00085">hif::warning()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">

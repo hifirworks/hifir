@@ -9,7 +9,7 @@ var group__fac =
       [ "select_crs", "classhif_1_1internal_1_1CompressedTypeTrait.html#ad1f72f5b5029aff9a3ed40e38c4ae395", null ],
       [ "_1_IS_CRS", "classhif_1_1internal_1_1CompressedTypeTrait.html#a2807af674ce0bdd4d2148aac7db0fcfe", null ]
     ] ],
-    [ "compress_tails", "group__fac.html#ga381ac634e2a06e74f363834c85c590ef", null ],
+    [ "compress_tails", "group__fac.html#gaafa230b0162de872b10ea9edc482e658", null ],
     [ "compute_pattern_symm_ratio", "group__fac.html#ga08d36915492f902c7e596ad444d79bc2", null ],
     [ "determine_fac_pars", "group__fac.html#ga2de4414b1a21943afc69aa2bc33ec5d3", null ],
     [ "extract_E", "group__fac.html#ga9ae2a2dd37f64dfcd1678ca6f8497dac", null ],

@@ -32,7 +32,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">HIFIR
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -88,8 +88,27 @@ $(document).ready(function(){initNavTree('md__home_qiao_Documents_git_hifir_CHAN
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p>All notable changes to this project will be documented in this file.</p>
-<h2>Release Candidate</h2>
-<p><a href="https://github.com/hifirworks/hifir/compare/v0.1.0...HEAD">Full Changelog</a></p>
+<p>We follow the <a href="https://semver.org/">Semantic Versioning</a> policy, which uses <code>MAJOR.MINOR.PATCH</code> version numbers. In paticular,</p>
+<ul>
+<li><code>MAJOR</code> version when you make incompatible API changes,</li>
+<li><code>MINOR</code> version when you add functionality in a backwards compatible manner, and</li>
+<li><code>PATCH</code> version when you make backwards compatible bug fixes.</li>
+</ul>
+<h2><a href="https://github.com/hifirworks/hifir/releases/tag/v0.2.0">v0.2.0</a> (2022-05-22)</h2>
+<p>Changes from <a href="https://github.com/hifirworks/hifir/releases/tag/v0.1.0">v0.1.0</a> to v0.2.0:</p>
+<ul>
+<li><b>MAJOR</b> Made <code>ind_start</code> and <code>indices</code> have different data types in <code>CRS</code>, <code>CCS</code>, and <code>HIF</code>. In particular, HIFIR library now uses <code>std::ptrdiff_t</code> for <code>ind_start</code> and <code>int</code> for <code>indices</code>. This change doesn't break some high-level APIs (such as <code>factorize(A)</code>), but it potentially breaks <code>wrap_const_crs</code> and <code>wrap_const_ccs</code> interfaces.</li>
+<li>Repurposed <code>read_bin</code> and <code>write_bin</code> to use HDF5 backend if users turn on derivative <code>HIF_HAS_HDF5</code> during compilation.</li>
+<li>Removed interval compressed storages and ASCII I/O for sparse matrices.</li>
+<li>Fixed the issue regarding modifying user-input data in preprocessing calling equilibration.</li>
+<li>Changed I/O to use local buffers instead of shared ones and removed writing to <code>warn_flag</code> at the beginning of factorizations.</li>
+<li>Made logging system more complete.</li>
+<li>Added C library <code>libhifir</code>.</li>
+<li>Updated documentation for the C interface.</li>
+<li>Added MatrixMarket file readers for the C library.</li>
+<li>Added example code for <code>libhifir</code>.</li>
+</ul>
+<p><a href="https://github.com/hifirworks/hifir/compare/v0.1.0...v0.2.0">Full Changelog</a></p>
 <h2><a href="https://github.com/hifirworks/hifir/releases/tag/v0.1.0">v0.1.0</a> (2021-08-22)</h2>
 <p>This is the initial official release of the HIFIR package. </p>
 </div></div><!-- contents -->

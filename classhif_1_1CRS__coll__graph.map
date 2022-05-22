@@ -1,6 +1,7 @@
-<map id="hif::CRS&lt; ValueType, IndexType &gt;" name="hif::CRS&lt; ValueType, IndexType &gt;">
-<area shape="rect" id="node2" href="$classhif_1_1internal_1_1CompressedStorage.html" title="Core of the compressed storage, including data and interfaces. " alt="" coords="66,288,289,329"/>
-<area shape="rect" id="node3" href="$classhif_1_1Array.html" title="hif::Array\&lt; IndexType \&gt;" alt="" coords="5,184,165,211"/>
-<area shape="rect" id="node4" href="$classhif_1_1Array.html" title="Core data structure used in compressed storage. " alt="" coords="124,95,231,121"/>
-<area shape="rect" id="node6" href="$classhif_1_1Array.html" title="hif::Array\&lt; ValueType \&gt;" alt="" coords="190,184,351,211"/>
+<map id="hif::CRS&lt; ValueType, IndexType, IndPtrType &gt;" name="hif::CRS&lt; ValueType, IndexType, IndPtrType &gt;">
+<area shape="rect" id="node2" href="$classhif_1_1internal_1_1CompressedStorage.html" title="Core of the compressed storage, including data and interfaces. " alt="" coords="165,273,379,329"/>
+<area shape="rect" id="node3" href="$classhif_1_1Array.html" title="hif::Array\&lt; IndPtrType \&gt;" alt="" coords="5,184,168,211"/>
+<area shape="rect" id="node4" href="$classhif_1_1Array.html" title="Core data structure used in compressed storage. " alt="" coords="219,95,325,121"/>
+<area shape="rect" id="node6" href="$classhif_1_1Array.html" title="hif::Array\&lt; IndexType \&gt;" alt="" coords="192,184,352,211"/>
+<area shape="rect" id="node7" href="$classhif_1_1Array.html" title="hif::Array\&lt; ValueType \&gt;" alt="" coords="377,184,538,211"/>
 </map>

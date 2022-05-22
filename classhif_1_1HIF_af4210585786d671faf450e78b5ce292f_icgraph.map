@@ -1,13 +1,18 @@
 <map id="hif::HIF::empty" name="hif::HIF::empty">
-<area shape="rect" id="node2" href="$classhif_1_1HIF.html#a77f109f53d5b2fde156c258fd2ae5913" title="factorize the HIF preconditioner " alt="" coords="353,61,477,87"/>
-<area shape="rect" id="node3" href="$classhif_1_1HIF.html#a8cc3074ec1923b87e8e905c70f132ab1" title="compute &#160;" alt="" coords="169,35,300,62"/>
-<area shape="rect" id="node4" href="$classhif_1_1HIF.html#aeed40315bcdbe524620d8cb59eca4506" title="compute the overall nnz of the multilevel preconditioners " alt="" coords="187,86,282,113"/>
-<area shape="rect" id="node6" href="$classhif_1_1HIF.html#afbd3b2900c9266a8241f396a5a7c0a7b" title="compute the nnz in E and F components " alt="" coords="178,137,291,163"/>
-<area shape="rect" id="node7" href="$classhif_1_1HIF.html#ae110645194df2ad540755678fc15c4ea" title="get the numerical rank " alt="" coords="185,187,284,214"/>
-<area shape="rect" id="node8" href="$classhif_1_1HIF.html#abde956e05ff35594fab92023c4896697" title="get the numerical rank for last level (dense Schur complement) " alt="" coords="165,238,304,265"/>
-<area shape="rect" id="node9" href="$classhif_1_1HIF.html#adfac3bbfe0d452da22ad5cabdb01c3f8" title="get the Schur complement size " alt="" coords="166,289,303,315"/>
-<area shape="rect" id="node10" href="$classhif_1_1HIF.html#a4ec7a16c6f8aa130cc7e578632b078ec" title="solve &#160;" alt="" coords="182,339,287,366"/>
-<area shape="rect" id="node11" href="$classhif_1_1HIF.html#a3c5622e845da55e7816f9bd0d84d5e2c" title="solve &#160;(multiple RHS) " alt="" coords="164,390,305,417"/>
-<area shape="rect" id="node12" href="$classhif_1_1HIF.html#a37b9092ee9a1b8dff86229cb96099565" title="get the stats " alt="" coords="183,441,286,467"/>
-<area shape="rect" id="node5" href="$classhif_1_1HIF.html#acdcf8fed0f4fbb05b9a223231f197044" title="compute the nnz in L, D, and U " alt="" coords="356,111,475,138"/>
+<area shape="rect" id="node2" href="$classhif_1_1HIF.html#a77f109f53d5b2fde156c258fd2ae5913" title="factorize the HIF preconditioner " alt="" coords="164,5,308,47"/>
+<area shape="rect" id="node3" href="$group__ccomplexsingle.html#ga0ddc9c4fff828f25624ffc1c365f9a2c" title="Update the A matrix in HIF. " alt="" coords="193,71,279,98"/>
+<area shape="rect" id="node4" href="$group__cmixed.html#gacd5d3abdc18781a6e797147a947a48f7" title="Update the A matrix in HIF (complex double precision) " alt="" coords="190,122,282,149"/>
+<area shape="rect" id="node5" href="$group__cdouble.html#ga1df53c6268dc8d021e370ae42ea09c58" title="Update the A matrix in HIF. " alt="" coords="193,173,279,199"/>
+<area shape="rect" id="node6" href="$group__cmixed.html#ga0d4bee0ce2e783a5979ccea21a57c14d" title="Update the A matrix in HIF (double precision) " alt="" coords="190,223,282,250"/>
+<area shape="rect" id="node7" href="$group__csingle.html#gae6f9761bce726c9f86a0194f132efcd1" title="Update the A matrix in HIF. " alt="" coords="193,274,279,301"/>
+<area shape="rect" id="node8" href="$group__ccomplexdouble.html#ga9f5e1bfde51d4ca0187af70e3f106e7b" title="Update the A matrix in HIF. " alt="" coords="193,325,279,351"/>
+<area shape="rect" id="node9" href="$classhif_1_1HIF.html#a8cc3074ec1923b87e8e905c70f132ab1" title="compute &#160;" alt="" coords="164,376,308,417"/>
+<area shape="rect" id="node10" href="$classhif_1_1HIF.html#aeed40315bcdbe524620d8cb59eca4506" title="compute the overall nnz of the multilevel preconditioners " alt="" coords="164,441,308,483"/>
+<area shape="rect" id="node11" href="$classhif_1_1HIF.html#afbd3b2900c9266a8241f396a5a7c0a7b" title="compute the nnz in E and F components " alt="" coords="164,507,308,548"/>
+<area shape="rect" id="node12" href="$classhif_1_1HIF.html#ae110645194df2ad540755678fc15c4ea" title="get the numerical rank " alt="" coords="164,572,308,613"/>
+<area shape="rect" id="node13" href="$classhif_1_1HIF.html#abde956e05ff35594fab92023c4896697" title="get the numerical rank for last level (dense Schur complement) " alt="" coords="164,637,308,679"/>
+<area shape="rect" id="node14" href="$classhif_1_1HIF.html#adfac3bbfe0d452da22ad5cabdb01c3f8" title="get the Schur complement size " alt="" coords="164,703,308,744"/>
+<area shape="rect" id="node15" href="$classhif_1_1HIF.html#a4ec7a16c6f8aa130cc7e578632b078ec" title="solve &#160;" alt="" coords="164,768,308,809"/>
+<area shape="rect" id="node16" href="$classhif_1_1HIF.html#a3c5622e845da55e7816f9bd0d84d5e2c" title="solve &#160;(multiple RHS) " alt="" coords="164,833,308,875"/>
+<area shape="rect" id="node17" href="$classhif_1_1HIF.html#a37b9092ee9a1b8dff86229cb96099565" title="get the stats " alt="" coords="164,899,308,940"/>
 </map>

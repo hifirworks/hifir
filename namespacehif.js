@@ -16,10 +16,6 @@ var namespacehif =
     [ "EqlDriver", "classhif_1_1EqlDriver.html", "classhif_1_1EqlDriver" ],
     [ "HIF", "classhif_1_1HIF.html", "classhif_1_1HIF" ],
     [ "IndexValueArray", "classhif_1_1IndexValueArray.html", "classhif_1_1IndexValueArray" ],
-    [ "IntervalCCS", "classhif_1_1IntervalCCS.html", "classhif_1_1IntervalCCS" ],
-    [ "IntervalCRS", "classhif_1_1IntervalCRS.html", "classhif_1_1IntervalCRS" ],
-    [ "is_interval_cs", "structhif_1_1is__interval__cs.html", null ],
-    [ "is_interval_cs< Cs, decltype(std::declval< Cs >().nitrvs(), void())>", "structhif_1_1is__interval__cs_3_01Cs_00_01decltype_07std_1_1declval_3_01Cs_01_4_07_08_8nitrvs_07_08_00_01void_07_08_08_4.html", null ],
     [ "IterRefine", "classhif_1_1IterRefine.html", "classhif_1_1IterRefine" ],
     [ "Lapack", "classhif_1_1Lapack.html", "classhif_1_1Lapack" ],
     [ "LUP", "classhif_1_1LUP.html", "classhif_1_1LUP" ],
@@ -32,7 +28,6 @@ var namespacehif =
     [ "SparseVector", "classhif_1_1SparseVector.html", "classhif_1_1SparseVector" ],
     [ "SYEIG", "classhif_1_1SYEIG.html", "classhif_1_1SYEIG" ],
     [ "Timer", "classhif_1_1Timer.html", "classhif_1_1Timer" ],
-    [ "using_interval_from_classical", "structhif_1_1using__interval__from__classical.html", "structhif_1_1using__interval__from__classical" ],
     [ "ValueTypeMixedTrait", "structhif_1_1ValueTypeMixedTrait.html", "structhif_1_1ValueTypeMixedTrait" ],
     [ "ValueTypeTrait", "structhif_1_1ValueTypeTrait.html", "structhif_1_1ValueTypeTrait" ]
 ];

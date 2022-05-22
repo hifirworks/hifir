@@ -3,11 +3,12 @@
 <area shape="rect" id="node3" href="$lapackf_8hpp.html" title="Low&#45;level Fortran&#45;based LAPACK interfaces. " alt="" coords="101,155,191,181"/>
 <area shape="rect" id="node4" href="$lapack_8hpp.html" title="HIF LAPACK interface. " alt="" coords="103,229,189,256"/>
 <area shape="rect" id="node5" href="$LUP_8hpp.html" title="Small scale solver with dense LU with partial pivoting. " alt="" coords="5,304,79,331"/>
-<area shape="rect" id="node11" href="$QRCP_8hpp.html" title="Small scale solver with dense QR with column pivoting. " alt="" coords="103,304,189,331"/>
-<area shape="rect" id="node12" href="$SYEIG_8hpp.html" title="Small scale solver with symmetric eigendecomposition. " alt="" coords="214,304,302,331"/>
+<area shape="rect" id="node12" href="$QRCP_8hpp.html" title="Small scale solver with dense QR with column pivoting. " alt="" coords="103,304,189,331"/>
+<area shape="rect" id="node13" href="$SYEIG_8hpp.html" title="Small scale solver with symmetric eigendecomposition. " alt="" coords="214,304,302,331"/>
 <area shape="rect" id="node6" href="$solver_8hpp.html" title="Small scale solver main interface. " alt="" coords="105,379,187,405"/>
 <area shape="rect" id="node7" href="$Prec_8hpp.html" title="Multilevel preconditioner interface. " alt="" coords="109,453,183,480"/>
 <area shape="rect" id="node8" href="$builder_8hpp.html" title="Top level user class for building HIF preconditioner. " alt="" coords="103,528,189,555"/>
 <area shape="rect" id="node9" href="$hifir_8hpp.html" title="top&#45;level user interface " alt="" coords="112,603,180,629"/>
-<area shape="rect" id="node10" href="$demo__utils_8hpp.html" title="demo_utils.hpp" alt="" coords="91,677,201,704"/>
+<area shape="rect" id="node10" href="$libhifir_8cpp.html" title="C++ implementation of libhifir. " alt="" coords="45,677,127,704"/>
+<area shape="rect" id="node11" href="$demo__utils_8hpp.html" title="demo_utils.hpp" alt="" coords="151,677,261,704"/>
 </map>

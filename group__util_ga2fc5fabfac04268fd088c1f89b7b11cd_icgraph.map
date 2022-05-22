@@ -1,0 +1,21 @@
+<map id="hif::normalize2" name="hif::normalize2">
+<area shape="rect" id="node2" href="$group__schur.html#ga581adcebbcbca89ca0192413edbcef71" title="compute the simple version of Schur complement in MT setting " alt="" coords="161,5,320,47"/>
+<area shape="rect" id="node3" href="$group__util.html#ga2c2e3772eb40b3fa0be84859a3391359" title="conjugate helper function " alt="" coords="191,71,291,98"/>
+<area shape="rect" id="node4" href="$namespacelibhifir__impl.html#aa647755afeb4c8b87409a5db329361ff" title="libhifir_impl::create\l_params" alt="" coords="175,123,306,164"/>
+<area shape="rect" id="node6" href="$namespacelibhifir__impl.html#a3abb5de4fd2ce416993a9b1252a74760" title="libhifir_impl::hifir" alt="" coords="183,189,299,215"/>
+<area shape="rect" id="node7" href="$group__util.html#ga6c963baff7567bf5e7431346c1da2dcc" title="compute the dot product " alt="" coords="205,239,277,266"/>
+<area shape="rect" id="node8" href="$group__c.html#ga5361ed92350c1fdbd00c65e06388eb79" title="Disable warning. " alt="" coords="177,290,305,317"/>
+<area shape="rect" id="node9" href="$group__cdouble.html#gaa3d22ab26df6abac76bbcdce5a0dc444" title="Read a vector. " alt="" coords="185,341,297,367"/>
+<area shape="rect" id="node10" href="$group__c.html#ga9ef59982ec336098d293b4ddf2c6c357" title="Enable warning. " alt="" coords="179,391,303,418"/>
+<area shape="rect" id="node11" href="$group__c.html#ga887e86260f1f32c3e4a6d482231bf351" title="Initialize parameters with default options. " alt="" coords="169,442,312,469"/>
+<area shape="rect" id="node12" href="$group__csingle.html#ga7b0177fa28e1a364690f8266b751a81d" title="Read a vector. " alt="" coords="185,493,297,519"/>
+<area shape="rect" id="node13" href="$namespacelibhifir__impl.html#aea5120e926e2afc7b6dd545d9d80ec3a" title="libhifir_impl::mm_read\l_sparse" alt="" coords="166,544,315,585"/>
+<area shape="rect" id="node14" href="$namespacelibhifir__impl.html#a45a0203af3ff60788088d499b38bf4bd" title="libhifir_impl::mmultiply" alt="" coords="165,610,316,637"/>
+<area shape="rect" id="node15" href="$group__util.html#ga77cc0a5da4a48576b0c21c2a6d8b5c7e" title="compute the Euclidean norm of a given vector " alt="" coords="201,661,281,687"/>
+<area shape="rect" id="node16" href="$group__util.html#ga57e54587f195f46d8d8d54cc1a723005" title="compute the norm 2 square " alt="" coords="190,711,291,738"/>
+<area shape="rect" id="node17" href="$group__util.html#gad889a1948f1e8bb2cf8ff4be5db882a5" title="normalize an array " alt="" coords="191,762,291,789"/>
+<area shape="rect" id="node18" href="$namespacelibhifir__impl.html#af333f0c8674b11a827ccb19c0239c047" title="libhifir_impl::solve" alt="" coords="177,813,304,839"/>
+<area shape="rect" id="node19" href="$classhif_1_1CRS.html#a446f4d594bd03bee0118ba07c467b4d1" title="write a native binary file " alt="" coords="160,863,321,919"/>
+<area shape="rect" id="node20" href="$classhif_1_1CCS.html#ab224391179d7328993294b8af7927dc3" title="write to a native HIF binary file " alt="" coords="174,943,307,970"/>
+<area shape="rect" id="node5" href="$namespacelibhifir__impl.html#a272cb75f88c5869682ab55b82d069ffa" title="libhifir_impl::factorize" alt="" coords="369,130,515,157"/>
+</map>

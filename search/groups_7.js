@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['preprocessor_20macros',['Preprocessor macros',['../group__macros.html',1,'']]],
-  ['preprocessing',['Preprocessing',['../group__pre.html',1,'']]],
-  ['preconditioner_20solver',['Preconditioner Solver',['../group__slv.html',1,'']]]
+  ['mixed_2dprecision_20routines_20in_20libhifir',['Mixed-Precision Routines in LIBHIFIR',['../group__cmixed.html',1,'']]],
+  ['multilevel_20factorization',['Multilevel Factorization',['../group__fac.html',1,'']]],
+  ['multithreading',['Multithreading',['../group__mt.html',1,'']]]
 ];

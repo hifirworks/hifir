@@ -32,7 +32,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">HIFIR
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -112,7 +112,7 @@ Include dependency graph for matching_scaling.hpp:</div>
 <area shape="rect" id="node42" href="Timer_8hpp.html" title="A simple timer wrapping around C++ chrono. " alt="" coords="2743,80,2870,107"/>
 <area shape="rect" id="node14" href="Array_8hpp.html" title="Array data structure, with functionality of wrapping external data. " alt="" coords="1121,379,1236,405"/>
 <area shape="rect" id="node29" href="coo2compress_8hpp.html" title="Helper function to convert coordinate to compressed format. " alt="" coords="557,304,736,331"/>
-<area shape="rect" id="node30" href="io_8hpp.html" title="Read and write native IO formats. " alt="" coords="1103,229,1206,256"/>
+<area shape="rect" id="node30" href="io_8hpp.html" title="Read and write sparse matrices in HIFIR. " alt="" coords="1103,229,1206,256"/>
 <area shape="rect" id="node35" href="math_8hpp.html" title="Some handy BLAS 1 vector routines. " alt="" coords="1835,304,1957,331"/>
 <area shape="rect" id="node37" href="mt__mv_8hpp.html" title="Multithreaded matrix&#45;vector product for CRS. " alt="" coords="1525,304,1659,331"/>
 <area shape="rect" id="node17" href="log_8hpp.html" title="Logging interface, including info/warning/error. " alt="" coords="1965,453,2075,480"/>
@@ -129,13 +129,14 @@ This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
 <div class="center"><img src="matching__scaling_8hpp__dep__incl.png" border="0" usemap="#matching__scaling_8hppdep" alt=""/></div>
 <map name="matching__scaling_8hppdep" id="matching__scaling_8hppdep">
-<area shape="rect" id="node2" href="driver_8hpp.html" title="Top&#45;level driver routine to handle preprocessing. " alt="" coords="118,80,197,107"/>
-<area shape="rect" id="node3" href="factor_8hpp.html" title="Kernels for deferred factorization. " alt="" coords="117,155,197,181"/>
-<area shape="rect" id="node4" href="pivot__factor_8hpp.html" title="Kernels for deferred factorization with thresholding pivoting. " alt="" coords="5,229,120,256"/>
-<area shape="rect" id="node5" href="builder_8hpp.html" title="Top level user class for building HIF preconditioner. " alt="" coords="115,304,200,331"/>
-<area shape="rect" id="node8" href="symm__factor_8hpp.html" title="Kernels for deferred incomplete LDL&#39; factorization. " alt="" coords="195,229,317,256"/>
-<area shape="rect" id="node6" href="hifir_8hpp.html" title="top&#45;level user interface " alt="" coords="123,379,191,405"/>
-<area shape="rect" id="node7" href="demo__utils_8hpp.html" title="demo_utils.hpp" alt="" coords="102,453,213,480"/>
+<area shape="rect" id="node2" href="driver_8hpp.html" title="Top&#45;level driver routine to handle preprocessing. " alt="" coords="67,80,145,107"/>
+<area shape="rect" id="node3" href="factor_8hpp.html" title="Kernels for deferred factorization. " alt="" coords="66,155,146,181"/>
+<area shape="rect" id="node4" href="builder_8hpp.html" title="Top level user class for building HIF preconditioner. " alt="" coords="63,304,149,331"/>
+<area shape="rect" id="node8" href="pivot__factor_8hpp.html" title="Kernels for deferred factorization with thresholding pivoting. " alt="" coords="49,229,163,256"/>
+<area shape="rect" id="node9" href="symm__factor_8hpp.html" title="Kernels for deferred incomplete LDL&#39; factorization. " alt="" coords="187,229,310,256"/>
+<area shape="rect" id="node5" href="hifir_8hpp.html" title="top&#45;level user interface " alt="" coords="72,379,140,405"/>
+<area shape="rect" id="node6" href="libhifir_8cpp.html" title="C++ implementation of libhifir. " alt="" coords="5,453,87,480"/>
+<area shape="rect" id="node7" href="demo__utils_8hpp.html" title="demo_utils.hpp" alt="" coords="111,453,221,480"/>
 </map>
 </div>
 </div>
@@ -162,10 +163,10 @@ Functions</h2></td></tr>
 <tr class="memitem:gaa3a3bcd7d89dad5b09e8ad428bcba78e"><td class="memTemplItemLeft" align="right" valign="top">CcsType&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__pre.html#gaa3a3bcd7d89dad5b09e8ad428bcba78e">hif::internal::compute_leading_block</a> (const CcsType &amp;A, const CrsType &amp;A_crs, const typename CcsType::size_type m, const PermType &amp;p, const PermType &amp;q, const bool apat=false)</td></tr>
 <tr class="memdesc:gaa3a3bcd7d89dad5b09e8ad428bcba78e"><td class="mdescLeft">&#160;</td><td class="mdescRight">permute the matrix for asymmetric cases  <a href="group__pre.html#gaa3a3bcd7d89dad5b09e8ad428bcba78e">More...</a><br /></td></tr>
 <tr class="separator:gaa3a3bcd7d89dad5b09e8ad428bcba78e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gabea4cba27b6abd9ebec59daf709f4671"><td class="memTemplParams" colspan="2">template&lt;bool IsSymm, class CcsType , class CrsType , class ScalingArray , class PermType &gt; </td></tr>
-<tr class="memitem:gabea4cba27b6abd9ebec59daf709f4671"><td class="memTemplItemLeft" align="right" valign="top">std::pair&lt; CCS&lt; typename CcsType::value_type, typename CcsType::index_type &gt;, typename CcsType::size_type &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__pre.html#gabea4cba27b6abd9ebec59daf709f4671">hif::do_maching</a> (const CcsType &amp;A, const CrsType &amp;A_crs, const typename CcsType::size_type m0, const typename CcsType::size_type level, const Options &amp;opts, ScalingArray &amp;s, ScalingArray &amp;t, PermType &amp;p, PermType &amp;q)</td></tr>
-<tr class="memdesc:gabea4cba27b6abd9ebec59daf709f4671"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the matching for preprocessing  <a href="group__pre.html#gabea4cba27b6abd9ebec59daf709f4671">More...</a><br /></td></tr>
-<tr class="separator:gabea4cba27b6abd9ebec59daf709f4671"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaeafb403d7c40fafe1baa32579db1d787"><td class="memTemplParams" colspan="2">template&lt;bool IsSymm, class CcsType , class CrsType , class ScalingArray , class PermType &gt; </td></tr>
+<tr class="memitem:gaeafb403d7c40fafe1baa32579db1d787"><td class="memTemplItemLeft" align="right" valign="top">std::pair&lt; CcsType, typename CcsType::size_type &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__pre.html#gaeafb403d7c40fafe1baa32579db1d787">hif::do_maching</a> (const CcsType &amp;A, const CrsType &amp;A_crs, const typename CcsType::size_type m0, const typename CcsType::size_type level, const Options &amp;opts, ScalingArray &amp;s, ScalingArray &amp;t, PermType &amp;p, PermType &amp;q)</td></tr>
+<tr class="memdesc:gaeafb403d7c40fafe1baa32579db1d787"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the matching for preprocessing  <a href="group__pre.html#gaeafb403d7c40fafe1baa32579db1d787">More...</a><br /></td></tr>
+<tr class="separator:gaeafb403d7c40fafe1baa32579db1d787"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>calling interface for matching and scaling </p>

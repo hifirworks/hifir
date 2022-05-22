@@ -17,7 +17,7 @@
 <area shape="rect" id="node57" href="$Schur_8hpp.html" title="Routines for computing Schur complements of simple version. " alt="" coords="3232,379,3352,405"/>
 <area shape="rect" id="node58" href="$thresholds_8hpp.html" title="Implementation of scalability&#45;oriented and inverse&#45;based dual thresholding for dropping. " alt="" coords="1179,528,1325,555"/>
 <area shape="rect" id="node30" href="$coo2compress_8hpp.html" title="Helper function to convert coordinate to compressed format. " alt="" coords="2240,453,2419,480"/>
-<area shape="rect" id="node31" href="$io_8hpp.html" title="Read and write native IO formats. " alt="" coords="1910,453,2013,480"/>
+<area shape="rect" id="node31" href="$io_8hpp.html" title="Read and write sparse matrices in HIFIR. " alt="" coords="1910,453,2013,480"/>
 <area shape="rect" id="node37" href="$math_8hpp.html" title="Some handy BLAS 1 vector routines. " alt="" coords="2800,528,2923,555"/>
 <area shape="rect" id="node39" href="$mt__mv_8hpp.html" title="Multithreaded matrix&#45;vector product for CRS. " alt="" coords="2544,453,2677,480"/>
 <area shape="rect" id="node38" href="$version_8h.html" title="HIF version header. " alt="" coords="2029,528,2123,555"/>

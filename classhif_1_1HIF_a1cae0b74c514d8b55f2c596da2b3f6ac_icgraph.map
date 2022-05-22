@@ -1,3 +1,15 @@
 <map id="hif::HIF::nrows" name="hif::HIF::nrows">
-<area shape="rect" id="node2" href="$classhif_1_1HIF.html#ae110645194df2ad540755678fc15c4ea" title="get the numerical rank " alt="" coords="163,5,261,32"/>
+<area shape="rect" id="node2" href="$group__ccomplexsingle.html#ga1c216d53a02b48f47f740c003c9593fc" title="Apply a preconditioner with a certian operation mode. " alt="" coords="197,5,273,32"/>
+<area shape="rect" id="node3" href="$group__ccomplexsingle.html#ga0ddc9c4fff828f25624ffc1c365f9a2c" title="Update the A matrix in HIF. " alt="" coords="192,56,277,83"/>
+<area shape="rect" id="node4" href="$group__cmixed.html#ga98776c860b9d608aef19db82b5a499b9" title="Apply a single preconditioner with a certian operation mode to obtain double solutions (complex arith..." alt="" coords="193,107,276,133"/>
+<area shape="rect" id="node5" href="$group__cmixed.html#gacd5d3abdc18781a6e797147a947a48f7" title="Update the A matrix in HIF (complex double precision) " alt="" coords="189,157,281,184"/>
+<area shape="rect" id="node6" href="$group__cdouble.html#ga5bb345dc7cffc5fcacfdb374651691c6" title="Apply a preconditioner with a certian operation mode. " alt="" coords="197,208,273,235"/>
+<area shape="rect" id="node7" href="$group__cdouble.html#ga1df53c6268dc8d021e370ae42ea09c58" title="Update the A matrix in HIF. " alt="" coords="192,259,277,285"/>
+<area shape="rect" id="node8" href="$group__csingle.html#ga50ddd35b45bea142bcb29dc7c8c2b89b" title="Apply a preconditioner with a certian operation mode. " alt="" coords="197,309,273,336"/>
+<area shape="rect" id="node9" href="$group__cmixed.html#ga1cf4a7da197d6e30f8bf5f11f4c2d367" title="Apply a single preconditioner with a certian operation mode to obtain double solutions. " alt="" coords="193,360,276,387"/>
+<area shape="rect" id="node10" href="$group__cmixed.html#ga0d4bee0ce2e783a5979ccea21a57c14d" title="Update the A matrix in HIF (double precision) " alt="" coords="189,411,281,437"/>
+<area shape="rect" id="node11" href="$group__csingle.html#gae6f9761bce726c9f86a0194f132efcd1" title="Update the A matrix in HIF. " alt="" coords="192,461,277,488"/>
+<area shape="rect" id="node12" href="$group__ccomplexdouble.html#ga18e341cf0b2a5a0e41665746be7429ae" title="Apply a preconditioner with a certian operation mode. " alt="" coords="197,512,273,539"/>
+<area shape="rect" id="node13" href="$group__ccomplexdouble.html#ga9f5e1bfde51d4ca0187af70e3f106e7b" title="Update the A matrix in HIF. " alt="" coords="192,563,277,589"/>
+<area shape="rect" id="node14" href="$classhif_1_1HIF.html#ae110645194df2ad540755678fc15c4ea" title="get the numerical rank " alt="" coords="163,614,307,655"/>
 </map>

@@ -32,7 +32,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">HIFIR
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -101,18 +101,18 @@ Collaboration diagram for Schur Complements:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ga1b4d986d5ca5ac896c2d796fb354a909"><td class="memTemplParams" colspan="2">template&lt;class IntArray , class ValueArray , class BufArray , class IntBufArray &gt; </td></tr>
-<tr class="memitem:ga1b4d986d5ca5ac896c2d796fb354a909"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__schur.html#ga1b4d986d5ca5ac896c2d796fb354a909">hif::internal::drop_offsets_kernel</a> (const IntArray &amp;ref_indptr, const double alpha, IntArray &amp;indptr, IntArray &amp;indices, ValueArray &amp;vals, BufArray &amp;buf, IntBufArray &amp;ibuf)</td></tr>
-<tr class="memdesc:ga1b4d986d5ca5ac896c2d796fb354a909"><td class="mdescLeft">&#160;</td><td class="mdescRight">drop <em>L_E</em> matrix or <em>U_F</em> matrix  <a href="group__schur.html#ga1b4d986d5ca5ac896c2d796fb354a909">More...</a><br /></td></tr>
-<tr class="separator:ga1b4d986d5ca5ac896c2d796fb354a909"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga2828a33bdb95c76f46f5a53043ee9162"><td class="memTemplParams" colspan="2">template&lt;class CrsType , class BufArray , class IntBufArray &gt; </td></tr>
-<tr class="memitem:ga2828a33bdb95c76f46f5a53043ee9162"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__schur.html#ga2828a33bdb95c76f46f5a53043ee9162">hif::drop_L_E</a> (const typename CrsType::iarray_type &amp;ref_indptr, const double alpha, CrsType &amp;L_E, BufArray &amp;buf, IntBufArray &amp;ibuf)</td></tr>
-<tr class="memdesc:ga2828a33bdb95c76f46f5a53043ee9162"><td class="mdescLeft">&#160;</td><td class="mdescRight">drop <em>L_E</em>  <a href="group__schur.html#ga2828a33bdb95c76f46f5a53043ee9162">More...</a><br /></td></tr>
-<tr class="separator:ga2828a33bdb95c76f46f5a53043ee9162"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gabff2dea43e15b8055aebc2e7cc53558b"><td class="memTemplParams" colspan="2">template&lt;class CcsType , class BufArray , class IntBufArray &gt; </td></tr>
-<tr class="memitem:gabff2dea43e15b8055aebc2e7cc53558b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__schur.html#gabff2dea43e15b8055aebc2e7cc53558b">hif::drop_U_F</a> (const typename CcsType::iarray_type &amp;ref_indptr, const double alpha, CcsType &amp;U_F, BufArray &amp;buf, IntBufArray &amp;ibuf)</td></tr>
-<tr class="memdesc:gabff2dea43e15b8055aebc2e7cc53558b"><td class="mdescLeft">&#160;</td><td class="mdescRight">drop <em>U_F</em>  <a href="group__schur.html#gabff2dea43e15b8055aebc2e7cc53558b">More...</a><br /></td></tr>
-<tr class="separator:gabff2dea43e15b8055aebc2e7cc53558b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadd923e8635353793ab437eed537f2d80"><td class="memTemplParams" colspan="2">template&lt;class IndPtrArray , class IntArray , class ValueArray , class BufArray , class IntBufArray &gt; </td></tr>
+<tr class="memitem:gadd923e8635353793ab437eed537f2d80"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__schur.html#gadd923e8635353793ab437eed537f2d80">hif::internal::drop_offsets_kernel</a> (const IndPtrArray &amp;ref_indptr, const double alpha, IndPtrArray &amp;indptr, IntArray &amp;indices, ValueArray &amp;vals, BufArray &amp;buf, IntBufArray &amp;ibuf)</td></tr>
+<tr class="memdesc:gadd923e8635353793ab437eed537f2d80"><td class="mdescLeft">&#160;</td><td class="mdescRight">drop <em>L_E</em> matrix or <em>U_F</em> matrix  <a href="group__schur.html#gadd923e8635353793ab437eed537f2d80">More...</a><br /></td></tr>
+<tr class="separator:gadd923e8635353793ab437eed537f2d80"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gade5b95002db7b3543883d6f3086745cb"><td class="memTemplParams" colspan="2">template&lt;class CrsType , class BufArray , class IntBufArray &gt; </td></tr>
+<tr class="memitem:gade5b95002db7b3543883d6f3086745cb"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__schur.html#gade5b95002db7b3543883d6f3086745cb">hif::drop_L_E</a> (const typename CrsType::iparray_type &amp;ref_indptr, const double alpha, CrsType &amp;L_E, BufArray &amp;buf, IntBufArray &amp;ibuf)</td></tr>
+<tr class="memdesc:gade5b95002db7b3543883d6f3086745cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">drop <em>L_E</em>  <a href="group__schur.html#gade5b95002db7b3543883d6f3086745cb">More...</a><br /></td></tr>
+<tr class="separator:gade5b95002db7b3543883d6f3086745cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga65ff1b11cd4283c6b98ca3fbf65be9b5"><td class="memTemplParams" colspan="2">template&lt;class CcsType , class BufArray , class IntBufArray &gt; </td></tr>
+<tr class="memitem:ga65ff1b11cd4283c6b98ca3fbf65be9b5"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__schur.html#ga65ff1b11cd4283c6b98ca3fbf65be9b5">hif::drop_U_F</a> (const typename CcsType::iparray_type &amp;ref_indptr, const double alpha, CcsType &amp;U_F, BufArray &amp;buf, IntBufArray &amp;ibuf)</td></tr>
+<tr class="memdesc:ga65ff1b11cd4283c6b98ca3fbf65be9b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">drop <em>U_F</em>  <a href="group__schur.html#ga65ff1b11cd4283c6b98ca3fbf65be9b5">More...</a><br /></td></tr>
+<tr class="separator:ga65ff1b11cd4283c6b98ca3fbf65be9b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gae05d9b6b56c1908ae358b40cee13d8c1"><td class="memTemplParams" colspan="2">template&lt;class ScaleArray , class CrsType , class PermType , class DiagArray , class SpVecType &gt; </td></tr>
 <tr class="memitem:gae05d9b6b56c1908ae358b40cee13d8c1"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__schur.html#gae05d9b6b56c1908ae358b40cee13d8c1">hif::compute_Schur_simple</a> (const ScaleArray &amp;s, const CrsType &amp;A, const ScaleArray &amp;t, const PermType &amp;p, const PermType &amp;q, const typename CrsType::size_type m, const CrsType &amp;L_E, const DiagArray &amp;d, const CrsType &amp;U_F, CrsType &amp;SC, SpVecType &amp;buf)</td></tr>
 <tr class="memdesc:gae05d9b6b56c1908ae358b40cee13d8c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the simple version of Schur complement  <a href="group__schur.html#gae05d9b6b56c1908ae358b40cee13d8c1">More...</a><br /></td></tr>
@@ -121,10 +121,10 @@ Functions</h2></td></tr>
 <tr class="memitem:gafa7eb84cfc41d902dddf219c9eed2c9c"><td class="memTemplItemLeft" align="right" valign="top">CrsType&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__schur.html#gafa7eb84cfc41d902dddf219c9eed2c9c">hif::compute_Schur_simple</a> (const ScaleArray &amp;s, const CrsType &amp;A, const ScaleArray &amp;t, const PermType &amp;p, const PermType &amp;q, const typename CrsType::size_type m, const CrsType &amp;L_E, const DiagArray &amp;d, const CrsType &amp;U_F, SpVecType &amp;buf)</td></tr>
 <tr class="memdesc:gafa7eb84cfc41d902dddf219c9eed2c9c"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the simple version of Schur complement  <a href="group__schur.html#gafa7eb84cfc41d902dddf219c9eed2c9c">More...</a><br /></td></tr>
 <tr class="separator:gafa7eb84cfc41d902dddf219c9eed2c9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga7b8254604257211573f1926c1f2ae0f8"><td class="memTemplParams" colspan="2">template&lt;class CrsType , class CcsType , class BufArray , class IntBufArray &gt; </td></tr>
-<tr class="memitem:ga7b8254604257211573f1926c1f2ae0f8"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__schur.html#ga7b8254604257211573f1926c1f2ae0f8">hif::mt::drop_L_E_and_U_F</a> (const typename CrsType::iarray_type &amp;ref_indptr_L, const double alpha_L, const typename CcsType::iarray_type &amp;ref_indptr_U, const double alpha_U, CrsType &amp;L_E, CcsType &amp;U_F, BufArray &amp;buf_L, IntBufArray &amp;ibuf_L, BufArray &amp;buf_U, IntBufArray &amp;ibuf_U, const int nthreads)</td></tr>
-<tr class="memdesc:ga7b8254604257211573f1926c1f2ae0f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">drop <em>L_E</em> and <em>U_F</em>  <a href="group__schur.html#ga7b8254604257211573f1926c1f2ae0f8">More...</a><br /></td></tr>
-<tr class="separator:ga7b8254604257211573f1926c1f2ae0f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3958b1b4fbebacf71a94961ee823544f"><td class="memTemplParams" colspan="2">template&lt;class CrsType , class CcsType , class BufArray , class IntBufArray &gt; </td></tr>
+<tr class="memitem:ga3958b1b4fbebacf71a94961ee823544f"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__schur.html#ga3958b1b4fbebacf71a94961ee823544f">hif::mt::drop_L_E_and_U_F</a> (const typename CrsType::iparray_type &amp;ref_indptr_L, const double alpha_L, const typename CcsType::iparray_type &amp;ref_indptr_U, const double alpha_U, CrsType &amp;L_E, CcsType &amp;U_F, BufArray &amp;buf_L, IntBufArray &amp;ibuf_L, BufArray &amp;buf_U, IntBufArray &amp;ibuf_U, const int nthreads)</td></tr>
+<tr class="memdesc:ga3958b1b4fbebacf71a94961ee823544f"><td class="mdescLeft">&#160;</td><td class="mdescRight">drop <em>L_E</em> and <em>U_F</em>  <a href="group__schur.html#ga3958b1b4fbebacf71a94961ee823544f">More...</a><br /></td></tr>
+<tr class="separator:ga3958b1b4fbebacf71a94961ee823544f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga581adcebbcbca89ca0192413edbcef71"><td class="memTemplParams" colspan="2">template&lt;class ScaleArray , class CrsType , class PermType , class DiagArray , class SpVecType &gt; </td></tr>
 <tr class="memitem:ga581adcebbcbca89ca0192413edbcef71"><td class="memTemplItemLeft" align="right" valign="top">CrsType&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__schur.html#ga581adcebbcbca89ca0192413edbcef71">hif::mt::compute_Schur_simple</a> (const ScaleArray &amp;s, const CrsType &amp;A, const ScaleArray &amp;t, const PermType &amp;p, const PermType &amp;q, const typename CrsType::size_type m, const CrsType &amp;L_E, const DiagArray &amp;d, const CrsType &amp;U_F, SpVecType &amp;buf0, const int nthreads)</td></tr>
 <tr class="memdesc:ga581adcebbcbca89ca0192413edbcef71"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the simple version of Schur complement in MT setting  <a href="group__schur.html#ga581adcebbcbca89ca0192413edbcef71">More...</a><br /></td></tr>
@@ -256,9 +256,9 @@ template&lt;class ScaleArray , class CrsType , class PermType , class DiagArray 
 <p>Where <img class="formulaInl" alt="$\mathbf{L}_E=\mathbf{L}_{m+1:n,:}$" src="form_29.png"/>, <img class="formulaInl" alt="$\mathbf{U}_F=\mathbf{U}_{:,m+1:n}$" src="form_30.png"/>. Notice that both <img class="formulaInl" alt="$\mathbf{L}$" src="form_2.png"/> and <img class="formulaInl" alt="$\mathbf{U}$" src="form_0.png"/> are lower and upper parts <b>after</b> computing <a class="el" href="classhif_1_1Crout.html" title="Crout update in deferred fashionThe idea of this class is to implement Crout kernels that wrap around...">Crout</a> updates. Therefore, they are rectangle matrices if <img class="formulaInl" alt="$m&lt;n$" src="form_31.png"/>. Accessing <img class="formulaInl" alt="$\mathbf{U}_{:,m+1:n}$" src="form_32.png"/> can be efficiently achieved with <em>U_start</em> vector, which is given after <a class="el" href="classhif_1_1Crout.html" title="Crout update in deferred fashionThe idea of this class is to implement Crout kernels that wrap around...">Crout</a> updates.</p>
 <p>This computation involves sparse matrix multiplication, which is done in three steps: 1) determine the total number of nonzeros, 2) determine the index pattern (symbolic computation), and 3) fill in the numerical values. </p>
 
-<p class="definition">Definition at line <a class="el" href="Schur_8hpp_source.html#l00212">212</a> of file <a class="el" href="Schur_8hpp_source.html">Schur.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Schur_8hpp_source.html#l00214">214</a> of file <a class="el" href="Schur_8hpp_source.html">Schur.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Array_8hpp_source.html#l00060">hif::DATA_UNDEF</a>, and <a class="el" href="log_8hpp_source.html#l00092">hif::warning()</a>.</p>
+<p class="reference">References <a class="el" href="Array_8hpp_source.html#l00060">hif::DATA_UNDEF</a>, and <a class="el" href="log_8hpp_source.html#l00085">hif::warning()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -382,7 +382,7 @@ template&lt;class ScaleArray , class CrsType , class PermType , class DiagArray 
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>simple version of Schur complement </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="Schur_8hpp_source.html#l00380">380</a> of file <a class="el" href="Schur_8hpp_source.html">Schur.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Schur_8hpp_source.html#l00382">382</a> of file <a class="el" href="Schur_8hpp_source.html">Schur.hpp</a>.</p>
 
 </div>
 </div>
@@ -505,7 +505,7 @@ template&lt;class ScaleArray , class CrsType , class PermType , class DiagArray 
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>simple version of Schur complement </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="Schur_8hpp_source.html#l00583">583</a> of file <a class="el" href="Schur_8hpp_source.html">Schur.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Schur_8hpp_source.html#l00585">585</a> of file <a class="el" href="Schur_8hpp_source.html">Schur.hpp</a>.</p>
 
 <p class="reference">References <a class="el" href="mt_8hpp_source.html#l00082">hif::mt::get_thread()</a>.</p>
 <div class="dynheader">
@@ -519,8 +519,8 @@ Here is the call graph for this function:</div>
 
 </div>
 </div>
-<a id="ga2828a33bdb95c76f46f5a53043ee9162"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga2828a33bdb95c76f46f5a53043ee9162">&#9670;&nbsp;</a></span>drop_L_E()</h2>
+<a id="gade5b95002db7b3543883d6f3086745cb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gade5b95002db7b3543883d6f3086745cb">&#9670;&nbsp;</a></span>drop_L_E()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -533,7 +533,7 @@ template&lt;class CrsType , class BufArray , class IntBufArray &gt; </div>
         <tr>
           <td class="memname">void hif::drop_L_E </td>
           <td>(</td>
-          <td class="paramtype">const typename CrsType::iarray_type &amp;&#160;</td>
+          <td class="paramtype">const typename CrsType::iparray_type &amp;&#160;</td>
           <td class="paramname"><em>ref_indptr</em>, </td>
         </tr>
         <tr>
@@ -593,14 +593,14 @@ template&lt;class CrsType , class BufArray , class IntBufArray &gt; </div>
   </dd>
 </dl>
 <dl class="section note"><dt>Note</dt><dd>buffers can be got from <a class="el" href="classhif_1_1Crout.html" title="Crout update in deferred fashionThe idea of this class is to implement Crout kernels that wrap around...">Crout</a> work spaces </dd></dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__schur.html#gabff2dea43e15b8055aebc2e7cc53558b" title="drop U_F ">drop_U_F</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__schur.html#ga65ff1b11cd4283c6b98ca3fbf65be9b5" title="drop U_F ">drop_U_F</a> </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="Schur_8hpp_source.html#l00133">133</a> of file <a class="el" href="Schur_8hpp_source.html">Schur.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Schur_8hpp_source.html#l00135">135</a> of file <a class="el" href="Schur_8hpp_source.html">Schur.hpp</a>.</p>
 
 </div>
 </div>
-<a id="ga7b8254604257211573f1926c1f2ae0f8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga7b8254604257211573f1926c1f2ae0f8">&#9670;&nbsp;</a></span>drop_L_E_and_U_F()</h2>
+<a id="ga3958b1b4fbebacf71a94961ee823544f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga3958b1b4fbebacf71a94961ee823544f">&#9670;&nbsp;</a></span>drop_L_E_and_U_F()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -613,7 +613,7 @@ template&lt;class CrsType , class CcsType , class BufArray , class IntBufArray &
         <tr>
           <td class="memname">void hif::mt::drop_L_E_and_U_F </td>
           <td>(</td>
-          <td class="paramtype">const typename CrsType::iarray_type &amp;&#160;</td>
+          <td class="paramtype">const typename CrsType::iparray_type &amp;&#160;</td>
           <td class="paramname"><em>ref_indptr_L</em>, </td>
         </tr>
         <tr>
@@ -625,7 +625,7 @@ template&lt;class CrsType , class CcsType , class BufArray , class IntBufArray &
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const typename CcsType::iarray_type &amp;&#160;</td>
+          <td class="paramtype">const typename CcsType::iparray_type &amp;&#160;</td>
           <td class="paramname"><em>ref_indptr_U</em>, </td>
         </tr>
         <tr>
@@ -717,27 +717,27 @@ template&lt;class CrsType , class CcsType , class BufArray , class IntBufArray &
 </dl>
 <dl class="section note"><dt>Note</dt><dd>buffers can be got from <a class="el" href="classhif_1_1Crout.html" title="Crout update in deferred fashionThe idea of this class is to implement Crout kernels that wrap around...">Crout</a> work spaces </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="Schur_8hpp_source.html#l00420">420</a> of file <a class="el" href="Schur_8hpp_source.html">Schur.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Schur_8hpp_source.html#l00422">422</a> of file <a class="el" href="Schur_8hpp_source.html">Schur.hpp</a>.</p>
 
 <p class="reference">References <a class="el" href="mt_8hpp_source.html#l00082">hif::mt::get_thread()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="group__schur_ga7b8254604257211573f1926c1f2ae0f8_cgraph.png" border="0" usemap="#group__schur_ga7b8254604257211573f1926c1f2ae0f8_cgraph" alt=""/></div>
-<map name="group__schur_ga7b8254604257211573f1926c1f2ae0f8_cgraph" id="group__schur_ga7b8254604257211573f1926c1f2ae0f8_cgraph">
+<div class="center"><img src="group__schur_ga3958b1b4fbebacf71a94961ee823544f_cgraph.png" border="0" usemap="#group__schur_ga3958b1b4fbebacf71a94961ee823544f_cgraph" alt=""/></div>
+<map name="group__schur_ga3958b1b4fbebacf71a94961ee823544f_cgraph" id="group__schur_ga3958b1b4fbebacf71a94961ee823544f_cgraph">
 <area shape="rect" id="node2" href="group__mt.html#gafb354fe62e292bf297b01876fc9f1270" title="get &quot;my&quot; thread id " alt="" coords="236,5,364,32"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="ga1b4d986d5ca5ac896c2d796fb354a909"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga1b4d986d5ca5ac896c2d796fb354a909">&#9670;&nbsp;</a></span>drop_offsets_kernel()</h2>
+<a id="gadd923e8635353793ab437eed537f2d80"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gadd923e8635353793ab437eed537f2d80">&#9670;&nbsp;</a></span>drop_offsets_kernel()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class IntArray , class ValueArray , class BufArray , class IntBufArray &gt; </div>
+template&lt;class IndPtrArray , class IntArray , class ValueArray , class BufArray , class IntBufArray &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -745,7 +745,7 @@ template&lt;class IntArray , class ValueArray , class BufArray , class IntBufArr
         <tr>
           <td class="memname">void hif::internal::drop_offsets_kernel </td>
           <td>(</td>
-          <td class="paramtype">const IntArray &amp;&#160;</td>
+          <td class="paramtype">const IndPtrArray &amp;&#160;</td>
           <td class="paramname"><em>ref_indptr</em>, </td>
         </tr>
         <tr>
@@ -757,7 +757,7 @@ template&lt;class IntArray , class ValueArray , class BufArray , class IntBufArr
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">IntArray &amp;&#160;</td>
+          <td class="paramtype">IndPtrArray &amp;&#160;</td>
           <td class="paramname"><em>indptr</em>, </td>
         </tr>
         <tr>
@@ -800,6 +800,7 @@ template&lt;class IntArray , class ValueArray , class BufArray , class IntBufArr
 <p>drop <em>L_E</em> matrix or <em>U_F</em> matrix </p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
+    <tr><td class="paramname">IndPtrArray</td><td>index pointer array </td></tr>
     <tr><td class="paramname">IntArray</td><td>integer array, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
     <tr><td class="paramname">ValueArray</td><td>value array, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
     <tr><td class="paramname">BufArray</td><td>value buffer array type </td></tr>
@@ -820,12 +821,12 @@ template&lt;class IntArray , class ValueArray , class BufArray , class IntBufArr
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="Schur_8hpp_source.html#l00059">59</a> of file <a class="el" href="Schur_8hpp_source.html">Schur.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Schur_8hpp_source.html#l00061">61</a> of file <a class="el" href="Schur_8hpp_source.html">Schur.hpp</a>.</p>
 
 </div>
 </div>
-<a id="gabff2dea43e15b8055aebc2e7cc53558b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gabff2dea43e15b8055aebc2e7cc53558b">&#9670;&nbsp;</a></span>drop_U_F()</h2>
+<a id="ga65ff1b11cd4283c6b98ca3fbf65be9b5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga65ff1b11cd4283c6b98ca3fbf65be9b5">&#9670;&nbsp;</a></span>drop_U_F()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -838,7 +839,7 @@ template&lt;class CcsType , class BufArray , class IntBufArray &gt; </div>
         <tr>
           <td class="memname">void hif::drop_U_F </td>
           <td>(</td>
-          <td class="paramtype">const typename CcsType::iarray_type &amp;&#160;</td>
+          <td class="paramtype">const typename CcsType::iparray_type &amp;&#160;</td>
           <td class="paramname"><em>ref_indptr</em>, </td>
         </tr>
         <tr>
@@ -898,9 +899,9 @@ template&lt;class CcsType , class BufArray , class IntBufArray &gt; </div>
   </dd>
 </dl>
 <dl class="section note"><dt>Note</dt><dd>buffers can be got from <a class="el" href="classhif_1_1Crout.html" title="Crout update in deferred fashionThe idea of this class is to implement Crout kernels that wrap around...">Crout</a> work spaces </dd></dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__schur.html#ga2828a33bdb95c76f46f5a53043ee9162" title="drop L_E ">drop_L_E</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__schur.html#gade5b95002db7b3543883d6f3086745cb" title="drop L_E ">drop_L_E</a> </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="Schur_8hpp_source.html#l00160">160</a> of file <a class="el" href="Schur_8hpp_source.html">Schur.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Schur_8hpp_source.html#l00162">162</a> of file <a class="el" href="Schur_8hpp_source.html">Schur.hpp</a>.</p>
 
 </div>
 </div>

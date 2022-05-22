@@ -1,5 +1,5 @@
 <map id="hif::AugCCS::interchange_rows" name="hif::AugCCS::interchange_rows">
 <area shape="rect" id="node2" href="$classhif_1_1AugCCS.html#a82d2f06019abb4cf02815ef393d4f1f9" title="given a row handle/ID, get its corresponding column index " alt="" coords="275,5,420,32"/>
-<area shape="rect" id="node3" href="$classhif_1_1AugCCS.html#ac5db931982ad52dc4f39c291b3d9a840" title="given a row handle, get its next location " alt="" coords="260,56,435,83"/>
-<area shape="rect" id="node4" href="$classhif_1_1AugCCS.html#a0147ded15994ee5a33653d410f49886b" title="given row index, get the starting row handle/ID " alt="" coords="282,107,413,149"/>
+<area shape="rect" id="node3" href="$classhif_1_1AugCCS.html#a005744f5de61f143f803067a5a58db1a" title="given a row handle, get its next location " alt="" coords="260,56,435,83"/>
+<area shape="rect" id="node4" href="$classhif_1_1AugCCS.html#adff87269db3877a1bdef13a049097fb4" title="given row index, get the starting row handle/ID " alt="" coords="282,107,413,149"/>
 </map>

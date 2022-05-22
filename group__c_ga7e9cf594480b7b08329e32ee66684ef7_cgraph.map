@@ -1,0 +1,6 @@
+<map id="lhfQueryMmFile" name="lhfQueryMmFile">
+<area shape="rect" id="node2" href="$group__io.html#gac79beccd6668c627411e4d9ee4624bc9" title="hif::internal::mm_read\l_dense_size" alt="" coords="168,5,316,47"/>
+<area shape="rect" id="node3" href="$group__io.html#gad40204849ab390db879fcef33ed34dc9" title="Internal routine to parse the first line. " alt="" coords="168,71,316,112"/>
+<area shape="rect" id="node5" href="$group__io.html#ga928563fb92417cbf2befd0771a7c80f6" title="Internal routine to read sizes. " alt="" coords="168,136,316,177"/>
+<area shape="rect" id="node4" href="$group__util.html#ga0a3c88ad06db9caf44d1a64d51ebb7b2" title="error information streaming, dump to HIF_STDERR " alt="" coords="364,78,435,105"/>
+</map>

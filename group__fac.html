@@ -32,7 +32,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">HIFIR
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -123,10 +123,10 @@ Functions</h2></td></tr>
 <tr class="memitem:gabfa7d15200b25728021b91b690fb1fe7"><td class="memTemplItemLeft" align="right" valign="top">CcsType&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__fac.html#gabfa7d15200b25728021b91b690fb1fe7">hif::internal::extract_F</a> (const ScalingType &amp;s, const CcsType &amp;A, const ScalingType &amp;t, const typename CcsType::size_type m, const PermType &amp;p, const PermType &amp;q, BufferType &amp;buf)</td></tr>
 <tr class="memdesc:gabfa7d15200b25728021b91b690fb1fe7"><td class="mdescLeft">&#160;</td><td class="mdescRight">extract the <em>F</em> part  <a href="group__fac.html#gabfa7d15200b25728021b91b690fb1fe7">More...</a><br /></td></tr>
 <tr class="separator:gabfa7d15200b25728021b91b690fb1fe7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga381ac634e2a06e74f363834c85c590ef"><td class="memTemplParams" colspan="2">template&lt;class L_Type , class U_Type , class PosArray &gt; </td></tr>
-<tr class="memitem:ga381ac634e2a06e74f363834c85c590ef"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__fac.html#ga381ac634e2a06e74f363834c85c590ef">hif::internal::compress_tails</a> (U_Type &amp;U, L_Type &amp;L, const PosArray &amp;U_start, const PosArray &amp;L_start, const typename PosArray::size_type m, const typename PosArray::size_type dfrs)</td></tr>
-<tr class="memdesc:ga381ac634e2a06e74f363834c85c590ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">compress offsets to have a compact L and U  <a href="group__fac.html#ga381ac634e2a06e74f363834c85c590ef">More...</a><br /></td></tr>
-<tr class="separator:ga381ac634e2a06e74f363834c85c590ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaafa230b0162de872b10ea9edc482e658"><td class="memTemplParams" colspan="2">template&lt;class L_Type , class U_Type , class IndPtrArray &gt; </td></tr>
+<tr class="memitem:gaafa230b0162de872b10ea9edc482e658"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__fac.html#gaafa230b0162de872b10ea9edc482e658">hif::internal::compress_tails</a> (U_Type &amp;U, L_Type &amp;L, const IndPtrArray &amp;U_start, const IndPtrArray &amp;L_start, const typename IndPtrArray::size_type m, const typename IndPtrArray::size_type dfrs)</td></tr>
+<tr class="memdesc:gaafa230b0162de872b10ea9edc482e658"><td class="mdescLeft">&#160;</td><td class="mdescRight">compress offsets to have a compact L and U  <a href="group__fac.html#gaafa230b0162de872b10ea9edc482e658">More...</a><br /></td></tr>
+<tr class="separator:gaafa230b0162de872b10ea9edc482e658"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga65226d63c5f627a700f4c27d9913fcd5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__fac.html#ga65226d63c5f627a700f4c27d9913fcd5">hif::internal::print_post_flag</a> (const int flag)</td></tr>
 <tr class="memdesc:ga65226d63c5f627a700f4c27d9913fcd5"><td class="mdescLeft">&#160;</td><td class="mdescRight">print out information regarding handling Schur complement  <a href="group__fac.html#ga65226d63c5f627a700f4c27d9913fcd5">More...</a><br /></td></tr>
 <tr class="separator:ga65226d63c5f627a700f4c27d9913fcd5"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -149,13 +149,13 @@ Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="ga381ac634e2a06e74f363834c85c590ef"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga381ac634e2a06e74f363834c85c590ef">&#9670;&nbsp;</a></span>compress_tails()</h2>
+<a id="gaafa230b0162de872b10ea9edc482e658"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaafa230b0162de872b10ea9edc482e658">&#9670;&nbsp;</a></span>compress_tails()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class L_Type , class U_Type , class PosArray &gt; </div>
+template&lt;class L_Type , class U_Type , class IndPtrArray &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -175,25 +175,25 @@ template&lt;class L_Type , class U_Type , class PosArray &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const PosArray &amp;&#160;</td>
+          <td class="paramtype">const IndPtrArray &amp;&#160;</td>
           <td class="paramname"><em>U_start</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const PosArray &amp;&#160;</td>
+          <td class="paramtype">const IndPtrArray &amp;&#160;</td>
           <td class="paramname"><em>L_start</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const typename PosArray::size_type&#160;</td>
+          <td class="paramtype">const typename IndPtrArray::size_type&#160;</td>
           <td class="paramname"><em>m</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const typename PosArray::size_type&#160;</td>
+          <td class="paramtype">const typename IndPtrArray::size_type&#160;</td>
           <td class="paramname"><em>dfrs</em>&#160;</td>
         </tr>
         <tr>
@@ -214,7 +214,7 @@ template&lt;class L_Type , class U_Type , class PosArray &gt; </div>
   <table class="tparams">
     <tr><td class="paramname">L_Type</td><td>storage for <em>L</em>, see <a class="el" href="classhif_1_1CCS.html">CCS</a> </td></tr>
     <tr><td class="paramname">U_Type</td><td>storage for <em>U</em>, see <a class="el" href="classhif_1_1CRS.html">CRS</a> </td></tr>
-    <tr><td class="paramname">PosArray</td><td>array for storing starting positions, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
+    <tr><td class="paramname">IndPtrArray</td><td>array for storing starting positions, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -442,7 +442,7 @@ template&lt;class CrsType , class ScalingType , class PermType &gt; </div>
  
 <p class="definition">Definition at line <a class="el" href="factor_8hpp_source.html#l00185">185</a> of file <a class="el" href="factor_8hpp_source.html">factor.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Array_8hpp_source.html#l00060">hif::DATA_UNDEF</a>, and <a class="el" href="log_8hpp_source.html#l00125">hif::error()</a>.</p>
+<p class="reference">References <a class="el" href="Array_8hpp_source.html#l00060">hif::DATA_UNDEF</a>, and <a class="el" href="log_8hpp_source.html#l00119">hif::error()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -552,7 +552,7 @@ template&lt;class CcsType , class ScalingType , class PermType , class BufferTyp
  
 <p class="definition">Definition at line <a class="el" href="factor_8hpp_source.html#l00288">288</a> of file <a class="el" href="factor_8hpp_source.html">factor.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Array_8hpp_source.html#l00060">hif::DATA_UNDEF</a>, and <a class="el" href="log_8hpp_source.html#l00125">hif::error()</a>.</p>
+<p class="reference">References <a class="el" href="Array_8hpp_source.html#l00060">hif::DATA_UNDEF</a>, and <a class="el" href="log_8hpp_source.html#l00119">hif::error()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -660,7 +660,7 @@ template&lt;class CcsType , class ScalingType , class PermType &gt; </div>
 
 <p class="definition">Definition at line <a class="el" href="factor_8hpp_source.html#l00130">130</a> of file <a class="el" href="factor_8hpp_source.html">factor.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Array_8hpp_source.html#l00060">hif::DATA_UNDEF</a>, and <a class="el" href="log_8hpp_source.html#l00125">hif::error()</a>.</p>
+<p class="reference">References <a class="el" href="Array_8hpp_source.html#l00060">hif::DATA_UNDEF</a>, and <a class="el" href="log_8hpp_source.html#l00119">hif::error()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -768,7 +768,7 @@ template&lt;bool IsSymm, class CsType , class CroutStreamer , class PrecsType , 
     <tr><td class="paramname">IsSymm</td><td>if <em>true</em>, then assume a symmetric leading block </td></tr>
     <tr><td class="paramname">CsType</td><td>input compressed storage, either <a class="el" href="classhif_1_1CRS.html">CRS</a> or <a class="el" href="classhif_1_1CCS.html">CCS</a> </td></tr>
     <tr><td class="paramname">CroutStreamer</td><td>information streamer for <a class="el" href="classhif_1_1Crout.html">Crout</a> update </td></tr>
-    <tr><td class="paramname">PrecsType</td><td>multilevel preconditioner type, <a class="el" href="group__slv.html#gac2ec33317f5bf3c566a6c85ce59b572d">Precs</a> and <a class="el" href="structhif_1_1Prec.html">Prec</a> </td></tr>
+    <tr><td class="paramname">PrecsType</td><td>multilevel preconditioner type, <a class="el" href="group__slv.html#ga4e22e9d6058eaeea607eafda5eb2e809">Precs</a> and <a class="el" href="structhif_1_1Prec.html">Prec</a> </td></tr>
     <tr><td class="paramname">IntArray</td><td>integer array for storing sizes </td></tr>
   </table>
   </dd>
@@ -793,7 +793,7 @@ template&lt;bool IsSymm, class CsType , class CroutStreamer , class PrecsType , 
 
 <p class="definition">Definition at line <a class="el" href="factor_8hpp_source.html#l00553">553</a> of file <a class="el" href="factor_8hpp_source.html">factor.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Options_8h_source.html#l00086">hif_Options::alpha_L</a>, <a class="el" href="Options_8h_source.html#l00087">hif_Options::alpha_U</a>, <a class="el" href="Options_8h_source.html#l00089">hif_Options::c_d</a>, <a class="el" href="Array_8hpp_source.html#l00060">hif::DATA_UNDEF</a>, <a class="el" href="Crout_8hpp_source.html#l00097">hif::Crout::deferred_step()</a>, <a class="el" href="Crout_8hpp_source.html#l00094">hif::Crout::defers()</a>, <a class="el" href="Options_8h_source.html#l00115">hif_Options::dense_thres</a>, <a class="el" href="factor_8hpp_source.html#l00080">hif::internal::determine_fac_pars()</a>, <a class="el" href="log_8hpp_source.html#l00125">hif::error()</a>, <a class="el" href="Options_8h_source.html#l00106">hif_Options::fat_schur_1st</a>, <a class="el" href="Timer_8hpp_source.html#l00129">hif::Timer&lt; Clock, RepType &gt;::finish()</a>, <a class="el" href="Crout_8hpp_source.html#l00100">hif::Crout::increment_defer_counter()</a>, <a class="el" href="log_8hpp_source.html#l00079">hif::info()</a>, <a class="el" href="Options_8h_source.html#l00112">hif_Options::no_pre</a>, <a class="el" href="Options_8h_source.html#l00113">hif_Options::nzp_thres</a>, <a class="el" href="Crout_8hpp_source.html#l00078">hif::Crout::operator++()</a>, <a class="el" href="Options_8h_source.html#l00108">hif_Options::pivot</a>, <a class="el" href="Options_8h_source.html#l00265">hif::PIVOTING_AUTO</a>, <a class="el" href="factor_8hpp_source.html#l00462">hif::internal::print_post_flag()</a>, <a class="el" href="Options_8h_source.html#l00088">hif_Options::rho</a>, <a class="el" href="Timer_8hpp_source.html#l00125">hif::Timer&lt; Clock, RepType &gt;::start()</a>, <a class="el" href="Options_8h_source.html#l00098">hif_Options::symm_pre_lvls</a>, and <a class="el" href="Timer_8hpp_source.html#l00143">hif::Timer&lt; Clock, RepType &gt;::time()</a>.</p>
+<p class="reference">References <a class="el" href="Options_8h_source.html#l00086">hif_Options::alpha_L</a>, <a class="el" href="Options_8h_source.html#l00087">hif_Options::alpha_U</a>, <a class="el" href="Options_8h_source.html#l00089">hif_Options::c_d</a>, <a class="el" href="Array_8hpp_source.html#l00060">hif::DATA_UNDEF</a>, <a class="el" href="Crout_8hpp_source.html#l00097">hif::Crout::deferred_step()</a>, <a class="el" href="Crout_8hpp_source.html#l00094">hif::Crout::defers()</a>, <a class="el" href="Options_8h_source.html#l00115">hif_Options::dense_thres</a>, <a class="el" href="factor_8hpp_source.html#l00080">hif::internal::determine_fac_pars()</a>, <a class="el" href="log_8hpp_source.html#l00119">hif::error()</a>, <a class="el" href="Options_8h_source.html#l00106">hif_Options::fat_schur_1st</a>, <a class="el" href="Timer_8hpp_source.html#l00129">hif::Timer&lt; Clock, RepType &gt;::finish()</a>, <a class="el" href="Crout_8hpp_source.html#l00100">hif::Crout::increment_defer_counter()</a>, <a class="el" href="log_8hpp_source.html#l00071">hif::info()</a>, <a class="el" href="Options_8h_source.html#l00112">hif_Options::no_pre</a>, <a class="el" href="Options_8h_source.html#l00113">hif_Options::nzp_thres</a>, <a class="el" href="Crout_8hpp_source.html#l00078">hif::Crout::operator++()</a>, <a class="el" href="Options_8h_source.html#l00108">hif_Options::pivot</a>, <a class="el" href="Options_8h_source.html#l00265">hif::PIVOTING_AUTO</a>, <a class="el" href="factor_8hpp_source.html#l00462">hif::internal::print_post_flag()</a>, <a class="el" href="Options_8h_source.html#l00088">hif_Options::rho</a>, <a class="el" href="Timer_8hpp_source.html#l00125">hif::Timer&lt; Clock, RepType &gt;::start()</a>, <a class="el" href="Options_8h_source.html#l00098">hif_Options::symm_pre_lvls</a>, and <a class="el" href="Timer_8hpp_source.html#l00143">hif::Timer&lt; Clock, RepType &gt;::time()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -904,7 +904,7 @@ template&lt;class CsType , class CroutStreamer , class PrecsType , class IntArra
   <table class="tparams">
     <tr><td class="paramname">CsType</td><td>input compressed storage, either <a class="el" href="classhif_1_1CRS.html">CRS</a> or <a class="el" href="classhif_1_1CCS.html">CCS</a> </td></tr>
     <tr><td class="paramname">CroutStreamer</td><td>information streamer for <a class="el" href="classhif_1_1Crout.html">Crout</a> update </td></tr>
-    <tr><td class="paramname">PrecsType</td><td>multilevel preconditioner type, <a class="el" href="group__slv.html#gac2ec33317f5bf3c566a6c85ce59b572d">Precs</a> and <a class="el" href="structhif_1_1Prec.html">Prec</a> </td></tr>
+    <tr><td class="paramname">PrecsType</td><td>multilevel preconditioner type, <a class="el" href="group__slv.html#ga4e22e9d6058eaeea607eafda5eb2e809">Precs</a> and <a class="el" href="structhif_1_1Prec.html">Prec</a> </td></tr>
     <tr><td class="paramname">IntArray</td><td>integer array for storing sizes </td></tr>
   </table>
   </dd>
@@ -929,7 +929,7 @@ template&lt;class CsType , class CroutStreamer , class PrecsType , class IntArra
 
 <p class="definition">Definition at line <a class="el" href="pivot__factor_8hpp_source.html#l00065">65</a> of file <a class="el" href="pivot__factor_8hpp_source.html">pivot_factor.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Options_8h_source.html#l00086">hif_Options::alpha_L</a>, <a class="el" href="Options_8h_source.html#l00087">hif_Options::alpha_U</a>, <a class="el" href="Options_8h_source.html#l00089">hif_Options::c_d</a>, <a class="el" href="Array_8hpp_source.html#l00060">hif::DATA_UNDEF</a>, <a class="el" href="Crout_8hpp_source.html#l00097">hif::Crout::deferred_step()</a>, <a class="el" href="Crout_8hpp_source.html#l00094">hif::Crout::defers()</a>, <a class="el" href="Options_8h_source.html#l00115">hif_Options::dense_thres</a>, <a class="el" href="factor_8hpp_source.html#l00080">hif::internal::determine_fac_pars()</a>, <a class="el" href="log_8hpp_source.html#l00125">hif::error()</a>, <a class="el" href="Options_8h_source.html#l00106">hif_Options::fat_schur_1st</a>, <a class="el" href="Timer_8hpp_source.html#l00129">hif::Timer&lt; Clock, RepType &gt;::finish()</a>, <a class="el" href="Options_8h_source.html#l00109">hif_Options::gamma</a>, <a class="el" href="Crout_8hpp_source.html#l00100">hif::Crout::increment_defer_counter()</a>, <a class="el" href="log_8hpp_source.html#l00079">hif::info()</a>, <a class="el" href="Options_8h_source.html#l00112">hif_Options::no_pre</a>, <a class="el" href="Crout_8hpp_source.html#l00078">hif::Crout::operator++()</a>, <a class="el" href="factor_8hpp_source.html#l00462">hif::internal::print_post_flag()</a>, <a class="el" href="Options_8h_source.html#l00088">hif_Options::rho</a>, <a class="el" href="Timer_8hpp_source.html#l00125">hif::Timer&lt; Clock, RepType &gt;::start()</a>, <a class="el" href="Options_8h_source.html#l00098">hif_Options::symm_pre_lvls</a>, and <a class="el" href="Timer_8hpp_source.html#l00143">hif::Timer&lt; Clock, RepType &gt;::time()</a>.</p>
+<p class="reference">References <a class="el" href="Options_8h_source.html#l00086">hif_Options::alpha_L</a>, <a class="el" href="Options_8h_source.html#l00087">hif_Options::alpha_U</a>, <a class="el" href="Options_8h_source.html#l00089">hif_Options::c_d</a>, <a class="el" href="Array_8hpp_source.html#l00060">hif::DATA_UNDEF</a>, <a class="el" href="Crout_8hpp_source.html#l00097">hif::Crout::deferred_step()</a>, <a class="el" href="Crout_8hpp_source.html#l00094">hif::Crout::defers()</a>, <a class="el" href="Options_8h_source.html#l00115">hif_Options::dense_thres</a>, <a class="el" href="factor_8hpp_source.html#l00080">hif::internal::determine_fac_pars()</a>, <a class="el" href="log_8hpp_source.html#l00119">hif::error()</a>, <a class="el" href="Options_8h_source.html#l00106">hif_Options::fat_schur_1st</a>, <a class="el" href="Timer_8hpp_source.html#l00129">hif::Timer&lt; Clock, RepType &gt;::finish()</a>, <a class="el" href="Options_8h_source.html#l00109">hif_Options::gamma</a>, <a class="el" href="Crout_8hpp_source.html#l00100">hif::Crout::increment_defer_counter()</a>, <a class="el" href="log_8hpp_source.html#l00071">hif::info()</a>, <a class="el" href="Options_8h_source.html#l00112">hif_Options::no_pre</a>, <a class="el" href="Crout_8hpp_source.html#l00078">hif::Crout::operator++()</a>, <a class="el" href="factor_8hpp_source.html#l00462">hif::internal::print_post_flag()</a>, <a class="el" href="Options_8h_source.html#l00088">hif_Options::rho</a>, <a class="el" href="Timer_8hpp_source.html#l00125">hif::Timer&lt; Clock, RepType &gt;::start()</a>, <a class="el" href="Options_8h_source.html#l00098">hif_Options::symm_pre_lvls</a>, and <a class="el" href="Timer_8hpp_source.html#l00143">hif::Timer&lt; Clock, RepType &gt;::time()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1076,7 +1076,7 @@ template&lt;class CsType , class CroutStreamer , class PrecsType , class IntArra
   <table class="tparams">
     <tr><td class="paramname">CsType</td><td>input compressed storage, either <a class="el" href="classhif_1_1CRS.html">CRS</a> or <a class="el" href="classhif_1_1CCS.html">CCS</a> </td></tr>
     <tr><td class="paramname">CroutStreamer</td><td>information streamer for <a class="el" href="classhif_1_1Crout.html">Crout</a> update </td></tr>
-    <tr><td class="paramname">PrecsType</td><td>multilevel preconditioner type, <a class="el" href="group__slv.html#gac2ec33317f5bf3c566a6c85ce59b572d">Precs</a> and <a class="el" href="structhif_1_1Prec.html">Prec</a> </td></tr>
+    <tr><td class="paramname">PrecsType</td><td>multilevel preconditioner type, <a class="el" href="group__slv.html#ga4e22e9d6058eaeea607eafda5eb2e809">Precs</a> and <a class="el" href="structhif_1_1Prec.html">Prec</a> </td></tr>
     <tr><td class="paramname">IntArray</td><td>integer array for storing sizes </td></tr>
   </table>
   </dd>
@@ -1099,7 +1099,7 @@ template&lt;class CsType , class CroutStreamer , class PrecsType , class IntArra
 
 <p class="definition">Definition at line <a class="el" href="symm__factor_8hpp_source.html#l00126">126</a> of file <a class="el" href="symm__factor_8hpp_source.html">symm_factor.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Options_8h_source.html#l00086">hif_Options::alpha_L</a>, <a class="el" href="Options_8h_source.html#l00089">hif_Options::c_d</a>, <a class="el" href="Array_8hpp_source.html#l00060">hif::DATA_UNDEF</a>, <a class="el" href="Crout_8hpp_source.html#l00097">hif::Crout::deferred_step()</a>, <a class="el" href="Crout_8hpp_source.html#l00094">hif::Crout::defers()</a>, <a class="el" href="Options_8h_source.html#l00115">hif_Options::dense_thres</a>, <a class="el" href="factor_8hpp_source.html#l00080">hif::internal::determine_fac_pars()</a>, <a class="el" href="log_8hpp_source.html#l00125">hif::error()</a>, <a class="el" href="Options_8h_source.html#l00106">hif_Options::fat_schur_1st</a>, <a class="el" href="Timer_8hpp_source.html#l00129">hif::Timer&lt; Clock, RepType &gt;::finish()</a>, <a class="el" href="Crout_8hpp_source.html#l00100">hif::Crout::increment_defer_counter()</a>, <a class="el" href="log_8hpp_source.html#l00079">hif::info()</a>, <a class="el" href="Options_8h_source.html#l00112">hif_Options::no_pre</a>, <a class="el" href="Crout_8hpp_source.html#l00078">hif::Crout::operator++()</a>, <a class="el" href="factor_8hpp_source.html#l00462">hif::internal::print_post_flag()</a>, <a class="el" href="Options_8h_source.html#l00088">hif_Options::rho</a>, <a class="el" href="Options_8h_source.html#l00095">hif_Options::spd</a>, <a class="el" href="Timer_8hpp_source.html#l00125">hif::Timer&lt; Clock, RepType &gt;::start()</a>, and <a class="el" href="Timer_8hpp_source.html#l00143">hif::Timer&lt; Clock, RepType &gt;::time()</a>.</p>
+<p class="reference">References <a class="el" href="Options_8h_source.html#l00086">hif_Options::alpha_L</a>, <a class="el" href="Options_8h_source.html#l00089">hif_Options::c_d</a>, <a class="el" href="Array_8hpp_source.html#l00060">hif::DATA_UNDEF</a>, <a class="el" href="Crout_8hpp_source.html#l00097">hif::Crout::deferred_step()</a>, <a class="el" href="Crout_8hpp_source.html#l00094">hif::Crout::defers()</a>, <a class="el" href="Options_8h_source.html#l00115">hif_Options::dense_thres</a>, <a class="el" href="factor_8hpp_source.html#l00080">hif::internal::determine_fac_pars()</a>, <a class="el" href="log_8hpp_source.html#l00119">hif::error()</a>, <a class="el" href="Options_8h_source.html#l00106">hif_Options::fat_schur_1st</a>, <a class="el" href="Timer_8hpp_source.html#l00129">hif::Timer&lt; Clock, RepType &gt;::finish()</a>, <a class="el" href="Crout_8hpp_source.html#l00100">hif::Crout::increment_defer_counter()</a>, <a class="el" href="log_8hpp_source.html#l00071">hif::info()</a>, <a class="el" href="Options_8h_source.html#l00112">hif_Options::no_pre</a>, <a class="el" href="Crout_8hpp_source.html#l00078">hif::Crout::operator++()</a>, <a class="el" href="factor_8hpp_source.html#l00462">hif::internal::print_post_flag()</a>, <a class="el" href="Options_8h_source.html#l00088">hif_Options::rho</a>, <a class="el" href="Options_8h_source.html#l00095">hif_Options::spd</a>, <a class="el" href="Timer_8hpp_source.html#l00125">hif::Timer&lt; Clock, RepType &gt;::start()</a>, and <a class="el" href="Timer_8hpp_source.html#l00143">hif::Timer&lt; Clock, RepType &gt;::time()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">

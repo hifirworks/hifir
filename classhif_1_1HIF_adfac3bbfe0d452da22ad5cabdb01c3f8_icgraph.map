@@ -1,0 +1,6 @@
+<map id="hif::HIF::schur_size" name="hif::HIF::schur_size">
+<area shape="rect" id="node2" href="$group__ccomplexsingle.html#gae0357526573833cb907b0bbb4c909371" title="Get the Schur complement size. " alt="" coords="191,5,315,32"/>
+<area shape="rect" id="node3" href="$group__cdouble.html#ga440d1a88f95fac3b3325298771d1fa11" title="Get the Schur complement size. " alt="" coords="191,56,315,83"/>
+<area shape="rect" id="node4" href="$group__csingle.html#gacca0247443c9039ef573153452417949" title="Get the Schur complement size. " alt="" coords="191,107,315,133"/>
+<area shape="rect" id="node5" href="$group__ccomplexdouble.html#ga8266804eba9cefedb8362768dd584625" title="Get the Schur complement size. " alt="" coords="191,157,315,184"/>
+</map>

@@ -32,7 +32,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">HIFIR
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -114,7 +114,7 @@ Include dependency graph for CompressedStorage.hpp:</div>
 <area shape="rect" id="node7" href="Array_8hpp.html" title="Array data structure, with functionality of wrapping external data. " alt="" coords="345,229,460,256"/>
 <area shape="rect" id="node20" href="common_8hpp.html" title="Utility/helper routines. " alt="" coords="815,229,958,256"/>
 <area shape="rect" id="node23" href="coo2compress_8hpp.html" title="Helper function to convert coordinate to compressed format. " alt="" coords="168,155,347,181"/>
-<area shape="rect" id="node24" href="io_8hpp.html" title="Read and write native IO formats. " alt="" coords="1365,80,1467,107"/>
+<area shape="rect" id="node24" href="io_8hpp.html" title="Read and write sparse matrices in HIFIR. " alt="" coords="1365,80,1467,107"/>
 <area shape="rect" id="node30" href="math_8hpp.html" title="Some handy BLAS 1 vector routines. " alt="" coords="1019,155,1141,181"/>
 <area shape="rect" id="node33" href="mt__mv_8hpp.html" title="Multithreaded matrix&#45;vector product for CRS. " alt="" coords="573,155,707,181"/>
 <area shape="rect" id="node10" href="log_8hpp.html" title="Logging interface, including info/warning/error. " alt="" coords="597,304,707,331"/>
@@ -129,18 +129,18 @@ This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
 <div class="center"><img src="CompressedStorage_8hpp__dep__incl.png" border="0" usemap="#CompressedStorage_8hppdep" alt=""/></div>
 <map name="CompressedStorage_8hppdep" id="CompressedStorage_8hppdep">
-<area shape="rect" id="node2" href="factor_8hpp.html" title="Kernels for deferred factorization. " alt="" coords="265,304,345,331"/>
-<area shape="rect" id="node8" href="IterRefine_8hpp.html" title="Iterative refinement for using with HIF. " alt="" coords="5,229,109,256"/>
-<area shape="rect" id="node9" href="Prec_8hpp.html" title="Multilevel preconditioner interface. " alt="" coords="424,155,499,181"/>
-<area shape="rect" id="node10" href="IntervalCompressedStorage_8hpp.html" title="Interval&#45;based compressed storages. " alt="" coords="357,80,566,107"/>
-<area shape="rect" id="node11" href="driver_8hpp.html" title="Top&#45;level driver routine to handle preprocessing. " alt="" coords="202,229,281,256"/>
-<area shape="rect" id="node12" href="EqlDriver_8hpp.html" title="Equilibrator driver interface. " alt="" coords="129,80,231,107"/>
-<area shape="rect" id="node13" href="matching__scaling_8hpp.html" title="calling interface for matching and scaling " alt="" coords="82,155,230,181"/>
-<area shape="rect" id="node3" href="pivot__factor_8hpp.html" title="Kernels for deferred factorization with thresholding pivoting. " alt="" coords="248,379,363,405"/>
-<area shape="rect" id="node4" href="builder_8hpp.html" title="Top level user class for building HIF preconditioner. " alt="" coords="263,453,348,480"/>
-<area shape="rect" id="node7" href="symm__factor_8hpp.html" title="Kernels for deferred incomplete LDL&#39; factorization. " alt="" coords="101,379,224,405"/>
-<area shape="rect" id="node5" href="hifir_8hpp.html" title="top&#45;level user interface " alt="" coords="271,528,339,555"/>
-<area shape="rect" id="node6" href="demo__utils_8hpp.html" title="demo_utils.hpp" alt="" coords="250,603,361,629"/>
+<area shape="rect" id="node2" href="factor_8hpp.html" title="Kernels for deferred factorization. " alt="" coords="235,304,315,331"/>
+<area shape="rect" id="node9" href="IterRefine_8hpp.html" title="Iterative refinement for using with HIF. " alt="" coords="5,155,109,181"/>
+<area shape="rect" id="node10" href="Prec_8hpp.html" title="Multilevel preconditioner interface. " alt="" coords="408,229,483,256"/>
+<area shape="rect" id="node11" href="driver_8hpp.html" title="Top&#45;level driver routine to handle preprocessing. " alt="" coords="235,229,314,256"/>
+<area shape="rect" id="node12" href="EqlDriver_8hpp.html" title="Equilibrator driver interface. " alt="" coords="181,80,283,107"/>
+<area shape="rect" id="node13" href="matching__scaling_8hpp.html" title="calling interface for matching and scaling " alt="" coords="134,155,282,181"/>
+<area shape="rect" id="node3" href="builder_8hpp.html" title="Top level user class for building HIF preconditioner. " alt="" coords="213,453,299,480"/>
+<area shape="rect" id="node7" href="pivot__factor_8hpp.html" title="Kernels for deferred factorization with thresholding pivoting. " alt="" coords="293,379,408,405"/>
+<area shape="rect" id="node8" href="symm__factor_8hpp.html" title="Kernels for deferred incomplete LDL&#39; factorization. " alt="" coords="96,379,219,405"/>
+<area shape="rect" id="node4" href="hifir_8hpp.html" title="top&#45;level user interface " alt="" coords="222,528,290,555"/>
+<area shape="rect" id="node5" href="libhifir_8cpp.html" title="C++ implementation of libhifir. " alt="" coords="155,603,237,629"/>
+<area shape="rect" id="node6" href="demo__utils_8hpp.html" title="demo_utils.hpp" alt="" coords="261,603,371,629"/>
 </map>
 </div>
 </div>
@@ -148,16 +148,16 @@ This graph shows which files directly or indirectly include this file:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1CompressedStorage.html">hif::internal::CompressedStorage&lt; ValueType, IndexType &gt;</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1internal_1_1CompressedStorage.html">hif::internal::CompressedStorage&lt; ValueType, IndexType, IndPtrType &gt;</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Core of the compressed storage, including data and interfaces.  <a href="classhif_1_1internal_1_1CompressedStorage.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1CCS.html">hif::CCS&lt; ValueType, IndexType &gt;</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1CCS.html">hif::CCS&lt; ValueType, IndexType, IndPtrType &gt;</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compressed Column Storage (<a class="el" href="classhif_1_1CCS.html" title="Compressed Column Storage (CCS) format for sparse matrices. ">CCS</a>) format for sparse matrices.  <a href="classhif_1_1CCS.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1CRS.html">hif::CRS&lt; ValueType, IndexType &gt;</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1CRS.html">hif::CRS&lt; ValueType, IndexType, IndPtrType &gt;</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compressed Row Storage (<a class="el" href="classhif_1_1CRS.html" title="Compressed Row Storage (CRS) format for sparse matrices. ">CRS</a>) format for sparse matrices.  <a href="classhif_1_1CRS.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1CCS.html">hif::CCS&lt; ValueType, IndexType &gt;</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1CCS.html">hif::CCS&lt; ValueType, IndexType, IndPtrType &gt;</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compressed Column Storage (<a class="el" href="classhif_1_1CCS.html" title="Compressed Column Storage (CCS) format for sparse matrices. ">CCS</a>) format for sparse matrices.  <a href="classhif_1_1CCS.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -170,33 +170,33 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
-<tr class="memitem:a96c2a30c397f5cd10f22cfd75fd39bff"><td class="memTemplParams" colspan="2">template&lt;class ValueType , class IndexType &gt; </td></tr>
-<tr class="memitem:a96c2a30c397f5cd10f22cfd75fd39bff"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacehif.html#a96c2a30c397f5cd10f22cfd75fd39bff">hif::CSR</a> = CRS&lt; ValueType, IndexType &gt;</td></tr>
-<tr class="memdesc:a96c2a30c397f5cd10f22cfd75fd39bff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alias of <a class="el" href="classhif_1_1CRS.html">CRS</a>.  <a href="namespacehif.html#a96c2a30c397f5cd10f22cfd75fd39bff">More...</a><br /></td></tr>
-<tr class="separator:a96c2a30c397f5cd10f22cfd75fd39bff"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5f77fa3869a40b3b53e8fe2668894643"><td class="memTemplParams" colspan="2">template&lt;class ValueType , class IndexType &gt; </td></tr>
-<tr class="memitem:a5f77fa3869a40b3b53e8fe2668894643"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacehif.html#a5f77fa3869a40b3b53e8fe2668894643">hif::CSC</a> = CCS&lt; ValueType, IndexType &gt;</td></tr>
-<tr class="memdesc:a5f77fa3869a40b3b53e8fe2668894643"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alias of <a class="el" href="classhif_1_1CCS.html">CCS</a>.  <a href="namespacehif.html#a5f77fa3869a40b3b53e8fe2668894643">More...</a><br /></td></tr>
-<tr class="separator:a5f77fa3869a40b3b53e8fe2668894643"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4495c7ea21825c3788292675f3f9fa7c"><td class="memTemplParams" colspan="2">template&lt;class ValueType , class IndexType , class IndPtrType  = std::ptrdiff_t&gt; </td></tr>
+<tr class="memitem:a4495c7ea21825c3788292675f3f9fa7c"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacehif.html#a4495c7ea21825c3788292675f3f9fa7c">hif::CSR</a> = CRS&lt; ValueType, IndexType, IndPtrType &gt;</td></tr>
+<tr class="memdesc:a4495c7ea21825c3788292675f3f9fa7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alias of <a class="el" href="classhif_1_1CRS.html">CRS</a>.  <a href="namespacehif.html#a4495c7ea21825c3788292675f3f9fa7c">More...</a><br /></td></tr>
+<tr class="separator:a4495c7ea21825c3788292675f3f9fa7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad49a7c088621e53a202337ce479a8039"><td class="memTemplParams" colspan="2">template&lt;class ValueType , class IndexType , class IndPtrType  = std::ptrdiff_t&gt; </td></tr>
+<tr class="memitem:ad49a7c088621e53a202337ce479a8039"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacehif.html#ad49a7c088621e53a202337ce479a8039">hif::CSC</a> = CCS&lt; ValueType, IndexType, IndPtrType &gt;</td></tr>
+<tr class="memdesc:ad49a7c088621e53a202337ce479a8039"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alias of <a class="el" href="classhif_1_1CCS.html">CCS</a>.  <a href="namespacehif.html#ad49a7c088621e53a202337ce479a8039">More...</a><br /></td></tr>
+<tr class="separator:ad49a7c088621e53a202337ce479a8039"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:gaf8d6670e7eaa78431ead4e7630d85982"><td class="memTemplParams" colspan="2">template&lt;class ValueArray , class IndexArray &gt; </td></tr>
-<tr class="memitem:gaf8d6670e7eaa78431ead4e7630d85982"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ds.html#gaf8d6670e7eaa78431ead4e7630d85982">hif::internal::convert_storage</a> (const IndexArray &amp;i_ind_start, const IndexArray &amp;i_indices, const ValueArray &amp;i_vals, IndexArray &amp;o_ind_start, IndexArray &amp;o_indices, ValueArray &amp;o_vals)</td></tr>
-<tr class="memdesc:gaf8d6670e7eaa78431ead4e7630d85982"><td class="mdescLeft">&#160;</td><td class="mdescRight">convert from one type to another type, e.g. ccs-&gt;crs  <a href="group__ds.html#gaf8d6670e7eaa78431ead4e7630d85982">More...</a><br /></td></tr>
-<tr class="separator:gaf8d6670e7eaa78431ead4e7630d85982"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga084b922d1d56f5cd2132954a939808ce"><td class="memTemplParams" colspan="2">template&lt;class ValueType , class IndexType &gt; </td></tr>
-<tr class="memitem:ga084b922d1d56f5cd2132954a939808ce"><td class="memTemplItemLeft" align="right" valign="top">CRS&lt; ValueType, IndexType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ds.html#ga084b922d1d56f5cd2132954a939808ce">hif::wrap_const_crs</a> (const typename CRS&lt; ValueType, IndexType &gt;::size_type nrows, const typename CRS&lt; ValueType, IndexType &gt;::size_type ncols, const IndexType *row_start, const IndexType *col_ind, const ValueType *vals, bool check=true)</td></tr>
-<tr class="memdesc:ga084b922d1d56f5cd2132954a939808ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">wrap user data for <a class="el" href="classhif_1_1CRS.html">CRS</a>  <a href="group__ds.html#ga084b922d1d56f5cd2132954a939808ce">More...</a><br /></td></tr>
-<tr class="separator:ga084b922d1d56f5cd2132954a939808ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga6c44405ec0c5564a7c6e8e2878010b15"><td class="memTemplParams" colspan="2">template&lt;class ValueType , class IndexType &gt; </td></tr>
-<tr class="memitem:ga6c44405ec0c5564a7c6e8e2878010b15"><td class="memTemplItemLeft" align="right" valign="top">CCS&lt; ValueType, IndexType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ds.html#ga6c44405ec0c5564a7c6e8e2878010b15">hif::wrap_const_ccs</a> (const typename CCS&lt; ValueType, IndexType &gt;::size_type nrows, const typename CCS&lt; ValueType, IndexType &gt;::size_type ncols, const IndexType *col_start, const IndexType *row_ind, const ValueType *vals, bool check=true)</td></tr>
-<tr class="memdesc:ga6c44405ec0c5564a7c6e8e2878010b15"><td class="mdescLeft">&#160;</td><td class="mdescRight">wrap user data for <a class="el" href="classhif_1_1CCS.html">CCS</a>  <a href="group__ds.html#ga6c44405ec0c5564a7c6e8e2878010b15">More...</a><br /></td></tr>
-<tr class="separator:ga6c44405ec0c5564a7c6e8e2878010b15"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gab0a980aa0d16d256f5c2131b21932ca1"><td class="memTemplParams" colspan="2">template&lt;class ExportCSType , class CSCopiedType &gt; </td></tr>
-<tr class="memitem:gab0a980aa0d16d256f5c2131b21932ca1"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ds.html#gab0a980aa0d16d256f5c2131b21932ca1">hif::export_compressed_data</a> (const CSCopiedType &amp;A, typename ExportCSType::ipointer ind_start, typename ExportCSType::ipointer indices, typename ExportCSType::pointer vals)</td></tr>
-<tr class="memdesc:gab0a980aa0d16d256f5c2131b21932ca1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Export data.  <a href="group__ds.html#gab0a980aa0d16d256f5c2131b21932ca1">More...</a><br /></td></tr>
-<tr class="separator:gab0a980aa0d16d256f5c2131b21932ca1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacdb6b24daee98b81644f0cee9ed38e0d"><td class="memTemplParams" colspan="2">template&lt;class ValueArray , class IndexArray , class IndPtrArray &gt; </td></tr>
+<tr class="memitem:gacdb6b24daee98b81644f0cee9ed38e0d"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ds.html#gacdb6b24daee98b81644f0cee9ed38e0d">hif::internal::convert_storage</a> (const IndPtrArray &amp;i_ind_start, const IndexArray &amp;i_indices, const ValueArray &amp;i_vals, IndPtrArray &amp;o_ind_start, IndexArray &amp;o_indices, ValueArray &amp;o_vals)</td></tr>
+<tr class="memdesc:gacdb6b24daee98b81644f0cee9ed38e0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">convert from one type to another type, e.g. ccs-&gt;crs  <a href="group__ds.html#gacdb6b24daee98b81644f0cee9ed38e0d">More...</a><br /></td></tr>
+<tr class="separator:gacdb6b24daee98b81644f0cee9ed38e0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4ad1d37b1fae3075020ab2504ed8ffca"><td class="memTemplParams" colspan="2">template&lt;class ValueType , class IndexType , class IndPtrType &gt; </td></tr>
+<tr class="memitem:ga4ad1d37b1fae3075020ab2504ed8ffca"><td class="memTemplItemLeft" align="right" valign="top">CRS&lt; ValueType, IndexType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ds.html#ga4ad1d37b1fae3075020ab2504ed8ffca">hif::wrap_const_crs</a> (const typename CRS&lt; ValueType, IndexType, IndPtrType &gt;::size_type nrows, const typename CRS&lt; ValueType, IndexType, IndPtrType &gt;::size_type ncols, const IndPtrType *row_start, const IndexType *col_ind, const ValueType *vals, bool check=true)</td></tr>
+<tr class="memdesc:ga4ad1d37b1fae3075020ab2504ed8ffca"><td class="mdescLeft">&#160;</td><td class="mdescRight">wrap user data for <a class="el" href="classhif_1_1CRS.html">CRS</a>  <a href="group__ds.html#ga4ad1d37b1fae3075020ab2504ed8ffca">More...</a><br /></td></tr>
+<tr class="separator:ga4ad1d37b1fae3075020ab2504ed8ffca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1f1859631e8afbd4acb916097204656b"><td class="memTemplParams" colspan="2">template&lt;class ValueType , class IndexType , class IndPtrType &gt; </td></tr>
+<tr class="memitem:ga1f1859631e8afbd4acb916097204656b"><td class="memTemplItemLeft" align="right" valign="top">CCS&lt; ValueType, IndexType, IndPtrType &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ds.html#ga1f1859631e8afbd4acb916097204656b">hif::wrap_const_ccs</a> (const typename CCS&lt; ValueType, IndexType, IndPtrType &gt;::size_type nrows, const typename CCS&lt; ValueType, IndexType, IndPtrType &gt;::size_type ncols, const IndPtrType *col_start, const IndexType *row_ind, const ValueType *vals, bool check=true)</td></tr>
+<tr class="memdesc:ga1f1859631e8afbd4acb916097204656b"><td class="mdescLeft">&#160;</td><td class="mdescRight">wrap user data for <a class="el" href="classhif_1_1CCS.html">CCS</a>  <a href="group__ds.html#ga1f1859631e8afbd4acb916097204656b">More...</a><br /></td></tr>
+<tr class="separator:ga1f1859631e8afbd4acb916097204656b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5a9871c05e94c1c87f232ae85c46d9a3"><td class="memTemplParams" colspan="2">template&lt;class ExportCSType , class CSCopiedType &gt; </td></tr>
+<tr class="memitem:ga5a9871c05e94c1c87f232ae85c46d9a3"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__ds.html#ga5a9871c05e94c1c87f232ae85c46d9a3">hif::export_compressed_data</a> (const CSCopiedType &amp;A, typename ExportCSType::ippointer ind_start, typename ExportCSType::ipointer indices, typename ExportCSType::pointer vals)</td></tr>
+<tr class="memdesc:ga5a9871c05e94c1c87f232ae85c46d9a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Export data.  <a href="group__ds.html#ga5a9871c05e94c1c87f232ae85c46d9a3">More...</a><br /></td></tr>
+<tr class="separator:ga5a9871c05e94c1c87f232ae85c46d9a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Core about CRS and CCS storage formats. </p>

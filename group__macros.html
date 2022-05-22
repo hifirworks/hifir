@@ -32,7 +32,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">HIFIR
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -119,6 +119,9 @@ Macros</h2></td></tr>
 <tr class="memitem:ga154def655fdad283c294c7ab909f2591"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__macros.html#ga154def655fdad283c294c7ab909f2591">HIF_DISABLE_SPACE_DROP</a></td></tr>
 <tr class="memdesc:ga154def655fdad283c294c7ab909f2591"><td class="mdescLeft">&#160;</td><td class="mdescRight">completely disable local space control  <a href="#ga154def655fdad283c294c7ab909f2591">More...</a><br /></td></tr>
 <tr class="separator:ga154def655fdad283c294c7ab909f2591"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadfeeed21cd3ff2b585c375b606f90d3f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__macros.html#gadfeeed21cd3ff2b585c375b606f90d3f">HIF_HAS_HDF5</a></td></tr>
+<tr class="memdesc:gadfeeed21cd3ff2b585c375b606f90d3f"><td class="mdescLeft">&#160;</td><td class="mdescRight">enable sparse matrix IO with HDF5 (C++ interface)  <a href="#gadfeeed21cd3ff2b585c375b606f90d3f">More...</a><br /></td></tr>
+<tr class="separator:gadfeeed21cd3ff2b585c375b606f90d3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga32f156f42c096d5ff4c7c2afe79749d7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__macros.html#ga32f156f42c096d5ff4c7c2afe79749d7">HIF_RESERVE_FAC</a>&#160;&#160;&#160;5</td></tr>
 <tr class="memdesc:ga32f156f42c096d5ff4c7c2afe79749d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">reserve memory factor for factorization  <a href="#ga32f156f42c096d5ff4c7c2afe79749d7">More...</a><br /></td></tr>
 <tr class="separator:ga32f156f42c096d5ff4c7c2afe79749d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -170,7 +173,7 @@ Macros</h2></td></tr>
 
 <p>backend dense kernels, if it's 1 (default), then using QRCP; other values indicate using LU </p>
 
-<p class="definition">Definition at line <a class="el" href="macros_8hpp_source.html#l00100">100</a> of file <a class="el" href="macros_8hpp_source.html">macros.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="macros_8hpp_source.html#l00104">104</a> of file <a class="el" href="macros_8hpp_source.html">macros.hpp</a>.</p>
 
 </div>
 </div>
@@ -191,6 +194,24 @@ Macros</h2></td></tr>
 <dl class="section warning"><dt>Warning</dt><dd>Do not turn this on unless you intend to deal with relatively small systems. <em>HIF</em> does not have other complexity control mechanism except this one. </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="macros_8hpp_source.html#l00071">71</a> of file <a class="el" href="macros_8hpp_source.html">macros.hpp</a>.</p>
+
+</div>
+</div>
+<a id="gadfeeed21cd3ff2b585c375b606f90d3f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gadfeeed21cd3ff2b585c375b606f90d3f">&#9670;&nbsp;</a></span>HIF_HAS_HDF5</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define HIF_HAS_HDF5</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>enable sparse matrix IO with HDF5 (C++ interface) </p>
+
+<p class="definition">Definition at line <a class="el" href="macros_8hpp_source.html#l00075">75</a> of file <a class="el" href="macros_8hpp_source.html">macros.hpp</a>.</p>
 
 </div>
 </div>
@@ -247,7 +268,7 @@ Macros</h2></td></tr>
 <p>minimum percentation of the local row and column sizes wrt the the averaged nnz per row/column for row and column, resp. </p>
 <p>The default value is 85, i.e. 85% of averaged nnz is assigned as the the minimum value to the user input nnz per row and column </p>
 
-<p class="definition">Definition at line <a class="el" href="macros_8hpp_source.html#l00093">93</a> of file <a class="el" href="macros_8hpp_source.html">macros.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="macros_8hpp_source.html#l00097">97</a> of file <a class="el" href="macros_8hpp_source.html">macros.hpp</a>.</p>
 
 </div>
 </div>
@@ -286,7 +307,7 @@ Macros</h2></td></tr>
 <dl class="section note"><dt>Note</dt><dd>default is 5</dd></dl>
 <p>We reserve <em>HIF_RESERVE_FAC</em> times <em>nnz(A)</em> for the <em>L</em> and <em>U</em> factors for factorization. We found that this is good enough for most problems without the need of a reallocation. </p>
 
-<p class="definition">Definition at line <a class="el" href="macros_8hpp_source.html#l00083">83</a> of file <a class="el" href="macros_8hpp_source.html">macros.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="macros_8hpp_source.html#l00087">87</a> of file <a class="el" href="macros_8hpp_source.html">macros.hpp</a>.</p>
 
 </div>
 </div>

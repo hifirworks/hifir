@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['data_5fmat_5ftype',['data_mat_type',['../structhif_1_1Prec.html#afe0127889861a7a9c43213fc3f63ca44',1,'hif::Prec']]],
+  ['data_5fmat_5ftype',['data_mat_type',['../structhif_1_1Prec.html#a04ef2e1c8b1771ab9677a2e2331a533c',1,'hif::Prec']]],
   ['default_5frep_5ftype',['default_rep_type',['../classhif_1_1Timer.html#a8ee4022060c1b9fe362b1206c48c83ef',1,'hif::Timer']]],
   ['defaulthif',['DefaultHIF',['../group__itr.html#ga68934566df9317c0b776cbfb9864883c',1,'hif']]],
   ['defaulttimer',['DefaultTimer',['../group__util.html#gaa3b4a3987fa1793d01692dc0edeb2c92',1,'hif']]],

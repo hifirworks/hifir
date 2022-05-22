@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['q',['q',['../structhif_1_1Prec.html#afe3f56bc5691118d68c86bc5de025c9f',1,'hif::Prec']]],
-  ['q_5finv',['q_inv',['../structhif_1_1Prec.html#a02912c0726538135498b995a230422a5',1,'hif::Prec']]]
+  ['q',['q',['../structhif_1_1Prec.html#acf4169a145d867e8032b8c580a1b47ee',1,'hif::Prec']]],
+  ['q_5finv',['q_inv',['../structhif_1_1Prec.html#a081d0e9177fe6006094fc8ea66be4a62',1,'hif::Prec']]]
 ];

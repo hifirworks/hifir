@@ -32,7 +32,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">HIFIR
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -87,14 +87,14 @@ $(document).ready(function(){initNavTree('functions_d.html','');});
 
 <h3><a id="index_d"></a>- d -</h3><ul>
 <li>d_B
-: <a class="el" href="structhif_1_1Prec.html#a930d8770bd15cd7cb09d6c3d85202744">hif::Prec&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="structhif_1_1Prec.html#a7d2dc97bdc8d6e61e13ac7e11b571832">hif::Prec&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 <li>data()
 : <a class="el" href="classhif_1_1Array.html#ab51be7811a22964bbf83741fa48ec0cf">hif::Array&lt; T &gt;</a>
 , <a class="el" href="classhif_1_1DenseMatrix.html#a386baa0837acb954f638a1e218755e64">hif::DenseMatrix&lt; ValueType &gt;</a>
 </li>
 <li>data_mat_type
-: <a class="el" href="structhif_1_1Prec.html#afe0127889861a7a9c43213fc3f63ca44">hif::Prec&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="structhif_1_1Prec.html#a04ef2e1c8b1771ab9677a2e2331a533c">hif::Prec&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 <li>default_rep_type
 : <a class="el" href="classhif_1_1Timer.html#a8ee4022060c1b9fe362b1206c48c83ef">hif::Timer&lt; Clock, RepType &gt;</a>
@@ -108,7 +108,7 @@ $(document).ready(function(){initNavTree('functions_d.html','');});
 <li>defer_entry()
 : <a class="el" href="classhif_1_1AugCCS.html#a8d68bbd152db9f50f2e836dc2a80e5bf">hif::AugCCS&lt; CcsType &gt;</a>
 , <a class="el" href="classhif_1_1AugCRS.html#abcf385406b6d40e2d4ca580634138e42">hif::AugCRS&lt; CrsType &gt;</a>
-, <a class="el" href="group__defer.html#gaefa97e5aac490e4a8716e9953afa510b">hif::Crout</a>
+, <a class="el" href="group__defer.html#ga7b356d55089463baf58948c321b70d03">hif::Crout</a>
 , <a class="el" href="group__defer.html#ga3de53a81bcc7cfdc4a70f5fe7cc20743">hif::PivotCrout</a>
 </li>
 <li>defer_row()
@@ -121,7 +121,7 @@ $(document).ready(function(){initNavTree('functions_d.html','');});
 : <a class="el" href="classhif_1_1Crout.html#a3d792782c346ca0e8aa748e3fb13a081">hif::Crout</a>
 </li>
 <li>dense_solver
-: <a class="el" href="structhif_1_1Prec.html#a137f0505fe6c133e9539768e1e85c541">hif::Prec&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="structhif_1_1Prec.html#a372274417011fd01c08cca184396004e">hif::Prec&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 <li>dense_tags()
 : <a class="el" href="classhif_1_1internal_1_1SpVInternalExtractor.html#ac651b14546f56ebae97260f1dc9dc910">hif::internal::SpVInternalExtractor&lt; SpVecType &gt;</a>
@@ -138,15 +138,15 @@ $(document).ready(function(){initNavTree('functions_d.html','');});
 : <a class="el" href="classhif_1_1DenseMatrix.html#af74c37c5e499207dfe62d86261142e9b">hif::DenseMatrix&lt; ValueType &gt;</a>
 </li>
 <li>destroy()
-: <a class="el" href="classhif_1_1CCS.html#a670282c0e98c7ce1f270f9ff10b9c7a3">hif::CCS&lt; ValueType, IndexType &gt;</a>
-, <a class="el" href="classhif_1_1CRS.html#aaa866f40f9c45890ebed71268b91213d">hif::CRS&lt; ValueType, IndexType &gt;</a>
-, <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#afa9ceb399b727187cedb7466da9bca09">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;</a>
+: <a class="el" href="classhif_1_1CCS.html#aa53b48f1e5e4a53c301dbf01d94a0099">hif::CCS&lt; ValueType, IndexType, IndPtrType &gt;</a>
+, <a class="el" href="classhif_1_1CRS.html#a9643da1c2cd032c4de8e85f007d6fd7c">hif::CRS&lt; ValueType, IndexType, IndPtrType &gt;</a>
+, <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ac6bae1c3d67f64b9f9580f316c0ac14c">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;</a>
 </li>
 <li>difference_type
 : <a class="el" href="classhif_1_1internal_1_1StrideIterator.html#a202d47dca72ed875ba05f7ac4c2375c2">hif::internal::StrideIterator&lt; T &gt;</a>
 </li>
 <li>do_matching()
-: <a class="el" href="classhif_1_1EqlDriver.html#a183b0a9ac884a29c5ed7a37472872fa2">hif::EqlDriver&lt; ValueType, IndexType &gt;</a>
+: <a class="el" href="classhif_1_1EqlDriver.html#a3ff8dd55131f524b6fd3cbae5e6c2ce1">hif::EqlDriver&lt; ValueType, IndexType, IndPtrType &gt;</a>
 </li>
 </ul>
 </div><!-- contents -->

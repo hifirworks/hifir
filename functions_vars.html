@@ -32,7 +32,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">HIFIR
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -92,15 +92,6 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 <li>_cap
 : <a class="el" href="classhif_1_1Array.html#a6bc5a74a9a78738dbd342e3fac802bb2">hif::Array&lt; T &gt;</a>
 </li>
-<li>_col_ind_start
-: <a class="el" href="classhif_1_1IntervalCRS.html#a61f4ec20c9973d9a541a777da37ce831">hif::IntervalCRS&lt; ValueType, IndexType, IntervalType &gt;</a>
-</li>
-<li>_col_len
-: <a class="el" href="classhif_1_1IntervalCRS.html#ae498dc68de5104273fe6a184385ee90e">hif::IntervalCRS&lt; ValueType, IndexType, IntervalType &gt;</a>
-</li>
-<li>_col_start
-: <a class="el" href="classhif_1_1IntervalCCS.html#a2b20b4de6c696ee936cae7d54c9f9573">hif::IntervalCCS&lt; ValueType, IndexType, IntervalType &gt;</a>
-</li>
 <li>_counts
 : <a class="el" href="classhif_1_1Array.html#a19c40b9525536ede183e7bb5816e1495">hif::Array&lt; T &gt;</a>
 , <a class="el" href="classhif_1_1IndexValueArray.html#aafe93de1fbd373bea009b47444c9fae0">hif::IndexValueArray&lt; ValueType, IndexType &gt;</a>
@@ -125,10 +116,10 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 : <a class="el" href="classhif_1_1Timer.html#ae2708b589f809355ab0c7640f98a5609">hif::Timer&lt; Clock, RepType &gt;</a>
 </li>
 <li>_ind_start
-: <a class="el" href="classhif_1_1internal_1_1CompressedStorage.html#aed32bcea04c34285f66f7ae2b03c4534">hif::internal::CompressedStorage&lt; ValueType, IndexType &gt;</a>
+: <a class="el" href="classhif_1_1internal_1_1CompressedStorage.html#ad89158995fb5b70b6a1c00d7ae488e40">hif::internal::CompressedStorage&lt; ValueType, IndexType, IndPtrType &gt;</a>
 </li>
 <li>_indices
-: <a class="el" href="classhif_1_1internal_1_1CompressedStorage.html#a94ee154b86d7fb5dcfc9ba101faff261">hif::internal::CompressedStorage&lt; ValueType, IndexType &gt;</a>
+: <a class="el" href="classhif_1_1internal_1_1CompressedStorage.html#a7658ed0cd9fbb98a1181a9f83dd196e7">hif::internal::CompressedStorage&lt; ValueType, IndexType, IndPtrType &gt;</a>
 </li>
 <li>_inds
 : <a class="el" href="classhif_1_1IndexValueArray.html#a422662f4fdbb624ac615807b54129c20">hif::IndexValueArray&lt; ValueType, IndexType &gt;</a>
@@ -140,21 +131,17 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 : <a class="el" href="classhif_1_1LUP.html#a0edda977bed9d85bc3d8224c99f535f9">hif::LUP&lt; ValueType &gt;</a>
 </li>
 <li>_ir
-: <a class="el" href="classhif_1_1HIF.html#aa1f0294bb62b54c5f6db4c19772dfed8">hif::HIF&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
-</li>
-<li>_itrv_start
-: <a class="el" href="classhif_1_1IntervalCCS.html#a0f6c06faa93a905f5562db0d7ed17e88">hif::IntervalCCS&lt; ValueType, IndexType, IntervalType &gt;</a>
-, <a class="el" href="classhif_1_1IntervalCRS.html#a3a65918f03ba4d1db6f6bc772773d431">hif::IntervalCRS&lt; ValueType, IndexType, IntervalType &gt;</a>
+: <a class="el" href="classhif_1_1HIF.html#a8f1ea17b1651c828791027743fc13f77">hif::HIF&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 <li>_iwork
-: <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a608cd9bddf03236092505eb0bdae8e13">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;</a>
+: <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#aa0843255bfb1e02dae78729f7ba83dd2">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;</a>
 , <a class="el" href="classhif_1_1QRCP.html#a924b9f37d6e82fd3c15af4d8e8ba57d6">hif::QRCP&lt; ValueType &gt;</a>
 </li>
 <li>_jpvt
 : <a class="el" href="classhif_1_1QRCP.html#a53775cb8f054b156aeb8c48d5e18dbfe">hif::QRCP&lt; ValueType &gt;</a>
 </li>
 <li>_L_crs
-: <a class="el" href="structhif_1_1Prec.html#abb0da2ffe601f963862b54f35799feb6">hif::Prec&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="structhif_1_1Prec.html#a926a3210858ab07e8ca662cbdf2b74c5">hif::Prec&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 <li>_mask
 : <a class="el" href="classhif_1_1rcm_1_1RCM.html#a9ad3fe856bf0bf0ce380d948aa905ffc">hif::rcm::RCM&lt; _Integer &gt;</a>
@@ -175,38 +162,34 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 , <a class="el" href="classhif_1_1SYEIG.html#a180b85f4a7ca905ab310c476950a80f9">hif::SYEIG&lt; ValueType &gt;</a>
 </li>
 <li>_ncols
-: <a class="el" href="classhif_1_1CRS.html#a1edaaa2eb194f4298ca67936911e3128">hif::CRS&lt; ValueType, IndexType &gt;</a>
+: <a class="el" href="classhif_1_1CRS.html#a21b9f88d4b359d1bd7d526cb255d1b22">hif::CRS&lt; ValueType, IndexType, IndPtrType &gt;</a>
 , <a class="el" href="classhif_1_1DenseMatrix.html#acad9befc940be27c9b216c88d79c0851">hif::DenseMatrix&lt; ValueType &gt;</a>
-, <a class="el" href="classhif_1_1HIF.html#ac4556907be35fe2ba2eba7d86c85d239">hif::HIF&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
-, <a class="el" href="classhif_1_1IntervalCCS.html#a795ffa5529fb0ba85245f7e905a33235">hif::IntervalCCS&lt; ValueType, IndexType, IntervalType &gt;</a>
-, <a class="el" href="classhif_1_1IntervalCRS.html#a2a23e331f0b01daa2001365cfb9c07f3">hif::IntervalCRS&lt; ValueType, IndexType, IntervalType &gt;</a>
+, <a class="el" href="classhif_1_1HIF.html#a44ebe2d006ad2f765b50b8f169dfedcb">hif::HIF&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 <li>_NIL
-: <a class="el" href="classhif_1_1AugCCS.html#ac30a2fb25a405f413543e3f3efa40916">hif::AugCCS&lt; CcsType &gt;</a>
-, <a class="el" href="classhif_1_1AugCRS.html#a909bc75b3f24d211f4160acc66c904da">hif::AugCRS&lt; CrsType &gt;</a>
-, <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#ade25a45dd096ce1ffc0fa6c14e101dc0">hif::internal::AugmentedCore&lt; IndexType &gt;</a>
+: <a class="el" href="classhif_1_1AugCCS.html#a659186c0f19a532311b27539c53dcd65">hif::AugCCS&lt; CcsType &gt;</a>
+, <a class="el" href="classhif_1_1AugCRS.html#aba0b0ff02a78fbe33dd8006665b2b1fa">hif::AugCRS&lt; CrsType &gt;</a>
+, <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a21a186910c599fa46cde51e2f3e19fc0">hif::internal::AugmentedCore&lt; IndexType, IndPtrType &gt;</a>
 </li>
 <li>_node_counts
-: <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a966fe16d1c980176407078febd4ddbd0">hif::internal::AugmentedCore&lt; IndexType &gt;</a>
+: <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a49c130f7d2a315b1e6e86ec62090f42e">hif::internal::AugmentedCore&lt; IndexType, IndPtrType &gt;</a>
 </li>
 <li>_node_end
-: <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a5793ba46b48f2f75cb2c39f20e06ee99">hif::internal::AugmentedCore&lt; IndexType &gt;</a>
+: <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#aa81bd61bfe97b9a29f450325b19c427b">hif::internal::AugmentedCore&lt; IndexType, IndPtrType &gt;</a>
 </li>
 <li>_node_inds
-: <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#ada49787002c716114b07c23e1be5297d">hif::internal::AugmentedCore&lt; IndexType &gt;</a>
+: <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#ac39602b8af704f0943ec5addf6aa03a1">hif::internal::AugmentedCore&lt; IndexType, IndPtrType &gt;</a>
 </li>
 <li>_node_next
-: <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#aa5dc6b2a7b2ebdcaabdd4e29f1523cde">hif::internal::AugmentedCore&lt; IndexType &gt;</a>
+: <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a9c7e7c5168618a62d0b7059a672ece18">hif::internal::AugmentedCore&lt; IndexType, IndPtrType &gt;</a>
 </li>
 <li>_node_start
-: <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#aa5920f148baf354a84de4411ed6a7e1a">hif::internal::AugmentedCore&lt; IndexType &gt;</a>
+: <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a78400ffdec7e27327c01de58fe72eb18">hif::internal::AugmentedCore&lt; IndexType, IndPtrType &gt;</a>
 </li>
 <li>_nrows
-: <a class="el" href="classhif_1_1CCS.html#ab3d968d526dcb583be3a4f205e710d16">hif::CCS&lt; ValueType, IndexType &gt;</a>
+: <a class="el" href="classhif_1_1CCS.html#a3080ef0c32b2c4a6b19194b3e636cc2c">hif::CCS&lt; ValueType, IndexType, IndPtrType &gt;</a>
 , <a class="el" href="classhif_1_1DenseMatrix.html#a374c0f344160901be5e5951b023cd28f">hif::DenseMatrix&lt; ValueType &gt;</a>
-, <a class="el" href="classhif_1_1HIF.html#a71024b801626cedb54e9c78517ae3778">hif::HIF&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
-, <a class="el" href="classhif_1_1IntervalCCS.html#a7fc5818e25cfd62f50185fe964660dbc">hif::IntervalCCS&lt; ValueType, IndexType, IntervalType &gt;</a>
-, <a class="el" href="classhif_1_1IntervalCRS.html#a74a726910926b92d95f2ff98d1321a66">hif::IntervalCRS&lt; ValueType, IndexType, IntervalType &gt;</a>
+, <a class="el" href="classhif_1_1HIF.html#a565eb1432aa28525695ef872110b8fee">hif::HIF&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 <li>_p
 : <a class="el" href="classhif_1_1PermMatrix.html#a9f8f23439e0af33429a0e67a76e658b2">hif::PermMatrix&lt; IndexType &gt;</a>
@@ -215,13 +198,13 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 : <a class="el" href="classhif_1_1BiPermMatrix.html#a4d652389e9becc94e8382523f95fc910">hif::BiPermMatrix&lt; IndexType &gt;</a>
 </li>
 <li>_prec_work
-: <a class="el" href="classhif_1_1HIF.html#aab5fcb7ced1d87c2a67d21e96d9f1689">hif::HIF&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="classhif_1_1HIF.html#a49071557ce411e4627068e4b112d0b31">hif::HIF&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 <li>_precs
-: <a class="el" href="classhif_1_1HIF.html#a708bb4779bad64d0aa4af64387998007">hif::HIF&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="classhif_1_1HIF.html#abe1360bab54eaa4c1c3415d348e45d7b">hif::HIF&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 <li>_psize
-: <a class="el" href="classhif_1_1internal_1_1CompressedStorage.html#ae3e9e96c1c4e7321b5a7d7bde95094ee">hif::internal::CompressedStorage&lt; ValueType, IndexType &gt;</a>
+: <a class="el" href="classhif_1_1internal_1_1CompressedStorage.html#af71838ad3245718ea7922ba985d762af">hif::internal::CompressedStorage&lt; ValueType, IndexType, IndPtrType &gt;</a>
 </li>
 <li>_ptr
 : <a class="el" href="classhif_1_1internal_1_1StrideIterator.html#a67262df62d4fd37cf555c61d23f1d520">hif::internal::StrideIterator&lt; T &gt;</a>
@@ -234,28 +217,15 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 , <a class="el" href="classhif_1_1QRCP.html#a73e63d3a7454f952db9e9a22115df573">hif::QRCP&lt; ValueType &gt;</a>
 , <a class="el" href="classhif_1_1SYEIG.html#af582a4a26fdd284149972b4672bdb1c8">hif::SYEIG&lt; ValueType &gt;</a>
 </li>
-<li>_ref
-: <a class="el" href="classhif_1_1IntervalCCS.html#afe7baa8ce147ccc1532f48c15f7b7cea">hif::IntervalCCS&lt; ValueType, IndexType, IntervalType &gt;</a>
-, <a class="el" href="classhif_1_1IntervalCRS.html#aaab2edd6b59ca724cba798c383ddc308">hif::IntervalCRS&lt; ValueType, IndexType, IntervalType &gt;</a>
-</li>
-<li>_row_ind_start
-: <a class="el" href="classhif_1_1IntervalCCS.html#a69a3fb21ef0e8d15d4a5b8330a04209b">hif::IntervalCCS&lt; ValueType, IndexType, IntervalType &gt;</a>
-</li>
-<li>_row_len
-: <a class="el" href="classhif_1_1IntervalCCS.html#a684383df59fe865ae3d5b416f82353a2">hif::IntervalCCS&lt; ValueType, IndexType, IntervalType &gt;</a>
-</li>
-<li>_row_start
-: <a class="el" href="classhif_1_1IntervalCRS.html#a9e499600f438940761004f511be181ef">hif::IntervalCRS&lt; ValueType, IndexType, IntervalType &gt;</a>
-</li>
 <li>_rwork
 : <a class="el" href="classhif_1_1QRCP.html#af483da535de3d06d9f89271ceba5d01f">hif::QRCP&lt; ValueType &gt;</a>
 , <a class="el" href="classhif_1_1SYEIG.html#a47e1fefa104c50c1e1f78e615fb3cede">hif::SYEIG&lt; ValueType &gt;</a>
 </li>
 <li>_s
-: <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a7922849e7789cf306211ea44e5a05c64">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;</a>
+: <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#aa03f73c0f477ea337920e488132b2426">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;</a>
 </li>
 <li>_SAME_DENSE
-: <a class="el" href="structhif_1_1Prec.html#af60e520842dff8537cba7100f7c8b225">hif::Prec&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="structhif_1_1Prec.html#aefc66462fd988e0005af5c3db60a6959">hif::Prec&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 <li>_size
 : <a class="el" href="classhif_1_1Array.html#a8da652d40f4239eaf8fad8e4e5bf0fd4">hif::Array&lt; T &gt;</a>
@@ -267,7 +237,7 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 : <a class="el" href="classhif_1_1Timer.html#a2da5687cd3e049e2b241756dff3c3c2c">hif::Timer&lt; Clock, RepType &gt;</a>
 </li>
 <li>_stats
-: <a class="el" href="classhif_1_1HIF.html#ad9fdc5c681515ed2550d93b897df3a09">hif::HIF&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="classhif_1_1HIF.html#a270685d7bf220d2805a0cbf5678014e6">hif::HIF&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 <li>_status
 : <a class="el" href="classhif_1_1Array.html#a61f6cbfd79f6ccc19a0d47bec76fbd34">hif::Array&lt; T &gt;</a>
@@ -279,7 +249,7 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 : <a class="el" href="classhif_1_1internal_1_1StrideIterator.html#aa88d6b137fd0a363b5dced286c51799a">hif::internal::StrideIterator&lt; T &gt;</a>
 </li>
 <li>_t
-: <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#af8b4240c2588628f0725dbfede666648">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;</a>
+: <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#aedd6104a72ea35b0de2ac9733511c7f7">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;</a>
 </li>
 <li>_tau
 : <a class="el" href="classhif_1_1QRCP.html#a7ac9889b752343b71ab420ac6de8c9b1">hif::QRCP&lt; ValueType &gt;</a>
@@ -291,28 +261,26 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 : <a class="el" href="classhif_1_1NspFilter.html#a0040b2dae263430fac4d36e2cfb85a21">hif::NspFilter</a>
 </li>
 <li>_U_crs
-: <a class="el" href="structhif_1_1Prec.html#aa6201ab1505837645d7ab10aeacf0328">hif::Prec&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="structhif_1_1Prec.html#a0ca92f74d9b2ad4adbdc825c1449c61b">hif::Prec&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 <li>_user_f
 : <a class="el" href="classhif_1_1NspFilter.html#abff44480d90e1c3353ee6430d3104334">hif::NspFilter</a>
 </li>
 <li>_val_pos
-: <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a8dc001644c687f1f7fa5ab0ef9fdca59">hif::internal::AugmentedCore&lt; IndexType &gt;</a>
+: <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a4c7b45e7adc7944a849e18aed6066535">hif::internal::AugmentedCore&lt; IndexType, IndPtrType &gt;</a>
 </li>
 <li>_val_pos_inv
-: <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a70693b8b501896f6553abfbc96535cd2">hif::internal::AugmentedCore&lt; IndexType &gt;</a>
+: <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a4b1d42e5d2bfb74e9ddb10ff4b26829f">hif::internal::AugmentedCore&lt; IndexType, IndPtrType &gt;</a>
 </li>
 <li>_vals
 : <a class="el" href="classhif_1_1IndexValueArray.html#a6cf897189480fe39f7f37dc9986e9609">hif::IndexValueArray&lt; ValueType, IndexType &gt;</a>
-, <a class="el" href="classhif_1_1internal_1_1CompressedStorage.html#a96a6d41dfba35717d0a1fb2f97e5f4bb">hif::internal::CompressedStorage&lt; ValueType, IndexType &gt;</a>
-, <a class="el" href="classhif_1_1IntervalCCS.html#a28405226bbae3bd55231e480a128bd89">hif::IntervalCCS&lt; ValueType, IndexType, IntervalType &gt;</a>
-, <a class="el" href="classhif_1_1IntervalCRS.html#a681e0d005df37f851fa6828f64cd8a9a">hif::IntervalCRS&lt; ValueType, IndexType, IntervalType &gt;</a>
+, <a class="el" href="classhif_1_1internal_1_1CompressedStorage.html#af78b7ea5156a69897d4111375ac469b2">hif::internal::CompressedStorage&lt; ValueType, IndexType, IndPtrType &gt;</a>
 </li>
 <li>_w
 : <a class="el" href="classhif_1_1SYEIG.html#a295f58479f6e9b03ece6a7ac572c5e02">hif::SYEIG&lt; ValueType &gt;</a>
 </li>
 <li>_work
-: <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#ad44e5e32439e6a802437f34d0999e721">hif::eql::Equilibrator&lt; _Integer, _Value, _Real, _Container &gt;</a>
+: <a class="el" href="classhif_1_1eql_1_1Equilibrator.html#a505f626b76cbcd4061b120956a27e75c">hif::eql::Equilibrator&lt; _Integer, _Index, _Value, _Real, _Container &gt;</a>
 , <a class="el" href="classhif_1_1QRCP.html#adb6dc9264aadbcc73e7fdd4befa81175">hif::QRCP&lt; ValueType &gt;</a>
 , <a class="el" href="classhif_1_1SYEIG.html#a6b861b5ce1ca5ce8e82adb232fd56fb5">hif::SYEIG&lt; ValueType &gt;</a>
 </li>
@@ -376,10 +344,10 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 
 <h3><a id="index_d"></a>- d -</h3><ul>
 <li>d_B
-: <a class="el" href="structhif_1_1Prec.html#a930d8770bd15cd7cb09d6c3d85202744">hif::Prec&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="structhif_1_1Prec.html#a7d2dc97bdc8d6e61e13ac7e11b571832">hif::Prec&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 <li>dense_solver
-: <a class="el" href="structhif_1_1Prec.html#a137f0505fe6c133e9539768e1e85c541">hif::Prec&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="structhif_1_1Prec.html#a372274417011fd01c08cca184396004e">hif::Prec&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 <li>dense_thres
 : <a class="el" href="structhif__Options.html#a093018bef6fb884957c5a4e77b403082">hif_Options</a>
@@ -389,13 +357,13 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 
 <h3><a id="index_e"></a>- e -</h3><ul>
 <li>E
-: <a class="el" href="structhif_1_1Prec.html#adc9a5e5d62b50c6fc92cfe2b0a6b676e">hif::Prec&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="structhif_1_1Prec.html#abfc136d3fe6a90d1426c06f8e7313433">hif::Prec&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 <li>EMPTY
 : <a class="el" href="classhif_1_1amd_1_1AMD.html#ac9f40dc641d87ecf0b693f569c0a08a9">hif::amd::AMD&lt; Int &gt;</a>
 </li>
 <li>EMPTY_PREC
-: <a class="el" href="structhif_1_1Prec.html#a85128d68b0efa67f0dc240f873dd986f">hif::Prec&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="structhif_1_1Prec.html#a03b5ce1aa9fb6a911708ba475e31a8d7">hif::Prec&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 <li>EPS
 : <a class="el" href="classhif_1_1Const.html#acf12df29a999bcddb37fc19c1ec91536">hif::Const&lt; T &gt;</a>
@@ -405,7 +373,7 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 
 <h3><a id="index_f"></a>- f -</h3><ul>
 <li>F
-: <a class="el" href="structhif_1_1Prec.html#a8bfa70c78e0f4e52da845dca5c17c7fc">hif::Prec&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="structhif_1_1Prec.html#a066545aa34d067ea6ce6fc0f410ca96e">hif::Prec&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 <li>fat_schur_1st
 : <a class="el" href="structhif__Options.html#a31788384720dd8a291d6d697659858a5">hif_Options</a>
@@ -423,9 +391,6 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 <h3><a id="index_i"></a>- i -</h3><ul>
 <li>Int_MAX
 : <a class="el" href="classhif_1_1amd_1_1AMD.html#a58bd6ae2acffba63413cb3fb6b700fe1">hif::amd::AMD&lt; Int &gt;</a>
-</li>
-<li>INTERVAL_BASED
-: <a class="el" href="structhif_1_1Prec.html#a2a79dc166ad4974c767108e9385437e4">hif::Prec&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
 </li>
 <li>IS_REAL
 : <a class="el" href="classhif_1_1Lapack.html#a86d81068bac1975c8010759c6ac0cf3d">hif::Lapack&lt; ValueType, IntType &gt;</a>
@@ -448,21 +413,17 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 
 <h3><a id="index_l"></a>- l -</h3><ul>
 <li>L_B
-: <a class="el" href="structhif_1_1Prec.html#ac9449a5c082898532347b326bf74fcae">hif::Prec&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="structhif_1_1Prec.html#a1e512e1933986fe90a4bb5eac192a0e4">hif::Prec&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 </ul>
 
 
 <h3><a id="index_m"></a>- m -</h3><ul>
 <li>m
-: <a class="el" href="structhif_1_1Prec.html#a3cf0224356defb780ecfce5f25925034">hif::Prec&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="structhif_1_1Prec.html#abe5c89e35141842c39563ef6a6c20bdb">hif::Prec&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 <li>MAX
 : <a class="el" href="classhif_1_1Const.html#aecda05120609e06827c4737ffaeb3cb9">hif::Const&lt; T &gt;</a>
-</li>
-<li>MAX_INTERVAL
-: <a class="el" href="classhif_1_1IntervalCCS.html#a49b84ccf90c18016e4c91f76eac0b94d">hif::IntervalCCS&lt; ValueType, IndexType, IntervalType &gt;</a>
-, <a class="el" href="classhif_1_1IntervalCRS.html#a73d14ffd9a1047d140b80c6dac513959">hif::IntervalCRS&lt; ValueType, IndexType, IntervalType &gt;</a>
 </li>
 <li>MIN
 : <a class="el" href="classhif_1_1Const.html#a56315e876df0e32fe97f43c7a67748a7">hif::Const&lt; T &gt;</a>
@@ -475,7 +436,7 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 
 <h3><a id="index_n"></a>- n -</h3><ul>
 <li>n
-: <a class="el" href="structhif_1_1Prec.html#a72c0a2a9462e4fc1d5b56738dea237b5">hif::Prec&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="structhif_1_1Prec.html#a28f8eaabc96c2d579df744e58c7cca95">hif::Prec&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 <li>N
 : <a class="el" href="structhif__Options.html#ae611c79f25f4ffd0a8f191a9314f82da">hif_Options</a>
@@ -484,10 +445,10 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 : <a class="el" href="structhif__Options.html#aa8a3e5458b05ff33ed00fe4273c86d1a">hif_Options</a>
 </li>
 <li>nsp
-: <a class="el" href="classhif_1_1HIF.html#ae78b8bba5634187d38b7850a46908771">hif::HIF&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="classhif_1_1HIF.html#a13dc667851ba471f70a9b64fc45ea41d">hif::HIF&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 <li>nsp_tran
-: <a class="el" href="classhif_1_1HIF.html#acd6abcf05c0c7bb88a055562221c1ab3">hif::HIF&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="classhif_1_1HIF.html#a98c95ca2f4f57a3967f34bac26f109fe">hif::HIF&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 <li>nzp_thres
 : <a class="el" href="structhif__Options.html#aba342b97dbfcac8dc454aa8791cc88e6">hif_Options</a>
@@ -504,10 +465,10 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 
 <h3><a id="index_p"></a>- p -</h3><ul>
 <li>p
-: <a class="el" href="structhif_1_1Prec.html#aa78909a268f70aaf91a011b4b9ee234e">hif::Prec&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="structhif_1_1Prec.html#aff465db2ba3a77a01f7d0ddba4467a9a">hif::Prec&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 <li>p_inv
-: <a class="el" href="structhif_1_1Prec.html#a79c4ca6a3c99741a7f31337f83593c7e">hif::Prec&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="structhif_1_1Prec.html#a87f0747b117fddb954e197f64ccfa4e4">hif::Prec&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 <li>pivot
 : <a class="el" href="structhif__Options.html#a581fc8da3ae4419119da928a3e102ee2">hif_Options</a>
@@ -520,10 +481,10 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 
 <h3><a id="index_q"></a>- q -</h3><ul>
 <li>q
-: <a class="el" href="structhif_1_1Prec.html#afe3f56bc5691118d68c86bc5de025c9f">hif::Prec&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="structhif_1_1Prec.html#acf4169a145d867e8032b8c580a1b47ee">hif::Prec&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 <li>q_inv
-: <a class="el" href="structhif_1_1Prec.html#a02912c0726538135498b995a230422a5">hif::Prec&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="structhif_1_1Prec.html#a081d0e9177fe6006094fc8ea66be4a62">hif::Prec&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 </ul>
 
@@ -541,10 +502,8 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 <li>ROW_MAJOR
 : <a class="el" href="classhif_1_1AugCCS.html#a393aeff4866810a09bf831cfeded2cbf">hif::AugCCS&lt; CcsType &gt;</a>
 , <a class="el" href="classhif_1_1AugCRS.html#a06cac9588b9dc9a2137fabcfd863e952">hif::AugCRS&lt; CrsType &gt;</a>
-, <a class="el" href="classhif_1_1CCS.html#a5eed70149848574f2a671e077a597325">hif::CCS&lt; ValueType, IndexType &gt;</a>
-, <a class="el" href="classhif_1_1CRS.html#aae844604c6acfe1ad991c0f591e0d1ac">hif::CRS&lt; ValueType, IndexType &gt;</a>
-, <a class="el" href="classhif_1_1IntervalCCS.html#aa99a3fd1c90cedf74d499f763437db3e">hif::IntervalCCS&lt; ValueType, IndexType, IntervalType &gt;</a>
-, <a class="el" href="classhif_1_1IntervalCRS.html#ada3cee1617a2706993b208193ff32e5c">hif::IntervalCRS&lt; ValueType, IndexType, IntervalType &gt;</a>
+, <a class="el" href="classhif_1_1CCS.html#acf2d94c8a03e459feb67fad4ff4ca45d">hif::CCS&lt; ValueType, IndexType, IndPtrType &gt;</a>
+, <a class="el" href="classhif_1_1CRS.html#a5e36ca2c93cae2942c59ef24b39a151c">hif::CRS&lt; ValueType, IndexType, IndPtrType &gt;</a>
 </li>
 <li>rrqr_cond
 : <a class="el" href="structhif__Options.html#aca61bf41d458b30574539bff56a63878">hif_Options</a>
@@ -554,7 +513,7 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 
 <h3><a id="index_s"></a>- s -</h3><ul>
 <li>s
-: <a class="el" href="structhif_1_1Prec.html#ade35b66d8256d56ba63be78ef39469dc">hif::Prec&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="structhif_1_1Prec.html#a3920d8ca25d6ac8928f84def363aa12e">hif::Prec&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 <li>signature
 : <a class="el" href="structhif_1_1ValueTypeTrait.html#a248446bfb26ffa3246aca6614c12c220">hif::ValueTypeTrait&lt; T &gt;</a>
@@ -563,7 +522,7 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 : <a class="el" href="structhif__Options.html#aa02930599b692c4bdea475f30db8329b">hif_Options</a>
 </li>
 <li>symm_dense_solver
-: <a class="el" href="structhif_1_1Prec.html#a5936d6da12a3fe5e14f8c39fb453101a">hif::Prec&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="structhif_1_1Prec.html#ad0d59886d93feb96374dfbab8e8afba5">hif::Prec&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 <li>symm_pre_lvls
 : <a class="el" href="structhif__Options.html#a99619c3c7df09b5369efc7980408f85e">hif_Options</a>
@@ -573,7 +532,7 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 
 <h3><a id="index_t"></a>- t -</h3><ul>
 <li>t
-: <a class="el" href="structhif_1_1Prec.html#a16665b97c8ad8cd1bfe1274ee89762e9">hif::Prec&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="structhif_1_1Prec.html#a0d219c193b264a1d12ca30a4264d1bfc">hif::Prec&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 <li>tau_L
 : <a class="el" href="structhif__Options.html#aa15ece2aca590a228a14577e2ec22762">hif_Options</a>
@@ -589,7 +548,7 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 
 <h3><a id="index_u"></a>- u -</h3><ul>
 <li>U_B
-: <a class="el" href="structhif_1_1Prec.html#a9719956d45ff39c6bc3fea6ae8b44b1d">hif::Prec&lt; ValueType, IndexType, UserDenseFactor &gt;</a>
+: <a class="el" href="structhif_1_1Prec.html#a06be436ad535534dfdb033fe89f98423">hif::Prec&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a>
 </li>
 </ul>
 

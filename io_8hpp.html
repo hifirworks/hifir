@@ -32,7 +32,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">HIFIR
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -91,7 +91,7 @@ $(document).ready(function(){initNavTree('io_8hpp.html','');});
 </div><!--header-->
 <div class="contents">
 
-<p>Read and write native IO formats.  
+<p>Read and write sparse matrices in HIFIR.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;algorithm&gt;</code><br />
 <code>#include &lt;cctype&gt;</code><br />
@@ -123,19 +123,19 @@ This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
 <div class="center"><img src="io_8hpp__dep__incl.png" border="0" usemap="#io_8hppdep" alt=""/></div>
 <map name="io_8hppdep" id="io_8hppdep">
-<area shape="rect" id="node2" href="CompressedStorage_8hpp.html" title="Core about CRS and CCS storage formats. " alt="" coords="185,80,351,107"/>
-<area shape="rect" id="node3" href="factor_8hpp.html" title="Kernels for deferred factorization. " alt="" coords="265,379,345,405"/>
-<area shape="rect" id="node9" href="IterRefine_8hpp.html" title="Iterative refinement for using with HIF. " alt="" coords="5,304,109,331"/>
-<area shape="rect" id="node10" href="Prec_8hpp.html" title="Multilevel preconditioner interface. " alt="" coords="424,229,499,256"/>
-<area shape="rect" id="node11" href="IntervalCompressedStorage_8hpp.html" title="Interval&#45;based compressed storages. " alt="" coords="357,155,566,181"/>
-<area shape="rect" id="node12" href="driver_8hpp.html" title="Top&#45;level driver routine to handle preprocessing. " alt="" coords="202,304,281,331"/>
-<area shape="rect" id="node13" href="EqlDriver_8hpp.html" title="Equilibrator driver interface. " alt="" coords="129,155,231,181"/>
-<area shape="rect" id="node14" href="matching__scaling_8hpp.html" title="calling interface for matching and scaling " alt="" coords="82,229,230,256"/>
-<area shape="rect" id="node4" href="pivot__factor_8hpp.html" title="Kernels for deferred factorization with thresholding pivoting. " alt="" coords="248,453,363,480"/>
-<area shape="rect" id="node5" href="builder_8hpp.html" title="Top level user class for building HIF preconditioner. " alt="" coords="263,528,348,555"/>
-<area shape="rect" id="node8" href="symm__factor_8hpp.html" title="Kernels for deferred incomplete LDL&#39; factorization. " alt="" coords="101,453,224,480"/>
-<area shape="rect" id="node6" href="hifir_8hpp.html" title="top&#45;level user interface " alt="" coords="271,603,339,629"/>
-<area shape="rect" id="node7" href="demo__utils_8hpp.html" title="demo_utils.hpp" alt="" coords="250,677,361,704"/>
+<area shape="rect" id="node2" href="CompressedStorage_8hpp.html" title="Core about CRS and CCS storage formats. " alt="" coords="193,80,359,107"/>
+<area shape="rect" id="node3" href="factor_8hpp.html" title="Kernels for deferred factorization. " alt="" coords="235,379,315,405"/>
+<area shape="rect" id="node10" href="IterRefine_8hpp.html" title="Iterative refinement for using with HIF. " alt="" coords="5,229,109,256"/>
+<area shape="rect" id="node11" href="Prec_8hpp.html" title="Multilevel preconditioner interface. " alt="" coords="408,304,483,331"/>
+<area shape="rect" id="node12" href="driver_8hpp.html" title="Top&#45;level driver routine to handle preprocessing. " alt="" coords="235,304,314,331"/>
+<area shape="rect" id="node13" href="EqlDriver_8hpp.html" title="Equilibrator driver interface. " alt="" coords="181,155,283,181"/>
+<area shape="rect" id="node14" href="matching__scaling_8hpp.html" title="calling interface for matching and scaling " alt="" coords="134,229,282,256"/>
+<area shape="rect" id="node4" href="builder_8hpp.html" title="Top level user class for building HIF preconditioner. " alt="" coords="213,528,299,555"/>
+<area shape="rect" id="node8" href="pivot__factor_8hpp.html" title="Kernels for deferred factorization with thresholding pivoting. " alt="" coords="293,453,408,480"/>
+<area shape="rect" id="node9" href="symm__factor_8hpp.html" title="Kernels for deferred incomplete LDL&#39; factorization. " alt="" coords="96,453,219,480"/>
+<area shape="rect" id="node5" href="hifir_8hpp.html" title="top&#45;level user interface " alt="" coords="222,603,290,629"/>
+<area shape="rect" id="node6" href="libhifir_8cpp.html" title="C++ implementation of libhifir. " alt="" coords="155,677,237,704"/>
+<area shape="rect" id="node7" href="demo__utils_8hpp.html" title="demo_utils.hpp" alt="" coords="261,677,371,704"/>
 </map>
 </div>
 </div>
@@ -150,66 +150,14 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ga1caaca05c2c4b8f14478bff2c80bb67f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__io.html#ga1caaca05c2c4b8f14478bff2c80bb67f">hif::internal::is_little_endian</a> ()</td></tr>
-<tr class="memdesc:ga1caaca05c2c4b8f14478bff2c80bb67f"><td class="mdescLeft">&#160;</td><td class="mdescRight">check if the os is litter endian  <a href="group__io.html#ga1caaca05c2c4b8f14478bff2c80bb67f">More...</a><br /></td></tr>
-<tr class="separator:ga1caaca05c2c4b8f14478bff2c80bb67f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga4dfe3067d6fed134a6f1bd1061d65708"><td class="memItemLeft" align="right" valign="top">constexpr std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__io.html#ga4dfe3067d6fed134a6f1bd1061d65708">hif::internal::get_word_size</a> ()</td></tr>
-<tr class="memdesc:ga4dfe3067d6fed134a6f1bd1061d65708"><td class="mdescLeft">&#160;</td><td class="mdescRight">check the word size  <a href="group__io.html#ga4dfe3067d6fed134a6f1bd1061d65708">More...</a><br /></td></tr>
-<tr class="separator:ga4dfe3067d6fed134a6f1bd1061d65708"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga189b04f700d1d1232ba2342fedcda595"><td class="memTemplParams" colspan="2">template&lt;class InStream &gt; </td></tr>
-<tr class="memitem:ga189b04f700d1d1232ba2342fedcda595"><td class="memTemplItemLeft" align="right" valign="top">std::tuple&lt; bool, std::size_t, std::size_t, bool, bool, bool, bool &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__io.html#ga189b04f700d1d1232ba2342fedcda595">hif::internal::read_general_info</a> (InStream &amp;i_str)</td></tr>
-<tr class="memdesc:ga189b04f700d1d1232ba2342fedcda595"><td class="mdescLeft">&#160;</td><td class="mdescRight">read the general information  <a href="group__io.html#ga189b04f700d1d1232ba2342fedcda595">More...</a><br /></td></tr>
-<tr class="separator:ga189b04f700d1d1232ba2342fedcda595"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga371b7839983aebe182ad641c70a3d4de"><td class="memTemplParams" colspan="2">template&lt;class InStream &gt; </td></tr>
-<tr class="memitem:ga371b7839983aebe182ad641c70a3d4de"><td class="memTemplItemLeft" align="right" valign="top">std::tuple&lt; std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__io.html#ga371b7839983aebe182ad641c70a3d4de">hif::internal::read_matrix_sizes</a> (InStream &amp;i_str)</td></tr>
-<tr class="memdesc:ga371b7839983aebe182ad641c70a3d4de"><td class="mdescLeft">&#160;</td><td class="mdescRight">read the matrix size information  <a href="group__io.html#ga371b7839983aebe182ad641c70a3d4de">More...</a><br /></td></tr>
-<tr class="separator:ga371b7839983aebe182ad641c70a3d4de"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaf013cbf9a3c60a750a817eb3c95da540"><td class="memTemplParams" colspan="2">template&lt;class InStream &gt; </td></tr>
-<tr class="memitem:gaf013cbf9a3c60a750a817eb3c95da540"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__io.html#gaf013cbf9a3c60a750a817eb3c95da540">hif::internal::read_matrix_data_attrs</a> (InStream &amp;i_str, const std::size_t int_size, const std::size_t real_size, const std::uint64_t start_size, const std::uint64_t nnz, char *ind_start, char *indices, char *vals)</td></tr>
-<tr class="memdesc:gaf013cbf9a3c60a750a817eb3c95da540"><td class="mdescLeft">&#160;</td><td class="mdescRight">read matrix data attributes  <a href="group__io.html#gaf013cbf9a3c60a750a817eb3c95da540">More...</a><br /></td></tr>
-<tr class="separator:gaf013cbf9a3c60a750a817eb3c95da540"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gac3ddf1dfb884fa78fdddb422eb0609f3"><td class="memTemplParams" colspan="2">template&lt;class OutStream &gt; </td></tr>
-<tr class="memitem:gac3ddf1dfb884fa78fdddb422eb0609f3"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__io.html#gac3ddf1dfb884fa78fdddb422eb0609f3">hif::internal::write_general_info</a> (OutStream &amp;o_str, const std::size_t int_size, const bool is_row, const bool is_c, const bool is_double, const bool is_real)</td></tr>
-<tr class="memdesc:gac3ddf1dfb884fa78fdddb422eb0609f3"><td class="mdescLeft">&#160;</td><td class="mdescRight">write general information  <a href="group__io.html#gac3ddf1dfb884fa78fdddb422eb0609f3">More...</a><br /></td></tr>
-<tr class="separator:gac3ddf1dfb884fa78fdddb422eb0609f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga04c4449bfe44bfba72c9208110c6b32d"><td class="memTemplParams" colspan="2">template&lt;class OutStream &gt; </td></tr>
-<tr class="memitem:ga04c4449bfe44bfba72c9208110c6b32d"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__io.html#ga04c4449bfe44bfba72c9208110c6b32d">hif::internal::write_matrix_sizes</a> (OutStream &amp;o_str, const std::uint64_t row, const std::uint64_t col, const std::uint64_t nnz, const std::uint64_t m)</td></tr>
-<tr class="memdesc:ga04c4449bfe44bfba72c9208110c6b32d"><td class="mdescLeft">&#160;</td><td class="mdescRight">write matrix size information  <a href="group__io.html#ga04c4449bfe44bfba72c9208110c6b32d">More...</a><br /></td></tr>
-<tr class="separator:ga04c4449bfe44bfba72c9208110c6b32d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gac6e3cc364db7eb3cbcd27668719d46ae"><td class="memTemplParams" colspan="2">template&lt;class OutStream &gt; </td></tr>
-<tr class="memitem:gac6e3cc364db7eb3cbcd27668719d46ae"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__io.html#gac6e3cc364db7eb3cbcd27668719d46ae">hif::internal::write_matrix_data_attrs</a> (OutStream &amp;o_str, const std::size_t int_size, const std::size_t real_size, const std::uint64_t start_size, const std::uint64_t nnz, const void *ind_start, const void *indices, const void *vals)</td></tr>
-<tr class="memdesc:gac6e3cc364db7eb3cbcd27668719d46ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">write matrix data attributes  <a href="group__io.html#gac6e3cc364db7eb3cbcd27668719d46ae">More...</a><br /></td></tr>
-<tr class="separator:gac6e3cc364db7eb3cbcd27668719d46ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga8ca589f59d401977be6102a0a6809bac"><td class="memTemplParams" colspan="2">template&lt;class CsType &gt; </td></tr>
-<tr class="memitem:ga8ca589f59d401977be6102a0a6809bac"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; CsType::ROW_MAJOR &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__io.html#ga8ca589f59d401977be6102a0a6809bac">hif::write_bin</a> (const char *filename, const CsType &amp;A, const std::uint64_t m)</td></tr>
-<tr class="memdesc:ga8ca589f59d401977be6102a0a6809bac"><td class="mdescLeft">&#160;</td><td class="mdescRight">write a <a class="el" href="classhif_1_1CRS.html">CRS</a> matrix  <a href="group__io.html#ga8ca589f59d401977be6102a0a6809bac">More...</a><br /></td></tr>
-<tr class="separator:ga8ca589f59d401977be6102a0a6809bac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga8ca589f59d401977be6102a0a6809bac"><td class="memTemplParams" colspan="2">template&lt;class CsType &gt; </td></tr>
-<tr class="memitem:ga8ca589f59d401977be6102a0a6809bac"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt;!CsType::ROW_MAJOR &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacehif.html#ga8ca589f59d401977be6102a0a6809bac">hif::write_bin</a> (const char *filename, const CsType &amp;A, const std::uint64_t m)</td></tr>
-<tr class="memdesc:ga8ca589f59d401977be6102a0a6809bac"><td class="mdescLeft">&#160;</td><td class="mdescRight">write a <a class="el" href="classhif_1_1CCS.html">CCS</a> matrix  <a href="namespacehif.html#ga8ca589f59d401977be6102a0a6809bac">More...</a><br /></td></tr>
-<tr class="separator:ga8ca589f59d401977be6102a0a6809bac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga21ccbc8c2ac57a00725cb471206b8a0d"><td class="memItemLeft" align="right" valign="top">std::tuple&lt; bool, bool, bool, bool, std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__itr.html#ga21ccbc8c2ac57a00725cb471206b8a0d">hif::query_info_bin</a> (const char *filename)</td></tr>
-<tr class="memdesc:ga21ccbc8c2ac57a00725cb471206b8a0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">query information of a binary file  <a href="group__itr.html#ga21ccbc8c2ac57a00725cb471206b8a0d">More...</a><br /></td></tr>
-<tr class="separator:ga21ccbc8c2ac57a00725cb471206b8a0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga55c28a7fae18f4d32e9b5ead78e6c9b7"><td class="memTemplParams" colspan="2">template&lt;class CsType , typename T  = std::uint64_t&gt; </td></tr>
-<tr class="memitem:ga55c28a7fae18f4d32e9b5ead78e6c9b7"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt;!CsType::ROW_MAJOR, T &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__io.html#ga55c28a7fae18f4d32e9b5ead78e6c9b7">hif::read_bin</a> (const char *filename, CsType &amp;A)</td></tr>
-<tr class="memdesc:ga55c28a7fae18f4d32e9b5ead78e6c9b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">read data from file to a <a class="el" href="classhif_1_1CCS.html">CCS</a> matrix  <a href="group__io.html#ga55c28a7fae18f4d32e9b5ead78e6c9b7">More...</a><br /></td></tr>
-<tr class="separator:ga55c28a7fae18f4d32e9b5ead78e6c9b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga55c28a7fae18f4d32e9b5ead78e6c9b7"><td class="memTemplParams" colspan="2">template&lt;class CsType , typename T  = std::uint64_t&gt; </td></tr>
-<tr class="memitem:ga55c28a7fae18f4d32e9b5ead78e6c9b7"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; CsType::ROW_MAJOR, T &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacehif.html#ga55c28a7fae18f4d32e9b5ead78e6c9b7">hif::read_bin</a> (const char *filename, CsType &amp;A)</td></tr>
-<tr class="memdesc:ga55c28a7fae18f4d32e9b5ead78e6c9b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">read data from file to a <a class="el" href="classhif_1_1CRS.html">CRS</a> matrix  <a href="namespacehif.html#ga55c28a7fae18f4d32e9b5ead78e6c9b7">More...</a><br /></td></tr>
-<tr class="separator:ga55c28a7fae18f4d32e9b5ead78e6c9b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga3c53e6cd53eddf765de2bb0cc2df47ce"><td class="memTemplParams" colspan="2">template&lt;bool IsRowMajor, class IndexArray , class ValueArray &gt; </td></tr>
-<tr class="memitem:ga3c53e6cd53eddf765de2bb0cc2df47ce"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__io.html#ga3c53e6cd53eddf765de2bb0cc2df47ce">hif::write_ascii</a> (const char *fname, const IndexArray &amp;ind_start, const typename IndexArray::size_type other_size, const IndexArray &amp;indices, const ValueArray &amp;vals, const typename IndexArray::size_type m)</td></tr>
-<tr class="memdesc:ga3c53e6cd53eddf765de2bb0cc2df47ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">write to ASCII file  <a href="group__io.html#ga3c53e6cd53eddf765de2bb0cc2df47ce">More...</a><br /></td></tr>
-<tr class="separator:ga3c53e6cd53eddf765de2bb0cc2df47ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gae2ff7ffcabcdcd58f50cf4be5764041c"><td class="memItemLeft" align="right" valign="top">std::tuple&lt; bool, bool, bool, bool, std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__itr.html#gae2ff7ffcabcdcd58f50cf4be5764041c">hif::query_info_ascii</a> (const char *filename)</td></tr>
-<tr class="memdesc:gae2ff7ffcabcdcd58f50cf4be5764041c"><td class="mdescLeft">&#160;</td><td class="mdescRight">query information of an ASCII file  <a href="group__itr.html#gae2ff7ffcabcdcd58f50cf4be5764041c">More...</a><br /></td></tr>
-<tr class="separator:gae2ff7ffcabcdcd58f50cf4be5764041c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gad018615d437ae470a0c1865c1e98acd2"><td class="memTemplParams" colspan="2">template&lt;class IndexArray , class ValueArray &gt; </td></tr>
-<tr class="memitem:gad018615d437ae470a0c1865c1e98acd2"><td class="memTemplItemLeft" align="right" valign="top">std::tuple&lt; bool, bool, char, std::size_t, std::size_t, std::size_t, std::size_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__io.html#gad018615d437ae470a0c1865c1e98acd2">hif::read_ascii</a> (const char *fname, IndexArray &amp;ind_start, IndexArray &amp;indices, ValueArray &amp;vals)</td></tr>
-<tr class="memdesc:gad018615d437ae470a0c1865c1e98acd2"><td class="mdescLeft">&#160;</td><td class="mdescRight">read data from ASCII file  <a href="group__io.html#gad018615d437ae470a0c1865c1e98acd2">More...</a><br /></td></tr>
-<tr class="separator:gad018615d437ae470a0c1865c1e98acd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga59c160eedb6d968e131aea9a10367946"><td class="memTemplParams" colspan="2">template&lt;class CsType &gt; </td></tr>
+<tr class="memitem:ga59c160eedb6d968e131aea9a10367946"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__io.html#ga59c160eedb6d968e131aea9a10367946">hif::write_bin</a> (const char *filename, const CsType &amp;A)</td></tr>
+<tr class="memdesc:ga59c160eedb6d968e131aea9a10367946"><td class="mdescLeft">&#160;</td><td class="mdescRight">write a <a class="el" href="classhif_1_1CRS.html">CRS</a> matrix  <a href="group__io.html#ga59c160eedb6d968e131aea9a10367946">More...</a><br /></td></tr>
+<tr class="separator:ga59c160eedb6d968e131aea9a10367946"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga08e93eae97844ab6109e754d6e460765"><td class="memTemplParams" colspan="2">template&lt;class IndPtrArray , class IndexArray , class ValueArray &gt; </td></tr>
+<tr class="memitem:ga08e93eae97844ab6109e754d6e460765"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__io.html#ga08e93eae97844ab6109e754d6e460765">hif::read_bin</a> (const char *filename, std::uint64_t info[], IndPtrArray &amp;ind_start, IndexArray &amp;indices, ValueArray &amp;vals)</td></tr>
+<tr class="memdesc:ga08e93eae97844ab6109e754d6e460765"><td class="mdescLeft">&#160;</td><td class="mdescRight">read data from file to a <a class="el" href="classhif_1_1CRS.html">CRS</a> matrix  <a href="group__io.html#ga08e93eae97844ab6109e754d6e460765">More...</a><br /></td></tr>
+<tr class="separator:ga08e93eae97844ab6109e754d6e460765"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga04ca260446ba7e6b509228b0079d6ad5"><td class="memTemplParams" colspan="2">template&lt;int TypeID, bool IsReal, class IndexType , class ValueType &gt; </td></tr>
 <tr class="memitem:ga04ca260446ba7e6b509228b0079d6ad5"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__io.html#ga04ca260446ba7e6b509228b0079d6ad5">hif::internal::mm_read_sparse_data</a> (std::FILE *f, const std::size_t nnz, Array&lt; IndexType &gt; &amp;rows, Array&lt; IndexType &gt; &amp;cols, Array&lt; ValueType &gt; &amp;vals)</td></tr>
 <tr class="memdesc:ga04ca260446ba7e6b509228b0079d6ad5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal routine to read sparse data.  <a href="group__io.html#ga04ca260446ba7e6b509228b0079d6ad5">More...</a><br /></td></tr>
@@ -244,13 +192,14 @@ Functions</h2></td></tr>
 <tr class="separator:ga3b699628b30e89476e69ecfe20dbb20b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Read and write native IO formats. </p>
+<div class="textblock"><p>Read and write sparse matrices in HIFIR. </p>
 <dl class="section author"><dt>Author</dt><dd>Qiao Chen</dd></dl>
-<p>We define two native file formats for exchanging compressed storage data; these two formats are the HIF binary and HIF ASCII formats. The former is for efficient IO, while the latter is for data readability and compatibility.</p>
-<p>First, let's introduce the binary format. There are three data groups that are stored: 1) <em>general</em> <em>information</em>, which requires 7 bytes in total; sequentially, they are, byte by byte, platform endianness (1 for little, 0 for big), word size (8 for 64bit and 4 for 32bit), integer size, storage scheme (1 for CRS and 0 for CCS), reserved, floating point precision flag (1 for <em>double</em> and 0 for <em>float</em>), and the value data type (1 for real and 0 for complex). 2) <em>matrix</em> <em>sizes</em>, the sizes are stored in <b>fixed-size</b> integers, which are type of <em>uint64_t</em>, thus having 32 bytes in total; four size attributes are stored, which are row size, column size, total number of nonzeros, and the leading block size, resp. 3) The final group is the <em>matrix</em> <em>data</em> <em>attributes</em>, the index position (pointer) array is stored first, followed by index array and the value array.</p>
-<dl class="section warning"><dt>Warning</dt><dd>OS endianness is not compatible for now, e.g. if a file is written on a Little-Endian machine, then it must be loaded from Little-Endian machines.</dd></dl>
-<p>Second, let's take a look at the ASCII file format, which is designed for cross-platform compatibility. Like the binary format, there are three data groups as well. For general information, three characters are stored in a single line, ?$%, where ? is the matrix storage scheme used, 'R' for CRS while 'C' for CCS; $ is reserved, which are for C and Fortran based index systems, resp; finally, % is the data type, which adapts the naming scheme in BLAS, i.e. 'D' for double, 'S' for single, 'Z' for complex double, and 'C' for complex single. For instance, <em>RCD</em> defines a CSR matrix with 0-based index of double precision values. Similary to the binary format, the sizes are stored and separated by white space. Finally, for the data attributes, the index pointer is stored first, then indices and values. Regarding numerical value format, we use C++ IO operators with proper precisions so that no information is truncated during IO. Specail note for complex types, the standard format for complex is (real,imag), which should be used if one consider writing reader/writer in other programming languages.</p>
-<p>For ASCII format, the groups are separated by <em>newline</em>, while either white space or <em>newline</em> can be used to separate the integral and numerical values. Also, the data groups are compactly stored, i.e. no gaps are allowed. Regarding comments (including empty lines), they are only allowed at the beginning of the file; a line of comment starts with character '#', which is a commonly used convension, e.g. shell, make, Python, etc.</p>
+<p>If HDF5 is enabled, then HIFIR is able to output sparse matrices into HDF5 files with four DataSets:</p><ul>
+<li>"sparse_info": length-four array of [nrows,ncols,isrowmajor,isreal] the data type is <em>std::uint64_t</em> </li>
+<li>"ind_start": indptr array</li>
+<li>"indices": index array</li>
+<li>"vals": value array Note that we use HDF5 C++ interface.</li>
+</ul>
 <p>In addition, we provide routines to handle the Matrix Market file format. In particular, we support read all sparse matrices. For dense matrix, we will treat it as an array for RHS, thus we only read the first column.</p>
 <pre class="fragment">Copyright (C) 2021 NumGeom Group at Stony Brook University
 

@@ -1,14 +1,15 @@
 <map id="DenseMatrix.hpp" name="DenseMatrix.hpp">
 <area shape="rect" id="node2" href="$factor_8hpp.html" title="Kernels for deferred factorization. " alt="" coords="51,229,131,256"/>
-<area shape="rect" id="node8" href="$lapack_8hpp.html" title="HIF LAPACK interface. " alt="" coords="267,80,352,107"/>
-<area shape="rect" id="node9" href="$LUP_8hpp.html" title="Small scale solver with dense LU with partial pivoting. " alt="" coords="193,155,266,181"/>
-<area shape="rect" id="node12" href="$QRCP_8hpp.html" title="Small scale solver with dense QR with column pivoting. " alt="" coords="290,155,377,181"/>
-<area shape="rect" id="node13" href="$SYEIG_8hpp.html" title="Small scale solver with symmetric eigendecomposition. " alt="" coords="402,155,490,181"/>
-<area shape="rect" id="node3" href="$pivot__factor_8hpp.html" title="Kernels for deferred factorization with thresholding pivoting. " alt="" coords="23,304,138,331"/>
-<area shape="rect" id="node4" href="$builder_8hpp.html" title="Top level user class for building HIF preconditioner. " alt="" coords="108,379,194,405"/>
-<area shape="rect" id="node7" href="$symm__factor_8hpp.html" title="Kernels for deferred incomplete LDL&#39; factorization. " alt="" coords="162,304,284,331"/>
-<area shape="rect" id="node5" href="$hifir_8hpp.html" title="top&#45;level user interface " alt="" coords="117,453,185,480"/>
-<area shape="rect" id="node6" href="$demo__utils_8hpp.html" title="demo_utils.hpp" alt="" coords="96,528,206,555"/>
-<area shape="rect" id="node10" href="$solver_8hpp.html" title="Small scale solver main interface. " alt="" coords="298,229,380,256"/>
-<area shape="rect" id="node11" href="$Prec_8hpp.html" title="Multilevel preconditioner interface. " alt="" coords="308,304,383,331"/>
+<area shape="rect" id="node9" href="$lapack_8hpp.html" title="HIF LAPACK interface. " alt="" coords="267,80,352,107"/>
+<area shape="rect" id="node10" href="$LUP_8hpp.html" title="Small scale solver with dense LU with partial pivoting. " alt="" coords="193,155,266,181"/>
+<area shape="rect" id="node13" href="$QRCP_8hpp.html" title="Small scale solver with dense QR with column pivoting. " alt="" coords="290,155,377,181"/>
+<area shape="rect" id="node14" href="$SYEIG_8hpp.html" title="Small scale solver with symmetric eigendecomposition. " alt="" coords="402,155,490,181"/>
+<area shape="rect" id="node3" href="$builder_8hpp.html" title="Top level user class for building HIF preconditioner. " alt="" coords="108,379,194,405"/>
+<area shape="rect" id="node7" href="$pivot__factor_8hpp.html" title="Kernels for deferred factorization with thresholding pivoting. " alt="" coords="23,304,138,331"/>
+<area shape="rect" id="node8" href="$symm__factor_8hpp.html" title="Kernels for deferred incomplete LDL&#39; factorization. " alt="" coords="162,304,284,331"/>
+<area shape="rect" id="node4" href="$hifir_8hpp.html" title="top&#45;level user interface " alt="" coords="117,453,185,480"/>
+<area shape="rect" id="node5" href="$libhifir_8cpp.html" title="C++ implementation of libhifir. " alt="" coords="50,528,132,555"/>
+<area shape="rect" id="node6" href="$demo__utils_8hpp.html" title="demo_utils.hpp" alt="" coords="156,528,266,555"/>
+<area shape="rect" id="node11" href="$solver_8hpp.html" title="Small scale solver main interface. " alt="" coords="298,229,380,256"/>
+<area shape="rect" id="node12" href="$Prec_8hpp.html" title="Multilevel preconditioner interface. " alt="" coords="308,304,383,331"/>
 </map>

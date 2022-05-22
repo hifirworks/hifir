@@ -1,0 +1,7 @@
+<map id="hif::AugCRS::start_col_id" name="hif::AugCRS::start_col_id">
+<area shape="rect" id="node2" href="$classhif_1_1AugCRS.html#adb8192dcce19d2d8d65f37b1ab4680ac" title="defer a column to the end " alt="" coords="207,17,364,43"/>
+<area shape="rect" id="node4" href="$classhif_1_1AugCRS.html#ab5a1d953e8dab796e7c08afcc702e8c1" title="interchange two columns " alt="" coords="184,74,387,101"/>
+<area shape="rect" id="node6" href="$classhif_1_1AugCRS.html#aa3be432e75c6fa30e383af3c7d6b5e09" title="unified interface to get starting augmented ID " alt="" coords="220,125,351,167"/>
+<area shape="rect" id="node3" href="$classhif_1_1AugCRS.html#abcf385406b6d40e2d4ca580634138e42" title="unified interface for deferring " alt="" coords="453,5,587,47"/>
+<area shape="rect" id="node5" href="$classhif_1_1AugCRS.html#a0d0c4cd0656cfe0a8fb42249f98a8d3d" title="unified interface for interchanging entries " alt="" coords="435,71,605,112"/>
+</map>

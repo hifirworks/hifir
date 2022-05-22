@@ -1,0 +1,53 @@
+<map id="libhifir.cpp" name="libhifir.cpp">
+<area shape="rect" id="node6" href="$hifir_8hpp.html" title="top&#45;level user interface " alt="" coords="2099,80,2167,107"/>
+<area shape="rect" id="node80" href="$libhifir_8h.html" title="C library interface header file. " alt="" coords="7965,80,8032,107"/>
+<area shape="rect" id="node7" href="$macros_8hpp.html" title="Useful preprocessing macros. " alt="" coords="2079,155,2187,181"/>
+<area shape="rect" id="node8" href="$builder_8hpp.html" title="Top level user class for building HIF preconditioner. " alt="" coords="3927,155,4030,181"/>
+<area shape="rect" id="node13" href="$NspFilter_8hpp.html" title="User interface for customizing/using attached null space filters. " alt="" coords="6679,677,6798,704"/>
+<area shape="rect" id="node17" href="$common_8hpp.html" title="Utility/helper routines. " alt="" coords="1691,827,1834,853"/>
+<area shape="rect" id="node28" href="$Options_8h.html" title="HIF algorithm parameter controls. " alt="" coords="5219,677,5315,704"/>
+<area shape="rect" id="node32" href="$IterRefine_8hpp.html" title="Iterative refinement for using with HIF. " alt="" coords="2750,528,2893,555"/>
+<area shape="rect" id="node43" href="$version_8h.html" title="HIF version header. " alt="" coords="515,752,608,779"/>
+<area shape="rect" id="node45" href="$mt_8hpp.html" title="Multithreading helpers. " alt="" coords="6575,752,6683,779"/>
+<area shape="rect" id="node47" href="$Prec_8hpp.html" title="Multilevel preconditioner interface. " alt="" coords="4883,453,4997,480"/>
+<area shape="rect" id="node58" href="$factor_8hpp.html" title="Kernels for deferred factorization. " alt="" coords="3731,304,3850,331"/>
+<area shape="rect" id="node74" href="$pivot__factor_8hpp.html" title="Kernels for deferred factorization with thresholding pivoting. " alt="" coords="6640,229,6795,256"/>
+<area shape="rect" id="node77" href="$prec__prod_8hpp.html" title="Multilevel preconditioner matrix&#45;vector products. " alt="" coords="3326,603,3469,629"/>
+<area shape="rect" id="node78" href="$prec__solve_8hpp.html" title="Multilevel preconditioner solver. " alt="" coords="3708,677,3857,704"/>
+<area shape="rect" id="node79" href="$symm__factor_8hpp.html" title="Kernels for deferred incomplete LDL&#39; factorization. " alt="" coords="3779,229,3941,256"/>
+<area shape="rect" id="node21" href="$log_8hpp.html" title="Logging interface, including info/warning/error. " alt="" coords="2207,901,2318,928"/>
+<area shape="rect" id="node25" href="$print_8hpp.html" title="Macros for &quot;stdout&quot; and &quot;stderr&quot; message printers. " alt="" coords="2362,976,2481,1003"/>
+<area shape="rect" id="node27" href="$stacktrace_8hpp.html" title="Print stacktrace on error aborting. " alt="" coords="2007,976,2161,1003"/>
+<area shape="rect" id="node33" href="$Array_8hpp.html" title="Array data structure, with functionality of wrapping external data. " alt="" coords="3805,827,3920,853"/>
+<area shape="rect" id="node34" href="$CompressedStorage_8hpp.html" title="Core about CRS and CCS storage formats. " alt="" coords="3739,603,3941,629"/>
+<area shape="rect" id="node42" href="$math_8hpp.html" title="Some handy BLAS 1 vector routines. " alt="" coords="3243,752,3365,779"/>
+<area shape="rect" id="node46" href="$mv__helper_8hpp.html" title="Matrix&#45;vector product helper for sparse matrices and std::function. " alt="" coords="2630,677,2783,704"/>
+<area shape="rect" id="node37" href="$coo2compress_8hpp.html" title="Helper function to convert coordinate to compressed format. " alt="" coords="4392,752,4571,779"/>
+<area shape="rect" id="node38" href="$io_8hpp.html" title="Read and write sparse matrices in HIFIR. " alt="" coords="3011,677,3114,704"/>
+<area shape="rect" id="node44" href="$mt__mv_8hpp.html" title="Multithreaded matrix&#45;vector product for CRS. " alt="" coords="4311,677,4444,704"/>
+<area shape="rect" id="node49" href="$solver_8hpp.html" title="Small scale solver main interface. " alt="" coords="4853,528,5027,555"/>
+<area shape="rect" id="node50" href="$LUP_8hpp.html" title="Small scale solver with dense LU with partial pivoting. " alt="" coords="5053,603,5217,629"/>
+<area shape="rect" id="node56" href="$QRCP_8hpp.html" title="Small scale solver with dense QR with column pivoting. " alt="" coords="4851,603,5029,629"/>
+<area shape="rect" id="node57" href="$SYEIG_8hpp.html" title="Small scale solver with symmetric eigendecomposition. " alt="" coords="4648,603,4827,629"/>
+<area shape="rect" id="node51" href="$DenseMatrix_8hpp.html" title="Dense storage for the last level in multilevel ILU. " alt="" coords="4923,752,5080,779"/>
+<area shape="rect" id="node52" href="$lapack_8hpp.html" title="HIF LAPACK interface. " alt="" coords="4912,677,5088,704"/>
+<area shape="rect" id="node53" href="$lapackf_8hpp.html" title="Low&#45;level Fortran&#45;based LAPACK interfaces. " alt="" coords="5105,752,5285,779"/>
+<area shape="rect" id="node54" href="$config_8hpp.html" title="Simple configuration for using LAPACK. " alt="" coords="5668,827,5841,853"/>
+<area shape="rect" id="node55" href="$fc__mangling_8hpp.html" title="HIFIR Fortran name mangling interface. " alt="" coords="5673,901,5836,928"/>
+<area shape="rect" id="node59" href="$PermMatrix_8hpp.html" title="Permutation matrix/mapping. " alt="" coords="5546,752,5697,779"/>
+<area shape="rect" id="node60" href="$SparseVec_8hpp.html" title="Array used in factorization for work space. " alt="" coords="2408,677,2555,704"/>
+<area shape="rect" id="node61" href="$driver_8hpp.html" title="Top&#45;level driver routine to handle preprocessing. " alt="" coords="2885,379,3003,405"/>
+<area shape="rect" id="node62" href="$Timer_8hpp.html" title="A simple timer wrapping around C++ chrono. " alt="" coords="1157,528,1283,555"/>
+<area shape="rect" id="node71" href="$Crout_8hpp.html" title="Implementation of modified Crout update in deferred fashion by using compressed data structures..." alt="" coords="6077,752,6195,779"/>
+<area shape="rect" id="node72" href="$Schur_8hpp.html" title="Routines for computing Schur complements of simple version. " alt="" coords="3544,603,3664,629"/>
+<area shape="rect" id="node73" href="$thresholds_8hpp.html" title="Implementation of scalability&#45;oriented and inverse&#45;based dual thresholding for dropping. " alt="" coords="2003,752,2149,779"/>
+<area shape="rect" id="node64" href="$matching__scaling_8hpp.html" title="calling interface for matching and scaling " alt="" coords="2459,453,2647,480"/>
+<area shape="rect" id="node68" href="$reordering_8hpp.html" title="calling interface for reordering " alt="" coords="1021,603,1165,629"/>
+<area shape="rect" id="node65" href="$EqlDriver_8hpp.html" title="Equilibrator driver interface. " alt="" coords="1916,528,2057,555"/>
+<area shape="rect" id="node66" href="$a__priori__scaling_8hpp.html" title="a priori scaling before official matching/scaling and reordering " alt="" coords="2174,752,2351,779"/>
+<area shape="rect" id="node67" href="$equilibrate_8hpp.html" title="balancing systems to achieve better conditioning " alt="" coords="1072,752,1219,779"/>
+<area shape="rect" id="node69" href="$amd_8hpp.html" title="Kernel for approximated minimum degree ordering. " alt="" coords="683,752,795,779"/>
+<area shape="rect" id="node70" href="$rcm_8hpp.html" title="Kernel for reversed Cuthill&#45;Mckee ordering. " alt="" coords="144,901,253,928"/>
+<area shape="rect" id="node75" href="$AugmentedStorage_8hpp.html" title="Core about augmented CRS and CCS storage formats. " alt="" coords="6217,677,6412,704"/>
+<area shape="rect" id="node76" href="$PivotCrout_8hpp.html" title="Implementation of modified Crout update in deferred fashion by using augmented compressed data struct..." alt="" coords="7077,677,7225,704"/>
+</map>

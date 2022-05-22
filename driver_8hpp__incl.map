@@ -10,7 +10,7 @@
 <area shape="rect" id="node20" href="$stacktrace_8hpp.html" title="Print stacktrace on error aborting. " alt="" coords="1392,603,1547,629"/>
 <area shape="rect" id="node26" href="$common_8hpp.html" title="Utility/helper routines. " alt="" coords="1686,453,1829,480"/>
 <area shape="rect" id="node29" href="$coo2compress_8hpp.html" title="Helper function to convert coordinate to compressed format. " alt="" coords="1280,379,1459,405"/>
-<area shape="rect" id="node30" href="$io_8hpp.html" title="Read and write native IO formats. " alt="" coords="1987,304,2090,331"/>
+<area shape="rect" id="node30" href="$io_8hpp.html" title="Read and write sparse matrices in HIFIR. " alt="" coords="1987,304,2090,331"/>
 <area shape="rect" id="node35" href="$math_8hpp.html" title="Some handy BLAS 1 vector routines. " alt="" coords="2315,379,2437,405"/>
 <area shape="rect" id="node37" href="$mt__mv_8hpp.html" title="Multithreaded matrix&#45;vector product for CRS. " alt="" coords="2512,379,2645,405"/>
 <area shape="rect" id="node36" href="$version_8h.html" title="HIF version header. " alt="" coords="2112,379,2205,405"/>

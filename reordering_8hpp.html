@@ -32,7 +32,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">HIFIR
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -117,13 +117,14 @@ This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
 <div class="center"><img src="reordering_8hpp__dep__incl.png" border="0" usemap="#reordering_8hppdep" alt=""/></div>
 <map name="reordering_8hppdep" id="reordering_8hppdep">
-<area shape="rect" id="node2" href="driver_8hpp.html" title="Top&#45;level driver routine to handle preprocessing. " alt="" coords="118,80,197,107"/>
-<area shape="rect" id="node3" href="factor_8hpp.html" title="Kernels for deferred factorization. " alt="" coords="117,155,197,181"/>
-<area shape="rect" id="node4" href="pivot__factor_8hpp.html" title="Kernels for deferred factorization with thresholding pivoting. " alt="" coords="5,229,120,256"/>
-<area shape="rect" id="node5" href="builder_8hpp.html" title="Top level user class for building HIF preconditioner. " alt="" coords="115,304,200,331"/>
-<area shape="rect" id="node8" href="symm__factor_8hpp.html" title="Kernels for deferred incomplete LDL&#39; factorization. " alt="" coords="195,229,317,256"/>
-<area shape="rect" id="node6" href="hifir_8hpp.html" title="top&#45;level user interface " alt="" coords="123,379,191,405"/>
-<area shape="rect" id="node7" href="demo__utils_8hpp.html" title="demo_utils.hpp" alt="" coords="102,453,213,480"/>
+<area shape="rect" id="node2" href="driver_8hpp.html" title="Top&#45;level driver routine to handle preprocessing. " alt="" coords="67,80,145,107"/>
+<area shape="rect" id="node3" href="factor_8hpp.html" title="Kernels for deferred factorization. " alt="" coords="66,155,146,181"/>
+<area shape="rect" id="node4" href="builder_8hpp.html" title="Top level user class for building HIF preconditioner. " alt="" coords="63,304,149,331"/>
+<area shape="rect" id="node8" href="pivot__factor_8hpp.html" title="Kernels for deferred factorization with thresholding pivoting. " alt="" coords="49,229,163,256"/>
+<area shape="rect" id="node9" href="symm__factor_8hpp.html" title="Kernels for deferred incomplete LDL&#39; factorization. " alt="" coords="187,229,310,256"/>
+<area shape="rect" id="node5" href="hifir_8hpp.html" title="top&#45;level user interface " alt="" coords="72,379,140,405"/>
+<area shape="rect" id="node6" href="libhifir_8cpp.html" title="C++ implementation of libhifir. " alt="" coords="5,453,87,480"/>
+<area shape="rect" id="node7" href="demo__utils_8hpp.html" title="demo_utils.hpp" alt="" coords="111,453,221,480"/>
 </map>
 </div>
 </div>
@@ -136,14 +137,14 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ga32dd1486848fb34d6c355e68d5e362e8"><td class="memTemplParams" colspan="2">template&lt;bool IsSymm, class CcsType &gt; </td></tr>
-<tr class="memitem:ga32dd1486848fb34d6c355e68d5e362e8"><td class="memTemplItemLeft" align="right" valign="top">Array&lt; typename CcsType::index_type &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__pre.html#ga32dd1486848fb34d6c355e68d5e362e8">hif::run_amd</a> (const CcsType &amp;B, const Options &amp;opt)</td></tr>
-<tr class="memdesc:ga32dd1486848fb34d6c355e68d5e362e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">apply approximated mimimum degree ordering  <a href="group__pre.html#ga32dd1486848fb34d6c355e68d5e362e8">More...</a><br /></td></tr>
-<tr class="separator:ga32dd1486848fb34d6c355e68d5e362e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga86d43b4b7fa82ae7b42de7765f8b6115"><td class="memTemplParams" colspan="2">template&lt;class CcsType &gt; </td></tr>
-<tr class="memitem:ga86d43b4b7fa82ae7b42de7765f8b6115"><td class="memTemplItemLeft" align="right" valign="top">CcsType::iarray_type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__pre.html#ga86d43b4b7fa82ae7b42de7765f8b6115">hif::run_rcm</a> (const CcsType &amp;B, const Options &amp;opt)</td></tr>
-<tr class="memdesc:ga86d43b4b7fa82ae7b42de7765f8b6115"><td class="mdescLeft">&#160;</td><td class="mdescRight">apply reversed Cuthill-Mckee ordering  <a href="group__pre.html#ga86d43b4b7fa82ae7b42de7765f8b6115">More...</a><br /></td></tr>
-<tr class="separator:ga86d43b4b7fa82ae7b42de7765f8b6115"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6446d4f61326606b26ecbbe80cd900d2"><td class="memTemplParams" colspan="2">template&lt;bool IsSymm, class CcsType &gt; </td></tr>
+<tr class="memitem:ga6446d4f61326606b26ecbbe80cd900d2"><td class="memTemplItemLeft" align="right" valign="top">CcsType::iparray_type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__pre.html#ga6446d4f61326606b26ecbbe80cd900d2">hif::run_amd</a> (const CcsType &amp;B, const Options &amp;opt)</td></tr>
+<tr class="memdesc:ga6446d4f61326606b26ecbbe80cd900d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">apply approximated mimimum degree ordering  <a href="group__pre.html#ga6446d4f61326606b26ecbbe80cd900d2">More...</a><br /></td></tr>
+<tr class="separator:ga6446d4f61326606b26ecbbe80cd900d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaafa96d03530626663bb9630c22469fe5"><td class="memTemplParams" colspan="2">template&lt;class CcsType &gt; </td></tr>
+<tr class="memitem:gaafa96d03530626663bb9630c22469fe5"><td class="memTemplItemLeft" align="right" valign="top">CcsType::iparray_type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__pre.html#gaafa96d03530626663bb9630c22469fe5">hif::run_rcm</a> (const CcsType &amp;B, const Options &amp;opt)</td></tr>
+<tr class="memdesc:gaafa96d03530626663bb9630c22469fe5"><td class="mdescLeft">&#160;</td><td class="mdescRight">apply reversed Cuthill-Mckee ordering  <a href="group__pre.html#gaafa96d03530626663bb9630c22469fe5">More...</a><br /></td></tr>
+<tr class="separator:gaafa96d03530626663bb9630c22469fe5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>calling interface for reordering </p>

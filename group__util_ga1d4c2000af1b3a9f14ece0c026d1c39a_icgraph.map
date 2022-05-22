@@ -1,8 +1,8 @@
 <map id="hif::warning" name="hif::warning">
-<area shape="rect" id="node2" href="$classhif_1_1PivotCrout.html#a5665a23b591bd00d81ab140dcad77d8f" title="Apply inverse&#45;based rook pivoting. " alt="" coords="153,5,299,47"/>
+<area shape="rect" id="node2" href="$classhif_1_1PivotCrout.html#a67ee6d3984898a8fac1f38c0f98c2e26" title="Apply inverse&#45;based rook pivoting. " alt="" coords="153,5,299,47"/>
 <area shape="rect" id="node3" href="$group__schur.html#gae05d9b6b56c1908ae358b40cee13d8c1" title="compute the simple version of Schur complement " alt="" coords="159,71,293,112"/>
 <area shape="rect" id="node4" href="$classhif_1_1DenseMatrix.html#a71eaf3d9f7abe73100ec0424dbc42477" title="convert CRS to dense storage " alt="" coords="145,136,307,177"/>
-<area shape="rect" id="node5" href="$classhif_1_1EqlDriver.html#a183b0a9ac884a29c5ed7a37472872fa2" title="hif::EqlDriver::do\l_matching" alt="" coords="166,201,286,243"/>
+<area shape="rect" id="node5" href="$classhif_1_1EqlDriver.html#a3ff8dd55131f524b6fd3cbae5e6c2ce1" title="hif::EqlDriver::do\l_matching" alt="" coords="166,201,286,243"/>
 <area shape="rect" id="node6" href="$classhif_1_1LUP.html#a8c2bef9ad4a5bcef602fdcd682c66683" title="perform LU with partial pivoting " alt="" coords="162,267,290,294"/>
 <area shape="rect" id="node8" href="$classhif_1_1QRCP.html#ab64b58713b71d8caf7ec40fca79e679c" title="compute decomposition and determine the rank " alt="" coords="155,318,297,345"/>
 <area shape="rect" id="node10" href="$classhif_1_1SYEIG.html#a5f27002474d910771813274d8641d995" title="compute decomposition and determine the rank " alt="" coords="155,369,297,395"/>
@@ -10,9 +10,8 @@
 <area shape="rect" id="node13" href="$namespacehif_1_1mt.html#gaa8b6008ea09e61dfcdc09dce6b69cd00" title="matrix vector in parallel with openmp for multiple RHS for CCS " alt="" coords="152,471,300,512"/>
 <area shape="rect" id="node14" href="$namespacehif_1_1mt.html#gac2db8118a4a4e6a3fcdf21dee642adba" title="CCS API compatibility. " alt="" coords="161,537,291,563"/>
 <area shape="rect" id="node15" href="$namespacehif_1_1mt.html#ga78dfa012ecdf12af74a8ed3b923a5162" title="CCS API compatibility. " alt="" coords="147,587,305,614"/>
-<area shape="rect" id="node16" href="$namespacehif.html#ga55c28a7fae18f4d32e9b5ead78e6c9b7" title="read data from file to a CRS matrix " alt="" coords="179,638,273,665"/>
-<area shape="rect" id="node17" href="$group__ds.html#ga6c44405ec0c5564a7c6e8e2878010b15" title="wrap user data for CCS " alt="" coords="157,689,295,715"/>
-<area shape="rect" id="node18" href="$group__ds.html#ga084b922d1d56f5cd2132954a939808ce" title="wrap user data for CRS " alt="" coords="158,739,294,766"/>
+<area shape="rect" id="node16" href="$group__ds.html#ga1f1859631e8afbd4acb916097204656b" title="wrap user data for CCS " alt="" coords="157,638,295,665"/>
+<area shape="rect" id="node17" href="$group__ds.html#ga4ad1d37b1fae3075020ab2504ed8ffca" title="wrap user data for CRS " alt="" coords="158,689,294,715"/>
 <area shape="rect" id="node7" href="$classhif_1_1LUP.html#ad0da1e4ba9448e3c979af601d6301d83" title="refactorize the dense block " alt="" coords="365,267,504,294"/>
 <area shape="rect" id="node9" href="$classhif_1_1QRCP.html#ae1b9e2dae080e8bf71d8c3f4fb1f8bc2" title="refactorize the dense block " alt="" coords="359,318,511,345"/>
 <area shape="rect" id="node11" href="$classhif_1_1SYEIG.html#a97b686caf3b3e5340172f4539e445084" title="refactorize the dense block " alt="" coords="357,369,512,395"/>

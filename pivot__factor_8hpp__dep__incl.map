@@ -1,5 +1,6 @@
 <map id="pivot_factor.hpp" name="pivot_factor.hpp">
-<area shape="rect" id="node2" href="$builder_8hpp.html" title="Top level user class for building HIF preconditioner. " alt="" coords="20,80,105,107"/>
-<area shape="rect" id="node3" href="$hifir_8hpp.html" title="top&#45;level user interface " alt="" coords="29,155,97,181"/>
-<area shape="rect" id="node4" href="$demo__utils_8hpp.html" title="demo_utils.hpp" alt="" coords="7,229,118,256"/>
+<area shape="rect" id="node2" href="$builder_8hpp.html" title="Top level user class for building HIF preconditioner. " alt="" coords="63,80,149,107"/>
+<area shape="rect" id="node3" href="$hifir_8hpp.html" title="top&#45;level user interface " alt="" coords="72,155,140,181"/>
+<area shape="rect" id="node4" href="$libhifir_8cpp.html" title="C++ implementation of libhifir. " alt="" coords="5,229,87,256"/>
+<area shape="rect" id="node5" href="$demo__utils_8hpp.html" title="demo_utils.hpp" alt="" coords="111,229,221,256"/>
 </map>

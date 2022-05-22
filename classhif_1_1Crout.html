@@ -32,7 +32,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">HIFIR
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -143,30 +143,30 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a1b22f1f1e2c8025abe84d35c71fa622b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#a1b22f1f1e2c8025abe84d35c71fa622b">assign_gap_array</a> (const ArrayIn &amp;r, ArrayOut &amp;l) const</td></tr>
 <tr class="memdesc:a1b22f1f1e2c8025abe84d35c71fa622b"><td class="mdescLeft">&#160;</td><td class="mdescRight">compress an array and assign the no-gapped value to another one  <a href="#a1b22f1f1e2c8025abe84d35c71fa622b">More...</a><br /></td></tr>
 <tr class="separator:a1b22f1f1e2c8025abe84d35c71fa622b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6160f724500f49f900f4b12014c3bc22"><td class="memTemplParams" colspan="2">template&lt;class ScaleArray , class CrsType , class PermType , class PosArray , class DiagType , class CcsType , class SpVecType &gt; </td></tr>
-<tr class="memitem:a6160f724500f49f900f4b12014c3bc22"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#a6160f724500f49f900f4b12014c3bc22">compute_ut</a> (const ScaleArray &amp;s, const CrsType &amp;crs_A, const ScaleArray &amp;t, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> pk, const PermType &amp;q, const CcsType &amp;L, const PosArray &amp;L_start, const PosArray &amp;L_list, const DiagType &amp;d, const CrsType &amp;U, const PosArray &amp;U_start, SpVecType &amp;ut) const</td></tr>
-<tr class="memdesc:a6160f724500f49f900f4b12014c3bc22"><td class="mdescLeft">&#160;</td><td class="mdescRight">dual of the <a class="el" href="classhif_1_1Crout.html#a11611d8b989bd1c21d7836c00e55037b">compute_l</a>, i.e. computing the row of U  <a href="#a6160f724500f49f900f4b12014c3bc22">More...</a><br /></td></tr>
-<tr class="separator:a6160f724500f49f900f4b12014c3bc22"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a11611d8b989bd1c21d7836c00e55037b"><td class="memTemplParams" colspan="2">template&lt;bool IsSymm, class ScaleArray , class CcsType , class PermType , class PosArray , class DiagType , class CrsType , class SpVecType &gt; </td></tr>
-<tr class="memitem:a11611d8b989bd1c21d7836c00e55037b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#a11611d8b989bd1c21d7836c00e55037b">compute_l</a> (const ScaleArray &amp;s, const CcsType &amp;ccs_A, const ScaleArray &amp;t, const PermType &amp;p, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> qk, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> m, const CcsType &amp;L, const PosArray &amp;L_start, const DiagType &amp;d, const CrsType &amp;U, const PosArray &amp;U_start, const PosArray &amp;U_list, SpVecType &amp;l) const</td></tr>
-<tr class="memdesc:a11611d8b989bd1c21d7836c00e55037b"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the column vector of L of current step  <a href="#a11611d8b989bd1c21d7836c00e55037b">More...</a><br /></td></tr>
-<tr class="separator:a11611d8b989bd1c21d7836c00e55037b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7e7124b69c3f78edc6996c8674ff780e"><td class="memTemplParams" colspan="2">template&lt;class ScaleArray , class CcsType , class PermType , class PosArray , class DiagType , class SpVecType &gt; </td></tr>
-<tr class="memitem:a7e7124b69c3f78edc6996c8674ff780e"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#a7e7124b69c3f78edc6996c8674ff780e">compute_symm</a> (const ScaleArray &amp;s, const CcsType &amp;ccs_A, const ScaleArray &amp;t, const PermType &amp;p, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> qk, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> m, const CcsType &amp;L, const PosArray &amp;L_start, const PosArray &amp;L_list, const DiagType &amp;d, SpVecType &amp;l) const</td></tr>
-<tr class="memdesc:a7e7124b69c3f78edc6996c8674ff780e"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the column vector of L of current step for <img class="formulaInl" alt="$LDL^{T}$" src="form_12.png"/>  <a href="#a7e7124b69c3f78edc6996c8674ff780e">More...</a><br /></td></tr>
-<tr class="separator:a7e7124b69c3f78edc6996c8674ff780e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a58fe5439dac781d451a848728b3bd8dd"><td class="memTemplParams" colspan="2">template&lt;class CsType , class PosArray &gt; </td></tr>
-<tr class="memitem:a58fe5439dac781d451a848728b3bd8dd"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#a58fe5439dac781d451a848728b3bd8dd">update_compress</a> (CsType &amp;T, PosArray &amp;list, PosArray &amp;start) const</td></tr>
-<tr class="memdesc:a58fe5439dac781d451a848728b3bd8dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">compress L and U and update their corresponding starting positions and linked lists  <a href="#a58fe5439dac781d451a848728b3bd8dd">More...</a><br /></td></tr>
-<tr class="separator:a58fe5439dac781d451a848728b3bd8dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4638e17d4ded44ef0cd4150446e7015b"><td class="memTemplParams" colspan="2">template&lt;class CcsType , class PosArray &gt; </td></tr>
-<tr class="memitem:a4638e17d4ded44ef0cd4150446e7015b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#a4638e17d4ded44ef0cd4150446e7015b">symm_update_lstart</a> (const CcsType &amp;L, const typename CcsType::size_type m, PosArray &amp;L_start) const</td></tr>
-<tr class="memdesc:a4638e17d4ded44ef0cd4150446e7015b"><td class="mdescLeft">&#160;</td><td class="mdescRight">another starting array needed in symmetric computation to get the offsets  <a href="#a4638e17d4ded44ef0cd4150446e7015b">More...</a><br /></td></tr>
-<tr class="separator:a4638e17d4ded44ef0cd4150446e7015b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a08c98476a04ffc426d052151f68b9f9e"><td class="memTemplParams" colspan="2">template&lt;class CsType , class PosArray , class KappaArray &gt; </td></tr>
-<tr class="memitem:a08c98476a04ffc426d052151f68b9f9e"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#a08c98476a04ffc426d052151f68b9f9e">update_kappa</a> (const CsType &amp;T, const PosArray &amp;list, const PosArray &amp;start, KappaArray &amp;kappa) const</td></tr>
-<tr class="memdesc:a08c98476a04ffc426d052151f68b9f9e"><td class="mdescLeft">&#160;</td><td class="mdescRight">estimate the inverse norm  <a href="#a08c98476a04ffc426d052151f68b9f9e">More...</a><br /></td></tr>
-<tr class="separator:a08c98476a04ffc426d052151f68b9f9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6859cbf1c747aaac7e6cbb38c33fe08"><td class="memTemplParams" colspan="2">template&lt;class ScaleArray , class CrsType , class PermType , class ListArray , class IndPtrArray , class DiagType , class CcsType , class SpVecType &gt; </td></tr>
+<tr class="memitem:ab6859cbf1c747aaac7e6cbb38c33fe08"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#ab6859cbf1c747aaac7e6cbb38c33fe08">compute_ut</a> (const ScaleArray &amp;s, const CrsType &amp;crs_A, const ScaleArray &amp;t, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> pk, const PermType &amp;q, const CcsType &amp;L, const IndPtrArray &amp;L_start, const ListArray &amp;L_list, const DiagType &amp;d, const CrsType &amp;U, const IndPtrArray &amp;U_start, SpVecType &amp;ut) const</td></tr>
+<tr class="memdesc:ab6859cbf1c747aaac7e6cbb38c33fe08"><td class="mdescLeft">&#160;</td><td class="mdescRight">dual of the <a class="el" href="classhif_1_1Crout.html#acd828247defa0e394b12d62811930216">compute_l</a>, i.e. computing the row of U  <a href="#ab6859cbf1c747aaac7e6cbb38c33fe08">More...</a><br /></td></tr>
+<tr class="separator:ab6859cbf1c747aaac7e6cbb38c33fe08"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acd828247defa0e394b12d62811930216"><td class="memTemplParams" colspan="2">template&lt;bool IsSymm, class ScaleArray , class CcsType , class PermType , class ListArray , class IndPtrArray , class DiagType , class CrsType , class SpVecType &gt; </td></tr>
+<tr class="memitem:acd828247defa0e394b12d62811930216"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#acd828247defa0e394b12d62811930216">compute_l</a> (const ScaleArray &amp;s, const CcsType &amp;ccs_A, const ScaleArray &amp;t, const PermType &amp;p, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> qk, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> m, const CcsType &amp;L, const IndPtrArray &amp;L_start, const DiagType &amp;d, const CrsType &amp;U, const IndPtrArray &amp;U_start, const ListArray &amp;U_list, SpVecType &amp;l) const</td></tr>
+<tr class="memdesc:acd828247defa0e394b12d62811930216"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the column vector of L of current step  <a href="#acd828247defa0e394b12d62811930216">More...</a><br /></td></tr>
+<tr class="separator:acd828247defa0e394b12d62811930216"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab428dc148a9fb48819d8ba9f104b555e"><td class="memTemplParams" colspan="2">template&lt;class ScaleArray , class CcsType , class PermType , class ListArray , class IndPtrArray , class DiagType , class SpVecType &gt; </td></tr>
+<tr class="memitem:ab428dc148a9fb48819d8ba9f104b555e"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#ab428dc148a9fb48819d8ba9f104b555e">compute_symm</a> (const ScaleArray &amp;s, const CcsType &amp;ccs_A, const ScaleArray &amp;t, const PermType &amp;p, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> qk, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> m, const CcsType &amp;L, const IndPtrArray &amp;L_start, const ListArray &amp;L_list, const DiagType &amp;d, SpVecType &amp;l) const</td></tr>
+<tr class="memdesc:ab428dc148a9fb48819d8ba9f104b555e"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the column vector of L of current step for <img class="formulaInl" alt="$LDL^{T}$" src="form_12.png"/>  <a href="#ab428dc148a9fb48819d8ba9f104b555e">More...</a><br /></td></tr>
+<tr class="separator:ab428dc148a9fb48819d8ba9f104b555e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51bbf7c0a0a4c8ee89ef806e30c2bb96"><td class="memTemplParams" colspan="2">template&lt;class CsType , class ListArray , class IndPtrArray &gt; </td></tr>
+<tr class="memitem:a51bbf7c0a0a4c8ee89ef806e30c2bb96"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#a51bbf7c0a0a4c8ee89ef806e30c2bb96">update_compress</a> (CsType &amp;T, ListArray &amp;list, IndPtrArray &amp;start) const</td></tr>
+<tr class="memdesc:a51bbf7c0a0a4c8ee89ef806e30c2bb96"><td class="mdescLeft">&#160;</td><td class="mdescRight">compress L and U and update their corresponding starting positions and linked lists  <a href="#a51bbf7c0a0a4c8ee89ef806e30c2bb96">More...</a><br /></td></tr>
+<tr class="separator:a51bbf7c0a0a4c8ee89ef806e30c2bb96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a984d77596bff9eaabb639ce79ebf1782"><td class="memTemplParams" colspan="2">template&lt;class CcsType , class IndPtrArray &gt; </td></tr>
+<tr class="memitem:a984d77596bff9eaabb639ce79ebf1782"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#a984d77596bff9eaabb639ce79ebf1782">symm_update_lstart</a> (const CcsType &amp;L, const typename CcsType::size_type m, IndPtrArray &amp;L_start) const</td></tr>
+<tr class="memdesc:a984d77596bff9eaabb639ce79ebf1782"><td class="mdescLeft">&#160;</td><td class="mdescRight">another starting array needed in symmetric computation to get the offsets  <a href="#a984d77596bff9eaabb639ce79ebf1782">More...</a><br /></td></tr>
+<tr class="separator:a984d77596bff9eaabb639ce79ebf1782"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a27f96d50a47d0d0dd817c3ff2b27d90f"><td class="memTemplParams" colspan="2">template&lt;class CsType , class ListArray , class IndPtrArray , class KappaArray &gt; </td></tr>
+<tr class="memitem:a27f96d50a47d0d0dd817c3ff2b27d90f"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#a27f96d50a47d0d0dd817c3ff2b27d90f">update_kappa</a> (const CsType &amp;T, const ListArray &amp;list, const IndPtrArray &amp;start, KappaArray &amp;kappa) const</td></tr>
+<tr class="memdesc:a27f96d50a47d0d0dd817c3ff2b27d90f"><td class="mdescLeft">&#160;</td><td class="mdescRight">estimate the inverse norm  <a href="#a27f96d50a47d0d0dd817c3ff2b27d90f">More...</a><br /></td></tr>
+<tr class="separator:a27f96d50a47d0d0dd817c3ff2b27d90f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab041ed49a6b640ea60e17d52ee8bb88f"><td class="memTemplParams" colspan="2">template&lt;bool IsSymm, class SpVecType , class DiagType &gt; </td></tr>
 <tr class="memitem:ab041ed49a6b640ea60e17d52ee8bb88f"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt;!IsSymm &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#ab041ed49a6b640ea60e17d52ee8bb88f">update_diag</a> (const SpVecType &amp;l, const SpVecType &amp;ut, const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> m, DiagType &amp;d) const</td></tr>
 <tr class="memdesc:ab041ed49a6b640ea60e17d52ee8bb88f"><td class="mdescLeft">&#160;</td><td class="mdescRight">update the current diagonal entry  <a href="#ab041ed49a6b640ea60e17d52ee8bb88f">More...</a><br /></td></tr>
@@ -179,14 +179,14 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a6fb95f423981075e44d17fe3547f8ae8"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classhif_1_1Crout.html#a6fb95f423981075e44d17fe3547f8ae8">scale_inv_diag</a> (const DiagType &amp;d, SpVecType &amp;v) const</td></tr>
 <tr class="memdesc:a6fb95f423981075e44d17fe3547f8ae8"><td class="mdescLeft">&#160;</td><td class="mdescRight">scale the computed row/column vectors by current diagonal inverse  <a href="#a6fb95f423981075e44d17fe3547f8ae8">More...</a><br /></td></tr>
 <tr class="separator:a6fb95f423981075e44d17fe3547f8ae8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaefa97e5aac490e4a8716e9953afa510b"><td class="memTemplParams" colspan="2">template&lt;class CsType , class PosArray &gt; </td></tr>
-<tr class="memitem:gaefa97e5aac490e4a8716e9953afa510b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__defer.html#gaefa97e5aac490e4a8716e9953afa510b">defer_entry</a> (const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> to_idx, const PosArray &amp;start, CsType &amp;T, PosArray &amp;list) const</td></tr>
-<tr class="memdesc:gaefa97e5aac490e4a8716e9953afa510b"><td class="mdescLeft">&#160;</td><td class="mdescRight">defer an secondary entry  <a href="group__defer.html#gaefa97e5aac490e4a8716e9953afa510b">More...</a><br /></td></tr>
-<tr class="separator:gaefa97e5aac490e4a8716e9953afa510b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gadfd48df3729864a4391a72084d83025e"><td class="memTemplParams" colspan="2">template&lt;class CcsType , class PosArray &gt; </td></tr>
-<tr class="memitem:gadfd48df3729864a4391a72084d83025e"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__defer.html#gadfd48df3729864a4391a72084d83025e">symm_defer_l</a> (const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> to_idx, const PosArray &amp;L_start, CcsType &amp;L, PosArray &amp;L_list, PosArray &amp;L_offsets) const</td></tr>
-<tr class="memdesc:gadfd48df3729864a4391a72084d83025e"><td class="mdescLeft">&#160;</td><td class="mdescRight">for symmetric leading block, we need to fix the offset positions while we do deferring  <a href="group__defer.html#gadfd48df3729864a4391a72084d83025e">More...</a><br /></td></tr>
-<tr class="separator:gadfd48df3729864a4391a72084d83025e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7b356d55089463baf58948c321b70d03"><td class="memTemplParams" colspan="2">template&lt;class CsType , class IndPtrArray , class ListArray &gt; </td></tr>
+<tr class="memitem:ga7b356d55089463baf58948c321b70d03"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__defer.html#ga7b356d55089463baf58948c321b70d03">defer_entry</a> (const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> to_idx, const IndPtrArray &amp;start, CsType &amp;T, ListArray &amp;list) const</td></tr>
+<tr class="memdesc:ga7b356d55089463baf58948c321b70d03"><td class="mdescLeft">&#160;</td><td class="mdescRight">defer an secondary entry  <a href="group__defer.html#ga7b356d55089463baf58948c321b70d03">More...</a><br /></td></tr>
+<tr class="separator:ga7b356d55089463baf58948c321b70d03"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga35d2c5eed453173334a580cd0fc5ec19"><td class="memTemplParams" colspan="2">template&lt;class CcsType , class IndPtrArray , class ListArray &gt; </td></tr>
+<tr class="memitem:ga35d2c5eed453173334a580cd0fc5ec19"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__defer.html#ga35d2c5eed453173334a580cd0fc5ec19">symm_defer_l</a> (const <a class="el" href="classhif_1_1Crout.html#a89a81b5f9cfd0ad38ce4021f4aaf8a4c">size_type</a> to_idx, const IndPtrArray &amp;L_start, CcsType &amp;L, ListArray &amp;L_list, IndPtrArray &amp;L_offsets) const</td></tr>
+<tr class="memdesc:ga35d2c5eed453173334a580cd0fc5ec19"><td class="mdescLeft">&#160;</td><td class="mdescRight">for symmetric leading block, we need to fix the offset positions while we do deferring  <a href="group__defer.html#ga35d2c5eed453173334a580cd0fc5ec19">More...</a><br /></td></tr>
+<tr class="separator:ga35d2c5eed453173334a580cd0fc5ec19"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -260,7 +260,7 @@ Protected Attributes</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00064">64</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00827">_defers</a>, and <a class="el" href="Crout_8hpp_source.html#l00826">_step</a>.</p>
+<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00833">_defers</a>, and <a class="el" href="Crout_8hpp_source.html#l00832">_step</a>.</p>
 
 </div>
 </div>
@@ -392,9 +392,9 @@ template&lt;bool IsSymm, class ScaleArray , class CcsType , class PermType , cla
 </dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="classhif_1_1Crout.html#a4bc8ef7f02d1c684768678bbcd14f106" title="load a row of A to ut buffer ">_load_arow</a> </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00797">797</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00803">803</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00826">_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">deferred_step()</a>.</p>
+<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00832">_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">deferred_step()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -489,9 +489,9 @@ template&lt;class ScaleArray , class CrsType , class PermType , class SpVecType 
 </dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="classhif_1_1Crout.html#a7795707deb572dc25d6b12f9649db4db" title="load a column of A to l buffer ">_load_acol</a> </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00755">755</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00761">761</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00826">_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">deferred_step()</a>.</p>
+<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00832">_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">deferred_step()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -558,7 +558,7 @@ template&lt;class ArrayIn , class ArrayOut &gt; </div>
 
 <p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00117">117</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00826">_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">deferred_step()</a>.</p>
+<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00832">_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">deferred_step()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -612,7 +612,7 @@ template&lt;class ArrayType &gt; </div>
 
 <p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00106">106</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00826">_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">deferred_step()</a>.</p>
+<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00832">_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">deferred_step()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -624,13 +624,13 @@ Here is the call graph for this function:</div>
 
 </div>
 </div>
-<a id="a11611d8b989bd1c21d7836c00e55037b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a11611d8b989bd1c21d7836c00e55037b">&#9670;&nbsp;</a></span>compute_l()</h2>
+<a id="acd828247defa0e394b12d62811930216"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acd828247defa0e394b12d62811930216">&#9670;&nbsp;</a></span>compute_l()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;bool IsSymm, class ScaleArray , class CcsType , class PermType , class PosArray , class DiagType , class CrsType , class SpVecType &gt; </div>
+template&lt;bool IsSymm, class ScaleArray , class CcsType , class PermType , class ListArray , class IndPtrArray , class DiagType , class CrsType , class SpVecType &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -680,7 +680,7 @@ template&lt;bool IsSymm, class ScaleArray , class CcsType , class PermType , cla
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const PosArray &amp;&#160;</td>
+          <td class="paramtype">const IndPtrArray &amp;&#160;</td>
           <td class="paramname"><em>L_start</em>, </td>
         </tr>
         <tr>
@@ -698,13 +698,13 @@ template&lt;bool IsSymm, class ScaleArray , class CcsType , class PermType , cla
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const PosArray &amp;&#160;</td>
+          <td class="paramtype">const IndPtrArray &amp;&#160;</td>
           <td class="paramname"><em>U_start</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const PosArray &amp;&#160;</td>
+          <td class="paramtype">const ListArray &amp;&#160;</td>
           <td class="paramname"><em>U_list</em>, </td>
         </tr>
         <tr>
@@ -733,7 +733,8 @@ template&lt;bool IsSymm, class ScaleArray , class CcsType , class PermType , cla
     <tr><td class="paramname">ScaleArray</td><td>row/column scaling diagonal matrix type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
     <tr><td class="paramname">CcsType</td><td>ccs format, see <a class="el" href="classhif_1_1CCS.html">CCS</a> </td></tr>
     <tr><td class="paramname">PermType</td><td>permutation matrix type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
-    <tr><td class="paramname">PosArray</td><td>position array type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
+    <tr><td class="paramname">ListArray</td><td>"linked-list" array type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
+    <tr><td class="paramname">IndPtrArray</td><td>index pointer array type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
     <tr><td class="paramname">DiagType</td><td>array used for storing diagonal array, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
     <tr><td class="paramname">CrsType</td><td>crs format, see <a class="el" href="classhif_1_1CRS.html">CRS</a> </td></tr>
     <tr><td class="paramname">SpVecType</td><td>sparse vector for storing l, see <a class="el" href="classhif_1_1SparseVector.html">SparseVector</a> </td></tr>
@@ -749,7 +750,7 @@ template&lt;bool IsSymm, class ScaleArray , class CcsType , class PermType , cla
     <tr><td class="paramdir">[in]</td><td class="paramname">qk</td><td>permutated column index </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>leading block size </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">L</td><td>lower part of decomposition </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">L_start</td><td>position array storing the starting locations of <em>L</em> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">L_start</td><td>"linked-list" array storing the starting locations of <em>L</em> </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">d</td><td>diagonal entries </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">U</td><td>augmented U matrix </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">U_start</td><td>starting positions of U </td></tr>
@@ -758,7 +759,7 @@ template&lt;bool IsSymm, class ScaleArray , class CcsType , class PermType , cla
   </table>
   </dd>
 </dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classhif_1_1Crout.html#a6160f724500f49f900f4b12014c3bc22" title="dual of the compute_l, i.e. computing the row of U ">compute_ut</a></dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classhif_1_1Crout.html#ab6859cbf1c747aaac7e6cbb38c33fe08" title="dual of the compute_l, i.e. computing the row of U ">compute_ut</a></dd></dl>
 <p>This routine computes the current column vector of <img class="formulaInl" alt="$\mathbf{L}$" src="form_2.png"/> (w/o diagonal scaling). Mathematically, this routine is to compute:</p>
 <p class="formulaDsp">
 <img class="formulaDsp" alt="\[ \mathbf{\ell}_{k}= \hat{\mathbf{A}}[\mathbf{p}_{k+1:n},q_{k}]- \mathbf{L}_{k+1:n,1:k-1}\mathbf{D}_{k-1} \mathbf{U}_{1:k-1,k} \]" src="form_7.png"/>
@@ -766,27 +767,27 @@ template&lt;bool IsSymm, class ScaleArray , class CcsType , class PermType , cla
 <p>It's worth noting that, conceptally, the formula above is nothing but a matrix vector operation. However, standard implementation won't give good performance (especially with consideration of cache performance), this is because <img class="formulaInl" alt="$\mathbf{L}$" src="form_2.png"/> is stored in column major whereas row major for <img class="formulaInl" alt="$\mathbf{U}$" src="form_0.png"/>. Therefore, the actual implementation is in the fashion that loops through <img class="formulaInl" alt="$\mathbf{L}$" src="form_2.png"/> in column major while keeping <img class="formulaInl" alt="$\mathbf{U}$" src="form_0.png"/> as much static as possible.</p>
 <p>Regarding the complexity cost, it takes <img class="formulaInl" alt="$\mathcal{O}(\textrm{nnz}(\mathbf{A}_{:,q_k}))$" src="form_8.png"/> to first load the column of A to <img class="formulaInl" alt="$\mathbf{\ell}_k$" src="form_9.png"/>, and takes <img class="formulaInl" alt="$\mathcal{O}(\cup_i \textrm{nnz}(\mathbf{L}_{:,i}))$" src="form_10.png"/>, where <img class="formulaInl" alt="$u_{ik}\neq 0$" src="form_11.png"/> for computing the matrix vector operation. </p>
 
-<p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00269">269</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00271">271</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00827">_defers</a>, <a class="el" href="Crout_8hpp_source.html#l00826">_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">deferred_step()</a>.</p>
+<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00833">_defers</a>, <a class="el" href="Crout_8hpp_source.html#l00832">_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">deferred_step()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="classhif_1_1Crout_a11611d8b989bd1c21d7836c00e55037b_cgraph.png" border="0" usemap="#classhif_1_1Crout_a11611d8b989bd1c21d7836c00e55037b_cgraph" alt=""/></div>
-<map name="classhif_1_1Crout_a11611d8b989bd1c21d7836c00e55037b_cgraph" id="classhif_1_1Crout_a11611d8b989bd1c21d7836c00e55037b_cgraph">
+<div class="center"><img src="classhif_1_1Crout_acd828247defa0e394b12d62811930216_cgraph.png" border="0" usemap="#classhif_1_1Crout_acd828247defa0e394b12d62811930216_cgraph" alt=""/></div>
+<map name="classhif_1_1Crout_acd828247defa0e394b12d62811930216_cgraph" id="classhif_1_1Crout_acd828247defa0e394b12d62811930216_cgraph">
 <area shape="rect" id="node2" href="classhif_1_1Crout.html#a48b806171f0e3b1274f5e77d8fba7e73" title="get the deferred step " alt="" coords="197,5,360,32"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="a7e7124b69c3f78edc6996c8674ff780e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7e7124b69c3f78edc6996c8674ff780e">&#9670;&nbsp;</a></span>compute_symm()</h2>
+<a id="ab428dc148a9fb48819d8ba9f104b555e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab428dc148a9fb48819d8ba9f104b555e">&#9670;&nbsp;</a></span>compute_symm()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class ScaleArray , class CcsType , class PermType , class PosArray , class DiagType , class SpVecType &gt; </div>
+template&lt;class ScaleArray , class CcsType , class PermType , class ListArray , class IndPtrArray , class DiagType , class SpVecType &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -836,13 +837,13 @@ template&lt;class ScaleArray , class CcsType , class PermType , class PosArray ,
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const PosArray &amp;&#160;</td>
+          <td class="paramtype">const IndPtrArray &amp;&#160;</td>
           <td class="paramname"><em>L_start</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const PosArray &amp;&#160;</td>
+          <td class="paramtype">const ListArray &amp;&#160;</td>
           <td class="paramname"><em>L_list</em>, </td>
         </tr>
         <tr>
@@ -876,7 +877,8 @@ template&lt;class ScaleArray , class CcsType , class PermType , class PosArray ,
     <tr><td class="paramname">ScaleArray</td><td>row/column scaling diagonal matrix type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
     <tr><td class="paramname">CcsType</td><td>ccs format, see <a class="el" href="classhif_1_1CCS.html">CCS</a> </td></tr>
     <tr><td class="paramname">PermType</td><td>permutation matrix type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
-    <tr><td class="paramname">PosArray</td><td>position array type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
+    <tr><td class="paramname">ListArray</td><td>"linked-list" array type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
+    <tr><td class="paramname">IndPtrArray</td><td>index pointer array type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
     <tr><td class="paramname">DiagType</td><td>array used for storing diagonal array, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
     <tr><td class="paramname">SpVecType</td><td>sparse vector for storing l, see <a class="el" href="classhif_1_1SparseVector.html">SparseVector</a> </td></tr>
   </table>
@@ -898,33 +900,33 @@ template&lt;class ScaleArray , class CcsType , class PermType , class PosArray ,
   </table>
   </dd>
 </dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classhif_1_1Crout.html#a6160f724500f49f900f4b12014c3bc22" title="dual of the compute_l, i.e. computing the row of U ">compute_ut</a></dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classhif_1_1Crout.html#ab6859cbf1c747aaac7e6cbb38c33fe08" title="dual of the compute_l, i.e. computing the row of U ">compute_ut</a></dd></dl>
 <p>This routine computes the current column vector of <img class="formulaInl" alt="$\mathbf{L}$" src="form_2.png"/> (w/o diagonal scaling). Mathematically, this routine is to compute:</p>
 <p class="formulaDsp">
 <img class="formulaDsp" alt="\[ \mathbf{\ell}_{k}= \hat{\mathbf{A}}[\mathbf{p}_{k+1:n},q_{k}]- \mathbf{L}_{k+1:n,1:k-1}\mathbf{D}_{k-1} \mathbf{L}_{k,1:k-1}^{T} \]" src="form_13.png"/>
 </p>
  
-<p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00356">356</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00359">359</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00826">_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">deferred_step()</a>.</p>
+<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00832">_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">deferred_step()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="classhif_1_1Crout_a7e7124b69c3f78edc6996c8674ff780e_cgraph.png" border="0" usemap="#classhif_1_1Crout_a7e7124b69c3f78edc6996c8674ff780e_cgraph" alt=""/></div>
-<map name="classhif_1_1Crout_a7e7124b69c3f78edc6996c8674ff780e_cgraph" id="classhif_1_1Crout_a7e7124b69c3f78edc6996c8674ff780e_cgraph">
+<div class="center"><img src="classhif_1_1Crout_ab428dc148a9fb48819d8ba9f104b555e_cgraph.png" border="0" usemap="#classhif_1_1Crout_ab428dc148a9fb48819d8ba9f104b555e_cgraph" alt=""/></div>
+<map name="classhif_1_1Crout_ab428dc148a9fb48819d8ba9f104b555e_cgraph" id="classhif_1_1Crout_ab428dc148a9fb48819d8ba9f104b555e_cgraph">
 <area shape="rect" id="node2" href="classhif_1_1Crout.html#a48b806171f0e3b1274f5e77d8fba7e73" title="get the deferred step " alt="" coords="231,5,393,32"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="a6160f724500f49f900f4b12014c3bc22"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6160f724500f49f900f4b12014c3bc22">&#9670;&nbsp;</a></span>compute_ut()</h2>
+<a id="ab6859cbf1c747aaac7e6cbb38c33fe08"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab6859cbf1c747aaac7e6cbb38c33fe08">&#9670;&nbsp;</a></span>compute_ut()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class ScaleArray , class CrsType , class PermType , class PosArray , class DiagType , class CcsType , class SpVecType &gt; </div>
+template&lt;class ScaleArray , class CrsType , class PermType , class ListArray , class IndPtrArray , class DiagType , class CcsType , class SpVecType &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -968,13 +970,13 @@ template&lt;class ScaleArray , class CrsType , class PermType , class PosArray ,
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const PosArray &amp;&#160;</td>
+          <td class="paramtype">const IndPtrArray &amp;&#160;</td>
           <td class="paramname"><em>L_start</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const PosArray &amp;&#160;</td>
+          <td class="paramtype">const ListArray &amp;&#160;</td>
           <td class="paramname"><em>L_list</em>, </td>
         </tr>
         <tr>
@@ -992,7 +994,7 @@ template&lt;class ScaleArray , class CrsType , class PermType , class PosArray ,
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const PosArray &amp;&#160;</td>
+          <td class="paramtype">const IndPtrArray &amp;&#160;</td>
           <td class="paramname"><em>U_start</em>, </td>
         </tr>
         <tr>
@@ -1014,13 +1016,14 @@ template&lt;class ScaleArray , class CrsType , class PermType , class PosArray ,
 </table>
 </div><div class="memdoc">
 
-<p>dual of the <a class="el" href="classhif_1_1Crout.html#a11611d8b989bd1c21d7836c00e55037b">compute_l</a>, i.e. computing the row of U </p>
+<p>dual of the <a class="el" href="classhif_1_1Crout.html#acd828247defa0e394b12d62811930216">compute_l</a>, i.e. computing the row of U </p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">ScaleArray</td><td>row scaling diagonal matrix type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
     <tr><td class="paramname">CrsType</td><td>crs format, see <a class="el" href="classhif_1_1CRS.html">CRS</a> </td></tr>
     <tr><td class="paramname">PermType</td><td>permutation matrix type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
-    <tr><td class="paramname">PosArray</td><td>position array type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
+    <tr><td class="paramname">ListArray</td><td>"linked-list" array type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
+    <tr><td class="paramname">IndPtrArray</td><td>index pointer array, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
     <tr><td class="paramname">DiagType</td><td>diagonal matrix type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
     <tr><td class="paramname">CcsType</td><td>ccs format, see <a class="el" href="classhif_1_1CCS.html">CCS</a> </td></tr>
     <tr><td class="paramname">SpVecType</td><td>work array for current row vector, see <a class="el" href="classhif_1_1SparseVector.html">SparseVector</a> </td></tr>
@@ -1044,7 +1047,7 @@ template&lt;class ScaleArray , class CrsType , class PermType , class PosArray ,
   </table>
   </dd>
 </dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="classhif_1_1Crout.html#a11611d8b989bd1c21d7836c00e55037b" title="compute the column vector of L of current step ">compute_l</a></dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classhif_1_1Crout.html#acd828247defa0e394b12d62811930216" title="compute the column vector of L of current step ">compute_l</a></dd></dl>
 <p>This routine computes the current row vector of <img class="formulaInl" alt="$\mathbf{U}$" src="form_0.png"/> (w/o diagonal scaling). Mathematically, this routine is to compute:</p>
 <p class="formulaDsp">
 <img class="formulaDsp" alt="\[ \mathbf{u}_{k}^{T}= \hat{\mathbf{A}}[p_{k},\mathbf{q}_{k+1:n}]- \mathbf{L}_{k,1:k-1}\mathbf{D}_{k-1} \mathbf{U}_{1:k-1,k+1:n} \]" src="form_1.png"/>
@@ -1052,14 +1055,14 @@ template&lt;class ScaleArray , class CrsType , class PermType , class PosArray ,
 <p>It's worth noting that, conceptally, the formula above is nothing but a vector matrix operation. However, standard implementation won't give good performance (especially with consideration of cache performance), this is because <img class="formulaInl" alt="$\mathbf{L}$" src="form_2.png"/> is stored in column major whereas row major for <img class="formulaInl" alt="$\mathbf{U}$" src="form_0.png"/>. Therefore, the actual implementation is in the fashion that loops through <img class="formulaInl" alt="$\mathbf{U}$" src="form_0.png"/> in row major while keeping <img class="formulaInl" alt="$\mathbf{L}$" src="form_2.png"/> as much static as possible.</p>
 <p>Regarding the complexity cost, it takes <img class="formulaInl" alt="$\mathcal{O}(\textrm{nnz}(\mathbf{A}_{p_k,:}))$" src="form_3.png"/> to first load the row of A to <img class="formulaInl" alt="$\mathbf{u}_k^T$" src="form_4.png"/>, and takes <img class="formulaInl" alt="$\mathcal{O}(\cup_j \textrm{nnz}(\mathbf{U}_{j,:}))$" src="form_5.png"/>, where <img class="formulaInl" alt="$l_{kj}\neq 0$" src="form_6.png"/> for computing the vector matrix operation. </p>
 
-<p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00168">168</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00169">169</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00826">_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">deferred_step()</a>.</p>
+<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00832">_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">deferred_step()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="classhif_1_1Crout_a6160f724500f49f900f4b12014c3bc22_cgraph.png" border="0" usemap="#classhif_1_1Crout_a6160f724500f49f900f4b12014c3bc22_cgraph" alt=""/></div>
-<map name="classhif_1_1Crout_a6160f724500f49f900f4b12014c3bc22_cgraph" id="classhif_1_1Crout_a6160f724500f49f900f4b12014c3bc22_cgraph">
+<div class="center"><img src="classhif_1_1Crout_ab6859cbf1c747aaac7e6cbb38c33fe08_cgraph.png" border="0" usemap="#classhif_1_1Crout_ab6859cbf1c747aaac7e6cbb38c33fe08_cgraph" alt=""/></div>
+<map name="classhif_1_1Crout_ab6859cbf1c747aaac7e6cbb38c33fe08_cgraph" id="classhif_1_1Crout_ab6859cbf1c747aaac7e6cbb38c33fe08_cgraph">
 <area shape="rect" id="node2" href="classhif_1_1Crout.html#a48b806171f0e3b1274f5e77d8fba7e73" title="get the deferred step " alt="" coords="205,5,368,32"/>
 </map>
 </div>
@@ -1093,9 +1096,9 @@ Here is the call graph for this function:</div>
 
 <p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00097">97</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00827">_defers</a>, and <a class="el" href="Crout_8hpp_source.html#l00826">_step</a>.</p>
+<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00833">_defers</a>, and <a class="el" href="Crout_8hpp_source.html#l00832">_step</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="Crout_8hpp_source.html#l00797">_load_acol()</a>, <a class="el" href="Crout_8hpp_source.html#l00755">_load_arow()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00508">hif::PivotCrout::apply_thres_pivot()</a>, <a class="el" href="Crout_8hpp_source.html#l00117">assign_gap_array()</a>, <a class="el" href="Crout_8hpp_source.html#l00106">compress_array()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00093">hif::PivotCrout::compute_dk()</a>, <a class="el" href="Crout_8hpp_source.html#l00269">compute_l()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00295">hif::PivotCrout::compute_l()</a>, <a class="el" href="Crout_8hpp_source.html#l00356">compute_symm()</a>, <a class="el" href="Crout_8hpp_source.html#l00168">compute_ut()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00193">hif::PivotCrout::compute_ut()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00433">hif::PivotCrout::defer_entry()</a>, <a class="el" href="Crout_8hpp_source.html#l00676">defer_entry()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00452">hif::PivotCrout::interchange()</a>, <a class="el" href="factor_8hpp_source.html#l00553">hif::level_factorize()</a>, <a class="el" href="pivot__factor_8hpp_source.html#l00065">hif::pivot_level_factorize()</a>, <a class="el" href="Crout_8hpp_source.html#l00715">symm_defer_l()</a>, <a class="el" href="symm__factor_8hpp_source.html#l00126">hif::symm_level_factorize()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00360">hif::PivotCrout::update_compress()</a>, <a class="el" href="Crout_8hpp_source.html#l00425">update_compress()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00392">hif::PivotCrout::update_kappa()</a>, and <a class="el" href="Crout_8hpp_source.html#l00482">update_kappa()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="Crout_8hpp_source.html#l00803">_load_acol()</a>, <a class="el" href="Crout_8hpp_source.html#l00761">_load_arow()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00510">hif::PivotCrout::apply_thres_pivot()</a>, <a class="el" href="Crout_8hpp_source.html#l00117">assign_gap_array()</a>, <a class="el" href="Crout_8hpp_source.html#l00106">compress_array()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00093">hif::PivotCrout::compute_dk()</a>, <a class="el" href="Crout_8hpp_source.html#l00271">compute_l()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00298">hif::PivotCrout::compute_l()</a>, <a class="el" href="Crout_8hpp_source.html#l00359">compute_symm()</a>, <a class="el" href="Crout_8hpp_source.html#l00169">compute_ut()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00195">hif::PivotCrout::compute_ut()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00435">hif::PivotCrout::defer_entry()</a>, <a class="el" href="Crout_8hpp_source.html#l00681">defer_entry()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00454">hif::PivotCrout::interchange()</a>, <a class="el" href="factor_8hpp_source.html#l00553">hif::level_factorize()</a>, <a class="el" href="pivot__factor_8hpp_source.html#l00065">hif::pivot_level_factorize()</a>, <a class="el" href="Crout_8hpp_source.html#l00721">symm_defer_l()</a>, <a class="el" href="symm__factor_8hpp_source.html#l00126">hif::symm_level_factorize()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00362">hif::PivotCrout::update_compress()</a>, <a class="el" href="Crout_8hpp_source.html#l00428">update_compress()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00394">hif::PivotCrout::update_kappa()</a>, and <a class="el" href="Crout_8hpp_source.html#l00486">update_kappa()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -1103,26 +1106,26 @@ Here is the caller graph for this function:</div>
 <map name="classhif_1_1Crout_a48b806171f0e3b1274f5e77d8fba7e73_icgraph" id="classhif_1_1Crout_a48b806171f0e3b1274f5e77d8fba7e73_icgraph">
 <area shape="rect" id="node2" href="classhif_1_1Crout.html#a7795707deb572dc25d6b12f9649db4db" title="load a column of A to l buffer " alt="" coords="235,5,382,32"/>
 <area shape="rect" id="node3" href="classhif_1_1Crout.html#a4bc8ef7f02d1c684768678bbcd14f106" title="load a row of A to ut buffer " alt="" coords="233,56,384,83"/>
-<area shape="rect" id="node4" href="classhif_1_1PivotCrout.html#a5665a23b591bd00d81ab140dcad77d8f" title="Apply inverse&#45;based rook pivoting. " alt="" coords="236,107,381,149"/>
+<area shape="rect" id="node4" href="classhif_1_1PivotCrout.html#a67ee6d3984898a8fac1f38c0f98c2e26" title="Apply inverse&#45;based rook pivoting. " alt="" coords="236,107,381,149"/>
 <area shape="rect" id="node5" href="classhif_1_1Crout.html#a1b22f1f1e2c8025abe84d35c71fa622b" title="compress an array and assign the no&#45;gapped value to another one " alt="" coords="247,173,370,214"/>
 <area shape="rect" id="node6" href="classhif_1_1Crout.html#abce74b5c7033230c21f25a4909ba2001" title="compress an array without deferrals (gaps) " alt="" coords="238,238,379,279"/>
-<area shape="rect" id="node7" href="classhif_1_1PivotCrout.html#a7141fe35e82caf4b175b65bafd3215bd" title="compute diagonal entry " alt="" coords="216,304,401,331"/>
-<area shape="rect" id="node8" href="classhif_1_1Crout.html#a11611d8b989bd1c21d7836c00e55037b" title="compute the column vector of L of current step " alt="" coords="237,355,381,381"/>
-<area shape="rect" id="node9" href="classhif_1_1PivotCrout.html#a6898b665fe8bf7eab93a4f8b1d1b620f" title="compute the column vector of L of current step " alt="" coords="221,405,396,432"/>
-<area shape="rect" id="node10" href="classhif_1_1Crout.html#a7e7124b69c3f78edc6996c8674ff780e" title="compute the column vector of L of current step for &#160;" alt="" coords="220,456,397,483"/>
-<area shape="rect" id="node11" href="classhif_1_1Crout.html#a6160f724500f49f900f4b12014c3bc22" title="dual of the compute_l, i.e. computing the row of U " alt="" coords="233,507,385,533"/>
-<area shape="rect" id="node12" href="classhif_1_1PivotCrout.html#a0501a26e462c5d62fee0e923a17f84d9" title="dual of the compute_l, i.e. computing the row of U " alt="" coords="217,557,400,584"/>
+<area shape="rect" id="node7" href="classhif_1_1PivotCrout.html#a07090b1b1076f6c100df45ec3952226e" title="compute diagonal entry " alt="" coords="216,304,401,331"/>
+<area shape="rect" id="node8" href="classhif_1_1Crout.html#acd828247defa0e394b12d62811930216" title="compute the column vector of L of current step " alt="" coords="237,355,381,381"/>
+<area shape="rect" id="node9" href="classhif_1_1PivotCrout.html#a10f12a87c293233a0acd52ece0a41c4f" title="compute the column vector of L of current step " alt="" coords="221,405,396,432"/>
+<area shape="rect" id="node10" href="classhif_1_1Crout.html#ab428dc148a9fb48819d8ba9f104b555e" title="compute the column vector of L of current step for &#160;" alt="" coords="220,456,397,483"/>
+<area shape="rect" id="node11" href="classhif_1_1Crout.html#ab6859cbf1c747aaac7e6cbb38c33fe08" title="dual of the compute_l, i.e. computing the row of U " alt="" coords="233,507,385,533"/>
+<area shape="rect" id="node12" href="classhif_1_1PivotCrout.html#a82761654d2ad8824de83e7073aa64629" title="dual of the compute_l, i.e. computing the row of U " alt="" coords="217,557,400,584"/>
 <area shape="rect" id="node13" href="group__defer.html#ga3de53a81bcc7cfdc4a70f5fe7cc20743" title="defer an secondary entry, i.e., rows in CCS and columns in CRS " alt="" coords="237,609,380,650"/>
-<area shape="rect" id="node14" href="group__defer.html#gaefa97e5aac490e4a8716e9953afa510b" title="defer an secondary entry " alt="" coords="234,675,383,701"/>
+<area shape="rect" id="node14" href="group__defer.html#ga7b356d55089463baf58948c321b70d03" title="defer an secondary entry " alt="" coords="234,675,383,701"/>
 <area shape="rect" id="node15" href="classhif_1_1PivotCrout.html#a75f24ca9e1bcfa66268de9b280c58536" title="interchagen with pivot for pivoting with Crout LU " alt="" coords="218,725,399,752"/>
 <area shape="rect" id="node16" href="group__fac.html#ga5e85c4efc549f28f913faacc7a901d9b" title="perform partial incomplete LU for a level " alt="" coords="245,776,373,803"/>
 <area shape="rect" id="node17" href="group__fac.html#gacf606dfc70540b8eff78f1e1102e7529" title="perform partial incomplete LU for a level with thresholding pivoting " alt="" coords="227,827,390,853"/>
-<area shape="rect" id="node18" href="group__defer.html#gadfd48df3729864a4391a72084d83025e" title="for symmetric leading block, we need to fix the offset positions while we do deferring ..." alt="" coords="225,877,392,904"/>
+<area shape="rect" id="node18" href="group__defer.html#ga35d2c5eed453173334a580cd0fc5ec19" title="for symmetric leading block, we need to fix the offset positions while we do deferring ..." alt="" coords="225,877,392,904"/>
 <area shape="rect" id="node19" href="group__fac.html#ga7f72580db4c9b6183bafd84427b8c17d" title="perform partial incomplete LU for a level " alt="" coords="223,928,394,955"/>
-<area shape="rect" id="node20" href="classhif_1_1PivotCrout.html#a7ccaa0d77f9bd8559d8192e156e13fc1" title="compress L and U and update their corresponding starting positions " alt="" coords="232,979,385,1021"/>
-<area shape="rect" id="node21" href="classhif_1_1Crout.html#a58fe5439dac781d451a848728b3bd8dd" title="compress L and U and update their corresponding starting positions and linked lists ..." alt="" coords="247,1045,370,1086"/>
+<area shape="rect" id="node20" href="classhif_1_1PivotCrout.html#ae76c701d74e4e9d77f2acf23fcecb6cc" title="compress L and U and update their corresponding starting positions " alt="" coords="232,979,385,1021"/>
+<area shape="rect" id="node21" href="classhif_1_1Crout.html#a51bbf7c0a0a4c8ee89ef806e30c2bb96" title="compress L and U and update their corresponding starting positions and linked lists ..." alt="" coords="247,1045,370,1086"/>
 <area shape="rect" id="node22" href="classhif_1_1PivotCrout.html#a0a5d451bf8f68a3d76805b7b291511ca" title="estimate the inverse norm with augmented ds " alt="" coords="232,1110,385,1151"/>
-<area shape="rect" id="node23" href="classhif_1_1Crout.html#a08c98476a04ffc426d052151f68b9f9e" title="estimate the inverse norm " alt="" coords="247,1175,370,1217"/>
+<area shape="rect" id="node23" href="classhif_1_1Crout.html#a27f96d50a47d0d0dd817c3ff2b27d90f" title="estimate the inverse norm " alt="" coords="247,1175,370,1217"/>
 </map>
 </div>
 
@@ -1155,7 +1158,7 @@ Here is the caller graph for this function:</div>
 
 <p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00094">94</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00827">_defers</a>.</p>
+<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00833">_defers</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="factor_8hpp_source.html#l00553">hif::level_factorize()</a>, <a class="el" href="pivot__factor_8hpp_source.html#l00065">hif::pivot_level_factorize()</a>, and <a class="el" href="symm__factor_8hpp_source.html#l00126">hif::symm_level_factorize()</a>.</p>
 <div class="dynheader">
@@ -1198,7 +1201,7 @@ Here is the caller graph for this function:</div>
 
 <p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00100">100</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00827">_defers</a>.</p>
+<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00833">_defers</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="factor_8hpp_source.html#l00553">hif::level_factorize()</a>, <a class="el" href="pivot__factor_8hpp_source.html#l00065">hif::pivot_level_factorize()</a>, and <a class="el" href="symm__factor_8hpp_source.html#l00126">hif::symm_level_factorize()</a>.</p>
 <div class="dynheader">
@@ -1241,7 +1244,7 @@ Here is the caller graph for this function:</div>
 
 <p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00091">91</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00826">_step</a>.</p>
+<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00832">_step</a>.</p>
 
 </div>
 </div>
@@ -1272,7 +1275,7 @@ Here is the caller graph for this function:</div>
 
 <p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00078">78</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00826">_step</a>.</p>
+<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00832">_step</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="factor_8hpp_source.html#l00553">hif::level_factorize()</a>, <a class="el" href="pivot__factor_8hpp_source.html#l00065">hif::pivot_level_factorize()</a>, and <a class="el" href="symm__factor_8hpp_source.html#l00126">hif::symm_level_factorize()</a>.</p>
 <div class="dynheader">
@@ -1316,7 +1319,7 @@ Here is the caller graph for this function:</div>
 
 <p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00084">84</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00826">_step</a>, and <a class="el" href="classhif_1_1Crout.html#a5dd72ad4d40f88860101746811ce3176">Crout()</a>.</p>
+<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00832">_step</a>, and <a class="el" href="classhif_1_1Crout.html#a5dd72ad4d40f88860101746811ce3176">Crout()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1388,7 +1391,7 @@ Here is the call graph for this function:</div>
 
 <p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00072">72</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00826">_step</a>.</p>
+<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00832">_step</a>.</p>
 
 </div>
 </div>
@@ -1447,19 +1450,19 @@ template&lt;class DiagType , class SpVecType &gt; </div>
 <p>This routine computes <img class="formulaInl" alt="$\mathbf{v}=\mathbf{v}/d_k$" src="form_17.png"/>; firstly, singularity is checked to ensure the validation of computation. Then, we test if it's safe to invert <img class="formulaInl" alt="$d_k$" src="form_18.png"/> so that we can use multiplication instead of division.</p>
 <p>Regarding complexity, this routine takes <img class="formulaInl" alt="$\mathcal{O}(\textrm{nnz}(\mathbf{v}))$" src="form_19.png"/> </p>
 
-<p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00643">643</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00647">647</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00826">_step</a>.</p>
+<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00832">_step</a>.</p>
 
 </div>
 </div>
-<a id="a4638e17d4ded44ef0cd4150446e7015b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4638e17d4ded44ef0cd4150446e7015b">&#9670;&nbsp;</a></span>symm_update_lstart()</h2>
+<a id="a984d77596bff9eaabb639ce79ebf1782"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a984d77596bff9eaabb639ce79ebf1782">&#9670;&nbsp;</a></span>symm_update_lstart()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class CcsType , class PosArray &gt; </div>
+template&lt;class CcsType , class IndPtrArray &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -1479,7 +1482,7 @@ template&lt;class CcsType , class PosArray &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">PosArray &amp;&#160;</td>
+          <td class="paramtype">IndPtrArray &amp;&#160;</td>
           <td class="paramname"><em>L_start</em>&#160;</td>
         </tr>
         <tr>
@@ -1499,7 +1502,7 @@ template&lt;class CcsType , class PosArray &gt; </div>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">CcsType</td><td>ccs type for L, see <a class="el" href="classhif_1_1CCS.html">CCS</a> </td></tr>
-    <tr><td class="paramname">PosArray</td><td>position array, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
+    <tr><td class="paramname">IndPtrArray</td><td>index pointer array, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -1512,19 +1515,19 @@ template&lt;class CcsType , class PosArray &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00464">464</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00467">467</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00826">_step</a>.</p>
+<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00832">_step</a>.</p>
 
 </div>
 </div>
-<a id="a58fe5439dac781d451a848728b3bd8dd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a58fe5439dac781d451a848728b3bd8dd">&#9670;&nbsp;</a></span>update_compress()</h2>
+<a id="a51bbf7c0a0a4c8ee89ef806e30c2bb96"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a51bbf7c0a0a4c8ee89ef806e30c2bb96">&#9670;&nbsp;</a></span>update_compress()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class CsType , class PosArray &gt; </div>
+template&lt;class CsType , class ListArray , class IndPtrArray &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -1538,13 +1541,13 @@ template&lt;class CsType , class PosArray &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">PosArray &amp;&#160;</td>
+          <td class="paramtype">ListArray &amp;&#160;</td>
           <td class="paramname"><em>list</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">PosArray &amp;&#160;</td>
+          <td class="paramtype">IndPtrArray &amp;&#160;</td>
           <td class="paramname"><em>start</em>&#160;</td>
         </tr>
         <tr>
@@ -1564,7 +1567,8 @@ template&lt;class CsType , class PosArray &gt; </div>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">CsType</td><td>either <a class="el" href="classhif_1_1CRS.html">CRS</a> or <a class="el" href="classhif_1_1CCS.html">CCS</a> </td></tr>
-    <tr><td class="paramname">PosArray</td><td>position array type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
+    <tr><td class="paramname">ListArray</td><td>"linked-list" array type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
+    <tr><td class="paramname">IndPtrArray</td><td>index pointer array, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
   </table>
   </dd>
 </dl>
@@ -1579,14 +1583,14 @@ template&lt;class CsType , class PosArray &gt; </div>
 <p>The overall idea involves the following steps: (1) loop through the current secondary axis to get the primary indices in <em>list</em>, then (2) from these primary indices combining with starting positions, <em>start</em>, to get the index and value arrays position, (3) next step is to compress the index wrt to the current overall deferals, finally (4) advance the starting position and update the linked list accordingly.</p>
 <p>Clearly, all these steps must be done concurrently with in a single loop. </p>
 
-<p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00425">425</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00428">428</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00827">_defers</a>, <a class="el" href="Crout_8hpp_source.html#l00826">_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">deferred_step()</a>.</p>
+<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00833">_defers</a>, <a class="el" href="Crout_8hpp_source.html#l00832">_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">deferred_step()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="classhif_1_1Crout_a58fe5439dac781d451a848728b3bd8dd_cgraph.png" border="0" usemap="#classhif_1_1Crout_a58fe5439dac781d451a848728b3bd8dd_cgraph" alt=""/></div>
-<map name="classhif_1_1Crout_a58fe5439dac781d451a848728b3bd8dd_cgraph" id="classhif_1_1Crout_a58fe5439dac781d451a848728b3bd8dd_cgraph">
+<div class="center"><img src="classhif_1_1Crout_a51bbf7c0a0a4c8ee89ef806e30c2bb96_cgraph.png" border="0" usemap="#classhif_1_1Crout_a51bbf7c0a0a4c8ee89ef806e30c2bb96_cgraph" alt=""/></div>
+<map name="classhif_1_1Crout_a51bbf7c0a0a4c8ee89ef806e30c2bb96_cgraph" id="classhif_1_1Crout_a51bbf7c0a0a4c8ee89ef806e30c2bb96_cgraph">
 <area shape="rect" id="node2" href="classhif_1_1Crout.html#a48b806171f0e3b1274f5e77d8fba7e73" title="get the deferred step " alt="" coords="176,13,339,39"/>
 </map>
 </div>
@@ -1668,9 +1672,9 @@ template&lt;bool IsSymm, class SpVecType , class DiagType &gt; </div>
 <img class="formulaDsp" alt="\[ \mathcal{O}(\min(\textrm{nnz}(\mathbf{\ell}_k), \textrm{nnz}(\mathbf{u}_k))) \]" src="form_15.png"/>
 </p>
  
-<p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00539">539</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00543">543</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00826">_step</a>.</p>
+<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00832">_step</a>.</p>
 
 </div>
 </div>
@@ -1748,19 +1752,19 @@ template&lt;bool IsSymm, class SpVecType , class DiagType &gt; </div>
 <img class="formulaDsp" alt="\[ \mathcal{O}(\textrm{nnz}(\mathbf{u}_k)) \]" src="form_16.png"/>
 </p>
  
-<p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00610">610</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00614">614</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00826">_step</a>.</p>
+<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00832">_step</a>.</p>
 
 </div>
 </div>
-<a id="a08c98476a04ffc426d052151f68b9f9e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a08c98476a04ffc426d052151f68b9f9e">&#9670;&nbsp;</a></span>update_kappa()</h2>
+<a id="a27f96d50a47d0d0dd817c3ff2b27d90f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a27f96d50a47d0d0dd817c3ff2b27d90f">&#9670;&nbsp;</a></span>update_kappa()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;class CsType , class PosArray , class KappaArray &gt; </div>
+template&lt;class CsType , class ListArray , class IndPtrArray , class KappaArray &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -1774,13 +1778,13 @@ template&lt;class CsType , class PosArray , class KappaArray &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const PosArray &amp;&#160;</td>
+          <td class="paramtype">const ListArray &amp;&#160;</td>
           <td class="paramname"><em>list</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const PosArray &amp;&#160;</td>
+          <td class="paramtype">const IndPtrArray &amp;&#160;</td>
           <td class="paramname"><em>start</em>, </td>
         </tr>
         <tr>
@@ -1806,7 +1810,8 @@ template&lt;class CsType , class PosArray , class KappaArray &gt; </div>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">CsType</td><td>either <a class="el" href="classhif_1_1CRS.html">CRS</a> (U) or <a class="el" href="classhif_1_1CCS.html">CCS</a> (L) </td></tr>
-    <tr><td class="paramname">PosArray</td><td>position array type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
+    <tr><td class="paramname">ListArray</td><td>"linked-list" array type, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
+    <tr><td class="paramname">IndPtrArray</td><td>index pointer array </td></tr>
     <tr><td class="paramname">KappaArray</td><td>array type for storing inverse norms, see <a class="el" href="classhif_1_1Array.html">Array</a> </td></tr>
   </table>
   </dd>
@@ -1821,14 +1826,14 @@ template&lt;class CsType , class PosArray , class KappaArray &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00482">482</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00486">486</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
 
-<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00826">_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">deferred_step()</a>.</p>
+<p class="reference">References <a class="el" href="Crout_8hpp_source.html#l00832">_step</a>, and <a class="el" href="Crout_8hpp_source.html#l00097">deferred_step()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="classhif_1_1Crout_a08c98476a04ffc426d052151f68b9f9e_cgraph.png" border="0" usemap="#classhif_1_1Crout_a08c98476a04ffc426d052151f68b9f9e_cgraph" alt=""/></div>
-<map name="classhif_1_1Crout_a08c98476a04ffc426d052151f68b9f9e_cgraph" id="classhif_1_1Crout_a08c98476a04ffc426d052151f68b9f9e_cgraph">
+<div class="center"><img src="classhif_1_1Crout_a27f96d50a47d0d0dd817c3ff2b27d90f_cgraph.png" border="0" usemap="#classhif_1_1Crout_a27f96d50a47d0d0dd817c3ff2b27d90f_cgraph" alt=""/></div>
+<map name="classhif_1_1Crout_a27f96d50a47d0d0dd817c3ff2b27d90f_cgraph" id="classhif_1_1Crout_a27f96d50a47d0d0dd817c3ff2b27d90f_cgraph">
 <area shape="rect" id="node2" href="classhif_1_1Crout.html#a48b806171f0e3b1274f5e77d8fba7e73" title="get the deferred step " alt="" coords="176,13,339,39"/>
 </map>
 </div>
@@ -1858,9 +1863,9 @@ Here is the call graph for this function:</div>
 
 <p>deferring counter </p>
 
-<p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00827">827</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00833">833</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="PivotCrout_8hpp_source.html#l00508">hif::PivotCrout::apply_thres_pivot()</a>, <a class="el" href="Crout_8hpp_source.html#l00269">compute_l()</a>, <a class="el" href="Crout_8hpp_source.html#l00064">Crout()</a>, <a class="el" href="Crout_8hpp_source.html#l00097">deferred_step()</a>, <a class="el" href="Crout_8hpp_source.html#l00094">defers()</a>, <a class="el" href="Crout_8hpp_source.html#l00100">increment_defer_counter()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00360">hif::PivotCrout::update_compress()</a>, and <a class="el" href="Crout_8hpp_source.html#l00425">update_compress()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="PivotCrout_8hpp_source.html#l00510">hif::PivotCrout::apply_thres_pivot()</a>, <a class="el" href="Crout_8hpp_source.html#l00271">compute_l()</a>, <a class="el" href="Crout_8hpp_source.html#l00064">Crout()</a>, <a class="el" href="Crout_8hpp_source.html#l00097">deferred_step()</a>, <a class="el" href="Crout_8hpp_source.html#l00094">defers()</a>, <a class="el" href="Crout_8hpp_source.html#l00100">increment_defer_counter()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00362">hif::PivotCrout::update_compress()</a>, and <a class="el" href="Crout_8hpp_source.html#l00428">update_compress()</a>.</p>
 
 </div>
 </div>
@@ -1886,9 +1891,9 @@ Here is the call graph for this function:</div>
 
 <p>current step </p>
 
-<p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00826">826</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Crout_8hpp_source.html#l00832">832</a> of file <a class="el" href="Crout_8hpp_source.html">Crout.hpp</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="Crout_8hpp_source.html#l00797">_load_acol()</a>, <a class="el" href="Crout_8hpp_source.html#l00755">_load_arow()</a>, <a class="el" href="Crout_8hpp_source.html#l00117">assign_gap_array()</a>, <a class="el" href="Crout_8hpp_source.html#l00106">compress_array()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00093">hif::PivotCrout::compute_dk()</a>, <a class="el" href="Crout_8hpp_source.html#l00269">compute_l()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00295">hif::PivotCrout::compute_l()</a>, <a class="el" href="Crout_8hpp_source.html#l00356">compute_symm()</a>, <a class="el" href="Crout_8hpp_source.html#l00168">compute_ut()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00193">hif::PivotCrout::compute_ut()</a>, <a class="el" href="Crout_8hpp_source.html#l00064">Crout()</a>, <a class="el" href="Crout_8hpp_source.html#l00676">defer_entry()</a>, <a class="el" href="Crout_8hpp_source.html#l00097">deferred_step()</a>, <a class="el" href="Crout_8hpp_source.html#l00091">operator size_type()</a>, <a class="el" href="Crout_8hpp_source.html#l00078">operator++()</a>, <a class="el" href="Crout_8hpp_source.html#l00072">operator=()</a>, <a class="el" href="Crout_8hpp_source.html#l00643">scale_inv_diag()</a>, <a class="el" href="Crout_8hpp_source.html#l00715">symm_defer_l()</a>, <a class="el" href="Crout_8hpp_source.html#l00464">symm_update_lstart()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00360">hif::PivotCrout::update_compress()</a>, <a class="el" href="Crout_8hpp_source.html#l00425">update_compress()</a>, <a class="el" href="Crout_8hpp_source.html#l00539">update_diag()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00392">hif::PivotCrout::update_kappa()</a>, and <a class="el" href="Crout_8hpp_source.html#l00482">update_kappa()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="Crout_8hpp_source.html#l00803">_load_acol()</a>, <a class="el" href="Crout_8hpp_source.html#l00761">_load_arow()</a>, <a class="el" href="Crout_8hpp_source.html#l00117">assign_gap_array()</a>, <a class="el" href="Crout_8hpp_source.html#l00106">compress_array()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00093">hif::PivotCrout::compute_dk()</a>, <a class="el" href="Crout_8hpp_source.html#l00271">compute_l()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00298">hif::PivotCrout::compute_l()</a>, <a class="el" href="Crout_8hpp_source.html#l00359">compute_symm()</a>, <a class="el" href="Crout_8hpp_source.html#l00169">compute_ut()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00195">hif::PivotCrout::compute_ut()</a>, <a class="el" href="Crout_8hpp_source.html#l00064">Crout()</a>, <a class="el" href="Crout_8hpp_source.html#l00681">defer_entry()</a>, <a class="el" href="Crout_8hpp_source.html#l00097">deferred_step()</a>, <a class="el" href="Crout_8hpp_source.html#l00091">operator size_type()</a>, <a class="el" href="Crout_8hpp_source.html#l00078">operator++()</a>, <a class="el" href="Crout_8hpp_source.html#l00072">operator=()</a>, <a class="el" href="Crout_8hpp_source.html#l00647">scale_inv_diag()</a>, <a class="el" href="Crout_8hpp_source.html#l00721">symm_defer_l()</a>, <a class="el" href="Crout_8hpp_source.html#l00467">symm_update_lstart()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00362">hif::PivotCrout::update_compress()</a>, <a class="el" href="Crout_8hpp_source.html#l00428">update_compress()</a>, <a class="el" href="Crout_8hpp_source.html#l00543">update_diag()</a>, <a class="el" href="PivotCrout_8hpp_source.html#l00394">hif::PivotCrout::update_kappa()</a>, and <a class="el" href="Crout_8hpp_source.html#l00486">update_kappa()</a>.</p>
 
 </div>
 </div>

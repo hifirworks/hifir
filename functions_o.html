@@ -32,7 +32,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">HIFIR
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -127,16 +127,14 @@ $(document).ready(function(){initNavTree('functions_o.html','');});
 , <a class="el" href="classhif_1_1AugCCS.html#a144be5955d9454dfac861bfe65926b48">hif::AugCCS&lt; CcsType &gt;</a>
 , <a class="el" href="classhif_1_1AugCRS.html#a657554b72296da31accb49b15420867f">hif::AugCRS&lt; CrsType &gt;</a>
 , <a class="el" href="classhif_1_1BiPermMatrix.html#ab674d835a314b0df100c6d174423b21d">hif::BiPermMatrix&lt; IndexType &gt;</a>
-, <a class="el" href="classhif_1_1CCS.html#a96c761f5b195da9c20fbc10e644a593d">hif::CCS&lt; ValueType, IndexType &gt;</a>
+, <a class="el" href="classhif_1_1CCS.html#a4f6a65edec21a9b3cbb3e9cfa2aa1a03">hif::CCS&lt; ValueType, IndexType, IndPtrType &gt;</a>
 , <a class="el" href="classhif_1_1Crout.html#a5b517a206e7b25fb510cc6565e18706f">hif::Crout</a>
-, <a class="el" href="classhif_1_1CRS.html#ae890817bb4502ea7b8a618ad7afc9c81">hif::CRS&lt; ValueType, IndexType &gt;</a>
+, <a class="el" href="classhif_1_1CRS.html#a6fabae28aa1fde5d14aae19ba4116c67">hif::CRS&lt; ValueType, IndexType, IndPtrType &gt;</a>
 , <a class="el" href="classhif_1_1DenseMatrix.html#a24ff6b2b71ee1464e5b61c39d9ecb39d">hif::DenseMatrix&lt; ValueType &gt;</a>
 , <a class="el" href="classhif_1_1IndexValueArray.html#a95559fa7371d0a4e76d590ae2484fd54">hif::IndexValueArray&lt; ValueType, IndexType &gt;</a>
-, <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a1297f198aef5008a62ff08721b5827c5">hif::internal::AugmentedCore&lt; IndexType &gt;</a>
-, <a class="el" href="classhif_1_1internal_1_1CompressedStorage.html#ab2fb9522dd7e9018871cd2f6628f58da">hif::internal::CompressedStorage&lt; ValueType, IndexType &gt;</a>
+, <a class="el" href="classhif_1_1internal_1_1AugmentedCore.html#a22a0adefe79f40461b32aad1cf538666">hif::internal::AugmentedCore&lt; IndexType, IndPtrType &gt;</a>
+, <a class="el" href="classhif_1_1internal_1_1CompressedStorage.html#a1f6df563f2a53b1786582a218f7836b5">hif::internal::CompressedStorage&lt; ValueType, IndexType, IndPtrType &gt;</a>
 , <a class="el" href="classhif_1_1internal_1_1StrideIterator.html#a8a641798c58e96313386aed4078f2351">hif::internal::StrideIterator&lt; T &gt;</a>
-, <a class="el" href="classhif_1_1IntervalCCS.html#ae72db8335f650eab7c8319a6ce1a16ce">hif::IntervalCCS&lt; ValueType, IndexType, IntervalType &gt;</a>
-, <a class="el" href="classhif_1_1IntervalCRS.html#ad5417a1cc2c325b4ac63e99d7c4a63fa">hif::IntervalCRS&lt; ValueType, IndexType, IntervalType &gt;</a>
 , <a class="el" href="classhif_1_1NspFilter.html#aed6870a90e1a078e764f32984b8f267f">hif::NspFilter</a>
 , <a class="el" href="classhif_1_1PermMatrix.html#a471170ccd33cd89ccfd849cf3b54b924">hif::PermMatrix&lt; IndexType &gt;</a>
 , <a class="el" href="classhif_1_1SparseVector.html#ad48912f47bdfc1ec08429ef248cb3f23">hif::SparseVector&lt; ValueType, IndexType &gt;</a>
@@ -146,10 +144,10 @@ $(document).ready(function(){initNavTree('functions_o.html','');});
 </li>
 <li>operator[]()
 : <a class="el" href="classhif_1_1Array.html#a295a37e5c3a3e427a5f001a1b188004e">hif::Array&lt; T &gt;</a>
-, <a class="el" href="classhif_1_1DenseMatrix.html#a0d12ccaf3e8ae9474fc44f752f46e6fc">hif::DenseMatrix&lt; ValueType &gt;</a>
-, <a class="el" href="classhif_1_1IndexValueArray.html#a10a0d022149c2cc9ed6f000ed2afba89">hif::IndexValueArray&lt; ValueType, IndexType &gt;</a>
+, <a class="el" href="classhif_1_1DenseMatrix.html#a35515cd1ce928aca432cbc7cc56678c8">hif::DenseMatrix&lt; ValueType &gt;</a>
+, <a class="el" href="classhif_1_1IndexValueArray.html#ab9aa0294a5d8d9762eaebe5ae441195f">hif::IndexValueArray&lt; ValueType, IndexType &gt;</a>
 , <a class="el" href="classhif_1_1internal_1_1StrideIterator.html#a8bd311098e86d26cdcd190cc80b50e42">hif::internal::StrideIterator&lt; T &gt;</a>
-, <a class="el" href="classhif_1_1PermMatrix.html#a3d5a60455e750c4d7bddcc8ecf99ae95">hif::PermMatrix&lt; IndexType &gt;</a>
+, <a class="el" href="classhif_1_1PermMatrix.html#aea66ac486224cc021ca8f37bdd9bfdd2">hif::PermMatrix&lt; IndexType &gt;</a>
 </li>
 <li>order()
 : <a class="el" href="classhif_1_1amd_1_1AMD.html#a23b9fb9cec97711fe702b1cacaaf2c22">hif::amd::AMD&lt; Int &gt;</a>
@@ -158,8 +156,8 @@ $(document).ready(function(){initNavTree('functions_o.html','');});
 : <a class="el" href="classhif_1_1Lapack.html#a1ea36a330b10c428e23752a46fdad744">hif::Lapack&lt; ValueType, IntType &gt;</a>
 </li>
 <li>other_type
-: <a class="el" href="classhif_1_1CCS.html#a381d44f68d296c9cbc43ab2b7048b6e8">hif::CCS&lt; ValueType, IndexType &gt;</a>
-, <a class="el" href="classhif_1_1CRS.html#af4a9338f515de8fa708706af30a0ea7b">hif::CRS&lt; ValueType, IndexType &gt;</a>
+: <a class="el" href="classhif_1_1CCS.html#a09aeee8ed2743d2aef503c6b9b8f0ec6">hif::CCS&lt; ValueType, IndexType, IndPtrType &gt;</a>
+, <a class="el" href="classhif_1_1CRS.html#a08cf905afd44e6aa28ca8b653b97953e">hif::CRS&lt; ValueType, IndexType, IndPtrType &gt;</a>
 </li>
 </ul>
 </div><!-- contents -->

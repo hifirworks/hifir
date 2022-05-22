@@ -32,7 +32,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">HIFIR
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -102,30 +102,36 @@ $(document).ready(function(){initNavTree('index.html','');});
 </ul>
 <h2>Citations and Publications </h2>
 <p>If you plan to use HIFIR in solving for nonsingular systems, then please cite the following paper.</p>
-<pre class="fragment">@article{chen2021hilucsi,
+<pre class="fragment">@Article{chen2021hilucsi,
   author  = {Chen, Qiao and Ghai, Aditi and Jiao, Xiangmin},
   title   = {{HILUCSI}: Simple, robust, and fast multilevel {ILU} for
              large-scale saddle-point problems from {PDE}s},
   journal = {Numer. Linear Algebra Appl.},
   year    = {2021},
+  number  = {6},
+  pages   = {e2400},
+  volume  = {28},
   doi     = {10.1002/nla.2400}
 }
 </pre><p>If you plan to use HIFIR in solving singular and ill-conditioned systems, then please cite the following papers.</p>
-<pre class="fragment">@article{jiao2020approximate,
+<pre class="fragment">@Article{jiao2022approximate,
   author  = {Xiangmin Jiao and Qiao Chen},
-  journal = {arXiv},
+  journal = {SIAM J. Matrix Anal. Appl.},
   title   = {Approximate generalized inverses with iterative refinement for
              $\epsilon$-accurate preconditioning of singular systems},
-  year    = {2020},
-  note    = {arXiv:2009.01673}
+  year    = {2022},
+  number  = {1},
+  pages   = {40--67},
+  volume  = {43},
+  doi     = {10.1137/20M1364126}
 }
-</pre><pre class="fragment">@article{chen2021hifir,
+</pre><pre class="fragment">@Article{chen2022hifir,
   author  = {Chen, Qiao and Jiao, Xiangmin},
   title   = {{HIFIR}: Hybrid incomplete factorization with iterative refinement
              for preconditioning ill-conditioned and singular systems},
-  journal = {arXiv},
-  year    = {2021},
-  note    = {arXiv:2106.09877}
+  journal = {ACM Trans. Math. Softw.},
+  year    = {2022},
+  doi     = {10.1145/3536165}
 }
 </pre><h2>Copyrights and Licenses </h2>
 <p>The HIFIR software package is released under a dual-license module. For academic users, individual users, or open-source software developers, you can use HIFIR under the GNU Affero General Public License version 3 (AGPLv3+, see below) free of charge for research and evaluation purpose. For commerical users, separate commerical licenses are available through the Stony Brook University. For inqueries regarding commerical licenses, please contact Prof. Xiangmin Jiao at <a href="#" onclick="location.href='mai'+'lto:'+'xia'+'ng'+'min'+'.j'+'iao'+'@s'+'ton'+'yb'+'roo'+'k.'+'edu'; return false;">xiang<span style="display: none;">.nosp@m.</span>min.<span style="display: none;">.nosp@m.</span>jiao@<span style="display: none;">.nosp@m.</span>ston<span style="display: none;">.nosp@m.</span>ybroo<span style="display: none;">.nosp@m.</span>k.ed<span style="display: none;">.nosp@m.</span>u</a>.</p>

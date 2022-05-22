@@ -15,7 +15,7 @@
 <area shape="rect" id="node17" href="$print_8hpp.html" title="Macros for &quot;stdout&quot; and &quot;stderr&quot; message printers. " alt="" coords="3279,752,3397,779"/>
 <area shape="rect" id="node19" href="$stacktrace_8hpp.html" title="Print stacktrace on error aborting. " alt="" coords="3421,752,3575,779"/>
 <area shape="rect" id="node26" href="$coo2compress_8hpp.html" title="Helper function to convert coordinate to compressed format. " alt="" coords="1553,453,1731,480"/>
-<area shape="rect" id="node27" href="$io_8hpp.html" title="Read and write native IO formats. " alt="" coords="2487,453,2589,480"/>
+<area shape="rect" id="node27" href="$io_8hpp.html" title="Read and write sparse matrices in HIFIR. " alt="" coords="2487,453,2589,480"/>
 <area shape="rect" id="node33" href="$math_8hpp.html" title="Some handy BLAS 1 vector routines. " alt="" coords="2289,528,2411,555"/>
 <area shape="rect" id="node35" href="$mt__mv_8hpp.html" title="Multithreaded matrix&#45;vector product for CRS. " alt="" coords="2177,453,2310,480"/>
 <area shape="rect" id="node34" href="$version_8h.html" title="HIF version header. " alt="" coords="2577,528,2670,555"/>

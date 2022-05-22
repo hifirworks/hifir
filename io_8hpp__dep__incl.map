@@ -1,15 +1,15 @@
 <map id="io.hpp" name="io.hpp">
-<area shape="rect" id="node2" href="$CompressedStorage_8hpp.html" title="Core about CRS and CCS storage formats. " alt="" coords="185,80,351,107"/>
-<area shape="rect" id="node3" href="$factor_8hpp.html" title="Kernels for deferred factorization. " alt="" coords="265,379,345,405"/>
-<area shape="rect" id="node9" href="$IterRefine_8hpp.html" title="Iterative refinement for using with HIF. " alt="" coords="5,304,109,331"/>
-<area shape="rect" id="node10" href="$Prec_8hpp.html" title="Multilevel preconditioner interface. " alt="" coords="424,229,499,256"/>
-<area shape="rect" id="node11" href="$IntervalCompressedStorage_8hpp.html" title="Interval&#45;based compressed storages. " alt="" coords="357,155,566,181"/>
-<area shape="rect" id="node12" href="$driver_8hpp.html" title="Top&#45;level driver routine to handle preprocessing. " alt="" coords="202,304,281,331"/>
-<area shape="rect" id="node13" href="$EqlDriver_8hpp.html" title="Equilibrator driver interface. " alt="" coords="129,155,231,181"/>
-<area shape="rect" id="node14" href="$matching__scaling_8hpp.html" title="calling interface for matching and scaling " alt="" coords="82,229,230,256"/>
-<area shape="rect" id="node4" href="$pivot__factor_8hpp.html" title="Kernels for deferred factorization with thresholding pivoting. " alt="" coords="248,453,363,480"/>
-<area shape="rect" id="node5" href="$builder_8hpp.html" title="Top level user class for building HIF preconditioner. " alt="" coords="263,528,348,555"/>
-<area shape="rect" id="node8" href="$symm__factor_8hpp.html" title="Kernels for deferred incomplete LDL&#39; factorization. " alt="" coords="101,453,224,480"/>
-<area shape="rect" id="node6" href="$hifir_8hpp.html" title="top&#45;level user interface " alt="" coords="271,603,339,629"/>
-<area shape="rect" id="node7" href="$demo__utils_8hpp.html" title="demo_utils.hpp" alt="" coords="250,677,361,704"/>
+<area shape="rect" id="node2" href="$CompressedStorage_8hpp.html" title="Core about CRS and CCS storage formats. " alt="" coords="193,80,359,107"/>
+<area shape="rect" id="node3" href="$factor_8hpp.html" title="Kernels for deferred factorization. " alt="" coords="235,379,315,405"/>
+<area shape="rect" id="node10" href="$IterRefine_8hpp.html" title="Iterative refinement for using with HIF. " alt="" coords="5,229,109,256"/>
+<area shape="rect" id="node11" href="$Prec_8hpp.html" title="Multilevel preconditioner interface. " alt="" coords="408,304,483,331"/>
+<area shape="rect" id="node12" href="$driver_8hpp.html" title="Top&#45;level driver routine to handle preprocessing. " alt="" coords="235,304,314,331"/>
+<area shape="rect" id="node13" href="$EqlDriver_8hpp.html" title="Equilibrator driver interface. " alt="" coords="181,155,283,181"/>
+<area shape="rect" id="node14" href="$matching__scaling_8hpp.html" title="calling interface for matching and scaling " alt="" coords="134,229,282,256"/>
+<area shape="rect" id="node4" href="$builder_8hpp.html" title="Top level user class for building HIF preconditioner. " alt="" coords="213,528,299,555"/>
+<area shape="rect" id="node8" href="$pivot__factor_8hpp.html" title="Kernels for deferred factorization with thresholding pivoting. " alt="" coords="293,453,408,480"/>
+<area shape="rect" id="node9" href="$symm__factor_8hpp.html" title="Kernels for deferred incomplete LDL&#39; factorization. " alt="" coords="96,453,219,480"/>
+<area shape="rect" id="node5" href="$hifir_8hpp.html" title="top&#45;level user interface " alt="" coords="222,603,290,629"/>
+<area shape="rect" id="node6" href="$libhifir_8cpp.html" title="C++ implementation of libhifir. " alt="" coords="155,677,237,704"/>
+<area shape="rect" id="node7" href="$demo__utils_8hpp.html" title="demo_utils.hpp" alt="" coords="261,677,371,704"/>
 </map>

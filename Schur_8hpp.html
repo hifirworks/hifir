@@ -32,7 +32,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">HIFIR
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -121,12 +121,13 @@ This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
 <div class="center"><img src="Schur_8hpp__dep__incl.png" border="0" usemap="#Schur_8hppdep" alt=""/></div>
 <map name="Schur_8hppdep" id="Schur_8hppdep">
-<area shape="rect" id="node2" href="factor_8hpp.html" title="Kernels for deferred factorization. " alt="" coords="117,80,197,107"/>
-<area shape="rect" id="node3" href="pivot__factor_8hpp.html" title="Kernels for deferred factorization with thresholding pivoting. " alt="" coords="5,155,120,181"/>
-<area shape="rect" id="node4" href="builder_8hpp.html" title="Top level user class for building HIF preconditioner. " alt="" coords="115,229,200,256"/>
-<area shape="rect" id="node7" href="symm__factor_8hpp.html" title="Kernels for deferred incomplete LDL&#39; factorization. " alt="" coords="195,155,317,181"/>
-<area shape="rect" id="node5" href="hifir_8hpp.html" title="top&#45;level user interface " alt="" coords="123,304,191,331"/>
-<area shape="rect" id="node6" href="demo__utils_8hpp.html" title="demo_utils.hpp" alt="" coords="102,379,213,405"/>
+<area shape="rect" id="node2" href="factor_8hpp.html" title="Kernels for deferred factorization. " alt="" coords="66,80,146,107"/>
+<area shape="rect" id="node3" href="builder_8hpp.html" title="Top level user class for building HIF preconditioner. " alt="" coords="63,229,149,256"/>
+<area shape="rect" id="node7" href="pivot__factor_8hpp.html" title="Kernels for deferred factorization with thresholding pivoting. " alt="" coords="49,155,163,181"/>
+<area shape="rect" id="node8" href="symm__factor_8hpp.html" title="Kernels for deferred incomplete LDL&#39; factorization. " alt="" coords="187,155,310,181"/>
+<area shape="rect" id="node4" href="hifir_8hpp.html" title="top&#45;level user interface " alt="" coords="72,304,140,331"/>
+<area shape="rect" id="node5" href="libhifir_8cpp.html" title="C++ implementation of libhifir. " alt="" coords="5,379,87,405"/>
+<area shape="rect" id="node6" href="demo__utils_8hpp.html" title="demo_utils.hpp" alt="" coords="111,379,221,405"/>
 </map>
 </div>
 </div>
@@ -143,18 +144,18 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ga1b4d986d5ca5ac896c2d796fb354a909"><td class="memTemplParams" colspan="2">template&lt;class IntArray , class ValueArray , class BufArray , class IntBufArray &gt; </td></tr>
-<tr class="memitem:ga1b4d986d5ca5ac896c2d796fb354a909"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__schur.html#ga1b4d986d5ca5ac896c2d796fb354a909">hif::internal::drop_offsets_kernel</a> (const IntArray &amp;ref_indptr, const double alpha, IntArray &amp;indptr, IntArray &amp;indices, ValueArray &amp;vals, BufArray &amp;buf, IntBufArray &amp;ibuf)</td></tr>
-<tr class="memdesc:ga1b4d986d5ca5ac896c2d796fb354a909"><td class="mdescLeft">&#160;</td><td class="mdescRight">drop <em>L_E</em> matrix or <em>U_F</em> matrix  <a href="group__schur.html#ga1b4d986d5ca5ac896c2d796fb354a909">More...</a><br /></td></tr>
-<tr class="separator:ga1b4d986d5ca5ac896c2d796fb354a909"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga2828a33bdb95c76f46f5a53043ee9162"><td class="memTemplParams" colspan="2">template&lt;class CrsType , class BufArray , class IntBufArray &gt; </td></tr>
-<tr class="memitem:ga2828a33bdb95c76f46f5a53043ee9162"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__schur.html#ga2828a33bdb95c76f46f5a53043ee9162">hif::drop_L_E</a> (const typename CrsType::iarray_type &amp;ref_indptr, const double alpha, CrsType &amp;L_E, BufArray &amp;buf, IntBufArray &amp;ibuf)</td></tr>
-<tr class="memdesc:ga2828a33bdb95c76f46f5a53043ee9162"><td class="mdescLeft">&#160;</td><td class="mdescRight">drop <em>L_E</em>  <a href="group__schur.html#ga2828a33bdb95c76f46f5a53043ee9162">More...</a><br /></td></tr>
-<tr class="separator:ga2828a33bdb95c76f46f5a53043ee9162"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gabff2dea43e15b8055aebc2e7cc53558b"><td class="memTemplParams" colspan="2">template&lt;class CcsType , class BufArray , class IntBufArray &gt; </td></tr>
-<tr class="memitem:gabff2dea43e15b8055aebc2e7cc53558b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__schur.html#gabff2dea43e15b8055aebc2e7cc53558b">hif::drop_U_F</a> (const typename CcsType::iarray_type &amp;ref_indptr, const double alpha, CcsType &amp;U_F, BufArray &amp;buf, IntBufArray &amp;ibuf)</td></tr>
-<tr class="memdesc:gabff2dea43e15b8055aebc2e7cc53558b"><td class="mdescLeft">&#160;</td><td class="mdescRight">drop <em>U_F</em>  <a href="group__schur.html#gabff2dea43e15b8055aebc2e7cc53558b">More...</a><br /></td></tr>
-<tr class="separator:gabff2dea43e15b8055aebc2e7cc53558b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadd923e8635353793ab437eed537f2d80"><td class="memTemplParams" colspan="2">template&lt;class IndPtrArray , class IntArray , class ValueArray , class BufArray , class IntBufArray &gt; </td></tr>
+<tr class="memitem:gadd923e8635353793ab437eed537f2d80"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__schur.html#gadd923e8635353793ab437eed537f2d80">hif::internal::drop_offsets_kernel</a> (const IndPtrArray &amp;ref_indptr, const double alpha, IndPtrArray &amp;indptr, IntArray &amp;indices, ValueArray &amp;vals, BufArray &amp;buf, IntBufArray &amp;ibuf)</td></tr>
+<tr class="memdesc:gadd923e8635353793ab437eed537f2d80"><td class="mdescLeft">&#160;</td><td class="mdescRight">drop <em>L_E</em> matrix or <em>U_F</em> matrix  <a href="group__schur.html#gadd923e8635353793ab437eed537f2d80">More...</a><br /></td></tr>
+<tr class="separator:gadd923e8635353793ab437eed537f2d80"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gade5b95002db7b3543883d6f3086745cb"><td class="memTemplParams" colspan="2">template&lt;class CrsType , class BufArray , class IntBufArray &gt; </td></tr>
+<tr class="memitem:gade5b95002db7b3543883d6f3086745cb"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__schur.html#gade5b95002db7b3543883d6f3086745cb">hif::drop_L_E</a> (const typename CrsType::iparray_type &amp;ref_indptr, const double alpha, CrsType &amp;L_E, BufArray &amp;buf, IntBufArray &amp;ibuf)</td></tr>
+<tr class="memdesc:gade5b95002db7b3543883d6f3086745cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">drop <em>L_E</em>  <a href="group__schur.html#gade5b95002db7b3543883d6f3086745cb">More...</a><br /></td></tr>
+<tr class="separator:gade5b95002db7b3543883d6f3086745cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga65ff1b11cd4283c6b98ca3fbf65be9b5"><td class="memTemplParams" colspan="2">template&lt;class CcsType , class BufArray , class IntBufArray &gt; </td></tr>
+<tr class="memitem:ga65ff1b11cd4283c6b98ca3fbf65be9b5"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__schur.html#ga65ff1b11cd4283c6b98ca3fbf65be9b5">hif::drop_U_F</a> (const typename CcsType::iparray_type &amp;ref_indptr, const double alpha, CcsType &amp;U_F, BufArray &amp;buf, IntBufArray &amp;ibuf)</td></tr>
+<tr class="memdesc:ga65ff1b11cd4283c6b98ca3fbf65be9b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">drop <em>U_F</em>  <a href="group__schur.html#ga65ff1b11cd4283c6b98ca3fbf65be9b5">More...</a><br /></td></tr>
+<tr class="separator:ga65ff1b11cd4283c6b98ca3fbf65be9b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gae05d9b6b56c1908ae358b40cee13d8c1"><td class="memTemplParams" colspan="2">template&lt;class ScaleArray , class CrsType , class PermType , class DiagArray , class SpVecType &gt; </td></tr>
 <tr class="memitem:gae05d9b6b56c1908ae358b40cee13d8c1"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__schur.html#gae05d9b6b56c1908ae358b40cee13d8c1">hif::compute_Schur_simple</a> (const ScaleArray &amp;s, const CrsType &amp;A, const ScaleArray &amp;t, const PermType &amp;p, const PermType &amp;q, const typename CrsType::size_type m, const CrsType &amp;L_E, const DiagArray &amp;d, const CrsType &amp;U_F, CrsType &amp;SC, SpVecType &amp;buf)</td></tr>
 <tr class="memdesc:gae05d9b6b56c1908ae358b40cee13d8c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the simple version of Schur complement  <a href="group__schur.html#gae05d9b6b56c1908ae358b40cee13d8c1">More...</a><br /></td></tr>
@@ -163,10 +164,10 @@ Functions</h2></td></tr>
 <tr class="memitem:gafa7eb84cfc41d902dddf219c9eed2c9c"><td class="memTemplItemLeft" align="right" valign="top">CrsType&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__schur.html#gafa7eb84cfc41d902dddf219c9eed2c9c">hif::compute_Schur_simple</a> (const ScaleArray &amp;s, const CrsType &amp;A, const ScaleArray &amp;t, const PermType &amp;p, const PermType &amp;q, const typename CrsType::size_type m, const CrsType &amp;L_E, const DiagArray &amp;d, const CrsType &amp;U_F, SpVecType &amp;buf)</td></tr>
 <tr class="memdesc:gafa7eb84cfc41d902dddf219c9eed2c9c"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the simple version of Schur complement  <a href="group__schur.html#gafa7eb84cfc41d902dddf219c9eed2c9c">More...</a><br /></td></tr>
 <tr class="separator:gafa7eb84cfc41d902dddf219c9eed2c9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga7b8254604257211573f1926c1f2ae0f8"><td class="memTemplParams" colspan="2">template&lt;class CrsType , class CcsType , class BufArray , class IntBufArray &gt; </td></tr>
-<tr class="memitem:ga7b8254604257211573f1926c1f2ae0f8"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__schur.html#ga7b8254604257211573f1926c1f2ae0f8">hif::mt::drop_L_E_and_U_F</a> (const typename CrsType::iarray_type &amp;ref_indptr_L, const double alpha_L, const typename CcsType::iarray_type &amp;ref_indptr_U, const double alpha_U, CrsType &amp;L_E, CcsType &amp;U_F, BufArray &amp;buf_L, IntBufArray &amp;ibuf_L, BufArray &amp;buf_U, IntBufArray &amp;ibuf_U, const int nthreads)</td></tr>
-<tr class="memdesc:ga7b8254604257211573f1926c1f2ae0f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">drop <em>L_E</em> and <em>U_F</em>  <a href="group__schur.html#ga7b8254604257211573f1926c1f2ae0f8">More...</a><br /></td></tr>
-<tr class="separator:ga7b8254604257211573f1926c1f2ae0f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3958b1b4fbebacf71a94961ee823544f"><td class="memTemplParams" colspan="2">template&lt;class CrsType , class CcsType , class BufArray , class IntBufArray &gt; </td></tr>
+<tr class="memitem:ga3958b1b4fbebacf71a94961ee823544f"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__schur.html#ga3958b1b4fbebacf71a94961ee823544f">hif::mt::drop_L_E_and_U_F</a> (const typename CrsType::iparray_type &amp;ref_indptr_L, const double alpha_L, const typename CcsType::iparray_type &amp;ref_indptr_U, const double alpha_U, CrsType &amp;L_E, CcsType &amp;U_F, BufArray &amp;buf_L, IntBufArray &amp;ibuf_L, BufArray &amp;buf_U, IntBufArray &amp;ibuf_U, const int nthreads)</td></tr>
+<tr class="memdesc:ga3958b1b4fbebacf71a94961ee823544f"><td class="mdescLeft">&#160;</td><td class="mdescRight">drop <em>L_E</em> and <em>U_F</em>  <a href="group__schur.html#ga3958b1b4fbebacf71a94961ee823544f">More...</a><br /></td></tr>
+<tr class="separator:ga3958b1b4fbebacf71a94961ee823544f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga581adcebbcbca89ca0192413edbcef71"><td class="memTemplParams" colspan="2">template&lt;class ScaleArray , class CrsType , class PermType , class DiagArray , class SpVecType &gt; </td></tr>
 <tr class="memitem:ga581adcebbcbca89ca0192413edbcef71"><td class="memTemplItemLeft" align="right" valign="top">CrsType&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__schur.html#ga581adcebbcbca89ca0192413edbcef71">hif::mt::compute_Schur_simple</a> (const ScaleArray &amp;s, const CrsType &amp;A, const ScaleArray &amp;t, const PermType &amp;p, const PermType &amp;q, const typename CrsType::size_type m, const CrsType &amp;L_E, const DiagArray &amp;d, const CrsType &amp;U_F, SpVecType &amp;buf0, const int nthreads)</td></tr>
 <tr class="memdesc:ga581adcebbcbca89ca0192413edbcef71"><td class="mdescLeft">&#160;</td><td class="mdescRight">compute the simple version of Schur complement in MT setting  <a href="group__schur.html#ga581adcebbcbca89ca0192413edbcef71">More...</a><br /></td></tr>

@@ -1,6 +1,7 @@
 <map id="AugmentedStorage.hpp" name="AugmentedStorage.hpp">
-<area shape="rect" id="node2" href="$pivot__factor_8hpp.html" title="Kernels for deferred factorization with thresholding pivoting. " alt="" coords="27,80,142,107"/>
-<area shape="rect" id="node3" href="$builder_8hpp.html" title="Top level user class for building HIF preconditioner. " alt="" coords="42,155,127,181"/>
-<area shape="rect" id="node4" href="$hifir_8hpp.html" title="top&#45;level user interface " alt="" coords="51,229,119,256"/>
-<area shape="rect" id="node5" href="$demo__utils_8hpp.html" title="demo_utils.hpp" alt="" coords="29,304,140,331"/>
+<area shape="rect" id="node2" href="$pivot__factor_8hpp.html" title="Kernels for deferred factorization with thresholding pivoting. " alt="" coords="49,80,163,107"/>
+<area shape="rect" id="node3" href="$builder_8hpp.html" title="Top level user class for building HIF preconditioner. " alt="" coords="63,155,149,181"/>
+<area shape="rect" id="node4" href="$hifir_8hpp.html" title="top&#45;level user interface " alt="" coords="72,229,140,256"/>
+<area shape="rect" id="node5" href="$libhifir_8cpp.html" title="C++ implementation of libhifir. " alt="" coords="5,304,87,331"/>
+<area shape="rect" id="node6" href="$demo__utils_8hpp.html" title="demo_utils.hpp" alt="" coords="111,304,221,331"/>
 </map>

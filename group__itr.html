@@ -32,7 +32,7 @@
   <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">HIFIR
-   &#160;<span id="projectnumber">0.1.0</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
   </td>
  </tr>
@@ -112,7 +112,7 @@ Modules</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1HIF.html">hif::HIF&lt; ValueType, IndexType, UserDenseFactor &gt;</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhif_1_1HIF.html">hif::HIF&lt; ValueType, IndexType, IndPtrType, UserDenseFactor &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structhif__Options.html">hif_Options</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">POD parameter controls.  <a href="structhif__Options.html#details">More...</a><br /></td></tr>
@@ -126,7 +126,7 @@ Macros</h2></td></tr>
 <tr class="memitem:gac5e75f0833fa62bbff3f9eb46021523c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__itr.html#gac5e75f0833fa62bbff3f9eb46021523c">HIF_GLOBAL_VERSION</a>&#160;&#160;&#160;0</td></tr>
 <tr class="memdesc:gac5e75f0833fa62bbff3f9eb46021523c"><td class="mdescLeft">&#160;</td><td class="mdescRight">HIF global version.  <a href="#gac5e75f0833fa62bbff3f9eb46021523c">More...</a><br /></td></tr>
 <tr class="separator:gac5e75f0833fa62bbff3f9eb46021523c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga0a01c251d3ed2e1bca293d0d27b7e6ef"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__itr.html#ga0a01c251d3ed2e1bca293d0d27b7e6ef">HIF_MAJOR_VERSION</a>&#160;&#160;&#160;1</td></tr>
+<tr class="memitem:ga0a01c251d3ed2e1bca293d0d27b7e6ef"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__itr.html#ga0a01c251d3ed2e1bca293d0d27b7e6ef">HIF_MAJOR_VERSION</a>&#160;&#160;&#160;2</td></tr>
 <tr class="memdesc:ga0a01c251d3ed2e1bca293d0d27b7e6ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">HIF major version.  <a href="#ga0a01c251d3ed2e1bca293d0d27b7e6ef">More...</a><br /></td></tr>
 <tr class="separator:ga0a01c251d3ed2e1bca293d0d27b7e6ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gad81aa7a7cba9c9c093c2ff581263bd32"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__itr.html#gad81aa7a7cba9c9c093c2ff581263bd32">HIF_MINOR_VERSION</a>&#160;&#160;&#160;0</td></tr>
@@ -156,69 +156,72 @@ Typedefs</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:ga99fb83031ce9923c84392b4e92f956b5"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <br />
-&#160;&#160;<a class="el" href="group__itr.html#gga99fb83031ce9923c84392b4e92f956b5a5f118c42e7dd8f80df64f96d08b99118">HIF_VERBOSE_NONE</a> = 0, 
-<a class="el" href="group__itr.html#gga99fb83031ce9923c84392b4e92f956b5a2f03897535e5cf8f0e093caca1642d3f">HIF_VERBOSE_INFO</a> = 1, 
-<a class="el" href="group__itr.html#gga99fb83031ce9923c84392b4e92f956b5af0627311c6c6506dbfbcb1b30cbecd8d">HIF_VERBOSE_PRE</a> = HIF_VERBOSE_INFO &lt;&lt; 1, 
-<a class="el" href="group__itr.html#gga99fb83031ce9923c84392b4e92f956b5ae7203e31bdf38d466c9bb8513ed36cc5">HIF_VERBOSE_FAC</a> = HIF_VERBOSE_PRE &lt;&lt; 1, 
+<tr class="memitem:ga726ca809ffd3d67ab4b8476646f26635"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <br />
+&#160;&#160;<a class="el" href="group__itr.html#gga726ca809ffd3d67ab4b8476646f26635a5f118c42e7dd8f80df64f96d08b99118">HIF_VERBOSE_NONE</a> = 0, 
+<a class="el" href="group__itr.html#gga726ca809ffd3d67ab4b8476646f26635a2f03897535e5cf8f0e093caca1642d3f">HIF_VERBOSE_INFO</a> = 1, 
+<a class="el" href="group__itr.html#gga726ca809ffd3d67ab4b8476646f26635af0627311c6c6506dbfbcb1b30cbecd8d">HIF_VERBOSE_PRE</a> = HIF_VERBOSE_INFO &lt;&lt; 1, 
+<a class="el" href="group__itr.html#gga726ca809ffd3d67ab4b8476646f26635ae7203e31bdf38d466c9bb8513ed36cc5">HIF_VERBOSE_FAC</a> = HIF_VERBOSE_PRE &lt;&lt; 1, 
 <br />
-&#160;&#160;<a class="el" href="group__itr.html#gga99fb83031ce9923c84392b4e92f956b5ac8ae875ab0af98543c61e878a43576ca">HIF_VERBOSE_PRE_TIME</a> = HIF_VERBOSE_FAC &lt;&lt; 1, 
-<a class="el" href="group__itr.html#gga99fb83031ce9923c84392b4e92f956b5a6a0ddea655cba50d8e067b9020fec545">HIF_VERBOSE_MEM</a> = HIF_VERBOSE_PRE_TIME &lt;&lt; 1, 
-<a class="el" href="group__itr.html#gga99fb83031ce9923c84392b4e92f956b5aed4f1544d1b51ce641025937482012a6">HIF_VERBOSE_INFO2</a> = HIF_VERBOSE_MEM &lt;&lt; 1
+&#160;&#160;<a class="el" href="group__itr.html#gga726ca809ffd3d67ab4b8476646f26635ac8ae875ab0af98543c61e878a43576ca">HIF_VERBOSE_PRE_TIME</a> = HIF_VERBOSE_FAC &lt;&lt; 1, 
+<a class="el" href="group__itr.html#gga726ca809ffd3d67ab4b8476646f26635a6a0ddea655cba50d8e067b9020fec545">HIF_VERBOSE_MEM</a> = HIF_VERBOSE_PRE_TIME &lt;&lt; 1, 
+<a class="el" href="group__itr.html#gga726ca809ffd3d67ab4b8476646f26635aed4f1544d1b51ce641025937482012a6">HIF_VERBOSE_INFO2</a> = HIF_VERBOSE_MEM &lt;&lt; 1
 <br />
- }<tr class="memdesc:ga99fb83031ce9923c84392b4e92f956b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">the verbose level for progress report  <a href="group__itr.html#ga99fb83031ce9923c84392b4e92f956b5">More...</a><br /></td></tr>
+ }<tr class="memdesc:ga726ca809ffd3d67ab4b8476646f26635"><td class="mdescLeft">&#160;</td><td class="mdescRight">the verbose level for progress report  <a href="group__itr.html#ga726ca809ffd3d67ab4b8476646f26635">More...</a><br /></td></tr>
 </td></tr>
-<tr class="separator:ga99fb83031ce9923c84392b4e92f956b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gabc6126af1d45847bc59afa0aa3216b04"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <br />
-&#160;&#160;<a class="el" href="group__itr.html#ggabc6126af1d45847bc59afa0aa3216b04a3301d34f07b3114dd6bd14e6cab4fa6f">HIF_REORDER_OFF</a> = 0, 
-<a class="el" href="group__itr.html#ggabc6126af1d45847bc59afa0aa3216b04a751622842e55ed26b11c1e17a956fd59">HIF_REORDER_AUTO</a> = 1, 
-<a class="el" href="group__itr.html#ggabc6126af1d45847bc59afa0aa3216b04ad2c8b670df0f5f4882dcb17e502add02">HIF_REORDER_AMD</a> = 2, 
-<a class="el" href="group__itr.html#ggabc6126af1d45847bc59afa0aa3216b04a74df640645c530be3d6507ec0d9df540">HIF_REORDER_RCM</a> = 3, 
+<tr class="separator:ga726ca809ffd3d67ab4b8476646f26635"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0411cd49bb5b71852cecd93bcbf0ca2d"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <br />
+&#160;&#160;<a class="el" href="group__itr.html#gga0411cd49bb5b71852cecd93bcbf0ca2da3301d34f07b3114dd6bd14e6cab4fa6f">HIF_REORDER_OFF</a> = 0, 
+<a class="el" href="group__itr.html#gga0411cd49bb5b71852cecd93bcbf0ca2da751622842e55ed26b11c1e17a956fd59">HIF_REORDER_AUTO</a> = 1, 
+<a class="el" href="group__itr.html#gga0411cd49bb5b71852cecd93bcbf0ca2dad2c8b670df0f5f4882dcb17e502add02">HIF_REORDER_AMD</a> = 2, 
+<a class="el" href="group__itr.html#gga0411cd49bb5b71852cecd93bcbf0ca2da74df640645c530be3d6507ec0d9df540">HIF_REORDER_RCM</a> = 3, 
 <br />
-&#160;&#160;<a class="el" href="group__itr.html#ggabc6126af1d45847bc59afa0aa3216b04ae29afd902b98d1848d9a7262788f1f91">HIF_REORDER_NULL</a> = 4
+&#160;&#160;<a class="el" href="group__itr.html#gga0411cd49bb5b71852cecd93bcbf0ca2dae29afd902b98d1848d9a7262788f1f91">HIF_REORDER_NULL</a> = 4
 <br />
- }<tr class="memdesc:gabc6126af1d45847bc59afa0aa3216b04"><td class="mdescLeft">&#160;</td><td class="mdescRight">reordering method  <a href="group__itr.html#gabc6126af1d45847bc59afa0aa3216b04">More...</a><br /></td></tr>
+ }<tr class="memdesc:ga0411cd49bb5b71852cecd93bcbf0ca2d"><td class="mdescLeft">&#160;</td><td class="mdescRight">reordering method  <a href="group__itr.html#ga0411cd49bb5b71852cecd93bcbf0ca2d">More...</a><br /></td></tr>
 </td></tr>
-<tr class="separator:gabc6126af1d45847bc59afa0aa3216b04"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gadc29c2ff13d900c2f185ee95427fb06c"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <a class="el" href="group__itr.html#ggadc29c2ff13d900c2f185ee95427fb06cac3bce3ced84052088b93055e0a75a3b0">HIF_PIVOTING_OFF</a> = 0, 
-<a class="el" href="group__itr.html#ggadc29c2ff13d900c2f185ee95427fb06ca09d65080f6372f2a7b3c4cfce014b27f">HIF_PIVOTING_ON</a> = 1, 
-<a class="el" href="group__itr.html#ggadc29c2ff13d900c2f185ee95427fb06ca815ba2b0924cb53494394e2c3ebd3caa">HIF_PIVOTING_AUTO</a> = 2
- }<tr class="memdesc:gadc29c2ff13d900c2f185ee95427fb06c"><td class="mdescLeft">&#160;</td><td class="mdescRight">pivoting flag  <a href="group__itr.html#gadc29c2ff13d900c2f185ee95427fb06c">More...</a><br /></td></tr>
+<tr class="separator:ga0411cd49bb5b71852cecd93bcbf0ca2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabed82baf7f470b522273a3e37c24c600"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <a class="el" href="group__itr.html#ggabed82baf7f470b522273a3e37c24c600ac3bce3ced84052088b93055e0a75a3b0">HIF_PIVOTING_OFF</a> = 0, 
+<a class="el" href="group__itr.html#ggabed82baf7f470b522273a3e37c24c600a09d65080f6372f2a7b3c4cfce014b27f">HIF_PIVOTING_ON</a> = 1, 
+<a class="el" href="group__itr.html#ggabed82baf7f470b522273a3e37c24c600a815ba2b0924cb53494394e2c3ebd3caa">HIF_PIVOTING_AUTO</a> = 2
+ }<tr class="memdesc:gabed82baf7f470b522273a3e37c24c600"><td class="mdescLeft">&#160;</td><td class="mdescRight">pivoting flag  <a href="group__itr.html#gabed82baf7f470b522273a3e37c24c600">More...</a><br /></td></tr>
 </td></tr>
-<tr class="separator:gadc29c2ff13d900c2f185ee95427fb06c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga09a44f290ae079e82cc71535480c9503"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">: int { <br />
-&#160;&#160;<a class="el" href="group__itr.html#gga09a44f290ae079e82cc71535480c9503ad8e28a63c3dca3c48f225ce12151b4aa">hif::VERBOSE_NONE</a> = ::HIF_VERBOSE_NONE, 
-<a class="el" href="group__itr.html#gga09a44f290ae079e82cc71535480c9503a27db06dd416547dc9be5c8547f1dfc53">hif::VERBOSE_INFO</a> = ::HIF_VERBOSE_INFO, 
-<a class="el" href="group__itr.html#gga09a44f290ae079e82cc71535480c9503a5d89c47228ebb5c432d13816c0336dcc">hif::VERBOSE_PRE</a> = ::HIF_VERBOSE_PRE, 
-<a class="el" href="group__itr.html#gga09a44f290ae079e82cc71535480c9503af450f7e62ed2f839e9824c1041f620c9">hif::VERBOSE_FAC</a> = ::HIF_VERBOSE_FAC, 
+<tr class="separator:gabed82baf7f470b522273a3e37c24c600"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4a7969a33ce7cdffe37105e0b3c1aa1a"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">: int { <br />
+&#160;&#160;<a class="el" href="group__itr.html#gga4a7969a33ce7cdffe37105e0b3c1aa1aad8e28a63c3dca3c48f225ce12151b4aa">hif::VERBOSE_NONE</a> = ::HIF_VERBOSE_NONE, 
+<a class="el" href="group__itr.html#gga4a7969a33ce7cdffe37105e0b3c1aa1aa27db06dd416547dc9be5c8547f1dfc53">hif::VERBOSE_INFO</a> = ::HIF_VERBOSE_INFO, 
+<a class="el" href="group__itr.html#gga4a7969a33ce7cdffe37105e0b3c1aa1aa5d89c47228ebb5c432d13816c0336dcc">hif::VERBOSE_PRE</a> = ::HIF_VERBOSE_PRE, 
+<a class="el" href="group__itr.html#gga4a7969a33ce7cdffe37105e0b3c1aa1aaf450f7e62ed2f839e9824c1041f620c9">hif::VERBOSE_FAC</a> = ::HIF_VERBOSE_FAC, 
 <br />
-&#160;&#160;<a class="el" href="group__itr.html#gga09a44f290ae079e82cc71535480c9503a026b66bdba94103ec96f0b9a363db327">hif::VERBOSE_PRE_TIME</a> = ::HIF_VERBOSE_PRE_TIME, 
-<a class="el" href="group__itr.html#gga09a44f290ae079e82cc71535480c9503a32ded59d8f2ff77e0484df3b08d07d51">hif::VERBOSE_MEM</a> = ::HIF_VERBOSE_MEM, 
-<a class="el" href="group__itr.html#gga09a44f290ae079e82cc71535480c9503ac219fdd38ef550317ab0d0d93654d2fb">hif::VERBOSE_INFO2</a> = ::HIF_VERBOSE_INFO2
+&#160;&#160;<a class="el" href="group__itr.html#gga4a7969a33ce7cdffe37105e0b3c1aa1aa026b66bdba94103ec96f0b9a363db327">hif::VERBOSE_PRE_TIME</a> = ::HIF_VERBOSE_PRE_TIME, 
+<a class="el" href="group__itr.html#gga4a7969a33ce7cdffe37105e0b3c1aa1aa32ded59d8f2ff77e0484df3b08d07d51">hif::VERBOSE_MEM</a> = ::HIF_VERBOSE_MEM, 
+<a class="el" href="group__itr.html#gga4a7969a33ce7cdffe37105e0b3c1aa1aac219fdd38ef550317ab0d0d93654d2fb">hif::VERBOSE_INFO2</a> = ::HIF_VERBOSE_INFO2
 <br />
- }<tr class="memdesc:ga09a44f290ae079e82cc71535480c9503"><td class="mdescLeft">&#160;</td><td class="mdescRight">enum wrapper  <a href="group__itr.html#ga09a44f290ae079e82cc71535480c9503">More...</a><br /></td></tr>
+ }<tr class="memdesc:ga4a7969a33ce7cdffe37105e0b3c1aa1a"><td class="mdescLeft">&#160;</td><td class="mdescRight">enum wrapper  <a href="group__itr.html#ga4a7969a33ce7cdffe37105e0b3c1aa1a">More...</a><br /></td></tr>
 </td></tr>
-<tr class="separator:ga09a44f290ae079e82cc71535480c9503"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga7e973856e6835495a381a60b1dad0b27"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">: int { <br />
-&#160;&#160;<a class="el" href="group__itr.html#gga7e973856e6835495a381a60b1dad0b27a9e01f5f043d3662830dbe2155340184d">hif::REORDER_OFF</a> = ::HIF_REORDER_OFF, 
-<a class="el" href="group__itr.html#gga7e973856e6835495a381a60b1dad0b27a63e0b4363d776a1f187d8edf8494ba64">hif::REORDER_AUTO</a> = ::HIF_REORDER_AUTO, 
-<a class="el" href="group__itr.html#gga7e973856e6835495a381a60b1dad0b27a8cc51020597e0e6aebbe1ceccd289f5d">hif::REORDER_AMD</a> = ::HIF_REORDER_AMD, 
-<a class="el" href="group__itr.html#gga7e973856e6835495a381a60b1dad0b27aba4e6814b3c3a4cc08d1d6772e65bf84">hif::REORDER_RCM</a> = ::HIF_REORDER_RCM, 
+<tr class="separator:ga4a7969a33ce7cdffe37105e0b3c1aa1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac2c3a6bd1b5b6c13a53ab6171d7a4c11"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">: int { <br />
+&#160;&#160;<a class="el" href="group__itr.html#ggac2c3a6bd1b5b6c13a53ab6171d7a4c11a9e01f5f043d3662830dbe2155340184d">hif::REORDER_OFF</a> = ::HIF_REORDER_OFF, 
+<a class="el" href="group__itr.html#ggac2c3a6bd1b5b6c13a53ab6171d7a4c11a63e0b4363d776a1f187d8edf8494ba64">hif::REORDER_AUTO</a> = ::HIF_REORDER_AUTO, 
+<a class="el" href="group__itr.html#ggac2c3a6bd1b5b6c13a53ab6171d7a4c11a8cc51020597e0e6aebbe1ceccd289f5d">hif::REORDER_AMD</a> = ::HIF_REORDER_AMD, 
+<a class="el" href="group__itr.html#ggac2c3a6bd1b5b6c13a53ab6171d7a4c11aba4e6814b3c3a4cc08d1d6772e65bf84">hif::REORDER_RCM</a> = ::HIF_REORDER_RCM, 
 <br />
-&#160;&#160;<a class="el" href="group__itr.html#gga7e973856e6835495a381a60b1dad0b27a75a0c6841115e4836a6cb5a651a4bab0">hif::REORDER_NULL</a> = ::HIF_REORDER_NULL
+&#160;&#160;<a class="el" href="group__itr.html#ggac2c3a6bd1b5b6c13a53ab6171d7a4c11a75a0c6841115e4836a6cb5a651a4bab0">hif::REORDER_NULL</a> = ::HIF_REORDER_NULL
 <br />
- }<tr class="memdesc:ga7e973856e6835495a381a60b1dad0b27"><td class="mdescLeft">&#160;</td><td class="mdescRight">enum wrapper for reordering methods  <a href="group__itr.html#ga7e973856e6835495a381a60b1dad0b27">More...</a><br /></td></tr>
+ }<tr class="memdesc:gac2c3a6bd1b5b6c13a53ab6171d7a4c11"><td class="mdescLeft">&#160;</td><td class="mdescRight">enum wrapper for reordering methods  <a href="group__itr.html#gac2c3a6bd1b5b6c13a53ab6171d7a4c11">More...</a><br /></td></tr>
 </td></tr>
-<tr class="separator:ga7e973856e6835495a381a60b1dad0b27"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gab3d34a70bc837bc30a9d1c743416e8ba"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">: int { <a class="el" href="group__itr.html#ggab3d34a70bc837bc30a9d1c743416e8baa78c70c1ee676d1531a9bcefa8853025c">hif::PIVOTING_OFF</a> = ::HIF_PIVOTING_OFF, 
-<a class="el" href="group__itr.html#ggab3d34a70bc837bc30a9d1c743416e8baa7a23aa2995cbeb896e9a530dc005b97f">hif::PIVOTING_ON</a> = ::HIF_PIVOTING_ON, 
-<a class="el" href="group__itr.html#ggab3d34a70bc837bc30a9d1c743416e8baa5a5f640db08538f0aae2605f908d20a5">hif::PIVOTING_AUTO</a> = ::HIF_PIVOTING_AUTO
- }<tr class="memdesc:gab3d34a70bc837bc30a9d1c743416e8ba"><td class="mdescLeft">&#160;</td><td class="mdescRight">enum wrapper for pivoting  <a href="group__itr.html#gab3d34a70bc837bc30a9d1c743416e8ba">More...</a><br /></td></tr>
+<tr class="separator:gac2c3a6bd1b5b6c13a53ab6171d7a4c11"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8f160434f949859dbb92ce347d3dafae"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">: int { <a class="el" href="group__itr.html#gga8f160434f949859dbb92ce347d3dafaea78c70c1ee676d1531a9bcefa8853025c">hif::PIVOTING_OFF</a> = ::HIF_PIVOTING_OFF, 
+<a class="el" href="group__itr.html#gga8f160434f949859dbb92ce347d3dafaea7a23aa2995cbeb896e9a530dc005b97f">hif::PIVOTING_ON</a> = ::HIF_PIVOTING_ON, 
+<a class="el" href="group__itr.html#gga8f160434f949859dbb92ce347d3dafaea5a5f640db08538f0aae2605f908d20a5">hif::PIVOTING_AUTO</a> = ::HIF_PIVOTING_AUTO
+ }<tr class="memdesc:ga8f160434f949859dbb92ce347d3dafae"><td class="mdescLeft">&#160;</td><td class="mdescRight">enum wrapper for pivoting  <a href="group__itr.html#ga8f160434f949859dbb92ce347d3dafae">More...</a><br /></td></tr>
 </td></tr>
-<tr class="separator:gab3d34a70bc837bc30a9d1c743416e8ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:ga8f160434f949859dbb92ce347d3dafae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:ga116825d64c15b60953b3a1d5822a1f48"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__itr.html#ga116825d64c15b60953b3a1d5822a1f48">hif::version</a> ()</td></tr>
+<tr class="memdesc:ga116825d64c15b60953b3a1d5822a1f48"><td class="mdescLeft">&#160;</td><td class="mdescRight">get the version string representation during runtime  <a href="group__itr.html#ga116825d64c15b60953b3a1d5822a1f48">More...</a><br /></td></tr>
+<tr class="separator:ga116825d64c15b60953b3a1d5822a1f48"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga3b725758caa8b44bec12c3b533e1d09e"><td class="memTemplParams" colspan="2">template&lt;class... Args&gt; </td></tr>
 <tr class="memitem:ga3b725758caa8b44bec12c3b533e1d09e"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="group__itr.html#gacc42e5e71592d98be904c3b0943b33b6">NspFilterPtr</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__itr.html#ga3b725758caa8b44bec12c3b533e1d09e">hif::create_nsp_filter</a> (Args &amp;&amp;... args)</td></tr>
 <tr class="memdesc:ga3b725758caa8b44bec12c3b533e1d09e"><td class="mdescLeft">&#160;</td><td class="mdescRight">construct <a class="el" href="group__itr.html#gacc42e5e71592d98be904c3b0943b33b6">NspFilterPtr</a>  <a href="group__itr.html#ga3b725758caa8b44bec12c3b533e1d09e">More...</a><br /></td></tr>
@@ -265,15 +268,6 @@ Functions</h2></td></tr>
 <tr class="memitem:gacc0408aceb8e0cf0adca49a99a1c8381"><td class="memTemplItemLeft" align="right" valign="top">InStream &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="group__itr.html#gacc0408aceb8e0cf0adca49a99a1c8381">operator&gt;&gt;</a> (InStream &amp;in_str, <a class="el" href="group__itr.html#ga8af676f52fa6072d6264436495d20772">hif::Options</a> &amp;opt)</td></tr>
 <tr class="memdesc:gacc0408aceb8e0cf0adca49a99a1c8381"><td class="mdescLeft">&#160;</td><td class="mdescRight">read control parameters from a standard input streamer  <a href="#gacc0408aceb8e0cf0adca49a99a1c8381">More...</a><br /></td></tr>
 <tr class="separator:gacc0408aceb8e0cf0adca49a99a1c8381"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga21ccbc8c2ac57a00725cb471206b8a0d"><td class="memItemLeft" align="right" valign="top">std::tuple&lt; bool, bool, bool, bool, std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__itr.html#ga21ccbc8c2ac57a00725cb471206b8a0d">hif::query_info_bin</a> (const char *filename)</td></tr>
-<tr class="memdesc:ga21ccbc8c2ac57a00725cb471206b8a0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">query information of a binary file  <a href="group__itr.html#ga21ccbc8c2ac57a00725cb471206b8a0d">More...</a><br /></td></tr>
-<tr class="separator:ga21ccbc8c2ac57a00725cb471206b8a0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gae2ff7ffcabcdcd58f50cf4be5764041c"><td class="memItemLeft" align="right" valign="top">std::tuple&lt; bool, bool, bool, bool, std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__itr.html#gae2ff7ffcabcdcd58f50cf4be5764041c">hif::query_info_ascii</a> (const char *filename)</td></tr>
-<tr class="memdesc:gae2ff7ffcabcdcd58f50cf4be5764041c"><td class="mdescLeft">&#160;</td><td class="mdescRight">query information of an ASCII file  <a href="group__itr.html#gae2ff7ffcabcdcd58f50cf4be5764041c">More...</a><br /></td></tr>
-<tr class="separator:gae2ff7ffcabcdcd58f50cf4be5764041c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga116825d64c15b60953b3a1d5822a1f48"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__itr.html#ga116825d64c15b60953b3a1d5822a1f48">hif::version</a> ()</td></tr>
-<tr class="memdesc:ga116825d64c15b60953b3a1d5822a1f48"><td class="mdescLeft">&#160;</td><td class="mdescRight">get the version string representation during runtime  <a href="group__itr.html#ga116825d64c15b60953b3a1d5822a1f48">More...</a><br /></td></tr>
-<tr class="separator:ga116825d64c15b60953b3a1d5822a1f48"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
@@ -308,7 +302,7 @@ Variables</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define HIF_MAJOR_VERSION&#160;&#160;&#160;1</td>
+          <td class="memname">#define HIF_MAJOR_VERSION&#160;&#160;&#160;2</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -352,7 +346,7 @@ Variables</h2></td></tr>
 
 <p>default <a class="el" href="classhif_1_1HIF.html">HIF</a> with <em>double</em> as value type and <em>int</em> as index </p>
 
-<p class="definition">Definition at line <a class="el" href="builder_8hpp_source.html#l00575">575</a> of file <a class="el" href="builder_8hpp_source.html">builder.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="builder_8hpp_source.html#l00596">596</a> of file <a class="el" href="builder_8hpp_source.html">builder.hpp</a>.</p>
 
 </div>
 </div>
@@ -447,132 +441,8 @@ Variables</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Enumeration Type Documentation</h2>
-<a id="ga99fb83031ce9923c84392b4e92f956b5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga99fb83031ce9923c84392b4e92f956b5">&#9670;&nbsp;</a></span>anonymous enum</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">anonymous enum</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>the verbose level for progress report </p>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="gga99fb83031ce9923c84392b4e92f956b5a5f118c42e7dd8f80df64f96d08b99118"></a>HIF_VERBOSE_NONE&#160;</td><td class="fielddoc"><p>mute </p>
-</td></tr>
-<tr><td class="fieldname"><a id="gga99fb83031ce9923c84392b4e92f956b5a2f03897535e5cf8f0e093caca1642d3f"></a>HIF_VERBOSE_INFO&#160;</td><td class="fielddoc"><p>general information </p>
-</td></tr>
-<tr><td class="fieldname"><a id="gga99fb83031ce9923c84392b4e92f956b5af0627311c6c6506dbfbcb1b30cbecd8d"></a>HIF_VERBOSE_PRE&#160;</td><td class="fielddoc"><p>preprocessing </p>
-</td></tr>
-<tr><td class="fieldname"><a id="gga99fb83031ce9923c84392b4e92f956b5ae7203e31bdf38d466c9bb8513ed36cc5"></a>HIF_VERBOSE_FAC&#160;</td><td class="fielddoc"><p>factorization update </p>
-</td></tr>
-<tr><td class="fieldname"><a id="gga99fb83031ce9923c84392b4e92f956b5ac8ae875ab0af98543c61e878a43576ca"></a>HIF_VERBOSE_PRE_TIME&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="gga99fb83031ce9923c84392b4e92f956b5a6a0ddea655cba50d8e067b9020fec545"></a>HIF_VERBOSE_MEM&#160;</td><td class="fielddoc"><p>pre time memory debug </p>
-</td></tr>
-<tr><td class="fieldname"><a id="gga99fb83031ce9923c84392b4e92f956b5aed4f1544d1b51ce641025937482012a6"></a>HIF_VERBOSE_INFO2&#160;</td><td class="fielddoc"><p>more detailed than info </p>
-</td></tr>
-</table>
-
-<p class="definition">Definition at line <a class="el" href="Options_8h_source.html#l00046">46</a> of file <a class="el" href="Options_8h_source.html">Options.h</a>.</p>
-
-</div>
-</div>
-<a id="gabc6126af1d45847bc59afa0aa3216b04"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gabc6126af1d45847bc59afa0aa3216b04">&#9670;&nbsp;</a></span>anonymous enum</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">anonymous enum</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>reordering method </p>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ggabc6126af1d45847bc59afa0aa3216b04a3301d34f07b3114dd6bd14e6cab4fa6f"></a>HIF_REORDER_OFF&#160;</td><td class="fielddoc"><p>turn reordering off </p>
-</td></tr>
-<tr><td class="fieldname"><a id="ggabc6126af1d45847bc59afa0aa3216b04a751622842e55ed26b11c1e17a956fd59"></a>HIF_REORDER_AUTO&#160;</td><td class="fielddoc"><p>use automaticaly reordering (default) </p>
-</td></tr>
-<tr><td class="fieldname"><a id="ggabc6126af1d45847bc59afa0aa3216b04ad2c8b670df0f5f4882dcb17e502add02"></a>HIF_REORDER_AMD&#160;</td><td class="fielddoc"><p>use AMD ordering </p>
-</td></tr>
-<tr><td class="fieldname"><a id="ggabc6126af1d45847bc59afa0aa3216b04a74df640645c530be3d6507ec0d9df540"></a>HIF_REORDER_RCM&#160;</td><td class="fielddoc"><p>use RCM ordering (require BGL) </p>
-</td></tr>
-<tr><td class="fieldname"><a id="ggabc6126af1d45847bc59afa0aa3216b04ae29afd902b98d1848d9a7262788f1f91"></a>HIF_REORDER_NULL&#160;</td><td class="fielddoc"><p>ordering Null flag (internal checking) </p>
-</td></tr>
-</table>
-
-<p class="definition">Definition at line <a class="el" href="Options_8h_source.html#l00059">59</a> of file <a class="el" href="Options_8h_source.html">Options.h</a>.</p>
-
-</div>
-</div>
-<a id="gadc29c2ff13d900c2f185ee95427fb06c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gadc29c2ff13d900c2f185ee95427fb06c">&#9670;&nbsp;</a></span>anonymous enum</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">anonymous enum</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>pivoting flag </p>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ggadc29c2ff13d900c2f185ee95427fb06cac3bce3ced84052088b93055e0a75a3b0"></a>HIF_PIVOTING_OFF&#160;</td><td class="fielddoc"><p>perform deferring-only factorization </p>
-</td></tr>
-<tr><td class="fieldname"><a id="ggadc29c2ff13d900c2f185ee95427fb06ca09d65080f6372f2a7b3c4cfce014b27f"></a>HIF_PIVOTING_ON&#160;</td><td class="fielddoc"><p>perform deferred Crout factor with pivoting </p>
-</td></tr>
-<tr><td class="fieldname"><a id="ggadc29c2ff13d900c2f185ee95427fb06ca815ba2b0924cb53494394e2c3ebd3caa"></a>HIF_PIVOTING_AUTO&#160;</td><td class="fielddoc"><p>auto kernel (hybridizing between 0 and 1) </p>
-</td></tr>
-</table>
-
-<p class="definition">Definition at line <a class="el" href="Options_8h_source.html#l00070">70</a> of file <a class="el" href="Options_8h_source.html">Options.h</a>.</p>
-
-</div>
-</div>
-<a id="ga09a44f290ae079e82cc71535480c9503"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga09a44f290ae079e82cc71535480c9503">&#9670;&nbsp;</a></span>anonymous enum</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">anonymous enum : int</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>enum wrapper </p>
-<dl class="section note"><dt>Note</dt><dd>The prefix <em><a class="el" href="classhif_1_1HIF.html">HIF</a></em> is dropped </dd></dl>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="gga09a44f290ae079e82cc71535480c9503ad8e28a63c3dca3c48f225ce12151b4aa"></a>VERBOSE_NONE&#160;</td><td class="fielddoc"><p>mute </p>
-</td></tr>
-<tr><td class="fieldname"><a id="gga09a44f290ae079e82cc71535480c9503a27db06dd416547dc9be5c8547f1dfc53"></a>VERBOSE_INFO&#160;</td><td class="fielddoc"><p>general information </p>
-</td></tr>
-<tr><td class="fieldname"><a id="gga09a44f290ae079e82cc71535480c9503a5d89c47228ebb5c432d13816c0336dcc"></a>VERBOSE_PRE&#160;</td><td class="fielddoc"><p>preprocessing </p>
-</td></tr>
-<tr><td class="fieldname"><a id="gga09a44f290ae079e82cc71535480c9503af450f7e62ed2f839e9824c1041f620c9"></a>VERBOSE_FAC&#160;</td><td class="fielddoc"><p>factorization update </p>
-</td></tr>
-<tr><td class="fieldname"><a id="gga09a44f290ae079e82cc71535480c9503a026b66bdba94103ec96f0b9a363db327"></a>VERBOSE_PRE_TIME&#160;</td><td class="fielddoc"><p>pre time </p>
-</td></tr>
-<tr><td class="fieldname"><a id="gga09a44f290ae079e82cc71535480c9503a32ded59d8f2ff77e0484df3b08d07d51"></a>VERBOSE_MEM&#160;</td><td class="fielddoc"><p>memory debug </p>
-</td></tr>
-<tr><td class="fieldname"><a id="gga09a44f290ae079e82cc71535480c9503ac219fdd38ef550317ab0d0d93654d2fb"></a>VERBOSE_INFO2&#160;</td><td class="fielddoc"><p>more detailed than info </p>
-</td></tr>
-</table>
-
-<p class="definition">Definition at line <a class="el" href="Options_8h_source.html#l00235">235</a> of file <a class="el" href="Options_8h_source.html">Options.h</a>.</p>
-
-</div>
-</div>
-<a id="ga7e973856e6835495a381a60b1dad0b27"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga7e973856e6835495a381a60b1dad0b27">&#9670;&nbsp;</a></span>anonymous enum</h2>
+<a id="gac2c3a6bd1b5b6c13a53ab6171d7a4c11"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac2c3a6bd1b5b6c13a53ab6171d7a4c11">&#9670;&nbsp;</a></span>anonymous enum</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -586,15 +456,15 @@ Variables</h2></td></tr>
 <p>enum wrapper for reordering methods </p>
 <dl class="section note"><dt>Note</dt><dd>The prefix <em><a class="el" href="classhif_1_1HIF.html">HIF</a></em> is dropped </dd></dl>
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="gga7e973856e6835495a381a60b1dad0b27a9e01f5f043d3662830dbe2155340184d"></a>REORDER_OFF&#160;</td><td class="fielddoc"><p>turn reordering off </p>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ggac2c3a6bd1b5b6c13a53ab6171d7a4c11a9e01f5f043d3662830dbe2155340184d"></a>REORDER_OFF&#160;</td><td class="fielddoc"><p>turn reordering off </p>
 </td></tr>
-<tr><td class="fieldname"><a id="gga7e973856e6835495a381a60b1dad0b27a63e0b4363d776a1f187d8edf8494ba64"></a>REORDER_AUTO&#160;</td><td class="fielddoc"><p>use automaticaly reordering (default) </p>
+<tr><td class="fieldname"><a id="ggac2c3a6bd1b5b6c13a53ab6171d7a4c11a63e0b4363d776a1f187d8edf8494ba64"></a>REORDER_AUTO&#160;</td><td class="fielddoc"><p>use automaticaly reordering (default) </p>
 </td></tr>
-<tr><td class="fieldname"><a id="gga7e973856e6835495a381a60b1dad0b27a8cc51020597e0e6aebbe1ceccd289f5d"></a>REORDER_AMD&#160;</td><td class="fielddoc"><p>use AMD ordering </p>
+<tr><td class="fieldname"><a id="ggac2c3a6bd1b5b6c13a53ab6171d7a4c11a8cc51020597e0e6aebbe1ceccd289f5d"></a>REORDER_AMD&#160;</td><td class="fielddoc"><p>use AMD ordering </p>
 </td></tr>
-<tr><td class="fieldname"><a id="gga7e973856e6835495a381a60b1dad0b27aba4e6814b3c3a4cc08d1d6772e65bf84"></a>REORDER_RCM&#160;</td><td class="fielddoc"><p>use RCM ordering (require BGL) </p>
+<tr><td class="fieldname"><a id="ggac2c3a6bd1b5b6c13a53ab6171d7a4c11aba4e6814b3c3a4cc08d1d6772e65bf84"></a>REORDER_RCM&#160;</td><td class="fielddoc"><p>use RCM ordering (require BGL) </p>
 </td></tr>
-<tr><td class="fieldname"><a id="gga7e973856e6835495a381a60b1dad0b27a75a0c6841115e4836a6cb5a651a4bab0"></a>REORDER_NULL&#160;</td><td class="fielddoc"><p>ordering Null flag </p>
+<tr><td class="fieldname"><a id="ggac2c3a6bd1b5b6c13a53ab6171d7a4c11a75a0c6841115e4836a6cb5a651a4bab0"></a>REORDER_NULL&#160;</td><td class="fielddoc"><p>ordering Null flag </p>
 </td></tr>
 </table>
 
@@ -602,8 +472,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="gab3d34a70bc837bc30a9d1c743416e8ba"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gab3d34a70bc837bc30a9d1c743416e8ba">&#9670;&nbsp;</a></span>anonymous enum</h2>
+<a id="ga8f160434f949859dbb92ce347d3dafae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga8f160434f949859dbb92ce347d3dafae">&#9670;&nbsp;</a></span>anonymous enum</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -617,12 +487,136 @@ Variables</h2></td></tr>
 <p>enum wrapper for pivoting </p>
 <dl class="section note"><dt>Note</dt><dd>The prefix <em><a class="el" href="classhif_1_1HIF.html">HIF</a></em> is dropped </dd></dl>
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ggab3d34a70bc837bc30a9d1c743416e8baa78c70c1ee676d1531a9bcefa8853025c"></a>PIVOTING_OFF&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ggab3d34a70bc837bc30a9d1c743416e8baa7a23aa2995cbeb896e9a530dc005b97f"></a>PIVOTING_ON&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ggab3d34a70bc837bc30a9d1c743416e8baa5a5f640db08538f0aae2605f908d20a5"></a>PIVOTING_AUTO&#160;</td><td class="fielddoc"></td></tr>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="gga8f160434f949859dbb92ce347d3dafaea78c70c1ee676d1531a9bcefa8853025c"></a>PIVOTING_OFF&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="gga8f160434f949859dbb92ce347d3dafaea7a23aa2995cbeb896e9a530dc005b97f"></a>PIVOTING_ON&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="gga8f160434f949859dbb92ce347d3dafaea5a5f640db08538f0aae2605f908d20a5"></a>PIVOTING_AUTO&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 <p class="definition">Definition at line <a class="el" href="Options_8h_source.html#l00262">262</a> of file <a class="el" href="Options_8h_source.html">Options.h</a>.</p>
+
+</div>
+</div>
+<a id="ga726ca809ffd3d67ab4b8476646f26635"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga726ca809ffd3d67ab4b8476646f26635">&#9670;&nbsp;</a></span>anonymous enum</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">anonymous enum</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>the verbose level for progress report </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="gga726ca809ffd3d67ab4b8476646f26635a5f118c42e7dd8f80df64f96d08b99118"></a>HIF_VERBOSE_NONE&#160;</td><td class="fielddoc"><p>mute </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga726ca809ffd3d67ab4b8476646f26635a2f03897535e5cf8f0e093caca1642d3f"></a>HIF_VERBOSE_INFO&#160;</td><td class="fielddoc"><p>general information </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga726ca809ffd3d67ab4b8476646f26635af0627311c6c6506dbfbcb1b30cbecd8d"></a>HIF_VERBOSE_PRE&#160;</td><td class="fielddoc"><p>preprocessing </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga726ca809ffd3d67ab4b8476646f26635ae7203e31bdf38d466c9bb8513ed36cc5"></a>HIF_VERBOSE_FAC&#160;</td><td class="fielddoc"><p>factorization update </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga726ca809ffd3d67ab4b8476646f26635ac8ae875ab0af98543c61e878a43576ca"></a>HIF_VERBOSE_PRE_TIME&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="gga726ca809ffd3d67ab4b8476646f26635a6a0ddea655cba50d8e067b9020fec545"></a>HIF_VERBOSE_MEM&#160;</td><td class="fielddoc"><p>pre time memory debug </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga726ca809ffd3d67ab4b8476646f26635aed4f1544d1b51ce641025937482012a6"></a>HIF_VERBOSE_INFO2&#160;</td><td class="fielddoc"><p>more detailed than info </p>
+</td></tr>
+</table>
+
+<p class="definition">Definition at line <a class="el" href="Options_8h_source.html#l00046">46</a> of file <a class="el" href="Options_8h_source.html">Options.h</a>.</p>
+
+</div>
+</div>
+<a id="ga0411cd49bb5b71852cecd93bcbf0ca2d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga0411cd49bb5b71852cecd93bcbf0ca2d">&#9670;&nbsp;</a></span>anonymous enum</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">anonymous enum</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>reordering method </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="gga0411cd49bb5b71852cecd93bcbf0ca2da3301d34f07b3114dd6bd14e6cab4fa6f"></a>HIF_REORDER_OFF&#160;</td><td class="fielddoc"><p>turn reordering off </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga0411cd49bb5b71852cecd93bcbf0ca2da751622842e55ed26b11c1e17a956fd59"></a>HIF_REORDER_AUTO&#160;</td><td class="fielddoc"><p>use automaticaly reordering (default) </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga0411cd49bb5b71852cecd93bcbf0ca2dad2c8b670df0f5f4882dcb17e502add02"></a>HIF_REORDER_AMD&#160;</td><td class="fielddoc"><p>use AMD ordering </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga0411cd49bb5b71852cecd93bcbf0ca2da74df640645c530be3d6507ec0d9df540"></a>HIF_REORDER_RCM&#160;</td><td class="fielddoc"><p>use RCM ordering (require BGL) </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga0411cd49bb5b71852cecd93bcbf0ca2dae29afd902b98d1848d9a7262788f1f91"></a>HIF_REORDER_NULL&#160;</td><td class="fielddoc"><p>ordering Null flag (internal checking) </p>
+</td></tr>
+</table>
+
+<p class="definition">Definition at line <a class="el" href="Options_8h_source.html#l00059">59</a> of file <a class="el" href="Options_8h_source.html">Options.h</a>.</p>
+
+</div>
+</div>
+<a id="gabed82baf7f470b522273a3e37c24c600"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gabed82baf7f470b522273a3e37c24c600">&#9670;&nbsp;</a></span>anonymous enum</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">anonymous enum</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>pivoting flag </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ggabed82baf7f470b522273a3e37c24c600ac3bce3ced84052088b93055e0a75a3b0"></a>HIF_PIVOTING_OFF&#160;</td><td class="fielddoc"><p>perform deferring-only factorization </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggabed82baf7f470b522273a3e37c24c600a09d65080f6372f2a7b3c4cfce014b27f"></a>HIF_PIVOTING_ON&#160;</td><td class="fielddoc"><p>perform deferred Crout factor with pivoting </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggabed82baf7f470b522273a3e37c24c600a815ba2b0924cb53494394e2c3ebd3caa"></a>HIF_PIVOTING_AUTO&#160;</td><td class="fielddoc"><p>auto kernel (hybridizing between 0 and 1) </p>
+</td></tr>
+</table>
+
+<p class="definition">Definition at line <a class="el" href="Options_8h_source.html#l00070">70</a> of file <a class="el" href="Options_8h_source.html">Options.h</a>.</p>
+
+</div>
+</div>
+<a id="ga4a7969a33ce7cdffe37105e0b3c1aa1a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga4a7969a33ce7cdffe37105e0b3c1aa1a">&#9670;&nbsp;</a></span>anonymous enum</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">anonymous enum : int</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>enum wrapper </p>
+<dl class="section note"><dt>Note</dt><dd>The prefix <em><a class="el" href="classhif_1_1HIF.html">HIF</a></em> is dropped </dd></dl>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="gga4a7969a33ce7cdffe37105e0b3c1aa1aad8e28a63c3dca3c48f225ce12151b4aa"></a>VERBOSE_NONE&#160;</td><td class="fielddoc"><p>mute </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga4a7969a33ce7cdffe37105e0b3c1aa1aa27db06dd416547dc9be5c8547f1dfc53"></a>VERBOSE_INFO&#160;</td><td class="fielddoc"><p>general information </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga4a7969a33ce7cdffe37105e0b3c1aa1aa5d89c47228ebb5c432d13816c0336dcc"></a>VERBOSE_PRE&#160;</td><td class="fielddoc"><p>preprocessing </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga4a7969a33ce7cdffe37105e0b3c1aa1aaf450f7e62ed2f839e9824c1041f620c9"></a>VERBOSE_FAC&#160;</td><td class="fielddoc"><p>factorization update </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga4a7969a33ce7cdffe37105e0b3c1aa1aa026b66bdba94103ec96f0b9a363db327"></a>VERBOSE_PRE_TIME&#160;</td><td class="fielddoc"><p>pre time </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga4a7969a33ce7cdffe37105e0b3c1aa1aa32ded59d8f2ff77e0484df3b08d07d51"></a>VERBOSE_MEM&#160;</td><td class="fielddoc"><p>memory debug </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga4a7969a33ce7cdffe37105e0b3c1aa1aac219fdd38ef550317ab0d0d93654d2fb"></a>VERBOSE_INFO2&#160;</td><td class="fielddoc"><p>more detailed than info </p>
+</td></tr>
+</table>
+
+<p class="definition">Definition at line <a class="el" href="Options_8h_source.html#l00235">235</a> of file <a class="el" href="Options_8h_source.html">Options.h</a>.</p>
 
 </div>
 </div>
@@ -784,6 +778,8 @@ Here is the call graph for this function:</div>
 <p class="definition">Definition at line <a class="el" href="Options_8h_source.html#l00309">309</a> of file <a class="el" href="Options_8h_source.html">Options.h</a>.</p>
 
 <p class="reference">References <a class="el" href="Options_8h_source.html#l00168">hif_get_default_params()</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="libhifir_8cpp_source.html#l00074">libhifir_impl::create_params()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -791,6 +787,27 @@ Here is the call graph for this function:</div>
 <map name="group__itr_ga43f29591bddf7167da6ffd7f1ce485c6_cgraph" id="group__itr_ga43f29591bddf7167da6ffd7f1ce485c6_cgraph">
 <area shape="rect" id="node2" href="group__itr.html#gab7d4afb43ff269b672698f9fbdecf3df" title="alias of hif_get_default_options " alt="" coords="212,5,369,32"/>
 <area shape="rect" id="node3" href="group__itr.html#ga2f660813b046cfc93ebd69fc53053504" title="get the default controls " alt="" coords="417,5,573,32"/>
+</map>
+</div>
+<div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="group__itr_ga43f29591bddf7167da6ffd7f1ce485c6_icgraph.png" border="0" usemap="#group__itr_ga43f29591bddf7167da6ffd7f1ce485c6_icgraph" alt=""/></div>
+<map name="group__itr_ga43f29591bddf7167da6ffd7f1ce485c6_icgraph" id="group__itr_ga43f29591bddf7167da6ffd7f1ce485c6_icgraph">
+<area shape="rect" id="node2" href="namespacelibhifir__impl.html#aa647755afeb4c8b87409a5db329361ff" title="libhifir_impl::create\l_params" alt="" coords="212,175,343,217"/>
+<area shape="rect" id="node3" href="namespacelibhifir__impl.html#a272cb75f88c5869682ab55b82d069ffa" title="libhifir_impl::factorize" alt="" coords="391,183,536,209"/>
+<area shape="rect" id="node4" href="group__cdouble.html#ga77dbe00f3fc62cfb2583c6ac800f4eb4" title="Setup a double&#45;precision HIF instance. " alt="" coords="601,5,678,32"/>
+<area shape="rect" id="node6" href="group__cdouble.html#ga6f477b64f3e8c9cd2ecb15153fdb3d0d" title="Refactorize a HIF preconditioner. " alt="" coords="584,56,695,83"/>
+<area shape="rect" id="node7" href="group__csingle.html#gae44b965049b623a1e776139c990d3793" title="Setup a single&#45;precision HIF instance. " alt="" coords="601,107,678,133"/>
+<area shape="rect" id="node9" href="group__csingle.html#gabcf548831e7e7028d1d0d626ca420517" title="Refactorize a HIF preconditioner. " alt="" coords="584,157,695,184"/>
+<area shape="rect" id="node10" href="group__ccomplexdouble.html#gaf484fce835260d01607f69eb16946739" title="Setup a double&#45;precision complex HIF instance. " alt="" coords="601,208,678,235"/>
+<area shape="rect" id="node12" href="group__ccomplexdouble.html#gaaf48420c2d85a97419d46668d97ac05f" title="Refactorize a HIF preconditioner. " alt="" coords="584,259,695,285"/>
+<area shape="rect" id="node13" href="group__ccomplexsingle.html#ga50562a146f5a8fccc733496dfc7634c5" title="Setup a single&#45;precision complex HIF instance. " alt="" coords="601,309,678,336"/>
+<area shape="rect" id="node15" href="group__ccomplexsingle.html#ga049f10f26fc2358c52842427b9580dbc" title="Refactorize a HIF preconditioner. " alt="" coords="584,360,695,387"/>
+<area shape="rect" id="node5" href="group__cdouble.html#ga9160ad6f47f29b28db1117b5e204dbf2" title="Create a double&#45;precision HIF instance. " alt="" coords="743,5,825,32"/>
+<area shape="rect" id="node8" href="group__csingle.html#gae311803de1a5ee4d04d6cd15fbc65bbc" title="Create a single&#45;precision HIF instance. " alt="" coords="743,107,825,133"/>
+<area shape="rect" id="node11" href="group__ccomplexdouble.html#ga82a7d40400f181eaa31b9514c6a64793" title="Create a double&#45;precision complex HIF instance. " alt="" coords="743,208,825,235"/>
+<area shape="rect" id="node14" href="group__ccomplexsingle.html#ga81f952928dadb1bdb6cae0dcd8101b59" title="Create a single&#45;precision complex HIF instance. " alt="" coords="743,309,825,336"/>
 </map>
 </div>
 
@@ -964,9 +981,23 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="group__itr_ga2f660813b046cfc93ebd69fc53053504_icgraph.png" border="0" usemap="#group__itr_ga2f660813b046cfc93ebd69fc53053504_icgraph" alt=""/></div>
 <map name="group__itr_ga2f660813b046cfc93ebd69fc53053504_icgraph" id="group__itr_ga2f660813b046cfc93ebd69fc53053504_icgraph">
-<area shape="rect" id="node2" href="group__itr.html#gac5213e8224ec344a7e3587bc44c2ffc7" title="get the default configuration " alt="" coords="209,5,367,32"/>
-<area shape="rect" id="node3" href="group__itr.html#gab7d4afb43ff269b672698f9fbdecf3df" title="alias of hif_get_default_options " alt="" coords="209,56,367,83"/>
-<area shape="rect" id="node4" href="group__itr.html#ga43f29591bddf7167da6ffd7f1ce485c6" title="alias of get_default_options " alt="" coords="415,56,573,83"/>
+<area shape="rect" id="node2" href="group__itr.html#gac5213e8224ec344a7e3587bc44c2ffc7" title="get the default configuration " alt="" coords="209,132,367,159"/>
+<area shape="rect" id="node3" href="group__itr.html#gab7d4afb43ff269b672698f9fbdecf3df" title="alias of hif_get_default_options " alt="" coords="209,183,367,209"/>
+<area shape="rect" id="node4" href="group__itr.html#ga43f29591bddf7167da6ffd7f1ce485c6" title="alias of get_default_options " alt="" coords="415,183,573,209"/>
+<area shape="rect" id="node5" href="namespacelibhifir__impl.html#aa647755afeb4c8b87409a5db329361ff" title="libhifir_impl::create\l_params" alt="" coords="621,175,752,217"/>
+<area shape="rect" id="node6" href="namespacelibhifir__impl.html#a272cb75f88c5869682ab55b82d069ffa" title="libhifir_impl::factorize" alt="" coords="800,183,945,209"/>
+<area shape="rect" id="node7" href="group__cdouble.html#ga77dbe00f3fc62cfb2583c6ac800f4eb4" title="Setup a double&#45;precision HIF instance. " alt="" coords="1010,5,1087,32"/>
+<area shape="rect" id="node9" href="group__cdouble.html#ga6f477b64f3e8c9cd2ecb15153fdb3d0d" title="Refactorize a HIF preconditioner. " alt="" coords="993,56,1104,83"/>
+<area shape="rect" id="node10" href="group__csingle.html#gae44b965049b623a1e776139c990d3793" title="Setup a single&#45;precision HIF instance. " alt="" coords="1010,107,1087,133"/>
+<area shape="rect" id="node12" href="group__csingle.html#gabcf548831e7e7028d1d0d626ca420517" title="Refactorize a HIF preconditioner. " alt="" coords="993,157,1104,184"/>
+<area shape="rect" id="node13" href="group__ccomplexdouble.html#gaf484fce835260d01607f69eb16946739" title="Setup a double&#45;precision complex HIF instance. " alt="" coords="1010,208,1087,235"/>
+<area shape="rect" id="node15" href="group__ccomplexdouble.html#gaaf48420c2d85a97419d46668d97ac05f" title="Refactorize a HIF preconditioner. " alt="" coords="993,259,1104,285"/>
+<area shape="rect" id="node16" href="group__ccomplexsingle.html#ga50562a146f5a8fccc733496dfc7634c5" title="Setup a single&#45;precision complex HIF instance. " alt="" coords="1010,309,1087,336"/>
+<area shape="rect" id="node18" href="group__ccomplexsingle.html#ga049f10f26fc2358c52842427b9580dbc" title="Refactorize a HIF preconditioner. " alt="" coords="993,360,1104,387"/>
+<area shape="rect" id="node8" href="group__cdouble.html#ga9160ad6f47f29b28db1117b5e204dbf2" title="Create a double&#45;precision HIF instance. " alt="" coords="1152,5,1235,32"/>
+<area shape="rect" id="node11" href="group__csingle.html#gae311803de1a5ee4d04d6cd15fbc65bbc" title="Create a single&#45;precision HIF instance. " alt="" coords="1152,107,1235,133"/>
+<area shape="rect" id="node14" href="group__ccomplexdouble.html#ga82a7d40400f181eaa31b9514c6a64793" title="Create a double&#45;precision complex HIF instance. " alt="" coords="1152,208,1235,235"/>
+<area shape="rect" id="node17" href="group__ccomplexsingle.html#ga81f952928dadb1bdb6cae0dcd8101b59" title="Create a single&#45;precision complex HIF instance. " alt="" coords="1152,309,1235,336"/>
 </map>
 </div>
 
@@ -1016,7 +1047,21 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="group__itr_gab7d4afb43ff269b672698f9fbdecf3df_icgraph.png" border="0" usemap="#group__itr_gab7d4afb43ff269b672698f9fbdecf3df_icgraph" alt=""/></div>
 <map name="group__itr_gab7d4afb43ff269b672698f9fbdecf3df_icgraph" id="group__itr_gab7d4afb43ff269b672698f9fbdecf3df_icgraph">
-<area shape="rect" id="node2" href="group__itr.html#ga43f29591bddf7167da6ffd7f1ce485c6" title="alias of get_default_options " alt="" coords="211,5,369,32"/>
+<area shape="rect" id="node2" href="group__itr.html#ga43f29591bddf7167da6ffd7f1ce485c6" title="alias of get_default_options " alt="" coords="211,183,369,209"/>
+<area shape="rect" id="node3" href="namespacelibhifir__impl.html#aa647755afeb4c8b87409a5db329361ff" title="libhifir_impl::create\l_params" alt="" coords="417,175,548,217"/>
+<area shape="rect" id="node4" href="namespacelibhifir__impl.html#a272cb75f88c5869682ab55b82d069ffa" title="libhifir_impl::factorize" alt="" coords="596,183,741,209"/>
+<area shape="rect" id="node5" href="group__cdouble.html#ga77dbe00f3fc62cfb2583c6ac800f4eb4" title="Setup a double&#45;precision HIF instance. " alt="" coords="806,5,883,32"/>
+<area shape="rect" id="node7" href="group__cdouble.html#ga6f477b64f3e8c9cd2ecb15153fdb3d0d" title="Refactorize a HIF preconditioner. " alt="" coords="789,56,900,83"/>
+<area shape="rect" id="node8" href="group__csingle.html#gae44b965049b623a1e776139c990d3793" title="Setup a single&#45;precision HIF instance. " alt="" coords="806,107,883,133"/>
+<area shape="rect" id="node10" href="group__csingle.html#gabcf548831e7e7028d1d0d626ca420517" title="Refactorize a HIF preconditioner. " alt="" coords="789,157,900,184"/>
+<area shape="rect" id="node11" href="group__ccomplexdouble.html#gaf484fce835260d01607f69eb16946739" title="Setup a double&#45;precision complex HIF instance. " alt="" coords="806,208,883,235"/>
+<area shape="rect" id="node13" href="group__ccomplexdouble.html#gaaf48420c2d85a97419d46668d97ac05f" title="Refactorize a HIF preconditioner. " alt="" coords="789,259,900,285"/>
+<area shape="rect" id="node14" href="group__ccomplexsingle.html#ga50562a146f5a8fccc733496dfc7634c5" title="Setup a single&#45;precision complex HIF instance. " alt="" coords="806,309,883,336"/>
+<area shape="rect" id="node16" href="group__ccomplexsingle.html#ga049f10f26fc2358c52842427b9580dbc" title="Refactorize a HIF preconditioner. " alt="" coords="789,360,900,387"/>
+<area shape="rect" id="node6" href="group__cdouble.html#ga9160ad6f47f29b28db1117b5e204dbf2" title="Create a double&#45;precision HIF instance. " alt="" coords="948,5,1031,32"/>
+<area shape="rect" id="node9" href="group__csingle.html#gae311803de1a5ee4d04d6cd15fbc65bbc" title="Create a single&#45;precision HIF instance. " alt="" coords="948,107,1031,133"/>
+<area shape="rect" id="node12" href="group__ccomplexdouble.html#ga82a7d40400f181eaa31b9514c6a64793" title="Create a double&#45;precision complex HIF instance. " alt="" coords="948,208,1031,235"/>
+<area shape="rect" id="node15" href="group__ccomplexsingle.html#ga81f952928dadb1bdb6cae0dcd8101b59" title="Create a single&#45;precision complex HIF instance. " alt="" coords="948,309,1031,336"/>
 </map>
 </div>
 
@@ -1164,105 +1209,6 @@ template&lt;class InStream &gt; </div>
 <dl class="section return"><dt>Returns</dt><dd>string representation of <em>opt</em> </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="Options_8h_source.html#l00322">322</a> of file <a class="el" href="Options_8h_source.html">Options.h</a>.</p>
-
-</div>
-</div>
-<a id="gae2ff7ffcabcdcd58f50cf4be5764041c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gae2ff7ffcabcdcd58f50cf4be5764041c">&#9670;&nbsp;</a></span>query_info_ascii()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::tuple&lt;bool, bool, bool, bool, std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t&gt; hif::query_info_ascii </td>
-          <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>filename</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>query information of an ASCII file </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">filename</td><td>binary filename </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>tuple of CRS/CCS order, C-index, double/float, is real, nrows, ncols, nnz, m</dd></dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__itr.html#ga21ccbc8c2ac57a00725cb471206b8a0d" title="query information of a binary file ">query_info_bin</a> </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l00769">769</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
-
-<p class="reference">References <a class="el" href="log_8hpp_source.html#l00125">hif::error()</a>.</p>
-<div class="dynheader">
-Here is the call graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="group__itr_gae2ff7ffcabcdcd58f50cf4be5764041c_cgraph.png" border="0" usemap="#group__itr_gae2ff7ffcabcdcd58f50cf4be5764041c_cgraph" alt=""/></div>
-<map name="group__itr_gae2ff7ffcabcdcd58f50cf4be5764041c_cgraph" id="group__itr_gae2ff7ffcabcdcd58f50cf4be5764041c_cgraph">
-<area shape="rect" id="node2" href="group__util.html#ga0a3c88ad06db9caf44d1a64d51ebb7b2" title="error information streaming, dump to HIF_STDERR " alt="" coords="192,5,263,32"/>
-</map>
-</div>
-
-</div>
-</div>
-<a id="ga21ccbc8c2ac57a00725cb471206b8a0d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga21ccbc8c2ac57a00725cb471206b8a0d">&#9670;&nbsp;</a></span>query_info_bin()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::tuple&lt;bool, bool, bool, bool, std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t&gt; hif::query_info_bin </td>
-          <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>filename</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>query information of a binary file </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">filename</td><td>binary filename </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>tuple of CRS/CCS order, C-index, double/float, is real, nrows, ncols, nnz, m</dd></dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__itr.html#gae2ff7ffcabcdcd58f50cf4be5764041c" title="query information of an ASCII file ">query_info_ascii</a> </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="io_8hpp_source.html#l00380">380</a> of file <a class="el" href="io_8hpp_source.html">io.hpp</a>.</p>
-
-<p class="reference">References <a class="el" href="log_8hpp_source.html#l00125">hif::error()</a>, <a class="el" href="io_8hpp_source.html#l00102">hif::internal::is_little_endian()</a>, <a class="el" href="io_8hpp_source.html#l00121">hif::internal::read_general_info()</a>, and <a class="el" href="io_8hpp_source.html#l00158">hif::internal::read_matrix_sizes()</a>.</p>
-<div class="dynheader">
-Here is the call graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="group__itr_ga21ccbc8c2ac57a00725cb471206b8a0d_cgraph.png" border="0" usemap="#group__itr_ga21ccbc8c2ac57a00725cb471206b8a0d_cgraph" alt=""/></div>
-<map name="group__itr_ga21ccbc8c2ac57a00725cb471206b8a0d_cgraph" id="group__itr_ga21ccbc8c2ac57a00725cb471206b8a0d_cgraph">
-<area shape="rect" id="node2" href="group__util.html#ga0a3c88ad06db9caf44d1a64d51ebb7b2" title="error information streaming, dump to HIF_STDERR " alt="" coords="213,5,284,32"/>
-<area shape="rect" id="node3" href="group__io.html#ga1caaca05c2c4b8f14478bff2c80bb67f" title="check if the os is litter endian " alt="" coords="181,57,316,98"/>
-<area shape="rect" id="node4" href="group__io.html#ga189b04f700d1d1232ba2342fedcda595" title="read the general information " alt="" coords="189,122,308,163"/>
-<area shape="rect" id="node5" href="group__io.html#ga371b7839983aebe182ad641c70a3d4de" title="read the matrix size information " alt="" coords="189,187,308,229"/>
-</map>
-</div>
 
 </div>
 </div>
@@ -1435,6 +1381,8 @@ template&lt;typename T &gt; </div>
 <dl><dt><b>Examples: </b></dt><dd><a class="el" href="demo_fgmres_8cpp-example.html#a3">demo_fgmres.cpp</a>, <a class="el" href="demo_fgmres_sparsifier_8cpp-example.html#a10">demo_fgmres_sparsifier.cpp</a>, <a class="el" href="demo_gmreshif_8cpp-example.html#a3">demo_gmreshif.cpp</a>, <a class="el" href="demo_params_8cpp-example.html#a4">demo_params.cpp</a>, <a class="el" href="demo_sparsifier_8cpp-example.html#a10">demo_sparsifier.cpp</a>, and <a class="el" href="demo_verbose_8cpp-example.html#a4">demo_verbose.cpp</a>.</dd>
 </dl>
 <p class="definition">Definition at line <a class="el" href="Options_8h_source.html#l00315">315</a> of file <a class="el" href="Options_8h_source.html">Options.h</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="libhifir_8cpp_source.html#l00238">lhfSetDefaultParams()</a>.</p>
 
 </div>
 </div>

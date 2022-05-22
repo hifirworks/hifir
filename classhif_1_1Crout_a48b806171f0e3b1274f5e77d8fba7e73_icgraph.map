@@ -1,24 +1,24 @@
 <map id="hif::Crout::deferred_step" name="hif::Crout::deferred_step">
 <area shape="rect" id="node2" href="$classhif_1_1Crout.html#a7795707deb572dc25d6b12f9649db4db" title="load a column of A to l buffer " alt="" coords="235,5,382,32"/>
 <area shape="rect" id="node3" href="$classhif_1_1Crout.html#a4bc8ef7f02d1c684768678bbcd14f106" title="load a row of A to ut buffer " alt="" coords="233,56,384,83"/>
-<area shape="rect" id="node4" href="$classhif_1_1PivotCrout.html#a5665a23b591bd00d81ab140dcad77d8f" title="Apply inverse&#45;based rook pivoting. " alt="" coords="236,107,381,149"/>
+<area shape="rect" id="node4" href="$classhif_1_1PivotCrout.html#a67ee6d3984898a8fac1f38c0f98c2e26" title="Apply inverse&#45;based rook pivoting. " alt="" coords="236,107,381,149"/>
 <area shape="rect" id="node5" href="$classhif_1_1Crout.html#a1b22f1f1e2c8025abe84d35c71fa622b" title="compress an array and assign the no&#45;gapped value to another one " alt="" coords="247,173,370,214"/>
 <area shape="rect" id="node6" href="$classhif_1_1Crout.html#abce74b5c7033230c21f25a4909ba2001" title="compress an array without deferrals (gaps) " alt="" coords="238,238,379,279"/>
-<area shape="rect" id="node7" href="$classhif_1_1PivotCrout.html#a7141fe35e82caf4b175b65bafd3215bd" title="compute diagonal entry " alt="" coords="216,304,401,331"/>
-<area shape="rect" id="node8" href="$classhif_1_1Crout.html#a11611d8b989bd1c21d7836c00e55037b" title="compute the column vector of L of current step " alt="" coords="237,355,381,381"/>
-<area shape="rect" id="node9" href="$classhif_1_1PivotCrout.html#a6898b665fe8bf7eab93a4f8b1d1b620f" title="compute the column vector of L of current step " alt="" coords="221,405,396,432"/>
-<area shape="rect" id="node10" href="$classhif_1_1Crout.html#a7e7124b69c3f78edc6996c8674ff780e" title="compute the column vector of L of current step for &#160;" alt="" coords="220,456,397,483"/>
-<area shape="rect" id="node11" href="$classhif_1_1Crout.html#a6160f724500f49f900f4b12014c3bc22" title="dual of the compute_l, i.e. computing the row of U " alt="" coords="233,507,385,533"/>
-<area shape="rect" id="node12" href="$classhif_1_1PivotCrout.html#a0501a26e462c5d62fee0e923a17f84d9" title="dual of the compute_l, i.e. computing the row of U " alt="" coords="217,557,400,584"/>
+<area shape="rect" id="node7" href="$classhif_1_1PivotCrout.html#a07090b1b1076f6c100df45ec3952226e" title="compute diagonal entry " alt="" coords="216,304,401,331"/>
+<area shape="rect" id="node8" href="$classhif_1_1Crout.html#acd828247defa0e394b12d62811930216" title="compute the column vector of L of current step " alt="" coords="237,355,381,381"/>
+<area shape="rect" id="node9" href="$classhif_1_1PivotCrout.html#a10f12a87c293233a0acd52ece0a41c4f" title="compute the column vector of L of current step " alt="" coords="221,405,396,432"/>
+<area shape="rect" id="node10" href="$classhif_1_1Crout.html#ab428dc148a9fb48819d8ba9f104b555e" title="compute the column vector of L of current step for &#160;" alt="" coords="220,456,397,483"/>
+<area shape="rect" id="node11" href="$classhif_1_1Crout.html#ab6859cbf1c747aaac7e6cbb38c33fe08" title="dual of the compute_l, i.e. computing the row of U " alt="" coords="233,507,385,533"/>
+<area shape="rect" id="node12" href="$classhif_1_1PivotCrout.html#a82761654d2ad8824de83e7073aa64629" title="dual of the compute_l, i.e. computing the row of U " alt="" coords="217,557,400,584"/>
 <area shape="rect" id="node13" href="$group__defer.html#ga3de53a81bcc7cfdc4a70f5fe7cc20743" title="defer an secondary entry, i.e., rows in CCS and columns in CRS " alt="" coords="237,609,380,650"/>
-<area shape="rect" id="node14" href="$group__defer.html#gaefa97e5aac490e4a8716e9953afa510b" title="defer an secondary entry " alt="" coords="234,675,383,701"/>
+<area shape="rect" id="node14" href="$group__defer.html#ga7b356d55089463baf58948c321b70d03" title="defer an secondary entry " alt="" coords="234,675,383,701"/>
 <area shape="rect" id="node15" href="$classhif_1_1PivotCrout.html#a75f24ca9e1bcfa66268de9b280c58536" title="interchagen with pivot for pivoting with Crout LU " alt="" coords="218,725,399,752"/>
 <area shape="rect" id="node16" href="$group__fac.html#ga5e85c4efc549f28f913faacc7a901d9b" title="perform partial incomplete LU for a level " alt="" coords="245,776,373,803"/>
 <area shape="rect" id="node17" href="$group__fac.html#gacf606dfc70540b8eff78f1e1102e7529" title="perform partial incomplete LU for a level with thresholding pivoting " alt="" coords="227,827,390,853"/>
-<area shape="rect" id="node18" href="$group__defer.html#gadfd48df3729864a4391a72084d83025e" title="for symmetric leading block, we need to fix the offset positions while we do deferring ..." alt="" coords="225,877,392,904"/>
+<area shape="rect" id="node18" href="$group__defer.html#ga35d2c5eed453173334a580cd0fc5ec19" title="for symmetric leading block, we need to fix the offset positions while we do deferring ..." alt="" coords="225,877,392,904"/>
 <area shape="rect" id="node19" href="$group__fac.html#ga7f72580db4c9b6183bafd84427b8c17d" title="perform partial incomplete LU for a level " alt="" coords="223,928,394,955"/>
-<area shape="rect" id="node20" href="$classhif_1_1PivotCrout.html#a7ccaa0d77f9bd8559d8192e156e13fc1" title="compress L and U and update their corresponding starting positions " alt="" coords="232,979,385,1021"/>
-<area shape="rect" id="node21" href="$classhif_1_1Crout.html#a58fe5439dac781d451a848728b3bd8dd" title="compress L and U and update their corresponding starting positions and linked lists ..." alt="" coords="247,1045,370,1086"/>
+<area shape="rect" id="node20" href="$classhif_1_1PivotCrout.html#ae76c701d74e4e9d77f2acf23fcecb6cc" title="compress L and U and update their corresponding starting positions " alt="" coords="232,979,385,1021"/>
+<area shape="rect" id="node21" href="$classhif_1_1Crout.html#a51bbf7c0a0a4c8ee89ef806e30c2bb96" title="compress L and U and update their corresponding starting positions and linked lists ..." alt="" coords="247,1045,370,1086"/>
 <area shape="rect" id="node22" href="$classhif_1_1PivotCrout.html#a0a5d451bf8f68a3d76805b7b291511ca" title="estimate the inverse norm with augmented ds " alt="" coords="232,1110,385,1151"/>
-<area shape="rect" id="node23" href="$classhif_1_1Crout.html#a08c98476a04ffc426d052151f68b9f9e" title="estimate the inverse norm " alt="" coords="247,1175,370,1217"/>
+<area shape="rect" id="node23" href="$classhif_1_1Crout.html#a27f96d50a47d0d0dd817c3ff2b27d90f" title="estimate the inverse norm " alt="" coords="247,1175,370,1217"/>
 </map>

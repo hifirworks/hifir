@@ -2,7 +2,7 @@
 <area shape="rect" id="node7" href="$Array_8hpp.html" title="Array data structure, with functionality of wrapping external data. " alt="" coords="345,229,460,256"/>
 <area shape="rect" id="node20" href="$common_8hpp.html" title="Utility/helper routines. " alt="" coords="815,229,958,256"/>
 <area shape="rect" id="node23" href="$coo2compress_8hpp.html" title="Helper function to convert coordinate to compressed format. " alt="" coords="168,155,347,181"/>
-<area shape="rect" id="node24" href="$io_8hpp.html" title="Read and write native IO formats. " alt="" coords="1365,80,1467,107"/>
+<area shape="rect" id="node24" href="$io_8hpp.html" title="Read and write sparse matrices in HIFIR. " alt="" coords="1365,80,1467,107"/>
 <area shape="rect" id="node30" href="$math_8hpp.html" title="Some handy BLAS 1 vector routines. " alt="" coords="1019,155,1141,181"/>
 <area shape="rect" id="node33" href="$mt__mv_8hpp.html" title="Multithreaded matrix&#45;vector product for CRS. " alt="" coords="573,155,707,181"/>
 <area shape="rect" id="node10" href="$log_8hpp.html" title="Logging interface, including info/warning/error. " alt="" coords="597,304,707,331"/>

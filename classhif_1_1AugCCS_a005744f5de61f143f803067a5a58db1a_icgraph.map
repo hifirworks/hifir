@@ -1,0 +1,7 @@
+<map id="hif::AugCCS::next_row_id" name="hif::AugCCS::next_row_id">
+<area shape="rect" id="node2" href="$classhif_1_1AugCCS.html#aeeb29692770db145b29adea513c00056" title="defer a row to the end " alt="" coords="251,19,412,46"/>
+<area shape="rect" id="node4" href="$classhif_1_1AugCCS.html#af6550c39c4204e5f4ac498a755306287" title="interchange two rows " alt="" coords="228,74,435,101"/>
+<area shape="rect" id="node6" href="$classhif_1_1AugCCS.html#a0bb12622308d8a7d49e6805cf3bccc9b" title="unified interface for advancing to next augmented ID " alt="" coords="244,125,419,151"/>
+<area shape="rect" id="node3" href="$classhif_1_1AugCCS.html#a8d68bbd152db9f50f2e836dc2a80e5bf" title="unified interface for deferring " alt="" coords="501,5,635,47"/>
+<area shape="rect" id="node5" href="$classhif_1_1AugCCS.html#a6df3e521c450097a7773396bfa77c1a5" title="unified interface for interchanging " alt="" coords="483,71,653,112"/>
+</map>
