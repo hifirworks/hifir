@@ -51,27 +51,29 @@ class IterRefine {
   /// \brief default constructor
   IterRefine() = default;
 
-  /// \brief Stationary iteration used as refinement
-  /// \tparam MType preconditioner, see \ref HIF
-  /// \tparam Matrix matrix type, see \ref CRS or \ref CCS
-  /// \param[in] M HIF preconditioner
-  /// \param[in] A input matrix
-  /// \param[in] b right-hand side vector
-  /// \param[in] N number of iterations
-  /// \param[out] x solution of Jacobi after \a N iterations
-  /// \param[in] last_dim (optional) dimension for back solve for last level
-  ///                     default is its numerical rank in \a M
-  /// \param[in] tran (optional) transpose/Herimitian flag, default is false
-  ///
-  /// This function implements the abstracted Jacobi processes as follows
-  ///
-  /// \f{eqnarray*}{
-  ///   \mathbf{Ax}&=&\mathbf{b} \\
-  ///   (\mathbf{M+A-M})\mathbf{x}&=&\mathbf{b} \\
-  ///   \mathbf{Mx}&=&\mathbf{b}-(\mathbf{A-M})\mathbf{x} \\
-  ///   \mathbf{x}&=&\mathbf{M}^{-1}(\mathbf{r}+\mathbf{Mx}) \\
-  ///   \mathbf{x}_{k+1}&=&\mathbf{M}^{-1}\mathbf{r}+\mathbf{x}_k
-  /// \f}
+  /*!
+   * \brief Stationary iteration used as refinement
+   * \tparam MType preconditioner, see \ref HIF
+   * \tparam Matrix matrix type, see \ref CRS or \ref CCS
+   * \param[in] M HIF preconditioner
+   * \param[in] A input matrix
+   * \param[in] b right-hand side vector
+   * \param[in] N number of iterations
+   * \param[out] x solution of Jacobi after \a N iterations
+   * \param[in] last_dim (optional) dimension for back solve for last level
+   *                     default is its numerical rank in \a M
+   * \param[in] tran (optional) transpose/Herimitian flag, default is false
+   *
+   * This function implements the abstracted Jacobi processes as follows
+   *
+   * \f{eqnarray*}{
+   *   \mathbf{Ax}&=&\mathbf{b} \\
+   *   (\mathbf{M+A-M})\mathbf{x}&=&\mathbf{b} \\
+   *   \mathbf{Mx}&=&\mathbf{b}-(\mathbf{A-M})\mathbf{x} \\
+   *   \mathbf{x}&=&\mathbf{M}^{-1}(\mathbf{r}+\mathbf{Mx}) \\
+   *   \mathbf{x}_{k+1}&=&\mathbf{M}^{-1}\mathbf{r}+\mathbf{x}_k
+   * \f}
+   */
   template <class MType, class Matrix, class IArrayType, class OArrayType>
   inline void iter_refine(const MType &M, const Matrix &A, const IArrayType &b,
                           const size_type N, OArrayType &x,

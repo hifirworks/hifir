@@ -185,24 +185,26 @@ class QRCP {
     factorize(opts);
   }
 
-  /// \brief solve system
-  /// \param[in,out] x input rhs, output solution
-  /// \param[in] rank (optional) rank for back solve, default is \a _rank
-  /// \param[in] tran (optional) transpose flag, default is false
-  ///
-  /// First, QRCP returns \f$\mathbf{AP}=\mathbf{QR}\f$, thus when we
-  /// have \f$\mathbf{Ax}=\mathbf{b}\f$, the derivation is:
-  ///
-  /// \f{eqnarray*}{
-  ///   \mathbf{QRP}^T\mathbf{x}&=&\mathbf{b} \\
-  ///   \hookrightarrow\mathbf{RP}^T\mathbf{x}&=&\mathbf{Q}^T\mathbf{b} \\
-  ///   \hookrightarrow\mathbf{P}^T\mathbf{x}&=&\mathbf{R}^{-1}
-  ///     \mathbf{Q}^T\mathbf{b} \\
-  ///   \hookrightarrow\mathbf{x}&=&\mathbf{PR}^{-1}\mathbf{Q}^T\mathbf{b}
-  /// \f}
-  ///
-  /// Notice that \f$\mathbf{R}^{-1}\mathbf{Q}^T\f$ is the
-  /// pseudo-inverse of \f$\mathbf{AP}\f$.
+  /*!
+   * \brief solve system
+   * \param[in,out] x input rhs, output solution
+   * \param[in] rank (optional) rank for back solve, default is \a _rank
+   * \param[in] tran (optional) transpose flag, default is false
+   *
+   * First, QRCP returns \f$\mathbf{AP}=\mathbf{QR}\f$, thus when we
+   * have \f$\mathbf{Ax}=\mathbf{b}\f$, the derivation is:
+   *
+   * \f{eqnarray*}{
+   *   \mathbf{QRP}^T\mathbf{x}&=&\mathbf{b} \\
+   *   \hookrightarrow\mathbf{RP}^T\mathbf{x}&=&\mathbf{Q}^T\mathbf{b} \\
+   *   \hookrightarrow\mathbf{P}^T\mathbf{x}&=&\mathbf{R}^{-1}
+   *     \mathbf{Q}^T\mathbf{b} \\
+   *   \hookrightarrow\mathbf{x}&=&\mathbf{PR}^{-1}\mathbf{Q}^T\mathbf{b}
+   * \f}
+   *
+   * Notice that \f$\mathbf{R}^{-1}\mathbf{Q}^T\f$ is the
+   * pseudo-inverse of \f$\mathbf{AP}\f$.
+   */
   inline void solve(Array<value_type> &x, const size_type rank = 0u,
                     const bool tran = false) const {
     hif_error_if(x.size() != _mat.nrows(),
