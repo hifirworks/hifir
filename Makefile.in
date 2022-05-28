@@ -15,11 +15,11 @@ CXXFLAGS += -fopenmp -fpic -std=c++11
 # By default, we disable DEBUG, which disables assertions.
 # Set to 1 to enable all assertions and set to 2 to use sanitize of gcc.
 ifeq ($(DEBUG),2)
-    DBGFLAGS += -g -fno-omit-frame-pointer -fsanitize=address -Wall -Wextra -Wno-comment
+    DBGFLAGS += -g -fno-omit-frame-pointer -fsanitize=address -Wall -Wextra
 else ifeq ($(DEBUG),1)
-    DBGFLAGS += -g -DHIF_DEBUG -Wall -Wextra -Wno-comment
+    DBGFLAGS += -g -DHIF_DEBUG -Wall -Wextra
 else
-    DBGFLAGS += -DNDEBUG
+    DBGFLAGS += -DNDEBUG -Wall -Wextra
 endif
 
 ifeq ($(DEBUG),)
