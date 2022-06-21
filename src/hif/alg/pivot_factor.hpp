@@ -737,13 +737,14 @@ inline CsType pivot_level_factorize(
     auto &last_level = precs.back().dense_solver;
     last_level.set_matrix(std::move(S_D));
     last_level.factorize(opts);
-    if (hif_verbose(INFO, opts))
+    if (hif_verbose(INFO, opts)) {
       hif_info(
           "successfully factorized the dense component of "
           "(size,rank)=(%zd,%zd)...",
           last_level.mat().nrows(), last_level.rank());
-    hif_info("is the final Schur complement full-rank? %s",
-             (last_level.mat().nrows() == last_level.rank() ? "yes" : "no"));
+      hif_info("is the final Schur complement full-rank? %s",
+               (last_level.mat().nrows() == last_level.rank() ? "yes" : "no"));
+    }
   }
 
   timer.finish();  // profile post-processing
