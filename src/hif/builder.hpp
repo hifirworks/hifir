@@ -268,10 +268,10 @@ class HIF {
     using cs_type =
         typename std::conditional<CsType::ROW_MAJOR, crs_type, ccs_type>::type;
 
-    static_assert(std::is_same<index_type, typename CsType::index_type>::value,
+    static_assert(sizeof(index_type) == sizeof(typename CsType::index_type),
                   "inconsistent index types");
     static_assert(
-        std::is_same<indptr_type, typename CsType::indptr_type>::value,
+        sizeof(index_type) == sizeof(typename CsType::index_type),
         "inconsistent indptr types");
 
     // print introduction
