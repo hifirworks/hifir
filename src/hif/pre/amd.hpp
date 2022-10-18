@@ -97,7 +97,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #  define FLIP(i) (-(i)-2)
 #  define UNFLIP(i) ((i < EMPTY) ? FLIP(i) : (i))
 
-#  define SIZE_T_MAX SIZE_MAX
+#  define AMD_SIZE_T_MAX SIZE_MAX
 
 #endif  // DOXYGEN_SHOULD_SKIP_THIS
 
@@ -1050,8 +1050,8 @@ class AMD {
       if (info) Info[AMD_STATUS] = AMD_INVALID;
       return (AMD_INVALID);
     }
-    if (((size_t)n) >= SIZE_T_MAX / sizeof(Int) ||
-        ((size_t)nz) >= SIZE_T_MAX / sizeof(Int)) {
+    if (((size_t)n) >= AMD_SIZE_T_MAX / sizeof(Int) ||
+        ((size_t)nz) >= AMD_SIZE_T_MAX / sizeof(Int)) {
       if (info) Info[AMD_STATUS] = AMD_OUT_OF_MEMORY;
       return (AMD_OUT_OF_MEMORY);
     }
@@ -1111,7 +1111,7 @@ class AMD {
       slen += n;
     }
     mem += slen;
-    ok = ok && (slen < SIZE_T_MAX / sizeof(Int));
+    ok = ok && (slen < AMD_SIZE_T_MAX / sizeof(Int));
     ok = ok && (slen < Int_MAX);
     if (ok) {
       S = AMD_malloc(slen, sizeof(Int));
