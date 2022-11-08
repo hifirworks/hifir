@@ -139,7 +139,7 @@ inline typename std::enable_if<CsType::ROW_MAJOR, T>::type multiply_mrhs_nt(
 #endif
   do {
     const auto part = uniform_partition(A.nrows(), nthreads, get_thread());
-    A.multiply_mrhs_nt_low<Nrhs>(x[0].data(), part.first,
+    A.template multiply_mrhs_nt_low<Nrhs>(x[0].data(), part.first,
                                  part.second - part.first, y[0].data());
   } while (false);  // parallel region
 }
@@ -160,13 +160,13 @@ inline typename std::enable_if<CsType::ROW_MAJOR, T>::type multiply_mrhs_nt_low(
   if (nthreads == 0) nthreads = get_nthreads(-1);
   if (nthreads == 1 ||
       (A.nrows() < 1000u && Nrhs * A.nnz() / (double)A.nrows() <= 20))
-    return A.multiply_mrhs_nt_low<Nrhs>(x, y);
+    return A.template multiply_mrhs_nt_low<Nrhs>(x, y);
 #ifdef _OPENMP
 #  pragma omp parallel num_threads(nthreads)
 #endif
   do {
     const auto part = uniform_partition(A.nrows(), nthreads, get_thread());
-    A.multiply_mrhs_nt_low<Nrhs>(x, part.first, part.second - part.first, y);
+    A.template multiply_mrhs_nt_low<Nrhs>(x, part.first, part.second - part.first, y);
   } while (false);  // parallel region
 }
 
@@ -185,7 +185,7 @@ template <std::size_t Nrhs, class CsType, class Vx, class Vy, typename T = void>
 inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type
 multiply_mrhs_nt_low(const CsType &A, const Vx *x, Vy *y) {
   hif_warning("CCS does not support threaded matrix-vector!");
-  return A.multiply_mrhs_nt_low<Nrhs>(x, y);
+  return A.template multiply_mrhs_nt_low<Nrhs>(x, y);
 }
 
 /*!
