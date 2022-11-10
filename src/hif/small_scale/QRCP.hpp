@@ -149,11 +149,13 @@ class QRCP {
     const scalar_type diag_eps = diag_tol * std::abs(_mat[0]);
     for (size_type i = N; i != 0u; --i)
       if (std::abs(_mat(i - 1, i - 1)) < diag_eps) {
-        hif_warning(
-            "\n  System is ill-conditioned (diagonal %zd is smaller\n"
-            "  than tolerance %g), will switch to condition number\n"
-            "  estimator to determine the final numerical rank.",
-            i, (double)diag_eps);
+        if (hif_verbose(WARN, opts)) {
+          hif_warning(
+              "\n  System is ill-conditioned (diagonal %zd is smaller\n"
+              "  than tolerance %g), will switch to condition number\n"
+              "  estimator to determine the final numerical rank.",
+              i, (double)diag_eps);
+        }
         do_cond_test = true;
         break;
       }
@@ -167,11 +169,12 @@ class QRCP {
       static const char *nrm_sig = "2";
       _est_rank_2norm(cond_thres);
 #endif
-      hif_warning_if(_rank != _mat.ncols(),
-                     "\n  The system is rank deficient with rank=%zd,\n"
-                     "  the tolerance used was %g, comparing wrt\n"
-                     "  %s-norm-based condition number estimation.",
-                     _rank, (double)cond_thres, nrm_sig);
+      if (_rank != _mat.ncols() && hif_verbose(WARN, opts)) {
+        hif_warning("\n  The system is rank deficient with rank=%zd,\n"
+                    "  the tolerance used was %g, comparing wrt\n"
+                    "  %s-norm-based condition number estimation.",
+                    _rank, (double)cond_thres, nrm_sig);
+      }
     }
   }
 

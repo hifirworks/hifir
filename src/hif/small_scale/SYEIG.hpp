@@ -168,9 +168,10 @@ class SYEIG {
         else
           break;
     }
-    if (_rank != n)
+    if (_rank != n && hif_verbose(WARN, opts)) {
       hif_warning("\n  System is ill-conditioned with rank=%d, dim=%d.",
                   (int)_rank, (int)n);
+    }
   }
 
   /// \brief refactorize the dense block

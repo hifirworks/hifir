@@ -154,7 +154,9 @@ inline Array<typename CcsType::value_type> extract_perm_diag(
     if (info.first)
       diag[i] = s[p[i]] * *(v_begin + (info.second - i_begin)) * t[q[i]];
     else {
-      // hif_warning("zero diagonal entry %zd detected!", i);
+#ifdef HIF_DEBUG
+      hif_warning("zero diagonal entry %zd detected!", i);
+#endif
       diag[i] = 0;
     }
   }
@@ -198,7 +200,9 @@ inline typename CrsType::other_type extract_E(
   const size_type N = n - m;
   ccs_type        E(N, m);
   if (!N) {
-    // hif_warning("empty E matrix detected!");
+#ifdef HIF_DEBUG
+    hif_warning("empty E matrix detected!");
+#endif
     return E;
   }
 
@@ -219,8 +223,9 @@ inline typename CrsType::other_type extract_E(
   for (size_type i = 0u; i < m; ++i) col_start[i + 1] += col_start[i];
 
   if (!col_start[m]) {
-    // hif_warning(
-    //     "exactly zero E, this most likely is a bug! Continue anyway...");
+#ifdef HIF_DEBUG
+    hif_warning("exactly zero E, this most likely is a bug! Continue anyway...");
+#endif
     return E;
   }
 
@@ -301,7 +306,9 @@ inline CcsType extract_F(const ScalingType &s, const CcsType &A,
   const size_type N = n - m;
   CcsType         F(m, N);
   if (!N) {
-    // hif_warning("empty F matrix detected!");
+#ifdef HIF_DEBUG
+    hif_warning("empty F matrix detected!");
+#endif
     return F;
   }
 
@@ -321,8 +328,9 @@ inline CcsType extract_F(const ScalingType &s, const CcsType &A,
   }
 
   if (!(col_start[N])) {
-    // hif_warning(
-    //     "exactly zero F, this most likely is a bug! Continue anyway...");
+#ifdef HIF_DEBUG
+    hif_warning("exactly zero F, this most likely is a bug! Continue anyway...");
+#endif
     return F;
   }
 

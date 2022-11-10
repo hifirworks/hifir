@@ -109,10 +109,12 @@ class LUP {
     if (info < 0)
       hif_error("GETRF returned negative info!");
     else if (info > 0) {
-      hif_warning(
-          "GETRF returned positive info, U(%zd,%zd) is exactly zero! "
-          "Consider using QRCP for small scale solver!",
-          (size_type)info, (size_type)info);
+      if (hif_verbose(WARN, opts)) {
+        hif_warning(
+            "GETRF returned positive info, U(%zd,%zd) is exactly zero! "
+            "Consider using QRCP for small scale solver!",
+            (size_type)info, (size_type)info);
+      }
       _rank = info - 1;
     } else
       _rank = _mat.ncols();

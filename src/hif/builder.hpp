@@ -443,12 +443,12 @@ class HIF {
                          const size_type r = 0u) const {
     hif_error_if(empty(), "MILU-Prec is empty!");
     hif_error_if(b.size() != x.size(), "unmatched sizes");
+    hif_error_if(nsp, "multiple RHS does not support null space filter.");
     const auto nw = compute_prec_work_space(_precs.cbegin(), _precs.cend());
     if (_prec_work.empty()) _prec_work.resize(nw * Nrhs);
     Array<std::array<boost_value_type, Nrhs>> w(
         nw, (std::array<boost_value_type, Nrhs> *)_prec_work.data(), true);
     prec_solve_mrhs(_precs.cbegin(), b, r, x, w);
-    hif_warning_if(nsp, "multiple RHS does not support null space filter.");
   }
 
   /// \brief solve with iterative refinement

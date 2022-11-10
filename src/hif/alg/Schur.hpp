@@ -260,7 +260,9 @@ inline void compute_Schur_simple(const ScaleArray &s, const CrsType &A,
   }
 
   if (row_start[N] == 0) {
-    hif_warning("Schur (S version) complement becomes empty!");
+#ifdef HIF_DEBUG
+      hif_warning("Schur (S version) complement becomes empty!");
+#endif
     return;
   }
 

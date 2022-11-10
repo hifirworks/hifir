@@ -66,10 +66,10 @@ class EqlDriver {
   ///< kernel type
 
   template <bool IsSymm>
-  inline static void do_matching(const int /* verbose */, crs_type &B,
+  inline static void do_matching(crs_type &B,
                                  Array<index_type> &p, Array<index_type> &q,
                                  Array<scalar_type> &s, Array<scalar_type> &t,
-                                 const int pre_scale = 0) {
+                                 const int pre_scale = 0, const int verbose = 0) {
     const size_type n = B.nrows(), nnz = B.nnz();
     hif_error_if(B.nrows() != n, "must be squared systems");
     hif_assert(p.size() >= n, "invalid P permutation size");
@@ -102,10 +102,12 @@ class EqlDriver {
             "Please refer MC64 documentation section 2.1.2 for error info "
             "interpretation.",
             info);
-      } else if (info == 1) {
-        hif_warning("MC64 the input matrix is structurally singular!");
-      } else if (info == 2) {
-        hif_warning("MC64 the result scaling may cause overflow issue!");
+      } else if (hif_verbose2(WARN, verbose)) {
+        if (info == 1) {
+          hif_warning("MC64 the input matrix is structurally singular!");
+        } else if (info == 2) {
+          hif_warning("MC64 the result scaling may cause overflow issue!");
+        }
       }
 
       // update scaling if necessary, NOTE we pass in CRS, thus it matching
