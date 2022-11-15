@@ -99,15 +99,6 @@ inline void warning(const char *prefix, const char *file, const char *func,
   HIF_STDERR(ss.str().c_str());
 }
 
-/// \brief set/get warning flag
-/// \param[in] flag warning flag
-inline bool warn_flag(const int flag = -1) {
-  static bool warn = true;
-  if (flag < 0) return warn;
-  warn = flag;
-  return warn;
-}
-
 /// \brief error information streaming, dump to \ref HIF_STDERR
 /// \param[in] prefix prefix message, omitted if passed as \a nullptr
 /// \param[in] file filename, i.e. __FILE__
@@ -164,22 +155,16 @@ inline void error(const char *prefix, const char *file, const char *func,
 /// \brief print warning message
 /// \sa hif::warning
 /// \ingroup util
-#define hif_warning(__msgs...)                                               \
-  do {                                                                       \
-    if (::hif::warn_flag())                                                  \
-      ::hif::warning(nullptr, __HIF_FILE__, __HIF_FUNC__, __LINE__, __msgs); \
-  } while (false)
+#define hif_warning(__msgs...) \
+  ::hif::warning(nullptr, __HIF_FILE__, __HIF_FUNC__, __LINE__, __msgs);
 
 /// \def hif_warning_if(__cond, __msgs)
 /// \brief conditionally print message, __cond will be shown as \a prefix
 /// \sa hif::warning
 /// \ingroup util
-#define hif_warning_if(__cond, __msgs...)                           \
-  do {                                                              \
-    if (::hif::warn_flag() && (__cond))                             \
-      ::hif::warning("condition " #__cond " alerted", __HIF_FILE__, \
-                     __HIF_FUNC__, __LINE__, __msgs);               \
-  } while (false)
+#define hif_warning_if(__cond, __msgs...)                                     \
+  ::hif::warning("condition " #__cond " alerted", __HIF_FILE__, __HIF_FUNC__, \
+                 __LINE__, __msgs);
 
 /// \def hif_error(__msgs)
 /// \brief print warning message and abort

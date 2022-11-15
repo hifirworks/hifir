@@ -304,7 +304,7 @@ struct StderrStruct {
   inline void operator()(const char *file, const char *func,
                          const unsigned line, const char *f,
                          Args... args) const {
-    if (warn_flag()) warning(nullptr, file, func, line, f, args...);
+    warning(nullptr, file, func, line, f, args...);
   }
 };
 

@@ -220,12 +220,6 @@ void lhfGetVersions(int versions[]) {
   versions[2] = HIF_MINOR_VERSION;
 }
 
-// enabling warning
-void lhfEnableWarning() { hif::warn_flag(1); }
-
-// disable warning
-void lhfDisableWarning() { hif::warn_flag(0); }
-
 // error message
 const char *lhfGetErrorMsg() {
   libhifir_impl::error_msgs[0] = libhifir_impl::error_msgs[1];
