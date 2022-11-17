@@ -45,12 +45,13 @@ extern "C" {
  */
 enum {
   HIF_VERBOSE_NONE     = 0,                         /*!< mute */
-  HIF_VERBOSE_INFO     = 1,                         /*!< general information */
+  HIF_VERBOSE_WARN     = 1,                         /*!< warning */
+  HIF_VERBOSE_INFO     = HIF_VERBOSE_WARN << 1,     /*!< general information */
   HIF_VERBOSE_PRE      = HIF_VERBOSE_INFO << 1,     /*!< preprocessing */
   HIF_VERBOSE_FAC      = HIF_VERBOSE_PRE << 1,      /*!< factorization update */
   HIF_VERBOSE_PRE_TIME = HIF_VERBOSE_FAC << 1,      /*! pre time */
   HIF_VERBOSE_MEM      = HIF_VERBOSE_PRE_TIME << 1, /*!< memory debug */
-  HIF_VERBOSE_INFO2    = HIF_VERBOSE_MEM << 1, /*!< more detailed than info */
+  HIF_VERBOSE_INFO2    = HIF_VERBOSE_MEM << 1,      /*!< more detailed than info */
 };
 
 /*!
@@ -142,7 +143,7 @@ static hif_Options hif_get_default_options(void) {
                        .c_d           = 10.0,
                        .c_h           = 2.0,
                        .N             = -1,
-                       .verbose       = HIF_VERBOSE_INFO,
+                       .verbose       = HIF_VERBOSE_WARN,
                        .rf_par        = 1,
                        .reorder       = HIF_REORDER_AMD,
                        .spd           = 0,
@@ -234,6 +235,7 @@ namespace hif {
  */
 enum : int {
   VERBOSE_NONE     = ::HIF_VERBOSE_NONE,     /*!< mute */
+  VERBOSE_WARN     = ::HIF_VERBOSE_WARN,     /*!< warning */
   VERBOSE_INFO     = ::HIF_VERBOSE_INFO,     /*!< general information */
   VERBOSE_PRE      = ::HIF_VERBOSE_PRE,      /*!< preprocessing */
   VERBOSE_FAC      = ::HIF_VERBOSE_FAC,      /*!< factorization update */
@@ -598,7 +600,8 @@ inline std::string hif::get_verbose(const hif::Options &opt) {
   if (opt.verbose == VERBOSE_NONE)
     name = "none";
   else {
-    if (hif_verbose(INFO, opt)) name = "info";
+    if (hif_verbose(WARN, opt)) name = "warning";
+    else if (hif_verbose(INFO, opt)) name = "info";
     if (hif_verbose(PRE, opt)) {
       if (name != "")
         name += ",pre";

@@ -356,8 +356,10 @@ class DenseMatrix {
   template <class Cs>
   inline typename std::enable_if<Cs::ROW_MAJOR>::type copy_sparse(
       const Cs& crs) {
+#ifdef HIF_DEBUG
     if (crs.status() == DATA_UNDEF && (crs.nrows() || crs.ncols()))
       hif_warning("input CRS ia a all-zero matrix.");
+#endif
     const size_type nrows(crs.nrows());
     resize(nrows, crs.ncols());
     // first step, set all values to zero
@@ -377,8 +379,10 @@ class DenseMatrix {
   template <class Cs>
   inline typename std::enable_if<!Cs::ROW_MAJOR>::type copy_sparse(
       const Cs& ccs) {
+#ifdef HIF_DEBUG
     if (ccs.status() == DATA_UNDEF && (ccs.nrows() || ccs.ncols()))
       hif_warning("input CCS ia a all-zero matrix.");
+#endif
     const size_type ncols(ccs.ncols());
     resize(ccs.nrows(), ncols);
     // first step, set all values to zero

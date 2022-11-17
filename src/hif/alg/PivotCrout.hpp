@@ -599,11 +599,11 @@ class PivotCrout : public Crout {
       } else
         break;
     }
+#ifdef HIF_DEBUG
     if (pivot_step > max_steps)
-      hif_warning("  could not satisfy pivoting requirement in %d iterations",
-                  max_steps);
-    // Crout_info("  could not satisfy pivoting requirement in %d iterations",
-    //            max_steps);
+        hif_warning("  could not satisfy pivoting requirement in %d iterations",
+                    max_steps);
+#endif
     return std::make_pair(col_pivots, row_pivots);
   }
 };

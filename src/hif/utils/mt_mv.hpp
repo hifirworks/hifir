@@ -100,7 +100,9 @@ inline typename std::enable_if<CsType::ROW_MAJOR, T>::type multiply_nt_low(
 template <class CsType, class IArray, class OArray, typename T = void>
 inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type multiply_nt(
     const CsType &A, const IArray &x, OArray &y) {
+#ifdef HIF_DEBUG
   hif_warning("CCS does not support threaded matrix-vector!");
+#endif
   return A.multiply_nt(x, y);
 }
 
@@ -108,7 +110,9 @@ inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type multiply_nt(
 template <class CsType, class Vx, class Vy, typename T = void>
 inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type multiply_nt_low(
     const CsType &A, const Vx *x, Vy *y) {
+#ifdef HIF_DEBUG
   hif_warning("CCS does not support threaded matrix-vector!");
+#endif
   A.multiply_nt_low(x, y);
 }
 
@@ -176,7 +180,9 @@ template <class CsType, class InType, class OutType, std::size_t Nrhs,
 inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type multiply_mrhs_nt(
     const CsType &A, const Array<std::array<InType, Nrhs>> &x,
     Array<std::array<OutType, Nrhs>> &y) {
+#ifdef HIF_DEBUG
   hif_warning("CCS does not support threaded matrix-vector!");
+#endif
   return A.multiply_mrhs_nt(x, y);
 }
 
@@ -184,7 +190,9 @@ inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type multiply_mrhs_nt(
 template <std::size_t Nrhs, class CsType, class Vx, class Vy, typename T = void>
 inline typename std::enable_if<!CsType::ROW_MAJOR, T>::type
 multiply_mrhs_nt_low(const CsType &A, const Vx *x, Vy *y) {
+#ifdef HIF_DEBUG
   hif_warning("CCS does not support threaded matrix-vector!");
+#endif
   return A.template multiply_mrhs_nt_low<Nrhs>(x, y);
 }
 

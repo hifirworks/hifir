@@ -287,12 +287,6 @@ class HIF {
         } while (false);
       }
     }
-    // NOTE: Global warning flag should be set manually by the users
-    // const bool revert_warn = warn_flag();
-    // if (params.verbose == VERBOSE_NONE)
-    //   (void)warn_flag(0);
-    // else
-    //   warn_flag(1);
 
     _nrows = A.nrows();
     _ncols = A.ncols();
@@ -369,7 +363,6 @@ class HIF {
                (double)Nnz / A.nnz());
       hif_info("\nmultilevel precs building time (overall) is %gs", t.time());
     }
-    // if (revert_warn) (void)warn_flag(1);
   }
 
   /// \brief factorize the HIF preconditioner with generic interface
@@ -443,12 +436,12 @@ class HIF {
                          const size_type r = 0u) const {
     hif_error_if(empty(), "MILU-Prec is empty!");
     hif_error_if(b.size() != x.size(), "unmatched sizes");
+    hif_error_if(nsp, "multiple RHS does not support null space filter.");
     const auto nw = compute_prec_work_space(_precs.cbegin(), _precs.cend());
     if (_prec_work.empty()) _prec_work.resize(nw * Nrhs);
     Array<std::array<boost_value_type, Nrhs>> w(
         nw, (std::array<boost_value_type, Nrhs> *)_prec_work.data(), true);
     prec_solve_mrhs(_precs.cbegin(), b, r, x, w);
-    hif_warning_if(nsp, "multiple RHS does not support null space filter.");
   }
 
   /// \brief solve with iterative refinement

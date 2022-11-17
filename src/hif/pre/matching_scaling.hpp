@@ -409,8 +409,8 @@ inline std::pair<CcsType, typename CcsType::size_type> do_maching(
   do {
     DefaultTimer timer;
     timer.start();
-    eq_kernel::template do_matching<IsSymm>(opts.verbose, B, p(), q(), s, t,
-                                            opts.pre_scale);
+    eq_kernel::template do_matching<IsSymm>(B, p(), q(), s, t,
+                                            opts.pre_scale, opts.verbose);
     timer.finish();
     if (timing) hif_info("Equilibrator took %gs.", (double)timer.time());
   } while (false);
