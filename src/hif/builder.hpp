@@ -78,13 +78,13 @@ static bool introduced = false;
 
 /// \class HIF
 /// \tparam ValueType numerical value type, e.g. \a double
-/// \tparam IndexType index type, e.g. \a int
+/// \tparam IndexType index type, default is \a int
 /// \tparam IndPtrType index pionter type, default is \a std::ptrdiff_t
 /// \tparam UserDenseFactor Potential user customized dense factor
 ///
 /// This is top user interface (C++); it is designed as a preconditioner that
-/// can be easily plugin other codes. There are two core member functions, 1)
-/// \ref factorize a multilevel ILU preconditioner and 2) \ref solve the
+/// can be easily plugged into other codes. There are two core member functions, 1)
+/// \ref factorize a multilevel ILU preconditioner and 2) \ref triangular-solve the
 /// preconditioner system. For computing preconditioner, the input can be either
 /// \ref CCS or \ref CRS, for solving, the input must be \ref Array. However,
 /// be aware that both CCS/CRS and Array can be used as external data wrappers,
@@ -104,7 +104,7 @@ static bool introduced = false;
 ///     builder.solve(...);
 ///   }
 /// \endcode
-template <class ValueType, class IndexType, class IndPtrType = std::ptrdiff_t,
+template <class ValueType, class IndexType = int, class IndPtrType = std::ptrdiff_t,
           template <class> class UserDenseFactor = DefaultDenseSolver>
 class HIF {
  public:
@@ -587,6 +587,10 @@ class HIF {
 /// \typedef DefaultHIF
 /// \brief default HIF with \a double as value type and \a int as index
 typedef HIF<double, int> DefaultHIF;
+
+template <class ValueType, class IndexType = int, class IndPtrType = std::ptrdiff_t,
+          template <class> class UserDenseFactor = DefaultDenseSolver>
+using Hif = HIF<ValueType, int, IndPtrType, UserDenseFactor>;
 
 /*!
  * @}

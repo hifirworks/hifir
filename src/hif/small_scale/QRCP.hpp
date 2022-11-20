@@ -149,8 +149,8 @@ class QRCP {
     const scalar_type diag_eps = diag_tol * std::abs(_mat[0]);
     for (size_type i = N; i != 0u; --i)
       if (std::abs(_mat(i - 1, i - 1)) < diag_eps) {
-        if (hif_verbose(WARN, opts)) {
-          hif_warning(
+        if (hif_verbose(INFO, opts)) {
+          hif_info(
               "\n  System is ill-conditioned (diagonal %zd is smaller\n"
               "  than tolerance %g), will switch to condition number\n"
               "  estimator to determine the final numerical rank.",
