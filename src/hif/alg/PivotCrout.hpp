@@ -601,7 +601,7 @@ class PivotCrout : public Crout {
     }
 #ifdef HIF_DEBUG
     if (pivot_step > max_steps)
-        hif_warning("  could not satisfy pivoting requirement in %d iterations",
+        hif_warning("  Could not satisfy pivoting requirement in %d iterations",
                     max_steps);
 #endif
     return std::make_pair(col_pivots, row_pivots);

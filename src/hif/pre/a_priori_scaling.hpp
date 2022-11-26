@@ -239,7 +239,7 @@ inline void iterative_scale_p(const PermType &p, CrsType &A, ScalingType &rs,
     res_c = tmp;
     ++iters;
 #ifdef HIF_DEBUG
-    hif_info("iter-scaling, iter=%zd, res_r=%g, res_c=%g", iters, res_r, res_c);
+    hif_info("Iter-scaling, iter=%zd, res_r=%g, res_c=%g", iters, res_r, res_c);
 #endif
   } while ((res_r > tol || res_c > tol) && iters < max_iters);
 

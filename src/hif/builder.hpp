@@ -295,7 +295,7 @@ class HIF {
     t.start();
     if (!empty()) {
       if (hif_verbose(INFO, params))
-        hif_info("multilevel precs are not empty, wipe previous results first");
+        hif_info("Multilevel precs are not empty. Wipe out previous results first.");
       _precs.clear();
       // also clear the previous buffer
       _prec_work.resize(0);

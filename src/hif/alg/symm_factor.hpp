@@ -184,11 +184,11 @@ inline CsType symm_level_factorize(
   if (!opts.no_pre) {
     // only use symmetric preprocessing
     if (hif_verbose(INFO, opts))
-      hif_info("performing symm preprocessing with leading block size %zd...",
+      hif_info("Performing symm preprocessing with leading block size %zd...",
                m0);
     m = do_preprocessing<true>(A_ccs, A_crs, m0, cur_level, opts, s, t, p, q);
   } else {
-    if (hif_verbose(INFO, opts)) hif_info("skipping preprocessing... ");
+    if (hif_verbose(INFO, opts)) hif_info("Skipping preprocessing... ");
     p.resize(A.nrows());
     q.resize(A.ncols());
     p.make_eye();
@@ -209,8 +209,8 @@ inline CsType symm_level_factorize(
   int post_flag = 0;
 
   if (hif_verbose(INFO, opts)) {
-    hif_info("preprocessing done with leading block size %zd...", m);
-    hif_info("time: %gs", timer.time());
+    hif_info("Preprocessing done with leading block size %zd...", m);
+    hif_info("Time: %gs", timer.time());
   }
 
 #ifdef HIF_SAVE_FIRST_LEVEL_PERM_A
@@ -232,7 +232,7 @@ inline CsType symm_level_factorize(
   }
 #endif
 
-  if (hif_verbose(INFO, opts)) hif_info("preparing data variables...");
+  if (hif_verbose(INFO, opts)) hif_info("Preparing data variables...");
 
   timer.start();
 
@@ -301,7 +301,7 @@ inline CsType symm_level_factorize(
   // 0 for defer due to diagonal, 1 for defer due to bad inverse conditioning
   index_type info_counter[] = {0, 0, 0, 0, 0, 0, 0};
 
-  if (hif_verbose(INFO, opts)) hif_info("start Crout update...");
+  if (hif_verbose(INFO, opts)) hif_info("Start Crout update...");
   Crout step;
   for (; step < m; ++step) {
     // first check diagonal
@@ -496,10 +496,10 @@ inline CsType symm_level_factorize(
 
   if (hif_verbose(INFO, opts)) {
     if (post_flag == 2)
-      hif_info("too many dynamic deferrals, resort to complete factorization");
-    hif_info("time: %gs", timer.time());
+      hif_info("Too many dynamic deferrals, resort to complete factorization");
+    hif_info("Time: %gs", timer.time());
     // logging for factorization finished here
-    hif_info("computing Schur complement and assembling Prec...");
+    hif_info("Computing Schur complement and assembling Prec...");
     internal::print_post_flag(post_flag);
   }
 
@@ -522,7 +522,7 @@ inline CsType symm_level_factorize(
       internal::make_transpose(L_B, U_B, true);
       timer2.finish();
       if (hif_verbose(INFO2, opts))
-        hif_info("splitting LB, copying to UB, and freeing L took %gs.",
+        hif_info("Splitting LB, copying to UB, and freeing L took %gs.",
                  timer2.time());
       do {
         timer2.start();
@@ -531,7 +531,7 @@ inline CsType symm_level_factorize(
         double a_L = opts.alpha_L;
         if (cur_level == 1u && opts.fat_schur_1st) a_L *= 2;
         if (hif_verbose(INFO2, opts))
-          hif_info("applying dropping on L_E with alpha=%g...", a_L);
+          hif_info("Applying dropping on L_E with alpha=%g...", a_L);
         if (m < n) {
           // use P as buffer
           P[0] = 0;
@@ -557,13 +557,13 @@ inline CsType symm_level_factorize(
       S = compute_Schur_simple(s, A_crs, t, p, p, m, L_E, d, U_F, l);
 #else
       if (hif_verbose(INFO, opts))
-        hif_info("using %d threads for Schur computation...", schur_threads);
+        hif_info("Using %d threads for Schur computation...", schur_threads);
       S = mt::compute_Schur_simple(s, A_crs, t, p, p, m, L_E, d, U_F, l,
                                    schur_threads);
 #endif
       timer2.finish();
       if (hif_verbose(INFO, opts))
-        hif_info("pure Schur computation time: %gs...", timer2.time());
+        hif_info("Pure Schur computation time: %gs...", timer2.time());
     } while (false);
   } else {
     S = A_crs;
@@ -601,7 +601,7 @@ inline CsType symm_level_factorize(
       nm <= dense_thres2 || !m) {
     S_D = dense_type::from_sparse(S);
     if (hif_verbose(INFO, opts))
-      hif_info("converted Schur complement (S) to dense for last level...");
+      hif_info("Converted Schur complement (S) to dense for last level...");
   }
 
   if (S_D.empty()) {
@@ -657,17 +657,17 @@ inline CsType symm_level_factorize(
     last_level.factorize(opts);
     if (hif_verbose(INFO, opts)) {
       hif_info(
-          "successfully factorized the dense component of "
+          "Successfully factorized the dense component of "
           "(size,rank)=(%zd,%zd)...",
           last_level.mat().nrows(), last_level.rank());
-      hif_info("is the final Schur complement full-rank? %s",
+      hif_info("Is the final Schur complement full-rank? %s",
                (last_level.mat().nrows() == last_level.rank() ? "yes" : "no"));
     }
   }
 
   timer.finish();  // profile post-processing
 
-  if (hif_verbose(INFO, opts)) hif_info("time: %gs", timer.time());
+  if (hif_verbose(INFO, opts)) hif_info("Time: %gs", timer.time());
 
   if (hif_verbose(INFO, opts)) hif_info("\nfinish level %zd.", cur_level);
 

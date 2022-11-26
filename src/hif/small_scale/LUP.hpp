@@ -102,7 +102,7 @@ class LUP {
   inline void factorize(const Options &opts) {
     hif_error_if(_mat.empty(), "matrix is still empty!");
     hif_error_if(!is_squared(), "the matrix must be squared!");
-    if (hif_verbose(INFO, opts)) hif_info("factorizing dense level by LU...");
+    if (hif_verbose(INFO, opts)) hif_info("Factorizing dense level by LU...");
 
     _ipiv.resize(_mat.nrows());
     const auto info = lapack_kernel::getrf(_mat, _ipiv);

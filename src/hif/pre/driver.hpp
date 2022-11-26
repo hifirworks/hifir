@@ -75,11 +75,11 @@ inline typename CcsType::size_type do_preprocessing(
   using size_type   = typename CcsType::size_type;
 
   if (opt.reorder < 0 || opt.reorder >= REORDER_NULL)
-    hif_error("invalid reorder flag %d", opt.reorder);
+    hif_error("Invalid reorder flag %d", opt.reorder);
 
   DefaultTimer timer;
 
-  if (hif_verbose(PRE, opt)) hif_info("performing matching step");
+  if (hif_verbose(PRE, opt)) hif_info("Performing matching step");
 
   timer.start();
 
@@ -87,11 +87,11 @@ inline typename CcsType::size_type do_preprocessing(
 
   timer.finish();
   if (hif_verbose(PRE_TIME, opt))
-    hif_info("matching took %gs.", (double)timer.time());
+    hif_info("Matching took %gs.", (double)timer.time());
 
   const size_type m = match_res.second;
   if (opt.reorder != REORDER_OFF && m) {
-    if (hif_verbose(PRE, opt)) hif_info("performing reordering step");
+    if (hif_verbose(PRE, opt)) hif_info("Performing reordering step");
     timer.start();
 
     std::string reorder_name = "AMD";
@@ -114,7 +114,7 @@ inline typename CcsType::size_type do_preprocessing(
     timer.finish();
 
     if (hif_verbose(PRE_TIME, opt))
-      hif_info("reordering %s took %gs.", reorder_name.c_str(),
+      hif_info("Reordering %s took %gs.", reorder_name.c_str(),
                (double)timer.time());
 
     // now let's reorder the permutation arrays
@@ -133,8 +133,8 @@ inline typename CcsType::size_type do_preprocessing(
     reorder_finalize_perm(q);
   } else {
     if (hif_verbose(PRE, opt))
-      m ? hif_info("reordering skipped")
-        : hif_info("reordering skipped due to empty leading block");
+      m ? hif_info("Reordering skipped")
+        : hif_info("Reordering skipped due to empty leading block");
     p.build_inv();
     q.build_inv();
   }

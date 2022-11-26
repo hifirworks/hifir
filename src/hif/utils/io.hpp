@@ -142,7 +142,7 @@ inline void write_bin(const char *filename, const CsType &A) {
           f.createDataSet(H5std_string("ind_start"), type, ind_start_sp);
       ds_indptr.write(ind_start, type);
     } else
-      hif_error("unsupported integer type");
+      hif_error("Unsupported integer type.");
     // write indices
     n = A.inds().size();
     DataSpace   nnz_sp(1, &n);

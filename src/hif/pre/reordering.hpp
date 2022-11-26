@@ -65,7 +65,7 @@ inline typename CcsType::iparray_type run_amd(const CcsType &B,
   Control[HIF_AMD_SYMM_FLAG] = !IsSymm;
 
   if (hif_verbose(PRE, opt)) {
-    hif_info("performing AMD reordering");
+    hif_info("Performing AMD reordering");
     std::stringstream s;
     amd::control(s, Control);
     hif_info(s.str().c_str());
@@ -115,7 +115,7 @@ inline typename CcsType::iparray_type run_rcm(const CcsType &B,
   using iparray_type = typename CcsType::iparray_type;
   using rcm_type     = rcm::RCM<indptr_type>;
 
-  if (hif_verbose(PRE, opt)) hif_info("begin running RCM reordering...");
+  if (hif_verbose(PRE, opt)) hif_info("Begin running RCM reordering...");
   const auto   n = B.nrows();
   iparray_type adjncy;
   if (sizeof(indptr_type) == sizeof(typename CcsType::index_type))
@@ -131,7 +131,7 @@ inline typename CcsType::iparray_type run_rcm(const CcsType &B,
   iparray_type P(n);
   rcm_type().apply(n, xadj.data(), adjncy.data(), P.data());
   for (auto &v : P) --v;
-  if (hif_verbose(PRE, opt)) hif_info("finish RCM reordering...");
+  if (hif_verbose(PRE, opt)) hif_info("Finish RCM reordering...");
   return P;
 }
 

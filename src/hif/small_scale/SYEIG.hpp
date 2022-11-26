@@ -105,10 +105,10 @@ class SYEIG {
   /// \brief compute decomposition and determine the rank
   /// \param[in] opts control parameters, see \ref Options
   inline void factorize(const Options &opts) {
-    hif_error_if(_mat.empty(), "matrix is still empty!");
-    hif_error_if(!is_squared(), "the matrix must be squared!");
+    hif_error_if(_mat.empty(), "Matrix is still empty.");
+    hif_error_if(!is_squared(), "The matrix must be squared.");
     if (hif_verbose(INFO, opts))
-      hif_info("factorizing dense level by symmetric (%s) eigendecomp...",
+      hif_info("Factorizing dense level by symmetric (%s) eigendecomp...",
                opts.spd > 0 ? "PD" : (opts.spd < 0 ? "ND" : "ID"));
 
     const static scalar_type EPS = std::pow(Const<scalar_type>::EPS, 2. / 3);

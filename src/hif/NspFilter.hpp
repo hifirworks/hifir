@@ -130,7 +130,7 @@ class NspFilter {
   /// \brief set null space callback
   inline void set_nsp_callback(const user_cb_type &f) {
     _user_f = f;
-    if (!_user_f) hif_error("empty user callback was not attached!");
+    if (!_user_f) hif_error("Empty user callback was not attached!");
     _type = USER_CB;
   }
 
@@ -145,7 +145,7 @@ class NspFilter {
         user_filter((void *)x, n, ValueTypeTrait<T>::signature);
         break;
       default:
-        if (!_user_f) hif_error("user callback was not attached!");
+        if (!_user_f) hif_error("User callback was not attached!");
         _user_f((void *)x, n, ValueTypeTrait<T>::signature);
         break;
     }

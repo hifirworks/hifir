@@ -155,7 +155,7 @@ inline Array<typename CcsType::value_type> extract_perm_diag(
       diag[i] = s[p[i]] * *(v_begin + (info.second - i_begin)) * t[q[i]];
     else {
 #ifdef HIF_DEBUG
-      hif_warning("zero diagonal entry %zd detected!", i);
+      hif_warning("Zero diagonal entry %zd detected.", i);
 #endif
       diag[i] = 0;
     }
@@ -188,7 +188,7 @@ inline typename CrsType::other_type extract_E(
     const ScalingType &s, const CrsType &A, const ScalingType &t,
     const typename CrsType::size_type m, const PermType &p, const PermType &q) {
   // it's efficient to extract E from CRS
-  static_assert(CrsType::ROW_MAJOR, "input A must be CRS!");
+  static_assert(CrsType::ROW_MAJOR, "Input A must be CRS.");
   using ccs_type    = typename CrsType::other_type;
   using size_type   = typename CrsType::size_type;
   using indptr_type = typename CrsType::indptr_type;
@@ -201,7 +201,7 @@ inline typename CrsType::other_type extract_E(
   ccs_type        E(N, m);
   if (!N) {
 #ifdef HIF_DEBUG
-    hif_warning("empty E matrix detected!");
+    hif_warning("Empty E matrix detected.");
 #endif
     return E;
   }
@@ -294,7 +294,7 @@ inline CcsType extract_F(const ScalingType &s, const CcsType &A,
                          const ScalingType &               t,
                          const typename CcsType::size_type m, const PermType &p,
                          const PermType &q, BufferType &buf) {
-  static_assert(!CcsType::ROW_MAJOR, "input A must be CCS!");
+  static_assert(!CcsType::ROW_MAJOR, "Input A must be CCS.");
   using size_type  = typename CcsType::size_type;
   using index_type = typename CcsType::index_type;
 
@@ -307,7 +307,7 @@ inline CcsType extract_F(const ScalingType &s, const CcsType &A,
   CcsType         F(m, N);
   if (!N) {
 #ifdef HIF_DEBUG
-    hif_warning("empty F matrix detected!");
+    hif_warning("Empty F matrix detected.");
 #endif
     return F;
   }
@@ -877,7 +877,7 @@ inline CsType level_factorize(
 
     // check pivoting
     hif_assert(!(std::abs(k_ut) > kappa || std::abs(k_l) > kappa),
-               "should not happen!");
+               "Should not happen!");
 
     Crout_info("  kappa_ut=%g, kappa_l=%g", (double)std::abs(k_ut),
                (double)std::abs(k_l));
@@ -1287,7 +1287,7 @@ inline CsType level_factorize(
     last_level.factorize(opts);
     if (hif_verbose(INFO, opts)) {
       hif_info(
-          "successfully factorized the dense component of "
+          "Successfully factorized the dense component of "
           "(size,rank)=(%zd,%zd)...",
           last_level.mat().nrows(), last_level.rank());
       hif_info("is the final Schur complement full-rank? %s",

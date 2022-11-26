@@ -241,14 +241,14 @@ class CompressedStorage {
     if (!flag) return;
     if (flag > 0) {
 #ifdef HIF_DEBUG
-      hif_warning("pushed more entries (%zd) than requested (%zd)",
+      hif_warning("Pushed more entries (%zd) than requested (%zd)",
                   _ind_start.size() - 1u, _psize);
 #endif
       _psize = _ind_start.size() ? _ind_start.size() - 1u : 0u;
       return;
     }
 #ifdef HIF_DEBUG
-    hif_warning("detected empty primary entries (%zd)",
+    hif_warning("Detected empty primary entries (%zd)",
                 _psize + 1u - _ind_start.size());
 #endif
     _psize = _ind_start.size() - 1u;
@@ -1777,11 +1777,11 @@ inline CRS<ValueType, IndexType> wrap_const_crs(
 
   if (check) {
     if (row_start[0] != 0)
-      hif_error("first entry of row_start does not agree with 0.");
+      hif_error("First entry of row_start does not agree with 0.");
     for (size_type i = 0u; i < nrows; ++i) {
       if (!mat.nnz_in_row(i)) {
 #ifdef HIF_DEBUG
-        hif_warning("row %zd is empty!", i);
+        hif_warning("Row %zd is empty!", i);
 #endif
         continue;
       }
@@ -2678,12 +2678,12 @@ inline CCS<ValueType, IndexType, IndPtrType> wrap_const_ccs(
 
   if (check) {
     if (col_start[0] != 0)
-      hif_error("first entry of row_start does not agree with 0.");
+      hif_error("First entry of row_start does not agree with 0.");
     Array<ValueType> buf;
     for (size_type i = 0u; i < nrows; ++i) {
       if (!mat.nnz_in_col(i)) {
 #ifdef HIF_DEBUG
-        hif_warning("row %zd is empty!", i);
+        hif_warning("Row %zd is empty!", i);
 #endif
         continue;
       }

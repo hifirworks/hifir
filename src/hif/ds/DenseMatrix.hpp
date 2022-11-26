@@ -358,7 +358,7 @@ class DenseMatrix {
       const Cs& crs) {
 #ifdef HIF_DEBUG
     if (crs.status() == DATA_UNDEF && (crs.nrows() || crs.ncols()))
-      hif_warning("input CRS ia a all-zero matrix.");
+      hif_warning("Input CRS ia an all-zero matrix.");
 #endif
     const size_type nrows(crs.nrows());
     resize(nrows, crs.ncols());
