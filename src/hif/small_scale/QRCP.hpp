@@ -108,11 +108,11 @@ class QRCP {
     // get tolerance
     const static scalar_type diag_tol = std::sqrt(Const<scalar_type>::EPS);
     const static scalar_type cond_tol =
-        scalar_type(1) / std::pow(Const<scalar_type>::EPS, 2. / 3);
+        std::max(1./Const<float>::EPS, std::pow(Const<scalar_type>::EPS, -2. / 3));
 
-    hif_error_if(_mat.empty(), "matrix is still empty!");
+    hif_error_if(_mat.empty(), "Matrix is still empty!");
     hif_error_if(_mat.nrows() < _mat.ncols(),
-                 "matrix must have no smaller row size");
+                 "Matrix must have no smaller row size");
 
     const scalar_type cond_thres =
         opts.rrqr_cond <= 0.0 ? cond_tol : scalar_type(opts.rrqr_cond);
@@ -151,8 +151,8 @@ class QRCP {
       if (std::abs(_mat(i - 1, i - 1)) < diag_eps) {
         if (hif_verbose(INFO, opts)) {
           hif_info(
-              "\n  System is ill-conditioned (diagonal %zd is smaller\n"
-              "  than tolerance %g), will switch to condition number\n"
+              "\n  The final Schur complement is ill-conditioned (diagonal %zd is smaller\n"
+              "  than tolerance %g). Switching to condition-number\n"
               "  estimator to determine the final numerical rank.",
               i, (double)diag_eps);
         }
@@ -170,10 +170,9 @@ class QRCP {
       _est_rank_2norm(cond_thres);
 #endif
       if (_rank != _mat.ncols() && hif_verbose(WARN, opts)) {
-        hif_warning("\n  The system is rank deficient with rank=%zd,\n"
-                    "  the tolerance used was %g, comparing wrt\n"
-                    "  %s-norm-based condition number estimation.",
-                    _rank, (double)cond_thres, nrm_sig);
+        hif_warning("\n  The final Schur complement has a %zd-dimensional numerical null space\n"
+                    "  when using a condition-number threshold %g in %s-norm.",
+                    _mat.ncols() - _rank, (double)cond_thres, nrm_sig);
       }
     }
   }
