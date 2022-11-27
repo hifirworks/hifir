@@ -404,12 +404,12 @@ class HIF {
   /// \param[in] b right-hand side vector
   /// \param[out] x solution vector
   /// \param[in] trans (optional) transpose/Hermitian flag (default is false)
-  /// \param[in] r (optional) dimension for back solve for last level
-  ///              efault is its numerical rank
+  /// \param[in] r (optional) dimension for back solve for last level.
+  ///               Default is its numerical rank.
   template <class RhsType, class SolType>
   inline void solve(const RhsType &b, SolType &x, const bool trans = false,
                     const size_type r = 0u) const {
-    hif_error_if(empty(), "MILU-Prec is empty!");
+    hif_error_if(empty(), "HIF is empty!");
     hif_error_if(b.size() != x.size(), "unmatched sizes");
     if (_prec_work.empty())
       _prec_work.resize(
@@ -434,7 +434,7 @@ class HIF {
   inline void solve_mrhs(const Array<std::array<RhsValueType, Nrhs>> &b,
                          Array<std::array<SolValueType, Nrhs>> &      x,
                          const size_type r = 0u) const {
-    hif_error_if(empty(), "MILU-Prec is empty!");
+    hif_error_if(empty(), "HIF is empty!");
     hif_error_if(b.size() != x.size(), "unmatched sizes");
     hif_error_if(nsp, "multiple RHS does not support null space filter.");
     const auto nw = compute_prec_work_space(_precs.cbegin(), _precs.cend());
@@ -474,7 +474,7 @@ class HIF {
   /// \param[in] betas lower and upper bound of norms of residual
   /// \param[out] x solution vector
   /// \param[in] trans (optional) transpose/Hermitian flag, default is false
-  /// \param[in] r (optional) dimension for back solve for last level
+  /// \param[in] r (optional) dimension for back solve for last level.
   ///            default is its numerical rank
   /// \return Number of refinements and flag. If flag == 0, then it converges;
   ///         if flag > 0, then it diverges; otherwise, it reaches maxit bound.
@@ -502,7 +502,7 @@ class HIF {
   template <class RhsType, class SolType>
   inline void mmultiply(const RhsType &x, SolType &y, const bool trans = false,
                         const size_type r = 0u) const {
-    hif_error_if(empty(), "MILU-Prec is empty!");
+    hif_error_if(empty(), "HIF is empty!");
     hif_error_if(y.size() != x.size(), "unmatched sizes");
     if (_prec_work.empty())
       _prec_work.resize(

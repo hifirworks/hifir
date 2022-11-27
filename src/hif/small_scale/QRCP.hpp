@@ -108,7 +108,7 @@ class QRCP {
     // get tolerance
     const static scalar_type diag_tol = std::sqrt(Const<scalar_type>::EPS);
     const static scalar_type cond_tol =
-        std::max(1./Const<float>::EPS, std::pow(Const<scalar_type>::EPS, -2. / 3));
+        std::max(0.1/Const<float>::EPS, std::pow(Const<scalar_type>::EPS, -2. / 3));
 
     hif_error_if(_mat.empty(), "Matrix is still empty!");
     hif_error_if(_mat.nrows() < _mat.ncols(),
@@ -169,10 +169,10 @@ class QRCP {
       static const char *nrm_sig = "2";
       _est_rank_2norm(cond_thres);
 #endif
-      if (_rank != _mat.ncols() && hif_verbose(WARN, opts)) {
-        hif_warning("\n  The final Schur complement has a %zd-dimensional numerical null space\n"
-                    "  when using a condition-number threshold %g in %s-norm.",
-                    _mat.ncols() - _rank, (double)cond_thres, nrm_sig);
+      if (_rank != _mat.ncols() && hif_verbose(INFO, opts)) {
+        hif_info("\n  The final Schur complement has a %zd-dimensional numerical null space\n"
+                 "  when using a condition-number threshold %g in %s-norm.",
+                 _mat.ncols() - _rank, (double)cond_thres, nrm_sig);
       }
     }
   }
